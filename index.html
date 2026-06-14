@@ -881,6 +881,8 @@
     const SUPABASE_URL = "https://oygsqfjjmpnvdsrpatgdt.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_PufEF3SrKWglbLH_RaRFDg_ZT5sVBKM";
     const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const cloudTable = "flashcard_single_data";
+    const cloudRowId = "main";
 
     const storeKey = "flashcard-estudos-v2";
     const initialData = {
@@ -895,6 +897,7 @@
     let loadingCloud = false;
     let saveTimer = null;
     let authMode = "signin";
+    let cloudReady = false;
 
     const el = {
       authScreen: document.querySelector("#authScreen"),
@@ -965,50 +968,55 @@
     }
 
     function scheduleCloudSave() {
-      if (!currentUser || loadingCloud || !supabaseClient) return;
+      if (!cloudReady || loadingCloud || !supabaseClient) return;
       clearTimeout(saveTimer);
       saveTimer = setTimeout(saveCloudData, 350);
     }
 
     async function saveCloudData() {
-      if (!currentUser || !supabaseClient) return;
+      if (!cloudReady || !supabaseClient) return;
       const { error } = await supabaseClient
-        .from("flashcard_data")
+        .from(cloudTable)
         .upsert({
-          user_id: currentUser.id,
+          id: cloudRowId,
           data,
           updated_at: new Date().toISOString()
-        }, { onConflict: "user_id" });
+        }, { onConflict: "id" });
 
       if (error) {
-        setAuthStatus(`Não consegui salvar online: ${error.message}`, "error");
-        return;
+        console.warn("Não consegui salvar no Supabase:", error.message);
       }
-      setAuthStatus(`Salvo online como ${currentUser.email}.`);
     }
 
     async function loadCloudData() {
-      if (!currentUser || !supabaseClient) return;
+      if (!supabaseClient) return;
       loadingCloud = true;
       const { data: row, error } = await supabaseClient
-        .from("flashcard_data")
+        .from(cloudTable)
         .select("data")
-        .eq("user_id", currentUser.id)
+        .eq("id", cloudRowId)
         .maybeSingle();
 
       if (error) {
-        setAuthStatus(`Não consegui carregar online: ${error.message}`, "error");
+        console.warn("Não consegui carregar do Supabase:", error.message);
       } else if (row?.data) {
         data = row.data;
         localStorage.setItem(storeKey, JSON.stringify(data));
-        setAuthStatus(`Dados carregados do Supabase para ${currentUser.email}.`);
       } else {
         await saveCloudData();
-        setAuthStatus(`Conta conectada. Seus próximos cartões serão salvos online.`);
       }
 
       loadingCloud = false;
       render();
+    }
+
+    async function initCloudSync() {
+      if (!supabaseClient) {
+        console.warn("Supabase não carregou; usando apenas salvamento local.");
+        return;
+      }
+      cloudReady = true;
+      await loadCloudData();
     }
 
     function setAuthStatus(text, type = "info") {
@@ -1667,8 +1675,7 @@
 
     renderOptionInputs();
     render();
-    // Login online fica suspenso por enquanto; o app funciona com salvamento local.
-    // Quando retomarmos o Supabase, reativamos: setAuthMode("signin"); renderAuth(); initAuth();
+    initCloudSync();
   </script>
 </body>
 </html>
