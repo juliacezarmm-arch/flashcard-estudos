@@ -1319,7 +1319,10 @@
         <div class="card">
           <div class="section-heading">
             <h3>Questões da coleção</h3>
-            <button class="secondary collapse-toggle" id="toggleQuestions" type="button" aria-expanded="true">Minimizar</button>
+            <div class="row">
+              <button class="secondary collapse-toggle" id="exportCollection" type="button">Exportar</button>
+              <button class="secondary collapse-toggle" id="toggleQuestions" type="button" aria-expanded="true">Minimizar</button>
+            </div>
           </div>
           <div class="collapsible-content" id="questionsContent">
             <div class="row">
@@ -1600,6 +1603,7 @@
       saveQuestion: document.querySelector("#saveQuestion"),
       questionMessage: document.querySelector("#questionMessage"),
       difficulty: document.querySelector("#difficulty"),
+      exportCollection: document.querySelector("#exportCollection"),
       toggleQuestions: document.querySelector("#toggleQuestions"),
       questionsContent: document.querySelector("#questionsContent"),
       cardFilter: document.querySelector("#cardFilter"),
@@ -3035,6 +3039,7 @@
       el.toggleQuestions.textContent = collapsed ? "Maximizar" : "Minimizar";
       el.toggleQuestions.setAttribute("aria-expanded", String(!collapsed));
     });
+    el.exportCollection.addEventListener("click", exportCurrentCollection);
     el.cardFilter.addEventListener("change", () => renderQuestions(currentSubject() || { cards: [] }));
     el.cardSort.addEventListener("change", () => renderQuestions(currentSubject() || { cards: [] }));
 
@@ -3334,6 +3339,91 @@
       if (lower.endsWith(".webp")) return "image/webp";
       if (lower.endsWith(".gif")) return "image/gif";
       return "image/png";
+    }
+
+    function extensionFromMime(mime) {
+      if (mime === "image/jpeg") return "jpg";
+      if (mime === "image/webp") return "webp";
+      if (mime === "image/gif") return "gif";
+      return "png";
+    }
+
+    function slugFileName(value) {
+      return String(value || "flashcards")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/gi, "_")
+        .replace(/^_+|_+$/g, "")
+        .toLowerCase() || "flashcards";
+    }
+
+    function dataUrlParts(dataUrl) {
+      const match = String(dataUrl || "").match(/^data:([^;]+);base64,(.+)$/);
+      return match ? { mime: match[1], base64: match[2] } : null;
+    }
+
+    function exportCardToJson(card, imagePath = "") {
+      const base = {
+        tipo: card.type || "multiple",
+        pergunta: card.q || ""
+      };
+      if (imagePath) base.imagem = imagePath;
+      if (card.type === "select-list") {
+        base.opcoesLista = card.listChoices || [];
+        base.itens = (card.listItems || []).map(item => ({
+          label: item.label || "",
+          answer: item.answer || ""
+        }));
+        if (card.a) base.resposta = card.a;
+        if (card.explanation) base.explicacao = card.explanation;
+        return base;
+      }
+      base.alternativas = card.options || [];
+      base.resposta = answerLetter(card) || card.correctAnswer || "";
+      if (card.explanation) base.explicacao = card.explanation;
+      return base;
+    }
+
+    async function exportCurrentCollection() {
+      const subject = currentSubject();
+      if (!subject || !subject.cards?.length) {
+        setMessage(el.importMessage, "Não há questões nesta coleção para exportar.", "error");
+        return;
+      }
+      if (!window.JSZip) {
+        setMessage(el.importMessage, "Não consegui carregar o exportador ZIP. Verifique a internet e tente novamente.", "error");
+        return;
+      }
+
+      const zip = new window.JSZip();
+      const imageFolder = zip.folder("imagens");
+      const exportedCards = [];
+      let imageIndex = 1;
+
+      for (const card of subject.cards) {
+        let imagePath = "";
+        const image = dataUrlParts(card.image);
+        if (image) {
+          const ext = extensionFromMime(image.mime);
+          imagePath = `imagens/imagem_${String(imageIndex).padStart(3, "0")}.${ext}`;
+          imageFolder.file(imagePath.split("/").pop(), image.base64, { base64: true });
+          imageIndex += 1;
+        } else if (card.image && !String(card.image).startsWith("data:")) {
+          imagePath = card.image;
+        }
+        exportedCards.push(exportCardToJson(card, imagePath));
+      }
+
+      zip.file("flashcards.json", JSON.stringify(exportedCards, null, 2));
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${slugFileName(subject.name)}_flashcards.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
     }
 
     async function zipImageToDataUrl(zip, imageName) {
