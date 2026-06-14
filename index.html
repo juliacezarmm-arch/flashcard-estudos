@@ -56,6 +56,97 @@
       min-height: 100vh;
     }
 
+    .app.locked {
+      display: none;
+    }
+
+    .auth-screen {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
+      background: var(--bg);
+    }
+
+    .auth-hero {
+      padding: 48px;
+      color: #fff;
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      display: grid;
+      align-content: center;
+      gap: 18px;
+    }
+
+    .auth-hero h1 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 1.05;
+    }
+
+    .auth-hero p {
+      margin: 0;
+      max-width: 520px;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    .auth-benefits {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .auth-benefits span {
+      display: block;
+    }
+
+    .auth-card-wrap {
+      padding: 32px;
+      display: grid;
+      place-items: center;
+    }
+
+    .auth-card {
+      width: min(100%, 460px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      background: var(--panel);
+      display: grid;
+      gap: 16px;
+    }
+
+    .auth-card h2 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    .auth-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .auth-mode {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 4px;
+      border-radius: 8px;
+      background: #e9edf7;
+    }
+
+    .auth-mode button {
+      color: var(--text);
+      background: transparent;
+    }
+
+    .auth-mode button.active {
+      color: #fff;
+      background: var(--brand);
+    }
+
     aside {
       background: var(--panel);
       border-right: 1px solid var(--line);
@@ -530,6 +621,23 @@
         grid-template-columns: 1fr;
       }
 
+      .auth-screen {
+        grid-template-columns: 1fr;
+      }
+
+      .auth-hero {
+        padding: 32px 22px;
+      }
+
+      .auth-hero h1 {
+        font-size: 32px;
+      }
+
+      .auth-card-wrap {
+        padding: 22px;
+        place-items: start stretch;
+      }
+
       aside {
         border-right: 0;
         border-bottom: 1px solid var(--line);
@@ -576,7 +684,41 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <div class="app">
+  <section class="auth-screen" id="authScreen">
+    <div class="auth-hero">
+      <h1>Flashcard Estudos</h1>
+      <p>Crie seus flashcards por disciplina, revise no celular e acompanhe o avanço dos cartões estudados.</p>
+      <div class="auth-benefits">
+        <span>Salvamento online com Supabase</span>
+        <span>Alternativas A, B, C, D e extras</span>
+        <span>Progresso: não estudado, em andamento e dominado</span>
+      </div>
+    </div>
+
+    <div class="auth-card-wrap">
+      <div class="auth-card">
+        <div>
+          <h2 id="authTitle">Entrar</h2>
+          <p id="authSubtitle">Acesse sua conta para carregar seus flashcards.</p>
+        </div>
+
+        <div class="auth-mode">
+          <button id="showSignIn" class="active" type="button">Entrar</button>
+          <button id="showSignUp" type="button">Criar conta</button>
+        </div>
+
+        <input id="authEmail" type="email" placeholder="Seu e-mail">
+        <input id="authPassword" type="password" placeholder="Senha">
+        <input id="authPhone" type="tel" placeholder="Telefone (opcional)" hidden>
+
+        <button id="signIn" type="button">Entrar</button>
+        <button id="signUp" type="button" hidden>Criar conta</button>
+        <p class="notice" id="authNotice"></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="app locked" id="appShell">
     <aside>
       <div class="brand">
         <h1>Flashcard Estudos</h1>
@@ -587,16 +729,10 @@
     </aside>
 
     <main>
-      <section class="auth-panel" id="authPanel">
+      <section class="auth-panel signed-in" id="authPanel">
         <div>
           <strong>Conta online</strong>
-          <p class="auth-status" id="authStatus">Entre para salvar seus flashcards no Supabase e acessar no celular.</p>
-        </div>
-        <div class="auth-form" id="authForm">
-          <input id="authEmail" type="email" placeholder="Seu e-mail">
-          <input id="authPassword" type="password" placeholder="Senha">
-          <button id="signIn" type="button">Entrar</button>
-          <button class="secondary" id="signUp" type="button">Criar conta</button>
+          <p class="auth-status" id="authStatus">Conectado.</p>
         </div>
         <button class="secondary" id="signOut" type="button" hidden>Sair</button>
       </section>
@@ -740,13 +876,21 @@
     let currentUser = null;
     let loadingCloud = false;
     let saveTimer = null;
+    let authMode = "signin";
 
     const el = {
+      authScreen: document.querySelector("#authScreen"),
+      appShell: document.querySelector("#appShell"),
       authPanel: document.querySelector("#authPanel"),
       authStatus: document.querySelector("#authStatus"),
-      authForm: document.querySelector("#authForm"),
+      authTitle: document.querySelector("#authTitle"),
+      authSubtitle: document.querySelector("#authSubtitle"),
+      authNotice: document.querySelector("#authNotice"),
+      showSignIn: document.querySelector("#showSignIn"),
+      showSignUp: document.querySelector("#showSignUp"),
       authEmail: document.querySelector("#authEmail"),
       authPassword: document.querySelector("#authPassword"),
+      authPhone: document.querySelector("#authPhone"),
       signIn: document.querySelector("#signIn"),
       signUp: document.querySelector("#signUp"),
       signOut: document.querySelector("#signOut"),
@@ -852,10 +996,29 @@
       el.authStatus.style.color = type === "error" ? "var(--danger)" : "var(--muted)";
     }
 
+    function setAuthNotice(text, type = "info") {
+      setMessage(el.authNotice, text, type);
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      const isSignUp = mode === "signup";
+      el.authTitle.textContent = isSignUp ? "Criar conta" : "Entrar";
+      el.authSubtitle.textContent = isSignUp
+        ? "Crie sua conta. Se a confirmação por e-mail estiver ativa, você precisa verificar o e-mail antes de entrar."
+        : "Acesse sua conta para carregar seus flashcards.";
+      el.showSignIn.classList.toggle("active", !isSignUp);
+      el.showSignUp.classList.toggle("active", isSignUp);
+      el.signIn.hidden = isSignUp;
+      el.signUp.hidden = !isSignUp;
+      el.authPhone.hidden = !isSignUp;
+      setAuthNotice("");
+    }
+
     function renderAuth() {
       const signedIn = Boolean(currentUser);
-      el.authPanel.classList.toggle("signed-in", signedIn);
-      el.authForm.hidden = signedIn;
+      el.authScreen.hidden = signedIn;
+      el.appShell.classList.toggle("locked", !signedIn);
       el.signOut.hidden = !signedIn;
       if (signedIn) {
         setAuthStatus(`Conectado: ${currentUser.email}`);
@@ -1075,39 +1238,55 @@
 
     el.signIn.addEventListener("click", async () => {
       if (!supabaseClient) {
-        setAuthStatus("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
+        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
         return;
       }
       const email = el.authEmail.value.trim();
       const password = el.authPassword.value;
       if (!email || !password) {
-        setAuthStatus("Preencha e-mail e senha para entrar.", "error");
+        setAuthNotice("Preencha e-mail e senha para entrar.", "error");
         return;
       }
       const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
-        setAuthStatus(`Erro ao entrar: ${error.message}`, "error");
+        setAuthNotice(`Erro ao entrar: ${error.message}`, "error");
       }
     });
 
     el.signUp.addEventListener("click", async () => {
       if (!supabaseClient) {
-        setAuthStatus("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
+        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
         return;
       }
       const email = el.authEmail.value.trim();
       const password = el.authPassword.value;
       if (!email || !password) {
-        setAuthStatus("Preencha e-mail e senha para criar a conta.", "error");
+        setAuthNotice("Preencha e-mail e senha para criar a conta.", "error");
         return;
       }
-      const { error } = await supabaseClient.auth.signUp({ email, password });
+      const { data: authData, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            phone: el.authPhone.value.trim()
+          }
+        }
+      });
       if (error) {
-        setAuthStatus(`Erro ao criar conta: ${error.message}`, "error");
+        setAuthNotice(`Erro ao criar conta: ${error.message}`, "error");
         return;
       }
-      setAuthStatus("Conta criada. Se o Supabase pedir confirmação, verifique seu e-mail.");
+      if (authData.session) {
+        setAuthNotice("Conta criada e conectada.");
+      } else {
+        setAuthNotice("Conta criada. Verifique seu e-mail para confirmar o cadastro e depois volte para entrar.");
+        setAuthMode("signin");
+      }
     });
+
+    el.showSignIn.addEventListener("click", () => setAuthMode("signin"));
+    el.showSignUp.addEventListener("click", () => setAuthMode("signup"));
 
     el.signOut.addEventListener("click", async () => {
       if (!supabaseClient) return;
@@ -1116,7 +1295,7 @@
 
     async function initAuth() {
       if (!supabaseClient) {
-        setAuthStatus("Supabase não carregou. O site ainda funciona localmente neste navegador.", "error");
+        setAuthNotice("Supabase não carregou. Verifique sua internet e atualize a página.", "error");
         return;
       }
 
@@ -1375,6 +1554,7 @@
     });
 
     renderOptionInputs();
+    setAuthMode("signin");
     renderAuth();
     render();
     initAuth();
