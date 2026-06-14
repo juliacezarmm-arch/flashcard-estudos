@@ -721,7 +721,7 @@
         </div>
 
         <input id="authEmail" type="email" placeholder="Seu e-mail">
-        <input id="authPassword" type="password" placeholder="Senha">
+        <input id="authPassword" type="password" placeholder="Senha" minlength="6">
         <button id="signIn" type="button">Entrar</button>
         <button id="signUp" type="button" hidden>Criar conta</button>
         <button class="auth-link" id="showReset" type="button">Esqueci minha senha</button>
@@ -1031,6 +1031,10 @@
       return "https://juliacezarmm-arch.github.io/flashcard-estudos/";
     }
 
+    function isPasswordValid(password) {
+      return password.length >= 6;
+    }
+
     function setAuthMode(mode) {
       authMode = mode;
       const isSignUp = mode === "signup";
@@ -1294,6 +1298,10 @@
         setAuthNotice("Preencha e-mail e senha para entrar.", "error");
         return;
       }
+      if (!isPasswordValid(password)) {
+        setAuthNotice("A senha precisa ter pelo menos 6 caracteres.", "error");
+        return;
+      }
       const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
         setAuthNotice(authErrorMessage(error, "E-mail ou senha incorretos."), "error");
@@ -1309,6 +1317,10 @@
       const password = el.authPassword.value;
       if (!email || !password) {
         setAuthNotice("Preencha e-mail e senha para criar a conta.", "error");
+        return;
+      }
+      if (!isPasswordValid(password)) {
+        setAuthNotice("A senha precisa ter pelo menos 6 caracteres.", "error");
         return;
       }
       const { data: authData, error } = await supabaseClient.auth.signUp({
@@ -1362,6 +1374,10 @@
       const password = el.authPassword.value;
       if (!password) {
         setAuthNotice("Digite a nova senha.", "error");
+        return;
+      }
+      if (!isPasswordValid(password)) {
+        setAuthNotice("A nova senha precisa ter pelo menos 6 caracteres.", "error");
         return;
       }
       const { error } = await supabaseClient.auth.updateUser({ password });
