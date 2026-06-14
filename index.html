@@ -881,10 +881,31 @@
                 Pergunta
                 <textarea id="questionText" placeholder="Cole ou digite a pergunta do seu material aqui"></textarea>
               </label>
-              <div class="options-box">
+              <label>
+                Tipo de questão
+                <select id="questionType">
+                  <option value="multiple">Marcar alternativa</option>
+                  <option value="select-list">Lista com setinhas</option>
+                </select>
+              </label>
+              <label>
+                Imagem da questão (opcional)
+                <input id="questionImage" type="file" accept="image/*">
+              </label>
+              <div class="options-box" id="multipleBox">
                 <label>Alternativas</label>
                 <div id="optionsList"></div>
                 <button class="secondary" id="addOption" type="button">+ alternativa</button>
+              </div>
+              <div class="options-box" id="listBox" hidden>
+                <label>
+                  Opções da lista
+                  <input id="listChoices" placeholder="Ex: Direto, Indireto">
+                </label>
+                <label>
+                  Itens da lista
+                  <textarea id="listItems" placeholder="Um item por linha, assim:&#10;Elaboração de documentação = Direto&#10;Manutenção predial = Indireto"></textarea>
+                </label>
               </div>
               <label>
                 Resposta
@@ -1025,8 +1046,14 @@
       questionForm: document.querySelector("#questionForm"),
       questionSubject: document.querySelector("#questionSubject"),
       questionText: document.querySelector("#questionText"),
+      questionType: document.querySelector("#questionType"),
+      questionImage: document.querySelector("#questionImage"),
+      multipleBox: document.querySelector("#multipleBox"),
       optionsList: document.querySelector("#optionsList"),
       addOption: document.querySelector("#addOption"),
+      listBox: document.querySelector("#listBox"),
+      listChoices: document.querySelector("#listChoices"),
+      listItems: document.querySelector("#listItems"),
       answerText: document.querySelector("#answerText"),
       questionMessage: document.querySelector("#questionMessage"),
       difficulty: document.querySelector("#difficulty"),
@@ -1241,9 +1268,56 @@
         .filter(Boolean);
     }
 
+    function getListChoices() {
+      return el.listChoices.value.split(",").map(item => item.trim()).filter(Boolean);
+    }
+
+    function getListItems() {
+      return el.listItems.value.split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => {
+          const [label, answer] = line.split("=").map(part => (part || "").trim());
+          return label && answer ? { label, answer } : null;
+        })
+        .filter(Boolean);
+    }
+
     function clearOptionValues() {
       optionCount = 4;
       renderOptionInputs();
+      el.listChoices.value = "";
+      el.listItems.value = "";
+    }
+
+    function renderQuestionMedia(card) {
+      return card.image ? `<img src="${escapeHtml(card.image)}" alt="Imagem da questão" style="max-width:100%;border-radius:8px;margin-top:12px;">` : "";
+    }
+
+    function readImageFile(file) {
+      return new Promise((resolve, reject) => {
+        if (!file) {
+          resolve("");
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderListQuestion(card, interactive = false) {
+      if (!card.listItems?.length) return "";
+      const choices = card.listChoices || [];
+      return `<div class="card-options">${card.listItems.map((item, index) => `
+        <div class="card-option">
+          <span>${escapeHtml(item.label)}</span>
+          ${interactive
+            ? `<select data-list-answer="${index}"><option value="">Selecionar</option>${choices.map(choice => `<option value="${escapeHtml(choice)}">${escapeHtml(choice)}</option>`).join("")}</select>`
+            : `<span class="pill">${escapeHtml(item.answer)}</span>`}
+        </div>
+      `).join("")}</div>`;
     }
 
     function currentSubject() {
@@ -1316,7 +1390,8 @@
             <button class="ghost" data-delete="${index}">Excluir</button>
           </div>
           <strong>${escapeHtml(card.q)}</strong>
-          ${renderCardOptions(card.options)}
+          ${renderQuestionMedia(card)}
+          ${card.type === "select-list" ? renderListQuestion(card) : renderCardOptions(card.options)}
           <div class="answer">${escapeHtml(card.a)}</div>
         </article>
       `).join("");
@@ -1382,8 +1457,8 @@
       const card = cards[studyIndex];
       el.cardLabel.textContent = showingAnswer ? "Resposta" : "Pergunta";
       el.cardContent.innerHTML = showingAnswer
-        ? escapeHtml(card.a)
-        : `${escapeHtml(card.q)}${renderCardOptions(card.options)}`;
+        ? `${escapeHtml(card.a)}${card.type === "select-list" ? renderListQuestion(card) : ""}`
+        : `${escapeHtml(card.q)}${renderQuestionMedia(card)}${card.type === "select-list" ? renderListQuestion(card, true) : renderCardOptions(card.options)}`;
       el.progressBar.style.width = `${((studyIndex + 1) / cards.length) * 100}%`;
       el.studyHint.textContent = `Cartão ${studyIndex + 1} de ${cards.length}. Clique para ${showingAnswer ? "voltar à pergunta" : "ver a resposta"}.`;
       el.studyActions.classList.toggle("show", showingAnswer);
@@ -1408,10 +1483,16 @@
       if (!subject) return [];
       return subject.cards
         .map((card, index) => ({ ...card, originalIndex: index }))
-        .filter(card => (card.options || []).length >= 2);
+        .filter(card => card.type === "select-list" ? (card.listItems || []).length > 0 : (card.options || []).length >= 2);
     }
 
     function buildTestQuestion(card) {
+      if (card.type === "select-list") {
+        return {
+          ...card,
+          testChoices: shuffleList(card.listChoices || [])
+        };
+      }
       const originalLetter = answerLetter(card);
       const correctIndex = originalLetter ? originalLetter.charCodeAt(0) - 65 : -1;
       const options = (card.options || []).map((text, index) => ({
@@ -1479,7 +1560,18 @@
       el.testCounter.textContent = `Questão ${testState.index + 1} de ${testState.questions.length}`;
       el.testScore.textContent = `${testState.score} acerto${testState.score === 1 ? "" : "s"}`;
       el.testQuestion.textContent = question.q;
-      el.testOptions.innerHTML = question.testOptions.map((option, index) => {
+      if (question.type === "select-list") {
+        el.testOptions.innerHTML = (question.listItems || []).map((item, index) => `
+          <div class="card-option">
+            <span>${escapeHtml(item.label)}</span>
+            <select data-test-list="${index}" ${testState.answered ? "disabled" : ""}>
+              <option value="">Selecionar</option>
+              ${(question.testChoices || []).map(choice => `<option value="${escapeHtml(choice)}" ${testState.selected?.[index] === choice ? "selected" : ""}>${escapeHtml(choice)}</option>`).join("")}
+            </select>
+          </div>
+        `).join("");
+      } else {
+        el.testOptions.innerHTML = question.testOptions.map((option, index) => {
         const selected = testState.selected === index;
         const correctnessClass = testState.answered
           ? option.isCorrect
@@ -1497,9 +1589,14 @@
           </button>
         `;
       }).join("");
+      }
       el.testAnswer.classList.toggle("show", testState.answered);
-      el.testAnswer.textContent = testState.answered ? `Resposta: ${question.a}` : "";
-      el.confirmTestAnswer.disabled = testState.selected === null || testState.answered;
+      el.testAnswer.innerHTML = testState.answered
+        ? question.type === "select-list"
+          ? `<strong>Gabarito:</strong>${renderListQuestion(question)}`
+          : `Resposta: ${escapeHtml(question.a)}`
+        : "";
+      el.confirmTestAnswer.disabled = (testState.selected === null || testState.selected === undefined) || testState.answered;
       el.nextTestQuestion.disabled = !testState.answered;
       el.testHint.textContent = testState.answered
         ? "Veja o gabarito e toque em Próxima."
@@ -1697,21 +1794,56 @@
       });
     });
 
-    el.questionForm.addEventListener("submit", event => {
+    el.questionType.addEventListener("change", () => {
+      const isList = el.questionType.value === "select-list";
+      el.multipleBox.hidden = isList;
+      el.listBox.hidden = !isList;
+      el.answerText.placeholder = isList
+        ? "Resumo/gabarito geral. Ex: 1 Direto, 2 Indireto..."
+        : "Escreva a resposta correta ou explicação";
+    });
+
+    el.questionForm.addEventListener("submit", async event => {
       event.preventDefault();
       const subjectName = el.questionSubject.value.trim();
       const q = el.questionText.value.trim();
       const a = el.answerText.value.trim();
+      const type = el.questionType.value;
       const options = getOptionValues();
+      const listChoices = getListChoices();
+      const listItems = getListItems();
       if (!subjectName || !q || !a) {
         setMessage(el.questionMessage, "Preencha disciplina/material, pergunta e resposta.", "error");
         return;
       }
+      if (type === "select-list" && (!listChoices.length || !listItems.length)) {
+        setMessage(el.questionMessage, "Preencha as opções da lista e os itens no formato: texto = resposta.", "error");
+        return;
+      }
       const subject = findOrCreateSubject(subjectName);
       if (!subject) return;
-      subject.cards.push({ q, a, options, difficulty: el.difficulty.value, status: "new", reviews: 0 });
+      let image = "";
+      try {
+        image = await readImageFile(el.questionImage.files[0]);
+      } catch (error) {
+        setMessage(el.questionMessage, "Não consegui carregar a imagem. Tente outro arquivo.", "error");
+        return;
+      }
+      subject.cards.push({
+        q,
+        a,
+        type,
+        image,
+        options: type === "multiple" ? options : [],
+        listChoices: type === "select-list" ? listChoices : [],
+        listItems: type === "select-list" ? listItems : [],
+        difficulty: el.difficulty.value,
+        status: "new",
+        reviews: 0
+      });
       el.questionText.value = "";
       el.answerText.value = "";
+      el.questionImage.value = "";
       clearOptionValues();
       setMessage(el.questionMessage, "Questão salva. Toque em Estudar para revisar os cartões.");
       showingAnswer = false;
@@ -1744,12 +1876,23 @@
       renderTest();
     });
 
+    el.testOptions.addEventListener("change", event => {
+      const select = event.target.closest("[data-test-list]");
+      if (!select || testState.answered) return;
+      testState.selected = testState.selected && typeof testState.selected === "object" ? testState.selected : {};
+      testState.selected[select.dataset.testList] = select.value;
+      renderTest();
+    });
+
     el.confirmTestAnswer.addEventListener("click", () => {
       if (!testState.active || testState.selected === null || testState.answered) return;
       const question = testState.questions[testState.index];
-      const selectedOption = question.testOptions[testState.selected];
+      const selectedOption = question.type === "select-list" ? null : question.testOptions[testState.selected];
       testState.answered = true;
-      if (selectedOption?.isCorrect) {
+      const isCorrect = question.type === "select-list"
+        ? (question.listItems || []).every((item, index) => testState.selected?.[index] === item.answer)
+        : selectedOption?.isCorrect;
+      if (isCorrect) {
         testState.score += 1;
         const subject = currentSubject();
         if (subject && Number.isInteger(question.originalIndex)) {
@@ -1876,6 +2019,12 @@
         const card = makeCard(item.pergunta || item.question || item.q, item.resposta || item.answer || item.a);
         if (card) card.subject = item.disciplina || item.materia || item.material || item.subject;
         if (card) card.options = item.alternativas || item.options || item.opcoes || item.opções || [];
+        if (card) {
+          card.type = item.tipo || item.type || (item.itens || item.listItems ? "select-list" : "multiple");
+          card.image = item.imagem || item.image || "";
+          card.listChoices = item.opcoesLista || item.listChoices || item.choices || [];
+          card.listItems = item.itens || item.listItems || [];
+        }
         return card;
       }).filter(Boolean);
     }
