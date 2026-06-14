@@ -245,7 +245,7 @@
       justify-content: space-between;
       gap: 10px;
       border-radius: 8px;
-      padding: 10px;
+      padding: 8px 10px;
       color: var(--text);
       background: #f2f5fb;
       cursor: pointer;
@@ -308,9 +308,9 @@
     main {
       width: min(100%, 1120px);
       margin: 0 auto;
-      padding: 18px;
+      padding: 14px;
       display: grid;
-      gap: 12px;
+      gap: 9px;
       align-content: start;
     }
 
@@ -510,14 +510,14 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
-      padding: 18px;
+      padding: 14px;
       display: grid;
-      gap: 12px;
+      gap: 9px;
     }
 
     .test-question {
-      font-size: 20px;
-      line-height: 1.35;
+      font-size: 18px;
+      line-height: 1.3;
       font-weight: 750;
       white-space: pre-wrap;
     }
@@ -534,7 +534,7 @@
       align-items: start;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 10px;
+      padding: 8px 10px;
       color: var(--text);
       background: #f9fbff;
       text-align: left;
@@ -563,7 +563,7 @@
     .test-answer {
       display: none;
       border-radius: 8px;
-      padding: 12px;
+      padding: 10px;
       color: var(--muted);
       background: #f2f5fb;
       line-height: 1.45;
@@ -1032,6 +1032,23 @@
       display: flex;
     }
 
+    #testRateActions.show {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    #testRateActions button {
+      min-height: 52px;
+      padding: 8px 10px;
+    }
+
+    @media (max-width: 560px) {
+      #testRateActions.show {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
     button.success { background: var(--ok); }
     button.warning { background: var(--warn); }
     .study-actions button.selected {
@@ -1391,7 +1408,7 @@
             <p class="hint" id="testIntro">Comece um teste com até 14 questões sem repetição. As alternativas são embaralhadas a cada novo teste.</p>
             <div class="row">
               <button id="startTest" type="button">Começar teste</button>
-              <button class="secondary" id="restartTest" type="button">Novo teste</button>
+              <button class="secondary" id="restartTest" type="button" hidden>Novo teste</button>
             </div>
           </div>
 
@@ -1409,7 +1426,7 @@
               <button class="success" data-test-rate="mastered">Bom<br><small>ok</small></button>
               <button class="secondary" data-test-rate="mastered">Fácil<br><small>dominado</small></button>
             </div>
-            <div class="row">
+            <div class="row test-manual-actions" hidden>
               <button id="confirmTestAnswer" type="button">Confirmar resposta</button>
               <button class="secondary" id="nextTestQuestion" type="button">Próxima</button>
             </div>
@@ -2365,7 +2382,7 @@
         el.testQuestion.textContent = `Resultado: ${testState.score} acerto${testState.score === 1 ? "" : "s"} em ${testState.questions.length} questões.`;
         el.testOptions.innerHTML = "";
         el.testAnswer.classList.add("show");
-        el.testAnswer.textContent = `Tempo total: ${formatDuration(testDurationMs())}. Clique em Novo teste para sortear outras questões e embaralhar as alternativas novamente.`;
+        el.testAnswer.textContent = `Tempo total: ${formatDuration(testDurationMs())}. Clique em Começar teste para sortear outras questões e embaralhar as alternativas novamente.`;
         el.testRateActions.classList.remove("show");
         el.confirmTestAnswer.disabled = true;
         el.nextTestQuestion.disabled = true;
@@ -2414,8 +2431,8 @@
       el.confirmTestAnswer.disabled = !isTestSelectionComplete(question) || testState.answered;
       el.nextTestQuestion.disabled = !testState.answered;
       el.testHint.textContent = testState.answered
-        ? "Veja o gabarito, marque De novo/Difícil/Bom/Fácil e toque em Próxima."
-        : "Escolha uma alternativa e confirme.";
+        ? "Veja o gabarito e marque De novo/Difícil/Bom/Fácil para continuar."
+        : "Escolha uma alternativa para responder.";
     }
 
     function isTestSelectionComplete(question) {
@@ -2930,18 +2947,23 @@
       const button = event.target.closest("[data-test-option]");
       if (!button || testState.answered) return;
       testState.selected = Number(button.dataset.testOption);
-      renderTest();
+      confirmCurrentTestAnswer();
     });
 
     el.testOptions.addEventListener("change", event => {
       const select = event.target.closest("[data-test-list]");
       if (!select || testState.answered) return;
+      const question = testState.questions[testState.index];
       testState.selected = testState.selected && typeof testState.selected === "object" ? testState.selected : {};
       testState.selected[select.dataset.testList] = select.value;
-      renderTest();
+      if (isTestSelectionComplete(question)) {
+        confirmCurrentTestAnswer();
+      } else {
+        renderTest();
+      }
     });
 
-    el.confirmTestAnswer.addEventListener("click", () => {
+    function confirmCurrentTestAnswer() {
       if (!testState.active || testState.answered) return;
       const question = testState.questions[testState.index];
       if (!isTestSelectionComplete(question)) return;
@@ -2957,19 +2979,12 @@
       renderTest();
       renderProgress(currentSubject() || { cards: [] });
       renderQuestions(currentSubject() || { cards: [] });
-    });
+    }
+
+    el.confirmTestAnswer.addEventListener("click", confirmCurrentTestAnswer);
 
 
-    el.testRateActions.addEventListener("click", event => {
-      const button = event.target.closest("[data-test-rate]");
-      if (!button || !testState.active || !testState.answered) return;
-      rateCurrentTestCard(button.dataset.testRate);
-      save();
-      renderProgress(currentSubject() || { cards: [] });
-      renderQuestions(currentSubject() || { cards: [] });
-      el.testRateActions.querySelectorAll("button").forEach(item => item.classList.toggle("selected", item === button));
-    });
-    el.nextTestQuestion.addEventListener("click", () => {
+    function goToNextTestQuestion() {
       if (!testState.active || !testState.answered) return;
       const question = testState.questions[testState.index];
       if (question && !question.rated) {
@@ -2981,8 +2996,19 @@
       testState.index += 1;
       testState.selected = null;
       testState.answered = false;
+      save();
+      renderProgress(currentSubject() || { cards: [] });
+      renderQuestions(currentSubject() || { cards: [] });
       renderTest();
+    }
+
+    el.testRateActions.addEventListener("click", event => {
+      const button = event.target.closest("[data-test-rate]");
+      if (!button || !testState.active || !testState.answered) return;
+      rateCurrentTestCard(button.dataset.testRate);
+      goToNextTestQuestion();
     });
+    el.nextTestQuestion.addEventListener("click", goToNextTestQuestion);
 
     el.flipCard.addEventListener("click", flip);
 
@@ -3250,3 +3276,5 @@
   </script>
 </body>
 </html>
+
+
