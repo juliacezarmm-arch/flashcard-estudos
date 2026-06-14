@@ -1392,10 +1392,10 @@
             <button class="ghost" id="shuffleCards">Misturar</button>
           </div>
           <div class="study-actions" id="studyActions">
-            <button class="danger" data-rate="new">De novo<br><small>2 min</small></button>
-            <button class="warning" data-rate="learning">Difícil<br><small>hoje</small></button>
-            <button class="success" data-rate="mastered">Bom<br><small>próximo teste</small></button>
-            <button class="secondary" data-rate="mastered">Fácil<br><small>mais tarde</small></button>
+            <button class="danger" data-rate="again">De novo<br><small>2 min</small></button>
+            <button class="warning" data-rate="hard">Difícil<br><small>hoje</small></button>
+            <button class="success" data-rate="good">Bom<br><small>próximo teste</small></button>
+            <button class="secondary" data-rate="easy">Fácil<br><small>mais tarde</small></button>
           </div>
           <p class="hint" id="studyHint">Clique no cartão para ver a resposta.</p>
         </div>
@@ -1421,10 +1421,10 @@
             <div class="test-options" id="testOptions"></div>
             <div class="test-answer" id="testAnswer"></div>
             <div class="study-actions" id="testRateActions">
-              <button class="danger" data-test-rate="new">De novo<br><small>2 min</small></button>
-              <button class="warning" data-test-rate="learning">Difícil<br><small>repetir</small></button>
-              <button class="success" data-test-rate="mastered">Bom<br><small>ok</small></button>
-              <button class="secondary" data-test-rate="mastered">Fácil<br><small>dominado</small></button>
+              <button class="danger" data-test-rate="again">De novo<br><small>2 min</small></button>
+              <button class="warning" data-test-rate="hard">Difícil<br><small>repetir</small></button>
+              <button class="success" data-test-rate="good">Bom<br><small>ok</small></button>
+              <button class="secondary" data-test-rate="easy">Fácil<br><small>dominado</small></button>
             </div>
             <div class="row test-manual-actions" hidden>
               <button id="confirmTestAnswer" type="button">Confirmar resposta</button>
@@ -1466,6 +1466,7 @@
       subjects: []
     };
 
+    const MASTERY_TARGET = 4;
     let data = load();
     let studyIndex = 0;
     let showingAnswer = false;
@@ -1620,6 +1621,8 @@
       card.difficulty = card.difficulty || "normal";
       card.status = card.status || "new";
       card.reviews = card.reviews || 0;
+      card.masteryCount = Number.isFinite(card.masteryCount) ? card.masteryCount : (card.status === "mastered" ? Math.min(card.reviews || 0, MASTERY_TARGET) : 0);
+      if (card.status === "mastered" && card.masteryCount < MASTERY_TARGET) card.status = "learning";
       if (card.type === "multiple" && card.options.length < 2) {
         const extracted = extractOptionsFromQuestion(card.q || "");
         if (extracted.options.length >= 2) {
@@ -2281,9 +2284,13 @@
         return;
       }
 
+      const pendingCards = cards.filter(card => card.status !== "mastered");
+      const masteredCards = cards.filter(card => card.status === "mastered");
+      const selectedCards = [...shuffleList(pendingCards), ...shuffleList(masteredCards)].slice(0, 14);
+
       testState = {
         active: true,
-        questions: shuffleList(cards).slice(0, 14).map(buildTestQuestion),
+        questions: selectedCards.map(buildTestQuestion),
         index: 0,
         selected: null,
         answered: false,
@@ -2310,14 +2317,30 @@
       return (testState.finishedAt || Date.now()) - testState.startedAt;
     }
 
-    function rateCurrentTestCard(status) {
+    function applyReviewRating(card, rating) {
+      const normalizedRating = { new: "again", learning: "hard", mastered: "good" }[rating] || rating;
+      card.masteryCount = Number.isFinite(card.masteryCount) ? card.masteryCount : 0;
+      if (normalizedRating === "again" || normalizedRating === "hard") {
+        card.masteryCount = 0;
+        card.status = "learning";
+        return;
+      }
+      if (normalizedRating === "good" || normalizedRating === "easy") {
+        card.masteryCount = Math.min(MASTERY_TARGET, card.masteryCount + 1);
+        card.status = card.masteryCount >= MASTERY_TARGET ? "mastered" : "learning";
+        return;
+      }
+      card.status = normalizedRating || "learning";
+    }
+
+    function rateCurrentTestCard(rating) {
       const question = testState.questions[testState.index];
       const subject = currentSubject();
       if (!question || !subject || !Number.isInteger(question.originalIndex)) return;
       const card = subject.cards[question.originalIndex];
       if (!card) return;
-      card.status = status;
       if (!question.rated) card.reviews = (card.reviews || 0) + 1;
+      applyReviewRating(card, rating);
       card.lastReviewedAt = new Date().toISOString();
       question.rated = true;
     }
@@ -2813,6 +2836,7 @@
         difficulty: "normal",
         status: oldCard?.status || "new",
         reviews: oldCard?.reviews || 0,
+        masteryCount: oldCard?.masteryCount || 0,
         createdAt: oldCard?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -2990,7 +3014,7 @@
       if (question && !question.rated) {
         const autoStatus = question.type === "select-list"
           ? "learning"
-          : (question.testOptions?.[testState.selected]?.isCorrect ? "mastered" : "learning");
+          : (question.testOptions?.[testState.selected]?.isCorrect ? "good" : "hard");
         rateCurrentTestCard(autoStatus);
       }
       testState.index += 1;
@@ -3027,8 +3051,9 @@
       const cards = activeStudyCards(subject);
       if (!cards.length) return;
       const item = cards[Math.min(studyIndex, cards.length - 1)];
-      subject.cards[item.index].status = button.dataset.rate;
+      applyReviewRating(subject.cards[item.index], button.dataset.rate);
       subject.cards[item.index].reviews = (subject.cards[item.index].reviews || 0) + 1;
+      subject.cards[item.index].lastReviewedAt = new Date().toISOString();
       studyIndex = (studyIndex + 1) % cards.length;
       showingAnswer = false;
       render();
@@ -3156,6 +3181,7 @@
         difficulty: "normal",
         status: "new",
         reviews: 0,
+        masteryCount: 0,
         createdAt: new Date().toISOString()
       };
     }
@@ -3276,5 +3302,10 @@
   </script>
 </body>
 </html>
+
+
+
+
+
 
 
