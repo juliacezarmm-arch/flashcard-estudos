@@ -835,9 +835,9 @@
         </div>
         <div class="tabs">
           <button class="tab active" data-view="manage">Questões</button>
+          <button class="tab" data-view="add">Adicionar</button>
           <button class="tab" data-view="study">Estudar</button>
           <button class="tab" data-view="test">Teste</button>
-          <button class="tab" data-view="import">Importar</button>
         </div>
       </header>
 
@@ -869,14 +869,29 @@
           <div class="legend" id="progressLegend"></div>
         </div>
 
+        <div class="card">
+          <h3>Questões da coleção</h3>
+          <div class="list" id="questionList"></div>
+        </div>
+      </section>
+
+      <section class="view" id="add">
         <div class="workspace">
+          <div class="card">
+            <h3>Criar coleção</h3>
+            <div class="form">
+              <label>
+                Nome da coleção
+                <input id="collectionName" placeholder="Ex: Arquitetura de Computadores">
+              </label>
+              <button id="createCollection" type="button">Criar coleção</button>
+              <p class="notice" id="collectionMessage"></p>
+            </div>
+          </div>
+
           <div class="card">
             <h3>Adicionar questão</h3>
             <form class="form" id="questionForm">
-              <label>
-                Disciplina ou material
-                <input id="questionSubject" placeholder="Nome da disciplina, curso ou material" required>
-              </label>
               <label>
                 Pergunta
                 <textarea id="questionText" placeholder="Cole ou digite a pergunta do seu material aqui"></textarea>
@@ -925,8 +940,17 @@
           </div>
 
           <div class="card">
-            <h3>Questões da coleção</h3>
-            <div class="list" id="questionList"></div>
+            <h3>Importar questionários</h3>
+            <div class="import-box">
+              <p class="hint">Importe para a coleção selecionada. Separe pergunta e resposta com uma linha contendo apenas <strong>---</strong>.</p>
+              <input id="importFile" type="file" accept=".txt,.csv,.json,text/plain,text/csv,application/json">
+              <textarea id="bulkText" placeholder="Pergunta 1&#10;---&#10;Resposta 1&#10;&#10;Pergunta 2&#10;---&#10;Resposta 2"></textarea>
+              <div class="row">
+                <button id="bulkImport" type="button">Importar questões</button>
+                <button class="secondary" id="loadExample" type="button">Usar exemplo</button>
+              </div>
+              <p class="notice" id="importMessage"></p>
+            </div>
           </div>
         </div>
       </section>
@@ -983,20 +1007,6 @@
         </div>
       </section>
 
-      <section class="view" id="import">
-        <div class="card import-box">
-          <h3>Importar questionários</h3>
-          <p class="hint">Cole perguntas de listas, simulados, PDFs ou anotações. Separe pergunta e resposta com uma linha contendo apenas <strong>---</strong>.</p>
-          <input id="bulkSubject" placeholder="Nome da disciplina, curso ou material destes cartões">
-          <input id="importFile" type="file" accept=".txt,.csv,.json,text/plain,text/csv,application/json">
-          <textarea id="bulkText" placeholder="Pergunta 1&#10;---&#10;Resposta 1&#10;&#10;Pergunta 2&#10;---&#10;Resposta 2"></textarea>
-          <div class="row">
-            <button id="bulkImport">Importar questões</button>
-            <button class="secondary" id="loadExample">Usar exemplo</button>
-          </div>
-          <p class="notice" id="importMessage"></p>
-        </div>
-      </section>
     </main>
   </div>
 
@@ -1043,8 +1053,10 @@
       subjects: document.querySelector("#subjects"),
       subjectTitle: document.querySelector("#subjectTitle"),
       subjectSummary: document.querySelector("#subjectSummary"),
+      collectionName: document.querySelector("#collectionName"),
+      createCollection: document.querySelector("#createCollection"),
+      collectionMessage: document.querySelector("#collectionMessage"),
       questionForm: document.querySelector("#questionForm"),
-      questionSubject: document.querySelector("#questionSubject"),
       questionText: document.querySelector("#questionText"),
       questionType: document.querySelector("#questionType"),
       questionImage: document.querySelector("#questionImage"),
@@ -1086,7 +1098,6 @@
       confirmTestAnswer: document.querySelector("#confirmTestAnswer"),
       nextTestQuestion: document.querySelector("#nextTestQuestion"),
       testHint: document.querySelector("#testHint"),
-      bulkSubject: document.querySelector("#bulkSubject"),
       importFile: document.querySelector("#importFile"),
       bulkText: document.querySelector("#bulkText"),
       bulkImport: document.querySelector("#bulkImport"),
@@ -1348,9 +1359,9 @@
     function render() {
       const subject = currentSubject();
       if (!subject) {
-        el.subjects.innerHTML = `<div class="empty">As coleções aparecem aqui quando você salvar questões.</div>`;
-        el.subjectTitle.textContent = "Adicionar flashcards";
-        el.subjectSummary.textContent = "Informe a disciplina ou material junto com a questão.";
+        el.subjects.innerHTML = `<div class="empty">Crie uma coleção na aba Adicionar.</div>`;
+        el.subjectTitle.textContent = "Questões";
+        el.subjectSummary.textContent = "Crie uma coleção antes de adicionar ou importar flashcards.";
         el.questionList.innerHTML = `<div class="empty">Nenhuma questão cadastrada ainda.</div>`;
         renderProgress({ cards: [] });
         renderStudy();
@@ -1625,11 +1636,6 @@
       const subject = event.target.closest(".subject");
       if (!subject) return;
       data.selected = subject.dataset.id;
-      const selectedSubject = currentSubject();
-      if (selectedSubject) {
-        el.questionSubject.value = selectedSubject.name;
-        el.bulkSubject.value = selectedSubject.name;
-      }
       studyIndex = 0;
       showingAnswer = false;
       testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0 };
@@ -1803,25 +1809,42 @@
         : "Escreva a resposta correta ou explicação";
     });
 
+    el.createCollection.addEventListener("click", () => {
+      const name = el.collectionName.value.trim();
+      if (!name) {
+        setMessage(el.collectionMessage, "Digite o nome da coleção.", "error");
+        return;
+      }
+      const subject = findOrCreateSubject(name);
+      el.collectionName.value = "";
+      studyIndex = 0;
+      showingAnswer = false;
+      testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0 };
+      setMessage(el.collectionMessage, `Coleção "${subject.name}" criada e selecionada.`);
+      render();
+    });
+
     el.questionForm.addEventListener("submit", async event => {
       event.preventDefault();
-      const subjectName = el.questionSubject.value.trim();
+      const subject = currentSubject();
       const q = el.questionText.value.trim();
       const a = el.answerText.value.trim();
       const type = el.questionType.value;
       const options = getOptionValues();
       const listChoices = getListChoices();
       const listItems = getListItems();
-      if (!subjectName || !q || !a) {
-        setMessage(el.questionMessage, "Preencha disciplina/material, pergunta e resposta.", "error");
+      if (!subject) {
+        setMessage(el.questionMessage, "Crie ou selecione uma coleção antes de salvar a questão.", "error");
+        return;
+      }
+      if (!q || !a) {
+        setMessage(el.questionMessage, "Preencha pergunta e resposta.", "error");
         return;
       }
       if (type === "select-list" && (!listChoices.length || !listItems.length)) {
         setMessage(el.questionMessage, "Preencha as opções da lista e os itens no formato: texto = resposta.", "error");
         return;
       }
-      const subject = findOrCreateSubject(subjectName);
-      if (!subject) return;
       let image = "";
       try {
         image = await readImageFile(el.questionImage.files[0]);
@@ -2037,8 +2060,13 @@
     }
 
     function importCards(cards, fallbackSubject) {
+      const selectedSubject = currentSubject();
+      if (!selectedSubject && !fallbackSubject) {
+        setMessage(el.importMessage, "Crie ou selecione uma coleção antes de importar.", "error");
+        return 0;
+      }
       const grouped = cards.reduce((groups, card) => {
-        const subjectName = String(card.subject || fallbackSubject || "").trim();
+        const subjectName = String(card.subject || fallbackSubject || selectedSubject?.name || "").trim();
         if (!subjectName) return groups;
         if (!groups[subjectName]) groups[subjectName] = [];
         groups[subjectName].push(card);
@@ -2048,7 +2076,7 @@
 
       const subjectNames = Object.keys(grouped);
       if (!subjectNames.length) {
-        setMessage(el.importMessage, "Informe a disciplina/material antes de importar.", "error");
+        setMessage(el.importMessage, "Crie ou selecione uma coleção antes de importar.", "error");
         return 0;
       }
 
@@ -2062,13 +2090,12 @@
     }
 
     el.bulkImport.addEventListener("click", () => {
-      const subjectName = el.bulkSubject.value.trim();
       const imported = parseTextCards(el.bulkText.value);
       if (!imported.length) {
         setMessage(el.importMessage, "Cole questões no formato pergunta, linha ---, resposta.", "error");
         return;
       }
-      const total = importCards(imported, subjectName);
+      const total = importCards(imported, currentSubject()?.name || "");
       if (!total) return;
       el.bulkText.value = "";
       setMessage(el.importMessage, `${total} questão${total === 1 ? "" : "ões"} importada${total === 1 ? "" : "s"}.`);
@@ -2087,7 +2114,7 @@
           : name.endsWith(".csv")
             ? parseCsvCards(text)
             : parseTextCards(text);
-        const total = importCards(cards, el.bulkSubject.value.trim());
+        const total = importCards(cards, currentSubject()?.name || "");
         if (!total) {
           setMessage(el.importMessage, "Não encontrei questões válidas nesse arquivo.", "error");
           return;
