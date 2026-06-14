@@ -372,6 +372,45 @@
       align-items: start;
     }
 
+    .add-panel {
+      display: grid;
+      gap: 12px;
+    }
+
+    .folder-create {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .add-mode {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 4px;
+      border-radius: 8px;
+      background: #e9edf7;
+    }
+
+    .add-mode button {
+      color: var(--text);
+      background: transparent;
+    }
+
+    .add-mode button.active {
+      color: #fff;
+      background: var(--brand);
+    }
+
+    .add-section {
+      display: none;
+    }
+
+    .add-section.active {
+      display: grid;
+    }
+
     .card {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -436,7 +475,7 @@
 
     .card-options {
       width: min(100%, 680px);
-      margin: 14px auto 0;
+      margin: 14px 0 0;
       display: grid;
       gap: 8px;
       text-align: left;
@@ -633,9 +672,9 @@
       background: var(--panel);
       padding: 20px;
       display: grid;
-      place-items: center;
-      text-align: center;
-      cursor: pointer;
+      align-items: start;
+      text-align: left;
+      cursor: default;
     }
 
     .flashcard .label {
@@ -648,9 +687,32 @@
 
     .flashcard .content {
       margin-top: 10px;
-      font-size: 22px;
+      font-size: 20px;
       line-height: 1.3;
       white-space: pre-wrap;
+    }
+
+    .study-question {
+      display: grid;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .study-answer {
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+      color: var(--text);
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    .study-answer strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ok);
+      font-size: 14px;
+      text-transform: uppercase;
     }
 
     .progress {
@@ -1077,72 +1139,86 @@
                   <option value="">Sem pasta</option>
                 </select>
               </label>
+              <div class="folder-create">
+                <label>
+                  Nova pasta
+                  <input id="newFolderName" placeholder="Ex: 2 Bimestre">
+                </label>
+                <button class="secondary" id="createFolder" type="button">Criar pasta</button>
+              </div>
               <button id="createCollection" type="button">Criar coleção</button>
               <p class="notice" id="collectionMessage"></p>
             </div>
           </div>
 
-          <div class="card">
-            <h3>Adicionar questão</h3>
-            <form class="form" id="questionForm">
-              <label>
-                Pergunta
-                <textarea id="questionText" placeholder="Cole ou digite a pergunta do seu material aqui"></textarea>
-              </label>
-              <label>
-                Tipo de questão
-                <select id="questionType">
-                  <option value="multiple">Marcar alternativa</option>
-                  <option value="select-list">Lista com setinhas</option>
-                </select>
-              </label>
-              <label>
-                Imagem da questão (opcional)
-                <input id="questionImage" type="file" accept="image/*">
-              </label>
-              <div class="options-box" id="multipleBox">
-                <label>Alternativas</label>
-                <div id="optionsList"></div>
-                <button class="secondary" id="addOption" type="button">+ alternativa</button>
-              </div>
-              <div class="options-box" id="listBox" hidden>
-                <label>
-                  Opções da lista
-                  <input id="listChoices" placeholder="Ex: Direto, Indireto">
-                </label>
-                <label>
-                  Itens da lista
-                  <textarea id="listItems" placeholder="Um item por linha, assim:&#10;Elaboração de documentação = Direto&#10;Manutenção predial = Indireto"></textarea>
-                </label>
-              </div>
-              <label>
-                Resposta
-                <textarea id="answerText" placeholder="Escreva a resposta correta ou explicação"></textarea>
-              </label>
-              <label>
-                Dificuldade
-                <select id="difficulty">
-                  <option value="normal">Normal</option>
-                  <option value="facil">Fácil</option>
-                  <option value="dificil">Difícil</option>
-                </select>
-              </label>
-              <button type="submit">Salvar questão</button>
-              <p class="notice" id="questionMessage"></p>
-            </form>
-          </div>
+          <div class="card add-panel">
+            <div class="add-mode">
+              <button class="active" id="showAddQuestion" type="button">Adicionar questão</button>
+              <button id="showImportQuestion" type="button">Importar questões</button>
+            </div>
 
-          <div class="card">
-            <h3>Importar questionários</h3>
-            <div class="import-box">
-              <p class="hint">Importe para a coleção selecionada. Separe pergunta e resposta com uma linha contendo apenas <strong>---</strong>.</p>
-              <input id="importFile" type="file" accept=".txt,.csv,.json,text/plain,text/csv,application/json">
-              <textarea id="bulkText" placeholder="Pergunta 1&#10;---&#10;Resposta 1&#10;&#10;Pergunta 2&#10;---&#10;Resposta 2"></textarea>
-              <div class="row">
-                <button id="bulkImport" type="button">Importar questões</button>
-                <button class="secondary" id="loadExample" type="button">Usar exemplo</button>
+            <div class="add-section active" id="addQuestionSection">
+              <h3>Adicionar questão</h3>
+              <form class="form" id="questionForm">
+                <label>
+                  Pergunta
+                  <textarea id="questionText" placeholder="Cole ou digite a pergunta do seu material aqui"></textarea>
+                </label>
+                <label>
+                  Tipo de questão
+                  <select id="questionType">
+                    <option value="multiple">Marcar alternativa</option>
+                    <option value="select-list">Lista com setinhas</option>
+                  </select>
+                </label>
+                <label>
+                  Imagem da questão (opcional)
+                  <input id="questionImage" type="file" accept="image/*">
+                </label>
+                <div class="options-box" id="multipleBox">
+                  <label>Alternativas</label>
+                  <div id="optionsList"></div>
+                  <button class="secondary" id="addOption" type="button">+ alternativa</button>
+                </div>
+                <div class="options-box" id="listBox" hidden>
+                  <label>
+                    Opções da lista
+                    <input id="listChoices" placeholder="Ex: Direto, Indireto">
+                  </label>
+                  <label>
+                    Itens da lista
+                    <textarea id="listItems" placeholder="Um item por linha, assim:&#10;Elaboração de documentação = Direto&#10;Manutenção predial = Indireto"></textarea>
+                  </label>
+                </div>
+                <label>
+                  Resposta
+                  <textarea id="answerText" placeholder="Escreva a resposta correta ou explicação"></textarea>
+                </label>
+                <label>
+                  Dificuldade
+                  <select id="difficulty">
+                    <option value="normal">Normal</option>
+                    <option value="facil">Fácil</option>
+                    <option value="dificil">Difícil</option>
+                  </select>
+                </label>
+                <button type="submit">Salvar questão</button>
+                <p class="notice" id="questionMessage"></p>
+              </form>
+            </div>
+
+            <div class="add-section" id="importQuestionSection">
+              <h3>Importar questionários</h3>
+              <div class="import-box">
+                <p class="hint">Importe para a coleção selecionada. Você pode escolher um arquivo .json, .csv ou .txt, ou colar o questionário no campo abaixo.</p>
+                <input id="importFile" type="file" accept=".txt,.csv,.json,text/plain,text/csv,application/json">
+                <textarea id="bulkText" placeholder="Pergunta 1&#10;---&#10;Resposta 1&#10;&#10;Pergunta 2&#10;---&#10;Resposta 2"></textarea>
+                <div class="row">
+                  <button id="bulkImport" type="button">Importar questões</button>
+                  <button class="secondary" id="loadExample" type="button">Usar exemplo</button>
+                </div>
+                <p class="notice" id="importMessage"></p>
               </div>
-              <p class="notice" id="importMessage"></p>
             </div>
           </div>
         </div>
@@ -1159,7 +1235,7 @@
           </div>
           <div class="row">
             <button class="secondary" id="prevCard">Anterior</button>
-            <button id="flipCard">Virar cartão</button>
+            <button id="flipCard">Conferir resposta</button>
             <button class="secondary" id="nextCard">Próxima</button>
             <button class="ghost" id="shuffleCards">Misturar</button>
           </div>
@@ -1252,8 +1328,14 @@
       subjectSummary: document.querySelector("#subjectSummary"),
       collectionName: document.querySelector("#collectionName"),
       collectionFolder: document.querySelector("#collectionFolder"),
+      newFolderName: document.querySelector("#newFolderName"),
+      createFolder: document.querySelector("#createFolder"),
       createCollection: document.querySelector("#createCollection"),
       collectionMessage: document.querySelector("#collectionMessage"),
+      showAddQuestion: document.querySelector("#showAddQuestion"),
+      showImportQuestion: document.querySelector("#showImportQuestion"),
+      addQuestionSection: document.querySelector("#addQuestionSection"),
+      importQuestionSection: document.querySelector("#importQuestionSection"),
       questionForm: document.querySelector("#questionForm"),
       questionText: document.querySelector("#questionText"),
       questionType: document.querySelector("#questionType"),
@@ -1469,6 +1551,14 @@
     function showView(viewId) {
       el.tabs.forEach(item => item.classList.toggle("active", item.dataset.view === viewId));
       el.views.forEach(view => view.classList.toggle("active", view.id === viewId));
+    }
+
+    function showAddMode(mode) {
+      const isImport = mode === "import";
+      el.showAddQuestion.classList.toggle("active", !isImport);
+      el.showImportQuestion.classList.toggle("active", isImport);
+      el.addQuestionSection.classList.toggle("active", !isImport);
+      el.importQuestionSection.classList.toggle("active", isImport);
     }
 
     function optionLetter(index) {
@@ -1731,6 +1821,7 @@
         el.cardLabel.textContent = "Sem coleção";
         el.cardContent.textContent = "Crie uma coleção para começar a adicionar flashcards.";
         el.progressBar.style.width = "0%";
+        el.flipCard.textContent = "Conferir resposta";
         el.studyHint.textContent = "Depois de criar uma coleção, seus cartões aparecerão aqui.";
         el.studyActions.classList.remove("show");
         return;
@@ -1740,19 +1831,29 @@
         el.cardLabel.textContent = "Sem questões";
         el.cardContent.textContent = "Adicione ou importe questões para começar a estudar.";
         el.progressBar.style.width = "0%";
-        el.studyHint.textContent = "Quando houver questões, elas aparecerão aqui em formato de flashcard.";
+        el.flipCard.textContent = "Conferir resposta";
+        el.studyHint.textContent = "Quando houver questões, elas aparecerão aqui.";
         el.studyActions.classList.remove("show");
         return;
       }
 
       studyIndex = Math.min(studyIndex, cards.length - 1);
       const card = cards[studyIndex];
-      el.cardLabel.textContent = showingAnswer ? "Resposta" : "Pergunta";
-      el.cardContent.innerHTML = showingAnswer
-        ? `${escapeHtml(card.a)}${card.type === "select-list" ? renderListQuestion(card) : ""}`
-        : `${escapeHtml(card.q)}${renderQuestionMedia(card)}${card.type === "select-list" ? renderListQuestion(card, true) : renderCardOptions(card.options)}`;
+      el.cardLabel.textContent = "Pergunta";
+      const questionHtml = `
+        <div class="study-question">
+          <div>${escapeHtml(card.q)}</div>
+          ${renderQuestionMedia(card)}
+          ${card.type === "select-list" ? renderListQuestion(card, true) : renderCardOptions(card.options)}
+        </div>
+      `;
+      const answerHtml = showingAnswer
+        ? `<div class="study-answer"><strong>Resposta</strong>${escapeHtml(card.a)}${card.type === "select-list" ? renderListQuestion(card) : ""}</div>`
+        : "";
+      el.cardContent.innerHTML = `${questionHtml}${answerHtml}`;
       el.progressBar.style.width = `${((studyIndex + 1) / cards.length) * 100}%`;
-      el.studyHint.textContent = `Cartão ${studyIndex + 1} de ${cards.length}. Clique para ${showingAnswer ? "voltar à pergunta" : "ver a resposta"}.`;
+      el.flipCard.textContent = showingAnswer ? "Ocultar resposta" : "Conferir resposta";
+      el.studyHint.textContent = `Questão ${studyIndex + 1} de ${cards.length}. ${showingAnswer ? "Confira se você acertou e marque o resultado." : "Responda e depois confira a resposta abaixo."}`;
       el.studyActions.classList.toggle("show", showingAnswer);
     }
 
@@ -1948,24 +2049,42 @@
       if (!action) return;
       el.quickMenu.classList.remove("open");
       if (action === "folder") {
-        const name = prompt("Nome da pasta:");
-        const folder = createFolder(name);
-        if (!folder) return;
-        save();
-        render();
+        showView("add");
+        showAddMode("add");
+        el.newFolderName.focus();
         return;
       }
       showView("add");
       if (action === "collection") {
+        showAddMode("add");
         el.collectionName.focus();
         return;
       }
       if (action === "import") {
+        showAddMode("import");
         el.bulkText.focus();
       }
     });
 
     el.studyFromProgress.addEventListener("click", () => showView("study"));
+    el.showAddQuestion.addEventListener("click", () => showAddMode("add"));
+    el.showImportQuestion.addEventListener("click", () => showAddMode("import"));
+
+    el.createFolder.addEventListener("click", () => {
+      const folder = createFolder(el.newFolderName.value);
+      if (!folder) {
+        setMessage(el.collectionMessage, "Digite o nome da pasta.", "error");
+        return;
+      }
+      const folderId = folder.id;
+      el.newFolderName.value = "";
+      setMessage(el.collectionMessage, `Pasta "${folder.name}" criada. Agora crie uma coleção dentro dela.`);
+      save();
+      render();
+      showView("add");
+      el.collectionFolder.value = folderId;
+      el.collectionName.focus();
+    });
 
     el.signIn.addEventListener("click", async () => {
       if (!supabaseClient) {
@@ -2316,7 +2435,6 @@
       renderTest();
     });
 
-    el.flashcard.addEventListener("click", flip);
     el.flipCard.addEventListener("click", flip);
 
     function flip() {
