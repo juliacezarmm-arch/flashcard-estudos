@@ -573,6 +573,14 @@
       display: block;
     }
 
+    .answer-block {
+      display: grid;
+      gap: 6px;
+    }
+
+    .answer-block p {
+      margin: 0 0 6px;
+    }
     .list {
       display: grid;
       gap: 8px;
@@ -1026,6 +1034,10 @@
 
     button.success { background: var(--ok); }
     button.warning { background: var(--warn); }
+    .study-actions button.selected {
+      outline: 2px solid var(--brand);
+      outline-offset: 2px;
+    }
 
     @media (max-width: 860px) {
       .app {
@@ -1391,6 +1403,12 @@
             <div class="test-question" id="testQuestion">Clique em Começar teste para sortear as questões.</div>
             <div class="test-options" id="testOptions"></div>
             <div class="test-answer" id="testAnswer"></div>
+            <div class="study-actions" id="testRateActions">
+              <button class="danger" data-test-rate="new">De novo<br><small>2 min</small></button>
+              <button class="warning" data-test-rate="learning">Difícil<br><small>repetir</small></button>
+              <button class="success" data-test-rate="mastered">Bom<br><small>ok</small></button>
+              <button class="secondary" data-test-rate="mastered">Fácil<br><small>dominado</small></button>
+            </div>
             <div class="row">
               <button id="confirmTestAnswer" type="button">Confirmar resposta</button>
               <button class="secondary" id="nextTestQuestion" type="button">Próxima</button>
@@ -1521,6 +1539,7 @@
       testQuestion: document.querySelector("#testQuestion"),
       testOptions: document.querySelector("#testOptions"),
       testAnswer: document.querySelector("#testAnswer"),
+      testRateActions: document.querySelector("#testRateActions"),
       confirmTestAnswer: document.querySelector("#confirmTestAnswer"),
       nextTestQuestion: document.querySelector("#nextTestQuestion"),
       testHint: document.querySelector("#testHint"),
@@ -1549,11 +1568,13 @@
       answered: false,
       score: 0,
       recorded: false,
-      subjectName: ""
+      subjectName: "",
+      startedAt: null,
+      finishedAt: null
     };
 
     function resetTestState(subjectName = currentSubject()?.name || "") {
-      testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName };
+      testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName, startedAt: null, finishedAt: null };
     }
 
     function load() {
@@ -2238,7 +2259,7 @@
       const cards = testableCards();
       const subject = currentSubject();
       if (!cards.length) {
-        testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName: subject?.name || "" };
+        testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName: subject?.name || "", startedAt: null, finishedAt: null };
         renderTest();
         return;
       }
@@ -2251,18 +2272,47 @@
         answered: false,
         score: 0,
         recorded: false,
-        subjectName: subject?.name || "Coleção"
+        subjectName: subject?.name || "Coleção",
+        startedAt: Date.now(),
+        finishedAt: null
       };
       renderTest();
     }
 
+
+    function formatDuration(ms) {
+      if (!ms || ms < 0) return "0s";
+      const totalSeconds = Math.max(0, Math.round(ms / 1000));
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return minutes ? `${minutes}min ${seconds}s` : `${seconds}s`;
+    }
+
+    function testDurationMs() {
+      if (!testState.startedAt) return 0;
+      return (testState.finishedAt || Date.now()) - testState.startedAt;
+    }
+
+    function rateCurrentTestCard(status) {
+      const question = testState.questions[testState.index];
+      const subject = currentSubject();
+      if (!question || !subject || !Number.isInteger(question.originalIndex)) return;
+      const card = subject.cards[question.originalIndex];
+      if (!card) return;
+      card.status = status;
+      if (!question.rated) card.reviews = (card.reviews || 0) + 1;
+      card.lastReviewedAt = new Date().toISOString();
+      question.rated = true;
+    }
     function recordFinishedTest() {
       if (testState.recorded || !testState.questions.length) return;
+      testState.finishedAt = testState.finishedAt || Date.now();
       data.testHistory.unshift({
         id: Date.now().toString(36),
         subject: testState.subjectName || currentSubject()?.name || "Coleção",
         score: testState.score,
         total: testState.questions.length,
+        durationMs: testDurationMs(),
         date: new Date().toISOString()
       });
       data.testHistory = data.testHistory.slice(0, 20);
@@ -2282,7 +2332,7 @@
         return `
           <div class="history-item">
             <strong>${escapeHtml(item.subject)}</strong>
-            ${date}: você acertou ${item.score} de ${item.total} questões.
+            ${date}: você acertou ${item.score} de ${item.total} questões${item.durationMs ? ` em ${formatDuration(item.durationMs)}` : ""}.
           </div>
         `;
       }).join("");
@@ -2299,6 +2349,7 @@
         el.testOptions.innerHTML = "";
         el.testAnswer.classList.remove("show");
         el.testAnswer.textContent = "";
+        el.testRateActions.classList.remove("show");
         el.confirmTestAnswer.disabled = true;
         el.nextTestQuestion.disabled = true;
         el.testHint.textContent = count
@@ -2314,7 +2365,8 @@
         el.testQuestion.textContent = `Resultado: ${testState.score} acerto${testState.score === 1 ? "" : "s"} em ${testState.questions.length} questões.`;
         el.testOptions.innerHTML = "";
         el.testAnswer.classList.add("show");
-        el.testAnswer.textContent = "Clique em Novo teste para sortear outras questões e embaralhar as alternativas novamente.";
+        el.testAnswer.textContent = `Tempo total: ${formatDuration(testDurationMs())}. Clique em Novo teste para sortear outras questões e embaralhar as alternativas novamente.`;
+        el.testRateActions.classList.remove("show");
         el.confirmTestAnswer.disabled = true;
         el.nextTestQuestion.disabled = true;
         el.testHint.textContent = "Teste concluído.";
@@ -2323,7 +2375,7 @@
 
       const question = testState.questions[testState.index];
       el.testCounter.textContent = `Questão ${testState.index + 1} de ${testState.questions.length}`;
-      el.testScore.textContent = `${testState.score} acerto${testState.score === 1 ? "" : "s"}`;
+      el.testScore.textContent = `${testState.score} acerto${testState.score === 1 ? "" : "s"} · ${formatDuration(testDurationMs())}`;
       el.testQuestion.innerHTML = `${escapeHtml(question.q)}${renderQuestionMedia(question)}`;
       if (question.type === "select-list") {
         el.testOptions.innerHTML = (question.listItems || []).map((item, index) => `
@@ -2356,15 +2408,13 @@
       }).join("");
       }
       el.testAnswer.classList.toggle("show", testState.answered);
-      el.testAnswer.innerHTML = testState.answered
-        ? question.type === "select-list"
-          ? `<strong>Gabarito:</strong>${renderListQuestion(question)}`
-          : `Resposta: ${formatAnswer(question.a)}`
-        : "";
+      el.testAnswer.innerHTML = testState.answered ? renderTestAnswer(question) : "";
+      el.testRateActions.classList.toggle("show", testState.answered);
+      if (!testState.answered) el.testRateActions.querySelectorAll("button").forEach(item => item.classList.remove("selected"));
       el.confirmTestAnswer.disabled = !isTestSelectionComplete(question) || testState.answered;
       el.nextTestQuestion.disabled = !testState.answered;
       el.testHint.textContent = testState.answered
-        ? "Veja o gabarito e toque em Próxima."
+        ? "Veja o gabarito, marque De novo/Difícil/Bom/Fácil e toque em Próxima."
         : "Escolha uma alternativa e confirme.";
     }
 
@@ -2375,6 +2425,22 @@
       const items = question.listItems || [];
       if (!items.length || !testState.selected || typeof testState.selected !== "object") return false;
       return items.every((item, index) => Boolean(testState.selected[index]));
+    }
+
+    function renderTestAnswer(question) {
+      if (question.type === "select-list") {
+        return `<strong>Gabarito:</strong>${renderListQuestion(question)}`;
+      }
+      const correctOption = (question.testOptions || []).find(option => option.isCorrect);
+      const answerText = correctOption?.text || question.options?.[(answerLetter(question).charCodeAt(0) - 65)] || "";
+      const explanation = question.explanation || explanationFromAnswer(question.a);
+      return `
+        <div class="answer-block">
+          <strong>Resposta correta</strong>
+          <p>${escapeHtml(answerText)}</p>
+          ${explanation ? `<strong>Explicação</strong><p>${escapeHtml(explanation)}</p>` : ""}
+        </div>
+      `;
     }
     function labelDifficulty(value) {
       return { facil: "Fácil", normal: "Normal", dificil: "Difícil" }[value] || "Normal";
@@ -2886,17 +2952,6 @@
         : selectedOption?.isCorrect;
       if (isCorrect) {
         testState.score += 1;
-        const subject = currentSubject();
-        if (subject && Number.isInteger(question.originalIndex)) {
-          subject.cards[question.originalIndex].status = "mastered";
-          subject.cards[question.originalIndex].reviews = (subject.cards[question.originalIndex].reviews || 0) + 1;
-        }
-      } else {
-        const subject = currentSubject();
-        if (subject && Number.isInteger(question.originalIndex)) {
-          subject.cards[question.originalIndex].status = "learning";
-          subject.cards[question.originalIndex].reviews = (subject.cards[question.originalIndex].reviews || 0) + 1;
-        }
       }
       save();
       renderTest();
@@ -2904,8 +2959,25 @@
       renderQuestions(currentSubject() || { cards: [] });
     });
 
+
+    el.testRateActions.addEventListener("click", event => {
+      const button = event.target.closest("[data-test-rate]");
+      if (!button || !testState.active || !testState.answered) return;
+      rateCurrentTestCard(button.dataset.testRate);
+      save();
+      renderProgress(currentSubject() || { cards: [] });
+      renderQuestions(currentSubject() || { cards: [] });
+      el.testRateActions.querySelectorAll("button").forEach(item => item.classList.toggle("selected", item === button));
+    });
     el.nextTestQuestion.addEventListener("click", () => {
       if (!testState.active || !testState.answered) return;
+      const question = testState.questions[testState.index];
+      if (question && !question.rated) {
+        const autoStatus = question.type === "select-list"
+          ? "learning"
+          : (question.testOptions?.[testState.selected]?.isCorrect ? "mastered" : "learning");
+        rateCurrentTestCard(autoStatus);
+      }
       testState.index += 1;
       testState.selected = null;
       testState.answered = false;
