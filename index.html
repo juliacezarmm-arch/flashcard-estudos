@@ -585,6 +585,30 @@
       background: #fee2e2;
     }
 
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .section-heading h3 {
+      margin: 0;
+    }
+
+    .collapse-toggle {
+      width: auto;
+      padding: 7px 10px;
+      color: var(--brand);
+      background: var(--soft);
+      font-weight: 700;
+    }
+
+    .collapsible-content[hidden] {
+      display: none;
+    }
+
     .test-answer {
       display: none;
       border-radius: 8px;
@@ -1293,23 +1317,28 @@
         </div>
 
         <div class="card">
-          <h3>Questões da coleção</h3>
-          <div class="row">
-            <select id="cardFilter">
-              <option value="all">Todos ativos</option>
-              <option value="new">Não estudados</option>
-              <option value="learning">Em andamento</option>
-              <option value="mastered">Dominados</option>
-              <option value="frozen">Congelados</option>
-            </select>
-            <select id="cardSort">
-              <option value="newest">Mais novo</option>
-              <option value="oldest">Mais antigo</option>
-              <option value="az">A a Z</option>
-              <option value="za">Z a A</option>
-            </select>
+          <div class="section-heading">
+            <h3>Questões da coleção</h3>
+            <button class="secondary collapse-toggle" id="toggleQuestions" type="button" aria-expanded="true">Minimizar</button>
           </div>
-          <div class="list" id="questionList"></div>
+          <div class="collapsible-content" id="questionsContent">
+            <div class="row">
+              <select id="cardFilter">
+                <option value="all">Todos ativos</option>
+                <option value="new">Não estudados</option>
+                <option value="learning">Em andamento</option>
+                <option value="mastered">Dominados</option>
+                <option value="frozen">Congelados</option>
+              </select>
+              <select id="cardSort">
+                <option value="newest">Mais novo</option>
+                <option value="oldest">Mais antigo</option>
+                <option value="az">A a Z</option>
+                <option value="za">Z a A</option>
+              </select>
+            </div>
+            <div class="list" id="questionList"></div>
+          </div>
         </div>
       </section>
 
@@ -1571,6 +1600,8 @@
       saveQuestion: document.querySelector("#saveQuestion"),
       questionMessage: document.querySelector("#questionMessage"),
       difficulty: document.querySelector("#difficulty"),
+      toggleQuestions: document.querySelector("#toggleQuestions"),
+      questionsContent: document.querySelector("#questionsContent"),
       cardFilter: document.querySelector("#cardFilter"),
       cardSort: document.querySelector("#cardSort"),
       questionList: document.querySelector("#questionList"),
@@ -2997,6 +3028,12 @@
 
     el.actionModal.addEventListener("click", event => {
       if (event.target === el.actionModal) closeModal();
+    });
+    el.toggleQuestions.addEventListener("click", () => {
+      const collapsed = !el.questionsContent.hidden;
+      el.questionsContent.hidden = collapsed;
+      el.toggleQuestions.textContent = collapsed ? "Maximizar" : "Minimizar";
+      el.toggleQuestions.setAttribute("aria-expanded", String(!collapsed));
     });
     el.cardFilter.addEventListener("change", () => renderQuestions(currentSubject() || { cards: [] }));
     el.cardSort.addEventListener("change", () => renderQuestions(currentSubject() || { cards: [] }));
