@@ -147,6 +147,19 @@
       background: var(--brand);
     }
 
+    .auth-link {
+      justify-self: start;
+      padding: 0;
+      color: var(--brand);
+      background: transparent;
+    }
+
+    .auth-link:hover {
+      color: var(--brand-dark);
+      background: transparent;
+      text-decoration: underline;
+    }
+
     aside {
       background: var(--panel);
       border-right: 1px solid var(--line);
@@ -713,6 +726,9 @@
 
         <button id="signIn" type="button">Entrar</button>
         <button id="signUp" type="button" hidden>Criar conta</button>
+        <button class="auth-link" id="showReset" type="button">Esqueci minha senha</button>
+        <button id="sendReset" type="button" hidden>Enviar e-mail de recuperação</button>
+        <button id="updatePassword" type="button" hidden>Salvar nova senha</button>
         <p class="notice" id="authNotice"></p>
       </div>
     </div>
@@ -893,6 +909,9 @@
       authPhone: document.querySelector("#authPhone"),
       signIn: document.querySelector("#signIn"),
       signUp: document.querySelector("#signUp"),
+      showReset: document.querySelector("#showReset"),
+      sendReset: document.querySelector("#sendReset"),
+      updatePassword: document.querySelector("#updatePassword"),
       signOut: document.querySelector("#signOut"),
       subjects: document.querySelector("#subjects"),
       subjectTitle: document.querySelector("#subjectTitle"),
@@ -1003,15 +1022,31 @@
     function setAuthMode(mode) {
       authMode = mode;
       const isSignUp = mode === "signup";
-      el.authTitle.textContent = isSignUp ? "Criar conta" : "Entrar";
-      el.authSubtitle.textContent = isSignUp
-        ? "Crie sua conta. Se a confirmação por e-mail estiver ativa, você precisa verificar o e-mail antes de entrar."
-        : "Acesse sua conta para carregar seus flashcards.";
-      el.showSignIn.classList.toggle("active", !isSignUp);
+      const isReset = mode === "reset";
+      const isUpdatePassword = mode === "update-password";
+      el.authTitle.textContent = isUpdatePassword
+        ? "Criar nova senha"
+        : isReset
+          ? "Recuperar senha"
+          : isSignUp
+            ? "Criar conta"
+            : "Entrar";
+      el.authSubtitle.textContent = isUpdatePassword
+        ? "Digite uma nova senha para finalizar a recuperação da sua conta."
+        : isReset
+          ? "Informe seu e-mail. Você receberá um link para redefinir a senha."
+          : isSignUp
+            ? "Crie sua conta. Se a confirmação por e-mail estiver ativa, você precisa verificar o e-mail antes de entrar."
+            : "Acesse sua conta para carregar seus flashcards.";
+      el.showSignIn.classList.toggle("active", mode === "signin");
       el.showSignUp.classList.toggle("active", isSignUp);
-      el.signIn.hidden = isSignUp;
-      el.signUp.hidden = !isSignUp;
+      el.signIn.hidden = mode !== "signin";
+      el.signUp.hidden = mode !== "signup";
+      el.sendReset.hidden = mode !== "reset";
+      el.updatePassword.hidden = mode !== "update-password";
+      el.showReset.hidden = mode !== "signin";
       el.authPhone.hidden = !isSignUp;
+      el.authEmail.hidden = isUpdatePassword;
       setAuthNotice("");
     }
 
@@ -1287,6 +1322,47 @@
 
     el.showSignIn.addEventListener("click", () => setAuthMode("signin"));
     el.showSignUp.addEventListener("click", () => setAuthMode("signup"));
+    el.showReset.addEventListener("click", () => setAuthMode("reset"));
+
+    el.sendReset.addEventListener("click", async () => {
+      if (!supabaseClient) {
+        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
+        return;
+      }
+      const email = el.authEmail.value.trim();
+      if (!email) {
+        setAuthNotice("Digite seu e-mail para receber o link de recuperação.", "error");
+        return;
+      }
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.href.split("#")[0]
+      });
+      if (error) {
+        setAuthNotice(`Erro ao enviar recuperação: ${error.message}`, "error");
+        return;
+      }
+      setAuthNotice("Enviamos um link de recuperação para seu e-mail. Abra o link e cadastre uma nova senha.");
+    });
+
+    el.updatePassword.addEventListener("click", async () => {
+      if (!supabaseClient) {
+        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
+        return;
+      }
+      const password = el.authPassword.value;
+      if (!password) {
+        setAuthNotice("Digite a nova senha.", "error");
+        return;
+      }
+      const { error } = await supabaseClient.auth.updateUser({ password });
+      if (error) {
+        setAuthNotice(`Erro ao atualizar senha: ${error.message}`, "error");
+        return;
+      }
+      setAuthNotice("Senha atualizada. Você já pode entrar com a nova senha.");
+      await supabaseClient.auth.signOut();
+      setAuthMode("signin");
+    });
 
     el.signOut.addEventListener("click", async () => {
       if (!supabaseClient) return;
@@ -1304,7 +1380,13 @@
       renderAuth();
       if (currentUser) await loadCloudData();
 
-      supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+      supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        if (event === "PASSWORD_RECOVERY") {
+          currentUser = session?.user || null;
+          renderAuth();
+          setAuthMode("update-password");
+          return;
+        }
         currentUser = session?.user || null;
         renderAuth();
         if (currentUser) {
