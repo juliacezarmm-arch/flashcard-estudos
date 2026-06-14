@@ -1190,6 +1190,7 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 </head>
 <body>
   <section class="auth-screen" id="authScreen" hidden>
@@ -1400,11 +1401,11 @@
             <div class="add-section" id="importQuestionSection">
               <h3>Importar questionários</h3>
               <div class="import-box">
-                <p class="hint">Importe para a coleção selecionada. Você pode escolher um arquivo .json, .csv ou .txt, ou colar o questionário no campo abaixo.</p>
+                <p class="hint">Importe para a coleção selecionada. Você pode escolher um arquivo .zip, .json, .csv ou .txt, ou colar o questionário no campo abaixo.</p>
                 <div class="file-picker">
                   <label class="file-picker-label" for="importFile">Escolher arquivo</label>
                   <span class="file-name" id="importFileName">Nenhum arquivo escolhido</span>
-                  <input id="importFile" type="file" accept=".txt,.csv,.json,text/plain,text/csv,application/json">
+                  <input id="importFile" type="file" accept=".zip,.txt,.csv,.json,application/zip,application/x-zip-compressed,text/plain,text/csv,application/json">
                 </div>
                 <textarea id="bulkText" placeholder="Pergunta 1&#10;---&#10;Resposta 1&#10;&#10;Pergunta 2&#10;---&#10;Resposta 2"></textarea>
                 <div class="row">
@@ -3289,6 +3290,45 @@
     }
 
 
+
+    function imageMimeFromName(name) {
+      const lower = String(name || "").toLowerCase();
+      if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+      if (lower.endsWith(".webp")) return "image/webp";
+      if (lower.endsWith(".gif")) return "image/gif";
+      return "image/png";
+    }
+
+    async function zipImageToDataUrl(zip, imageName) {
+      if (!imageName || String(imageName).startsWith("data:")) return imageName || "";
+      const cleanName = String(imageName).replace(/^\.\//, "");
+      const normalizedName = cleanName.replace(/\\/g, "/");
+      const file = zip.file(normalizedName)
+        || zip.file(normalizedName.split("/").pop())
+        || zip.file(new RegExp(`${normalizedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"))[0];
+      if (!file) return imageName;
+      const base64 = await file.async("base64");
+      return `data:${imageMimeFromName(file.name)};base64,${base64}`;
+    }
+
+    async function parseZipFile(file) {
+      if (!window.JSZip) {
+        throw new Error("Biblioteca ZIP não carregada.");
+      }
+      const zip = await window.JSZip.loadAsync(file);
+      const jsonEntry = Object.values(zip.files).find(entry => !entry.dir && entry.name.toLowerCase().endsWith(".json"));
+      if (!jsonEntry) {
+        throw new Error("ZIP sem arquivo JSON.");
+      }
+      const jsonText = await jsonEntry.async("text");
+      const cards = parseJsonCards(jsonText);
+      for (const card of cards) {
+        if (card.image) {
+          card.image = await zipImageToDataUrl(zip, card.image);
+        }
+      }
+      return cards;
+    }
     function parseImportText(text) {
       const trimmed = text.trim();
       if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
@@ -3297,9 +3337,12 @@
       return parseTextCards(text);
     }
     async function parseImportFile(file) {
+      const name = file.name.toLowerCase();
+      if (name.endsWith(".zip")) {
+        return parseZipFile(file);
+      }
       const text = await file.text();
       const trimmed = text.trim();
-      const name = file.name.toLowerCase();
       if (name.endsWith(".json") || trimmed.startsWith("[") || trimmed.startsWith("{")) {
         return parseJsonCards(text);
       }
@@ -3317,7 +3360,7 @@
           imported = parseImportText(el.bulkText.value);
         }
       } catch (error) {
-        setMessage(el.importMessage, "Não consegui ler esse arquivo. Use .txt, .csv ou .json.", "error");
+        setMessage(el.importMessage, "Não consegui ler esse arquivo. Use .zip, .txt, .csv ou .json.", "error");
         return;
       }
       if (!imported.length) {
@@ -3358,6 +3401,12 @@
         return;
       }
       try {
+        if (file.name.toLowerCase().endsWith(".zip")) {
+          const cards = await parseZipFile(file);
+          el.bulkText.value = formatImportPreview(cards);
+          setMessage(el.importMessage, `ZIP selecionado. Pré-visualizei ${cards.length} questão${cards.length === 1 ? "" : "ões"}. Clique em Importar questões para salvar.`);
+          return;
+        }
         el.bulkText.value = await file.text();
         setMessage(el.importMessage, "Arquivo selecionado. A prévia do conteúdo apareceu no campo acima. Clique em Importar questões para salvar.");
       } catch (error) {
@@ -3382,6 +3431,8 @@
   </script>
 </body>
 </html>
+
+
 
 
 
