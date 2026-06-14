@@ -697,7 +697,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <section class="auth-screen" id="authScreen">
+  <section class="auth-screen" id="authScreen" hidden>
     <div class="auth-hero">
       <h1>Flashcard Estudos</h1>
       <p>Crie seus flashcards por disciplina, revise no celular e acompanhe o avanço dos cartões estudados.</p>
@@ -732,7 +732,7 @@
     </div>
   </section>
 
-  <div class="app locked" id="appShell">
+  <div class="app" id="appShell">
     <aside>
       <div class="brand">
         <h1>Flashcard Estudos</h1>
@@ -743,7 +743,7 @@
     </aside>
 
     <main>
-      <section class="auth-panel signed-in" id="authPanel">
+      <section class="auth-panel signed-in" id="authPanel" hidden>
         <div>
           <strong>Conta online</strong>
           <p class="auth-status" id="authStatus">Conectado.</p>
@@ -1662,10 +1662,9 @@
     });
 
     renderOptionInputs();
-    setAuthMode("signin");
-    renderAuth();
     render();
-    initAuth();
+    // Login online fica suspenso por enquanto; o app funciona com salvamento local.
+    // Quando retomarmos o Supabase, reativamos: setAuthMode("signin"); renderAuth(); initAuth();
   </script>
 </body>
 </html>
