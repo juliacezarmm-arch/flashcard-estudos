@@ -1016,6 +1016,21 @@
       setMessage(el.authNotice, text, type);
     }
 
+    function authErrorMessage(error, fallback) {
+      if (!error) return fallback;
+      if (error.message === "Failed to fetch" || /fetch/i.test(error.message || "")) {
+        return "Não consegui conectar ao Supabase. Abra o site pelo GitHub Pages e verifique sua internet.";
+      }
+      return fallback;
+    }
+
+    function authRedirectUrl() {
+      if (window.location.protocol === "http:" || window.location.protocol === "https:") {
+        return window.location.href.split("#")[0];
+      }
+      return "https://juliacezarmm-arch.github.io/flashcard-estudos/";
+    }
+
     function setAuthMode(mode) {
       authMode = mode;
       const isSignUp = mode === "signup";
@@ -1281,7 +1296,7 @@
       }
       const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
-        setAuthNotice(`Erro ao entrar: ${error.message}`, "error");
+        setAuthNotice(authErrorMessage(error, "E-mail ou senha incorretos."), "error");
       }
     });
 
@@ -1296,9 +1311,15 @@
         setAuthNotice("Preencha e-mail e senha para criar a conta.", "error");
         return;
       }
-      const { data: authData, error } = await supabaseClient.auth.signUp({ email, password });
+      const { data: authData, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: authRedirectUrl()
+        }
+      });
       if (error) {
-        setAuthNotice(`Erro ao criar conta: ${error.message}`, "error");
+        setAuthNotice(authErrorMessage(error, "Não foi possível criar a conta. Verifique o e-mail e a senha."), "error");
         return;
       }
       if (authData.session) {
@@ -1324,10 +1345,10 @@
         return;
       }
       const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.href.split("#")[0]
+        redirectTo: authRedirectUrl()
       });
       if (error) {
-        setAuthNotice("E-mail não cadastrado ou inválido.", "error");
+        setAuthNotice(authErrorMessage(error, "E-mail não cadastrado ou inválido."), "error");
         return;
       }
       setAuthNotice("Enviamos um link de recuperação para seu e-mail. Abra o link e cadastre uma nova senha.");
