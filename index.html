@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
@@ -660,6 +660,49 @@
       color: var(--text);
     }
 
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(23, 32, 51, 0.42);
+    }
+
+    .modal-backdrop.show {
+      display: grid;
+    }
+
+    .modal-card {
+      width: min(100%, 420px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      background: var(--panel);
+      box-shadow: 0 24px 70px rgba(23, 32, 51, 0.24);
+      display: grid;
+      gap: 12px;
+    }
+
+    .modal-card h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .modal-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     .meta {
       display: flex;
       justify-content: space-between;
@@ -1313,7 +1356,7 @@
                     <option value="dificil">Difícil</option>
                   </select>
                 </label>
-                <button type="submit">Salvar questão</button>
+                <button id="saveQuestion" type="submit">Salvar questão</button>
                 <p class="notice" id="questionMessage"></p>
               </form>
             </div>
@@ -1400,6 +1443,14 @@
     </main>
   </div>
 
+  <div class="modal-backdrop" id="actionModal" hidden>
+    <div class="modal-card">
+      <h3 id="modalTitle">Confirmar ação</h3>
+      <div id="modalBody"></div>
+      <div class="modal-actions" id="modalActions"></div>
+    </div>
+  </div>
+
   <script>
     const SUPABASE_URL = "https://oygsqfjjmpnvdsrpatgdt.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_PufEF3SrKWglbLH_RaRFDg_ZT5sVBKM";
@@ -1473,6 +1524,7 @@
       listItems: document.querySelector("#listItems"),
       addListItem: document.querySelector("#addListItem"),
       answerText: document.querySelector("#answerText"),
+      saveQuestion: document.querySelector("#saveQuestion"),
       questionMessage: document.querySelector("#questionMessage"),
       difficulty: document.querySelector("#difficulty"),
       cardFilter: document.querySelector("#cardFilter"),
@@ -1513,12 +1565,17 @@
       bulkText: document.querySelector("#bulkText"),
       bulkImport: document.querySelector("#bulkImport"),
       importMessage: document.querySelector("#importMessage"),
-      loadExample: document.querySelector("#loadExample")
+      loadExample: document.querySelector("#loadExample"),
+      actionModal: document.querySelector("#actionModal"),
+      modalTitle: document.querySelector("#modalTitle"),
+      modalBody: document.querySelector("#modalBody"),
+      modalActions: document.querySelector("#modalActions")
     };
 
     let optionCount = 4;
     let listChoiceCount = 2;
     let listItemCount = 2;
+    let editingCardIndex = null;
     let testState = {
       active: false,
       questions: [],
@@ -1685,6 +1742,21 @@
       target.classList.toggle("show", Boolean(text));
     }
 
+    function openModal(title, bodyHtml, actionsHtml) {
+      el.modalTitle.textContent = title;
+      el.modalBody.innerHTML = bodyHtml;
+      el.modalActions.innerHTML = actionsHtml;
+      el.actionModal.hidden = false;
+      el.actionModal.classList.add("show");
+    }
+
+    function closeModal() {
+      el.actionModal.classList.remove("show");
+      el.actionModal.hidden = true;
+      el.modalBody.innerHTML = "";
+      el.modalActions.innerHTML = "";
+    }
+
     function showView(viewId) {
       el.tabs.forEach(item => item.classList.toggle("active", item.dataset.view === viewId));
       el.views.forEach(view => view.classList.toggle("active", view.id === viewId));
@@ -1696,6 +1768,47 @@
       el.showImportQuestion.classList.toggle("active", isImport);
       el.addQuestionSection.classList.toggle("active", !isImport);
       el.importQuestionSection.classList.toggle("active", isImport);
+    }
+
+    function resetQuestionForm() {
+      editingCardIndex = null;
+      el.saveQuestion.textContent = "Salvar questão";
+      el.questionText.value = "";
+      el.answerText.value = "";
+      el.questionImage.value = "";
+      el.difficulty.value = "normal";
+      el.questionType.value = "multiple";
+      el.multipleBox.hidden = false;
+      el.listBox.hidden = true;
+      clearOptionValues();
+    }
+
+    function fillQuestionFormForEdit(card, index) {
+      editingCardIndex = index;
+      showView("add");
+      showAddMode("add");
+      el.saveQuestion.textContent = "Salvar alterações";
+      el.questionText.value = card.q || "";
+      el.answerText.value = card.a || "";
+      el.difficulty.value = card.difficulty || "normal";
+      el.questionType.value = card.type || "multiple";
+      const isList = el.questionType.value === "select-list";
+      el.multipleBox.hidden = isList;
+      el.listBox.hidden = !isList;
+      if (isList) {
+        listChoiceCount = Math.max(2, (card.listChoices || []).length || 2);
+        listItemCount = Math.max(1, (card.listItems || []).length || 1);
+        renderListChoiceInputs(card.listChoices || []);
+        renderListItemInputs(card.listItems || []);
+      } else {
+        optionCount = Math.max(2, (card.options || []).length || 4);
+        renderOptionInputs();
+        document.querySelectorAll(".option-input").forEach((input, optionIndex) => {
+          input.value = card.options?.[optionIndex] || "";
+        });
+      }
+      setMessage(el.questionMessage, "Editando cartão. Faça as alterações e salve.");
+      el.questionText.focus();
     }
 
     function optionLetter(index) {
@@ -2583,17 +2696,21 @@
         return;
       }
       if (type === "select-list" && (!listChoices.length || !listItems.length)) {
-        setMessage(el.questionMessage, "Preencha as opções da lista e os itens no formato: texto = resposta.", "error");
+        setMessage(el.questionMessage, "Preencha as opções da lista suspensa e os itens com suas respostas.", "error");
         return;
       }
-      let image = "";
+
+      const oldCard = editingCardIndex !== null ? subject.cards[editingCardIndex] : null;
+      let image = oldCard?.image || "";
       try {
-        image = await readImageFile(el.questionImage.files[0]);
+        if (el.questionImage.files[0]) image = await readImageFile(el.questionImage.files[0]);
       } catch (error) {
         setMessage(el.questionMessage, "Não consegui carregar a imagem. Tente outro arquivo.", "error");
         return;
       }
-      subject.cards.push({
+
+      const cardData = {
+        ...(oldCard || {}),
         q,
         a,
         type,
@@ -2602,55 +2719,63 @@
         listChoices: type === "select-list" ? listChoices : [],
         listItems: type === "select-list" ? listItems : [],
         difficulty: el.difficulty.value,
-        status: "new",
-        reviews: 0,
-        createdAt: new Date().toISOString()
-      });
-      el.questionText.value = "";
-      el.answerText.value = "";
-      el.questionImage.value = "";
-      clearOptionValues();
-      setMessage(el.questionMessage, "Questão salva. Toque em Estudar para revisar os cartões.");
-      showingAnswer = false;
-      render();
-    });
+        status: oldCard?.status || "new",
+        reviews: oldCard?.reviews || 0,
+        createdAt: oldCard?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
 
+      if (editingCardIndex !== null) {
+        subject.cards[editingCardIndex] = cardData;
+        setMessage(el.questionMessage, "Cartão atualizado.");
+      } else {
+        subject.cards.push(cardData);
+        setMessage(el.questionMessage, "Questão salva. Toque em Começar teste para revisar os cartões.");
+      }
+
+      resetQuestionForm();
+      studyIndex = 0;
+      showingAnswer = false;
+      resetTestState();
+      render();
+      showView("manage");
+    });
     el.questionList.addEventListener("click", event => {
       const editButton = event.target.closest("[data-edit]");
       if (editButton) {
-        const card = currentSubject().cards[Number(editButton.dataset.edit)];
-        const nextQuestion = prompt("Editar pergunta:", card.q);
-        if (nextQuestion === null) return;
-        const nextAnswer = prompt("Editar resposta/gabarito:", card.a);
-        if (nextAnswer === null) return;
-        if (!nextQuestion.trim() || !nextAnswer.trim()) {
-          alert("Pergunta e resposta não podem ficar vazias.");
-          return;
-        }
-        card.q = nextQuestion.trim();
-        card.a = nextAnswer.trim();
-        save();
-        render();
+        const index = Number(editButton.dataset.edit);
+        const card = currentSubject().cards[index];
+        fillQuestionFormForEdit(card, index);
         return;
       }
+
       const moveButton = event.target.closest("[data-move]");
       if (moveButton) {
         const subject = currentSubject();
         const cardIndex = Number(moveButton.dataset.move);
-        const card = subject.cards[cardIndex];
-        const destinationName = prompt("Mover para qual coleção?", subject.name);
-        if (!destinationName || !destinationName.trim()) return;
-        const destination = findOrCreateSubject(destinationName.trim());
-        if (destination.id === subject.id) return;
-        subject.cards.splice(cardIndex, 1);
-        destination.cards.push(card);
-        data.selected = destination.id;
-        studyIndex = 0;
-        showingAnswer = false;
-        resetTestState();
-        render();
+        const destinations = data.subjects.filter(item => item.id !== subject.id);
+        if (!destinations.length) {
+          openModal(
+            "Mover cartão",
+            `<p>Crie outra coleção antes de mover este cartão.</p>`,
+            `<button class="secondary" type="button" data-modal-close>Entendi</button>`
+          );
+          return;
+        }
+        openModal(
+          "Mover cartão",
+          `<p>Escolha para qual coleção este cartão deve ir.</p>
+          <label>Destino
+            <select id="moveTarget">
+              ${destinations.map(item => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`).join("")}
+            </select>
+          </label>`,
+          `<button class="secondary" type="button" data-modal-close>Cancelar</button>
+          <button type="button" data-confirm-move="${cardIndex}">Mover cartão</button>`
+        );
         return;
       }
+
       const freezeButton = event.target.closest("[data-freeze]");
       if (freezeButton) {
         const card = currentSubject().cards[Number(freezeButton.dataset.freeze)];
@@ -2659,16 +2784,61 @@
         render();
         return;
       }
+
       const button = event.target.closest("[data-delete]");
       if (!button) return;
-      if (!confirm("Excluir este cartão?")) return;
-      currentSubject().cards.splice(Number(button.dataset.delete), 1);
-      studyIndex = 0;
-      showingAnswer = false;
-      resetTestState();
-      render();
+      const cardIndex = Number(button.dataset.delete);
+      openModal(
+        "Excluir cartão",
+        `<p>Tem certeza que deseja excluir este cartão? Essa ação não tem volta.</p>`,
+        `<button class="secondary" type="button" data-modal-close>Cancelar</button>
+        <button class="danger" type="button" data-confirm-delete-card="${cardIndex}">Excluir cartão</button>`
+      );
     });
 
+    el.modalActions.addEventListener("click", event => {
+      if (event.target.closest("[data-modal-close]")) {
+        closeModal();
+        return;
+      }
+
+      const moveButton = event.target.closest("[data-confirm-move]");
+      if (moveButton) {
+        const subject = currentSubject();
+        const cardIndex = Number(moveButton.dataset.confirmMove);
+        const destinationId = document.querySelector("#moveTarget")?.value;
+        const destination = data.subjects.find(item => item.id === destinationId);
+        if (!subject || !destination || destination.id === subject.id) {
+          closeModal();
+          return;
+        }
+        const [card] = subject.cards.splice(cardIndex, 1);
+        if (card) destination.cards.push(card);
+        data.selected = destination.id;
+        studyIndex = 0;
+        showingAnswer = false;
+        resetTestState();
+        closeModal();
+        render();
+        return;
+      }
+
+      const deleteButton = event.target.closest("[data-confirm-delete-card]");
+      if (deleteButton) {
+        const subject = currentSubject();
+        const cardIndex = Number(deleteButton.dataset.confirmDeleteCard);
+        if (subject) subject.cards.splice(cardIndex, 1);
+        studyIndex = 0;
+        showingAnswer = false;
+        resetTestState();
+        closeModal();
+        render();
+      }
+    });
+
+    el.actionModal.addEventListener("click", event => {
+      if (event.target === el.actionModal) closeModal();
+    });
     el.cardFilter.addEventListener("change", () => renderQuestions(currentSubject() || { cards: [] }));
     el.cardSort.addEventListener("change", () => renderQuestions(currentSubject() || { cards: [] }));
 
