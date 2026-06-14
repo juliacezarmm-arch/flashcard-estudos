@@ -396,6 +396,34 @@
       background: #fee2e2;
     }
 
+    .auth-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      background: var(--panel);
+      display: grid;
+      gap: 12px;
+    }
+
+    .auth-panel.signed-in {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .auth-form {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) auto auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .auth-status {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
     .progress-card {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -531,6 +559,10 @@
         padding: 18px;
       }
 
+      .auth-form {
+        grid-template-columns: 1fr;
+      }
+
       .option-row {
         grid-template-columns: 34px 1fr;
       }
@@ -541,6 +573,7 @@
       }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="app">
@@ -554,6 +587,20 @@
     </aside>
 
     <main>
+      <section class="auth-panel" id="authPanel">
+        <div>
+          <strong>Conta online</strong>
+          <p class="auth-status" id="authStatus">Entre para salvar seus flashcards no Supabase e acessar no celular.</p>
+        </div>
+        <div class="auth-form" id="authForm">
+          <input id="authEmail" type="email" placeholder="Seu e-mail">
+          <input id="authPassword" type="password" placeholder="Senha">
+          <button id="signIn" type="button">Entrar</button>
+          <button class="secondary" id="signUp" type="button">Criar conta</button>
+        </div>
+        <button class="secondary" id="signOut" type="button" hidden>Sair</button>
+      </section>
+
       <header class="topbar">
         <div>
           <h2 id="subjectTitle">Coleção</h2>
@@ -677,6 +724,10 @@
   </div>
 
   <script>
+    const SUPABASE_URL = "https://oygsqfjjmpnvdsrpatgdt.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_PufEF3SrKWglbLH_RaRFDg_ZT5sVBKM";
+    const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     const storeKey = "flashcard-estudos-v2";
     const initialData = {
       selected: "",
@@ -686,8 +737,19 @@
     let data = load();
     let studyIndex = 0;
     let showingAnswer = false;
+    let currentUser = null;
+    let loadingCloud = false;
+    let saveTimer = null;
 
     const el = {
+      authPanel: document.querySelector("#authPanel"),
+      authStatus: document.querySelector("#authStatus"),
+      authForm: document.querySelector("#authForm"),
+      authEmail: document.querySelector("#authEmail"),
+      authPassword: document.querySelector("#authPassword"),
+      signIn: document.querySelector("#signIn"),
+      signUp: document.querySelector("#signUp"),
+      signOut: document.querySelector("#signOut"),
       subjects: document.querySelector("#subjects"),
       subjectTitle: document.querySelector("#subjectTitle"),
       subjectSummary: document.querySelector("#subjectSummary"),
@@ -735,6 +797,71 @@
 
     function save() {
       localStorage.setItem(storeKey, JSON.stringify(data));
+      scheduleCloudSave();
+    }
+
+    function scheduleCloudSave() {
+      if (!currentUser || loadingCloud || !supabaseClient) return;
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveCloudData, 350);
+    }
+
+    async function saveCloudData() {
+      if (!currentUser || !supabaseClient) return;
+      const { error } = await supabaseClient
+        .from("flashcard_data")
+        .upsert({
+          user_id: currentUser.id,
+          data,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "user_id" });
+
+      if (error) {
+        setAuthStatus(`Não consegui salvar online: ${error.message}`, "error");
+        return;
+      }
+      setAuthStatus(`Salvo online como ${currentUser.email}.`);
+    }
+
+    async function loadCloudData() {
+      if (!currentUser || !supabaseClient) return;
+      loadingCloud = true;
+      const { data: row, error } = await supabaseClient
+        .from("flashcard_data")
+        .select("data")
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
+
+      if (error) {
+        setAuthStatus(`Não consegui carregar online: ${error.message}`, "error");
+      } else if (row?.data) {
+        data = row.data;
+        localStorage.setItem(storeKey, JSON.stringify(data));
+        setAuthStatus(`Dados carregados do Supabase para ${currentUser.email}.`);
+      } else {
+        await saveCloudData();
+        setAuthStatus(`Conta conectada. Seus próximos cartões serão salvos online.`);
+      }
+
+      loadingCloud = false;
+      render();
+    }
+
+    function setAuthStatus(text, type = "info") {
+      el.authStatus.textContent = text;
+      el.authStatus.style.color = type === "error" ? "var(--danger)" : "var(--muted)";
+    }
+
+    function renderAuth() {
+      const signedIn = Boolean(currentUser);
+      el.authPanel.classList.toggle("signed-in", signedIn);
+      el.authForm.hidden = signedIn;
+      el.signOut.hidden = !signedIn;
+      if (signedIn) {
+        setAuthStatus(`Conectado: ${currentUser.email}`);
+      } else {
+        setAuthStatus("Entre para salvar seus flashcards no Supabase e acessar no celular.");
+      }
     }
 
     function setMessage(target, text, type = "info") {
@@ -945,6 +1072,69 @@
       showingAnswer = false;
       render();
     });
+
+    el.signIn.addEventListener("click", async () => {
+      if (!supabaseClient) {
+        setAuthStatus("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
+        return;
+      }
+      const email = el.authEmail.value.trim();
+      const password = el.authPassword.value;
+      if (!email || !password) {
+        setAuthStatus("Preencha e-mail e senha para entrar.", "error");
+        return;
+      }
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) {
+        setAuthStatus(`Erro ao entrar: ${error.message}`, "error");
+      }
+    });
+
+    el.signUp.addEventListener("click", async () => {
+      if (!supabaseClient) {
+        setAuthStatus("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
+        return;
+      }
+      const email = el.authEmail.value.trim();
+      const password = el.authPassword.value;
+      if (!email || !password) {
+        setAuthStatus("Preencha e-mail e senha para criar a conta.", "error");
+        return;
+      }
+      const { error } = await supabaseClient.auth.signUp({ email, password });
+      if (error) {
+        setAuthStatus(`Erro ao criar conta: ${error.message}`, "error");
+        return;
+      }
+      setAuthStatus("Conta criada. Se o Supabase pedir confirmação, verifique seu e-mail.");
+    });
+
+    el.signOut.addEventListener("click", async () => {
+      if (!supabaseClient) return;
+      await supabaseClient.auth.signOut();
+    });
+
+    async function initAuth() {
+      if (!supabaseClient) {
+        setAuthStatus("Supabase não carregou. O site ainda funciona localmente neste navegador.", "error");
+        return;
+      }
+
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      currentUser = sessionData.session?.user || null;
+      renderAuth();
+      if (currentUser) await loadCloudData();
+
+      supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+        currentUser = session?.user || null;
+        renderAuth();
+        if (currentUser) {
+          await loadCloudData();
+        } else {
+          render();
+        }
+      });
+    }
 
     el.addOption.addEventListener("click", () => {
       const currentValues = getOptionValues();
@@ -1185,7 +1375,9 @@
     });
 
     renderOptionInputs();
+    renderAuth();
     render();
+    initAuth();
   </script>
 </body>
 </html>
