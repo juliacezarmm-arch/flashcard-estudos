@@ -671,6 +671,7 @@
     .bar-new { background: #9ca3af; }
     .bar-learning { background: #65a30d; }
     .bar-mastered { background: #38bdf8; }
+    .bar-frozen { background: #fb7185; }
 
     .legend {
       display: flex;
@@ -871,6 +872,21 @@
 
         <div class="card">
           <h3>Questões da coleção</h3>
+          <div class="row">
+            <select id="cardFilter">
+              <option value="all">Todos ativos</option>
+              <option value="new">Não estudados</option>
+              <option value="learning">Em andamento</option>
+              <option value="mastered">Dominados</option>
+              <option value="frozen">Congelados</option>
+            </select>
+            <select id="cardSort">
+              <option value="newest">Mais novo</option>
+              <option value="oldest">Mais antigo</option>
+              <option value="az">A a Z</option>
+              <option value="za">Z a A</option>
+            </select>
+          </div>
           <div class="list" id="questionList"></div>
         </div>
       </section>
@@ -971,9 +987,10 @@
             <button class="ghost" id="shuffleCards">Misturar</button>
           </div>
           <div class="study-actions" id="studyActions">
-            <button class="danger" data-rate="new">Errei</button>
-            <button class="warning" data-rate="learning">Quase acertei</button>
-            <button class="success" data-rate="mastered">Dominei</button>
+            <button class="danger" data-rate="new">De novo<br><small>2 min</small></button>
+            <button class="warning" data-rate="learning">Difícil<br><small>hoje</small></button>
+            <button class="success" data-rate="mastered">Bom<br><small>próximo teste</small></button>
+            <button class="secondary" data-rate="mastered">Fácil<br><small>mais tarde</small></button>
           </div>
           <p class="hint" id="studyHint">Clique no cartão para ver a resposta.</p>
         </div>
@@ -1069,6 +1086,8 @@
       answerText: document.querySelector("#answerText"),
       questionMessage: document.querySelector("#questionMessage"),
       difficulty: document.querySelector("#difficulty"),
+      cardFilter: document.querySelector("#cardFilter"),
+      cardSort: document.querySelector("#cardSort"),
       questionList: document.querySelector("#questionList"),
       tabs: document.querySelectorAll(".tab"),
       views: document.querySelectorAll(".view"),
@@ -1394,11 +1413,33 @@
         return;
       }
 
-      el.questionList.innerHTML = subject.cards.map((card, index) => `
+      let cards = subject.cards.map((card, index) => ({ card, index }));
+      const filter = el.cardFilter.value;
+      if (filter === "all") {
+        cards = cards.filter(item => item.card.status !== "frozen");
+      } else {
+        cards = cards.filter(item => (item.card.status || "new") === filter);
+      }
+      cards.sort((a, b) => {
+        if (el.cardSort.value === "oldest") return a.index - b.index;
+        if (el.cardSort.value === "az") return a.card.q.localeCompare(b.card.q);
+        if (el.cardSort.value === "za") return b.card.q.localeCompare(a.card.q);
+        return b.index - a.index;
+      });
+
+      if (!cards.length) {
+        el.questionList.innerHTML = `<div class="empty">Nenhuma questão encontrada neste filtro.</div>`;
+        return;
+      }
+
+      el.questionList.innerHTML = cards.map(({ card, index }) => `
         <article class="question-item">
           <div class="meta">
             <span class="pill">${labelDifficulty(card.difficulty)} · ${labelStatus(card.status)}</span>
-            <button class="ghost" data-delete="${index}">Excluir</button>
+            <div class="row">
+              <button class="ghost" data-freeze="${index}">${card.status === "frozen" ? "Descongelar" : "Congelar"}</button>
+              <button class="ghost" data-delete="${index}">Excluir</button>
+            </div>
           </div>
           <strong>${escapeHtml(card.q)}</strong>
           ${renderQuestionMedia(card)}
@@ -1424,7 +1465,7 @@
         stats[status] = (stats[status] || 0) + 1;
         stats.total += 1;
         return stats;
-      }, { total: 0, new: 0, learning: 0, mastered: 0 });
+      }, { total: 0, new: 0, learning: 0, mastered: 0, frozen: 0 });
     }
 
     function renderProgress(subject) {
@@ -1441,6 +1482,7 @@
         <span><i class="dot bar-new"></i>${stats.new} Não estudados</span>
         <span><i class="dot bar-learning"></i>${stats.learning} Em andamento</span>
         <span><i class="dot bar-mastered"></i>${stats.mastered} Dominados</span>
+        <span><i class="dot bar-frozen"></i>${stats.frozen} Congelados</span>
       `;
     }
 
@@ -1454,7 +1496,7 @@
         el.studyActions.classList.remove("show");
         return;
       }
-      const cards = subject.cards;
+      const cards = subject.cards.filter(card => card.status !== "frozen");
       if (!cards.length) {
         el.cardLabel.textContent = "Sem questões";
         el.cardContent.textContent = "Adicione ou importe questões para começar a estudar.";
@@ -1494,6 +1536,7 @@
       if (!subject) return [];
       return subject.cards
         .map((card, index) => ({ ...card, originalIndex: index }))
+        .filter(card => card.status !== "frozen")
         .filter(card => card.type === "select-list" ? (card.listItems || []).length > 0 : (card.options || []).length >= 2);
     }
 
@@ -1862,7 +1905,8 @@
         listItems: type === "select-list" ? listItems : [],
         difficulty: el.difficulty.value,
         status: "new",
-        reviews: 0
+        reviews: 0,
+        createdAt: new Date().toISOString()
       });
       el.questionText.value = "";
       el.answerText.value = "";
@@ -1874,6 +1918,14 @@
     });
 
     el.questionList.addEventListener("click", event => {
+      const freezeButton = event.target.closest("[data-freeze]");
+      if (freezeButton) {
+        const card = currentSubject().cards[Number(freezeButton.dataset.freeze)];
+        card.status = card.status === "frozen" ? "new" : "frozen";
+        save();
+        render();
+        return;
+      }
       const button = event.target.closest("[data-delete]");
       if (!button) return;
       currentSubject().cards.splice(Number(button.dataset.delete), 1);
@@ -1882,6 +1934,9 @@
       testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0 };
       render();
     });
+
+    el.cardFilter.addEventListener("change", () => renderQuestions(currentSubject() || { cards: [] }));
+    el.cardSort.addEventListener("change", () => renderQuestions(currentSubject() || { cards: [] }));
 
     el.tabs.forEach(tab => {
       tab.addEventListener("click", () => {
