@@ -56,9 +56,9 @@
 
     .app {
       display: grid;
-      grid-template-columns: 248px 1fr;
+      grid-template-columns: 300px 1fr;
       min-height: 100vh;
-      max-width: 1180px;
+      max-width: 1260px;
       margin: 0 auto;
       background: var(--bg);
     }
@@ -300,8 +300,28 @@
 
     .subject span {
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      text-overflow: clip;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .subject-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .tiny-danger {
+      padding: 8px 10px;
+      color: var(--danger);
+      background: #fee2e2;
+    }
+
+    .tiny-danger:hover {
+      color: #fff;
+      background: var(--danger);
     }
 
     .subject.active {
@@ -458,6 +478,21 @@
       grid-template-columns: 34px 1fr auto;
       gap: 8px;
       align-items: center;
+    }
+
+    .list-choice-row,
+    .list-item-row {
+      display: grid;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .list-choice-row {
+      grid-template-columns: 70px 1fr auto;
+    }
+
+    .list-item-row {
+      grid-template-columns: 70px 1fr minmax(150px, 190px) auto;
     }
 
     .option-letter {
@@ -741,6 +776,47 @@
     .import-box {
       display: grid;
       gap: 10px;
+    }
+
+    .file-picker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px dashed #b9c5db;
+      border-radius: 8px;
+      padding: 10px;
+      background: #f9fbff;
+    }
+
+    .file-picker input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .file-picker-label {
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--brand-dark);
+      background: var(--soft);
+      font-weight: 750;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .file-picker-label:hover {
+      background: #dbeafe;
+    }
+
+    .file-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--muted);
+      font-size: 14px;
     }
 
     .hint {
@@ -1066,11 +1142,14 @@
           <h2 id="subjectTitle">Coleção</h2>
           <p id="subjectSummary">Selecione ou crie uma disciplina, curso ou material para começar.</p>
         </div>
-        <div class="tabs">
-          <button class="tab active" data-view="manage">Questões</button>
-          <button class="tab" data-view="add">Adicionar</button>
-          <button class="tab" data-view="study">Estudar</button>
-          <button class="tab" data-view="test">Teste</button>
+        <div class="subject-actions">
+          <div class="tabs">
+            <button class="tab active" data-view="manage">Questões</button>
+            <button class="tab" data-view="add">Adicionar</button>
+            <button class="tab" data-view="study">Estudar</button>
+            <button class="tab" data-view="test">Teste</button>
+          </div>
+          <button class="tiny-danger" id="deleteCollection" type="button">Excluir coleção</button>
         </div>
       </header>
 
@@ -1146,6 +1225,7 @@
                 </label>
                 <button class="secondary" id="createFolder" type="button">Criar pasta</button>
               </div>
+              <button class="tiny-danger" id="deleteFolder" type="button">Excluir pasta selecionada</button>
               <button id="createCollection" type="button">Criar coleção</button>
               <p class="notice" id="collectionMessage"></p>
             </div>
@@ -1168,7 +1248,7 @@
                   Tipo de questão
                   <select id="questionType">
                     <option value="multiple">Marcar alternativa</option>
-                    <option value="select-list">Lista com setinhas</option>
+                    <option value="select-list">Lista suspensa</option>
                   </select>
                 </label>
                 <label>
@@ -1181,14 +1261,12 @@
                   <button class="secondary" id="addOption" type="button">+ alternativa</button>
                 </div>
                 <div class="options-box" id="listBox" hidden>
-                  <label>
-                    Opções da lista
-                    <input id="listChoices" placeholder="Ex: Direto, Indireto">
-                  </label>
-                  <label>
-                    Itens da lista
-                    <textarea id="listItems" placeholder="Um item por linha, assim:&#10;Elaboração de documentação = Direto&#10;Manutenção predial = Indireto"></textarea>
-                  </label>
+                  <label>Opções da lista suspensa</label>
+                  <div id="listChoices"></div>
+                  <button class="secondary" id="addListChoice" type="button">+ opção</button>
+                  <label>Itens da pergunta</label>
+                  <div id="listItems"></div>
+                  <button class="secondary" id="addListItem" type="button">+ item</button>
                 </div>
                 <label>
                   Resposta
@@ -1211,7 +1289,11 @@
               <h3>Importar questionários</h3>
               <div class="import-box">
                 <p class="hint">Importe para a coleção selecionada. Você pode escolher um arquivo .json, .csv ou .txt, ou colar o questionário no campo abaixo.</p>
-                <input id="importFile" type="file" accept=".txt,.csv,.json,text/plain,text/csv,application/json">
+                <div class="file-picker">
+                  <label class="file-picker-label" for="importFile">Escolher arquivo</label>
+                  <span class="file-name" id="importFileName">Nenhum arquivo escolhido</span>
+                  <input id="importFile" type="file" accept=".txt,.csv,.json,text/plain,text/csv,application/json">
+                </div>
                 <textarea id="bulkText" placeholder="Pergunta 1&#10;---&#10;Resposta 1&#10;&#10;Pergunta 2&#10;---&#10;Resposta 2"></textarea>
                 <div class="row">
                   <button id="bulkImport" type="button">Importar questões</button>
@@ -1330,7 +1412,9 @@
       collectionFolder: document.querySelector("#collectionFolder"),
       newFolderName: document.querySelector("#newFolderName"),
       createFolder: document.querySelector("#createFolder"),
+      deleteFolder: document.querySelector("#deleteFolder"),
       createCollection: document.querySelector("#createCollection"),
+      deleteCollection: document.querySelector("#deleteCollection"),
       collectionMessage: document.querySelector("#collectionMessage"),
       showAddQuestion: document.querySelector("#showAddQuestion"),
       showImportQuestion: document.querySelector("#showImportQuestion"),
@@ -1345,7 +1429,9 @@
       addOption: document.querySelector("#addOption"),
       listBox: document.querySelector("#listBox"),
       listChoices: document.querySelector("#listChoices"),
+      addListChoice: document.querySelector("#addListChoice"),
       listItems: document.querySelector("#listItems"),
+      addListItem: document.querySelector("#addListItem"),
       answerText: document.querySelector("#answerText"),
       questionMessage: document.querySelector("#questionMessage"),
       difficulty: document.querySelector("#difficulty"),
@@ -1382,6 +1468,7 @@
       nextTestQuestion: document.querySelector("#nextTestQuestion"),
       testHint: document.querySelector("#testHint"),
       importFile: document.querySelector("#importFile"),
+      importFileName: document.querySelector("#importFileName"),
       bulkText: document.querySelector("#bulkText"),
       bulkImport: document.querySelector("#bulkImport"),
       importMessage: document.querySelector("#importMessage"),
@@ -1389,6 +1476,8 @@
     };
 
     let optionCount = 4;
+    let listChoiceCount = 2;
+    let listItemCount = 2;
     let testState = {
       active: false,
       questions: [],
@@ -1581,26 +1670,63 @@
         .filter(Boolean);
     }
 
+    function listChoiceValues() {
+      return [...document.querySelectorAll(".list-choice-input")]
+        .map(input => input.value.trim())
+        .filter(Boolean);
+    }
+
+    function listItemValues() {
+      return [...document.querySelectorAll(".list-item-row")].map(row => ({
+        label: row.querySelector(".list-item-label")?.value.trim() || "",
+        answer: row.querySelector(".list-item-answer")?.value.trim() || ""
+      }));
+    }
+
+    function renderListChoiceInputs(values = listChoiceValues()) {
+      el.listChoices.innerHTML = Array.from({ length: listChoiceCount }, (_, index) => `
+        <div class="list-choice-row">
+          <span class="option-letter">Item ${index + 1}</span>
+          <input class="list-choice-input" placeholder="Opção ${index + 1}" value="${escapeHtml(values[index] || "")}">
+          <button class="ghost remove-option" type="button" data-remove-list-choice="${index}" ${listChoiceCount <= 2 ? "disabled" : ""}>Remover</button>
+        </div>
+      `).join("");
+      renderListItemInputs();
+    }
+
+    function renderListItemInputs(values = listItemValues()) {
+      const choices = listChoiceValues();
+      el.listItems.innerHTML = Array.from({ length: listItemCount }, (_, index) => {
+        const item = values[index] || {};
+        return `
+          <div class="list-item-row">
+            <span class="option-letter">Linha ${index + 1}</span>
+            <input class="list-item-label" placeholder="Texto do item ${index + 1}" value="${escapeHtml(item.label || "")}">
+            <select class="list-item-answer">
+              <option value="">Resposta</option>
+              ${choices.map(choice => `<option value="${escapeHtml(choice)}" ${item.answer === choice ? "selected" : ""}>${escapeHtml(choice)}</option>`).join("")}
+            </select>
+            <button class="ghost remove-option" type="button" data-remove-list-item="${index}" ${listItemCount <= 1 ? "disabled" : ""}>Remover</button>
+          </div>
+        `;
+      }).join("");
+    }
+
     function getListChoices() {
-      return el.listChoices.value.split(",").map(item => item.trim()).filter(Boolean);
+      return listChoiceValues();
     }
 
     function getListItems() {
-      return el.listItems.value.split(/\r?\n/)
-        .map(line => line.trim())
-        .filter(Boolean)
-        .map(line => {
-          const [label, answer] = line.split("=").map(part => (part || "").trim());
-          return label && answer ? { label, answer } : null;
-        })
-        .filter(Boolean);
+      return listItemValues().filter(item => item.label && item.answer);
     }
 
     function clearOptionValues() {
       optionCount = 4;
+      listChoiceCount = 2;
+      listItemCount = 2;
       renderOptionInputs();
-      el.listChoices.value = "";
-      el.listItems.value = "";
+      renderListChoiceInputs([]);
+      renderListItemInputs([]);
     }
 
     function renderQuestionMedia(card) {
@@ -1659,6 +1785,12 @@
       return folder;
     }
 
+    function pruneEmptyFolders() {
+      data.folders = data.folders.filter(folder =>
+        data.subjects.some(subject => subject.folder === folder.id)
+      );
+    }
+
     function findOrCreateSubject(name, folder = "") {
       const cleanName = name.trim();
       if (!cleanName) return null;
@@ -1700,6 +1832,7 @@
         el.subjects.innerHTML = `<div class="empty">Crie uma coleção na aba Adicionar.</div>`;
         el.subjectTitle.textContent = "Questões";
         el.subjectSummary.textContent = "Crie uma coleção antes de adicionar ou importar flashcards.";
+        el.deleteCollection.hidden = true;
         el.questionList.innerHTML = `<div class="empty">Nenhuma questão cadastrada ainda.</div>`;
         renderProgress({ cards: [] });
         renderStudy();
@@ -1708,6 +1841,7 @@
         return;
       }
       data.selected = subject.id;
+      el.deleteCollection.hidden = false;
 
       el.subjects.innerHTML = groupedSubjects(data.subjects).map(group => `
         <div class="folder-block">
@@ -2086,6 +2220,39 @@
       el.collectionName.focus();
     });
 
+    el.deleteFolder.addEventListener("click", () => {
+      const folderId = el.collectionFolder.value;
+      if (!folderId) {
+        setMessage(el.collectionMessage, "Selecione uma pasta para excluir.", "error");
+        return;
+      }
+      const folder = data.folders.find(item => item.id === folderId);
+      if (!folder) return;
+      const hasCollections = data.subjects.some(subject => subject.folder === folderId);
+      if (hasCollections) {
+        setMessage(el.collectionMessage, "Essa pasta ainda tem coleção dentro. Exclua ou mova as coleções primeiro.", "error");
+        return;
+      }
+      if (!confirm(`Excluir a pasta "${folder.name}"?`)) return;
+      data.folders = data.folders.filter(item => item.id !== folderId);
+      el.collectionFolder.value = "";
+      setMessage(el.collectionMessage, "Pasta excluída.");
+      render();
+    });
+
+    el.deleteCollection.addEventListener("click", () => {
+      const subject = currentSubject();
+      if (!subject) return;
+      if (!confirm(`Excluir a coleção "${subject.name}" e todas as questões dela?`)) return;
+      data.subjects = data.subjects.filter(item => item.id !== subject.id);
+      data.selected = data.subjects[0]?.id || "";
+      pruneEmptyFolders();
+      studyIndex = 0;
+      showingAnswer = false;
+      testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0 };
+      render();
+    });
+
     el.signIn.addEventListener("click", async () => {
       if (!supabaseClient) {
         setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
@@ -2244,12 +2411,46 @@
       });
     });
 
+    el.addListChoice.addEventListener("click", () => {
+      const values = listChoiceValues();
+      listChoiceCount += 1;
+      renderListChoiceInputs(values);
+    });
+
+    el.addListItem.addEventListener("click", () => {
+      const values = listItemValues();
+      listItemCount += 1;
+      renderListItemInputs(values);
+    });
+
+    el.listChoices.addEventListener("click", event => {
+      const button = event.target.closest("[data-remove-list-choice]");
+      if (!button || listChoiceCount <= 2) return;
+      const removeIndex = Number(button.dataset.removeListChoice);
+      const values = [...document.querySelectorAll(".list-choice-input")].map(input => input.value);
+      values.splice(removeIndex, 1);
+      listChoiceCount -= 1;
+      renderListChoiceInputs(values);
+    });
+
+    el.listChoices.addEventListener("input", () => renderListItemInputs());
+
+    el.listItems.addEventListener("click", event => {
+      const button = event.target.closest("[data-remove-list-item]");
+      if (!button || listItemCount <= 1) return;
+      const removeIndex = Number(button.dataset.removeListItem);
+      const values = listItemValues();
+      values.splice(removeIndex, 1);
+      listItemCount -= 1;
+      renderListItemInputs(values);
+    });
+
     el.questionType.addEventListener("change", () => {
       const isList = el.questionType.value === "select-list";
       el.multipleBox.hidden = isList;
       el.listBox.hidden = !isList;
       el.answerText.placeholder = isList
-        ? "Resumo/gabarito geral. Ex: 1 Direto, 2 Indireto..."
+        ? "Resumo/gabarito geral. Ex: Linha 1 Direto, Linha 2 Indireto..."
         : "Escreva a resposta correta ou explicação";
     });
 
@@ -2597,6 +2798,7 @@
 
     el.importFile.addEventListener("change", async () => {
       const file = el.importFile.files[0];
+      el.importFileName.textContent = file ? file.name : "Nenhum arquivo escolhido";
       if (!file) return;
       try {
         const text = await file.text();
@@ -2618,6 +2820,7 @@
         setMessage(el.importMessage, "Não consegui ler esse arquivo. Use .txt, .csv ou .json.", "error");
       } finally {
         el.importFile.value = "";
+        el.importFileName.textContent = "Nenhum arquivo escolhido";
       }
     });
 
@@ -2626,6 +2829,7 @@
     });
 
     renderOptionInputs();
+    renderListChoiceInputs();
     render();
     initCloudSync();
   </script>
