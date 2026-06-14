@@ -378,6 +378,79 @@
       line-height: 1.35;
     }
 
+    .test-layout {
+      max-width: 900px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .test-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 22px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .test-question {
+      font-size: 22px;
+      line-height: 1.35;
+      font-weight: 750;
+      white-space: pre-wrap;
+    }
+
+    .test-options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .test-option {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 10px;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--text);
+      background: #f9fbff;
+      text-align: left;
+    }
+
+    .test-option:hover {
+      color: var(--text);
+      background: var(--soft);
+    }
+
+    .test-option.selected {
+      border-color: var(--brand);
+      background: var(--soft);
+    }
+
+    .test-option.correct {
+      border-color: var(--ok);
+      background: #dcfce7;
+    }
+
+    .test-option.wrong {
+      border-color: var(--danger);
+      background: #fee2e2;
+    }
+
+    .test-answer {
+      display: none;
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--muted);
+      background: #f2f5fb;
+      line-height: 1.45;
+    }
+
+    .test-answer.show {
+      display: block;
+    }
+
     .list {
       display: grid;
       gap: 10px;
@@ -763,6 +836,7 @@
         <div class="tabs">
           <button class="tab active" data-view="manage">Questões</button>
           <button class="tab" data-view="study">Estudar</button>
+          <button class="tab" data-view="test">Teste</button>
           <button class="tab" data-view="import">Importar</button>
         </div>
       </header>
@@ -860,6 +934,34 @@
         </div>
       </section>
 
+      <section class="view" id="test">
+        <div class="test-layout">
+          <div class="card">
+            <h3>Teste rápido</h3>
+            <p class="hint" id="testIntro">Comece um teste com até 14 questões sem repetição. As alternativas são embaralhadas a cada novo teste.</p>
+            <div class="row">
+              <button id="startTest" type="button">Começar teste</button>
+              <button class="secondary" id="restartTest" type="button">Novo teste</button>
+            </div>
+          </div>
+
+          <div class="test-card" id="testCard">
+            <div class="meta">
+              <span class="pill" id="testCounter">Teste não iniciado</span>
+              <span id="testScore">0 acertos</span>
+            </div>
+            <div class="test-question" id="testQuestion">Clique em Começar teste para sortear as questões.</div>
+            <div class="test-options" id="testOptions"></div>
+            <div class="test-answer" id="testAnswer"></div>
+            <div class="row">
+              <button id="confirmTestAnswer" type="button">Confirmar resposta</button>
+              <button class="secondary" id="nextTestQuestion" type="button">Próxima</button>
+            </div>
+            <p class="hint" id="testHint">O teste usa somente questões com alternativas cadastradas.</p>
+          </div>
+        </div>
+      </section>
+
       <section class="view" id="import">
         <div class="card import-box">
           <h3>Importar questionários</h3>
@@ -947,6 +1049,16 @@
       masteredCards: document.querySelector("#masteredCards"),
       collectionBar: document.querySelector("#collectionBar"),
       progressLegend: document.querySelector("#progressLegend"),
+      startTest: document.querySelector("#startTest"),
+      restartTest: document.querySelector("#restartTest"),
+      testCounter: document.querySelector("#testCounter"),
+      testScore: document.querySelector("#testScore"),
+      testQuestion: document.querySelector("#testQuestion"),
+      testOptions: document.querySelector("#testOptions"),
+      testAnswer: document.querySelector("#testAnswer"),
+      confirmTestAnswer: document.querySelector("#confirmTestAnswer"),
+      nextTestQuestion: document.querySelector("#nextTestQuestion"),
+      testHint: document.querySelector("#testHint"),
       bulkSubject: document.querySelector("#bulkSubject"),
       importFile: document.querySelector("#importFile"),
       bulkText: document.querySelector("#bulkText"),
@@ -956,6 +1068,14 @@
     };
 
     let optionCount = 4;
+    let testState = {
+      active: false,
+      questions: [],
+      index: 0,
+      selected: null,
+      answered: false,
+      score: 0
+    };
 
     function load() {
       const saved = localStorage.getItem(storeKey);
@@ -1160,6 +1280,7 @@
         el.questionList.innerHTML = `<div class="empty">Nenhuma questão cadastrada ainda.</div>`;
         renderProgress({ cards: [] });
         renderStudy();
+        renderTest();
         save();
         return;
       }
@@ -1178,6 +1299,7 @@
       renderQuestions(subject);
       renderProgress(subject);
       renderStudy();
+      renderTest();
       save();
     }
 
@@ -1267,6 +1389,123 @@
       el.studyActions.classList.toggle("show", showingAnswer);
     }
 
+    function shuffleList(items) {
+      const copy = [...items];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function answerLetter(card) {
+      const match = String(card.a || "").trim().match(/^([A-Z])/i);
+      return match ? match[1].toUpperCase() : "";
+    }
+
+    function testableCards() {
+      const subject = currentSubject();
+      if (!subject) return [];
+      return subject.cards
+        .map((card, index) => ({ ...card, originalIndex: index }))
+        .filter(card => (card.options || []).length >= 2);
+    }
+
+    function buildTestQuestion(card) {
+      const originalLetter = answerLetter(card);
+      const correctIndex = originalLetter ? originalLetter.charCodeAt(0) - 65 : -1;
+      const options = (card.options || []).map((text, index) => ({
+        text,
+        isCorrect: index === correctIndex
+      }));
+      return {
+        ...card,
+        testOptions: shuffleList(options)
+      };
+    }
+
+    function startNewTest() {
+      const cards = testableCards();
+      if (!cards.length) {
+        testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0 };
+        renderTest();
+        return;
+      }
+
+      testState = {
+        active: true,
+        questions: shuffleList(cards).slice(0, 14).map(buildTestQuestion),
+        index: 0,
+        selected: null,
+        answered: false,
+        score: 0
+      };
+      renderTest();
+    }
+
+    function renderTest() {
+      if (!testState.active) {
+        const count = testableCards().length;
+        el.testCounter.textContent = "Teste não iniciado";
+        el.testScore.textContent = "0 acertos";
+        el.testQuestion.textContent = count
+          ? "Clique em Começar teste para sortear as questões."
+          : "Cadastre questões com alternativas para começar um teste.";
+        el.testOptions.innerHTML = "";
+        el.testAnswer.classList.remove("show");
+        el.testAnswer.textContent = "";
+        el.confirmTestAnswer.disabled = true;
+        el.nextTestQuestion.disabled = true;
+        el.testHint.textContent = count
+          ? `${count} questão${count === 1 ? "" : "ões"} disponível${count === 1 ? "" : "is"} para teste.`
+          : "O teste usa somente questões com alternativas cadastradas.";
+        return;
+      }
+
+      if (testState.index >= testState.questions.length) {
+        el.testCounter.textContent = "Teste finalizado";
+        el.testScore.textContent = `${testState.score} de ${testState.questions.length} acertos`;
+        el.testQuestion.textContent = `Resultado: ${testState.score} acerto${testState.score === 1 ? "" : "s"} em ${testState.questions.length} questões.`;
+        el.testOptions.innerHTML = "";
+        el.testAnswer.classList.add("show");
+        el.testAnswer.textContent = "Clique em Novo teste para sortear outras questões e embaralhar as alternativas novamente.";
+        el.confirmTestAnswer.disabled = true;
+        el.nextTestQuestion.disabled = true;
+        el.testHint.textContent = "Teste concluído.";
+        return;
+      }
+
+      const question = testState.questions[testState.index];
+      el.testCounter.textContent = `Questão ${testState.index + 1} de ${testState.questions.length}`;
+      el.testScore.textContent = `${testState.score} acerto${testState.score === 1 ? "" : "s"}`;
+      el.testQuestion.textContent = question.q;
+      el.testOptions.innerHTML = question.testOptions.map((option, index) => {
+        const selected = testState.selected === index;
+        const correctnessClass = testState.answered
+          ? option.isCorrect
+            ? "correct"
+            : selected
+              ? "wrong"
+              : ""
+          : selected
+            ? "selected"
+            : "";
+        return `
+          <button class="test-option ${correctnessClass}" type="button" data-test-option="${index}" ${testState.answered ? "disabled" : ""}>
+            <span class="option-letter">${optionLetter(index)}</span>
+            <span>${escapeHtml(option.text)}</span>
+          </button>
+        `;
+      }).join("");
+      el.testAnswer.classList.toggle("show", testState.answered);
+      el.testAnswer.textContent = testState.answered ? `Resposta: ${question.a}` : "";
+      el.confirmTestAnswer.disabled = testState.selected === null || testState.answered;
+      el.nextTestQuestion.disabled = !testState.answered;
+      el.testHint.textContent = testState.answered
+        ? "Veja o gabarito e toque em Próxima."
+        : "Escolha uma alternativa e confirme.";
+    }
+
     function labelDifficulty(value) {
       return { facil: "Fácil", normal: "Normal", dificil: "Difícil" }[value] || "Normal";
     }
@@ -1296,6 +1535,7 @@
       }
       studyIndex = 0;
       showingAnswer = false;
+      testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0 };
       render();
     });
 
@@ -1484,6 +1724,7 @@
       currentSubject().cards.splice(Number(button.dataset.delete), 1);
       studyIndex = 0;
       showingAnswer = false;
+      testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0 };
       render();
     });
 
@@ -1491,6 +1732,49 @@
       tab.addEventListener("click", () => {
         showView(tab.dataset.view);
       });
+    });
+
+    el.startTest.addEventListener("click", startNewTest);
+    el.restartTest.addEventListener("click", startNewTest);
+
+    el.testOptions.addEventListener("click", event => {
+      const button = event.target.closest("[data-test-option]");
+      if (!button || testState.answered) return;
+      testState.selected = Number(button.dataset.testOption);
+      renderTest();
+    });
+
+    el.confirmTestAnswer.addEventListener("click", () => {
+      if (!testState.active || testState.selected === null || testState.answered) return;
+      const question = testState.questions[testState.index];
+      const selectedOption = question.testOptions[testState.selected];
+      testState.answered = true;
+      if (selectedOption?.isCorrect) {
+        testState.score += 1;
+        const subject = currentSubject();
+        if (subject && Number.isInteger(question.originalIndex)) {
+          subject.cards[question.originalIndex].status = "mastered";
+          subject.cards[question.originalIndex].reviews = (subject.cards[question.originalIndex].reviews || 0) + 1;
+        }
+      } else {
+        const subject = currentSubject();
+        if (subject && Number.isInteger(question.originalIndex)) {
+          subject.cards[question.originalIndex].status = "learning";
+          subject.cards[question.originalIndex].reviews = (subject.cards[question.originalIndex].reviews || 0) + 1;
+        }
+      }
+      save();
+      renderTest();
+      renderProgress(currentSubject() || { cards: [] });
+      renderQuestions(currentSubject() || { cards: [] });
+    });
+
+    el.nextTestQuestion.addEventListener("click", () => {
+      if (!testState.active || !testState.answered) return;
+      testState.index += 1;
+      testState.selected = null;
+      testState.answered = false;
+      renderTest();
     });
 
     el.flashcard.addEventListener("click", flip);
