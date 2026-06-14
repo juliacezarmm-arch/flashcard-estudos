@@ -58,6 +58,9 @@
       display: grid;
       grid-template-columns: 248px 1fr;
       min-height: 100vh;
+      max-width: 1180px;
+      margin: 0 auto;
+      background: var(--bg);
     }
 
     .app.locked {
@@ -179,6 +182,59 @@
       gap: 4px;
     }
 
+    .side-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .add-wrap {
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .round-add {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      padding: 0;
+      font-size: 24px;
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .action-menu {
+      position: absolute;
+      top: 46px;
+      right: 0;
+      z-index: 20;
+      width: 230px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px;
+      background: var(--panel);
+      box-shadow: 0 18px 40px rgba(23, 32, 51, 0.16);
+      display: none;
+      gap: 6px;
+    }
+
+    .action-menu.open {
+      display: grid;
+    }
+
+    .action-menu button {
+      width: 100%;
+      justify-content: start;
+      text-align: left;
+      color: var(--text);
+      background: transparent;
+    }
+
+    .action-menu button:hover {
+      background: #edf1f8;
+    }
+
     .brand h1 {
       margin: 0;
       font-size: 20px;
@@ -217,6 +273,19 @@
       padding-right: 2px;
     }
 
+    .folder-block {
+      display: grid;
+      gap: 6px;
+    }
+
+    .folder-title {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
     .subject {
       display: flex;
       align-items: center;
@@ -227,6 +296,12 @@
       color: var(--text);
       background: #f2f5fb;
       cursor: pointer;
+    }
+
+    .subject span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .subject.active {
@@ -465,6 +540,7 @@
       display: grid;
       gap: 7px;
       background: #fff;
+      position: relative;
     }
 
     .question-item strong {
@@ -491,6 +567,57 @@
       background: var(--soft);
       color: var(--brand-dark);
       font-weight: 700;
+    }
+
+    .card-menu {
+      position: relative;
+    }
+
+    .card-menu summary {
+      list-style: none;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .card-menu summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .card-menu summary:hover {
+      color: var(--text);
+      background: #edf1f8;
+    }
+
+    .card-menu-panel {
+      position: absolute;
+      top: 38px;
+      right: 0;
+      z-index: 10;
+      width: 178px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 6px;
+      background: #fff;
+      box-shadow: 0 14px 30px rgba(23, 32, 51, 0.15);
+      display: grid;
+      gap: 4px;
+    }
+
+    .card-menu-panel button {
+      width: 100%;
+      text-align: left;
+      color: var(--text);
+      background: transparent;
+    }
+
+    .card-menu-panel button:hover {
+      background: #edf1f8;
     }
 
     .study-layout {
@@ -616,6 +743,11 @@
       gap: 12px;
     }
 
+    .progress-card .start-study {
+      width: min(100%, 420px);
+      justify-self: center;
+    }
+
     .progress-hero {
       text-align: center;
       display: grid;
@@ -734,6 +866,9 @@
       aside {
         border-right: 0;
         border-bottom: 1px solid var(--line);
+        position: sticky;
+        top: 0;
+        z-index: 30;
       }
 
       .workspace {
@@ -757,7 +892,30 @@
       }
 
       main {
-        padding: 18px;
+        padding: 14px;
+      }
+
+      .brand span,
+      .folder-title {
+        display: none;
+      }
+
+      .subjects {
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(170px, max-content);
+        overflow-x: auto;
+      }
+
+      .folder-block {
+        display: contents;
+      }
+
+      .topbar h2 {
+        font-size: 22px;
+      }
+
+      .progress-hero strong {
+        font-size: 36px;
       }
 
       .auth-form {
@@ -814,9 +972,19 @@
 
   <div class="app" id="appShell">
     <aside>
-      <div class="brand">
-        <h1>Flashcard Estudos</h1>
-        <span>Organize conteúdos da faculdade por disciplina, curso ou material e estude em cartões.</span>
+      <div class="side-head">
+        <div class="brand">
+          <h1>Flashcard Estudos</h1>
+          <span>Organize coleções, pastas e testes para estudar em cartões.</span>
+        </div>
+        <div class="add-wrap">
+          <button class="round-add" id="openQuickMenu" type="button" aria-label="Adicionar">+</button>
+          <div class="action-menu" id="quickMenu">
+            <button type="button" data-menu-action="collection">Criar coleção</button>
+            <button type="button" data-menu-action="import">Importar cartões</button>
+            <button type="button" data-menu-action="folder">Criar pasta</button>
+          </div>
+        </div>
       </div>
 
       <div class="subjects" id="subjects"></div>
@@ -870,6 +1038,7 @@
             <span class="bar-mastered"></span>
           </div>
           <div class="legend" id="progressLegend"></div>
+          <button class="start-study" id="studyFromProgress" type="button">Estudar cartões</button>
         </div>
 
         <div class="card">
@@ -901,6 +1070,12 @@
               <label>
                 Nome da coleção
                 <input id="collectionName" placeholder="Ex: Arquitetura de Computadores">
+              </label>
+              <label>
+                Pasta (opcional)
+                <select id="collectionFolder">
+                  <option value="">Sem pasta</option>
+                </select>
               </label>
               <button id="createCollection" type="button">Criar coleção</button>
               <p class="notice" id="collectionMessage"></p>
@@ -1039,6 +1214,7 @@
     const storeKey = "flashcard-estudos-v2";
     const initialData = {
       selected: "",
+      folders: [],
       subjects: []
     };
 
@@ -1070,9 +1246,12 @@
       updatePassword: document.querySelector("#updatePassword"),
       signOut: document.querySelector("#signOut"),
       subjects: document.querySelector("#subjects"),
+      openQuickMenu: document.querySelector("#openQuickMenu"),
+      quickMenu: document.querySelector("#quickMenu"),
       subjectTitle: document.querySelector("#subjectTitle"),
       subjectSummary: document.querySelector("#subjectSummary"),
       collectionName: document.querySelector("#collectionName"),
+      collectionFolder: document.querySelector("#collectionFolder"),
       createCollection: document.querySelector("#createCollection"),
       collectionMessage: document.querySelector("#collectionMessage"),
       questionForm: document.querySelector("#questionForm"),
@@ -1109,6 +1288,7 @@
       masteredCards: document.querySelector("#masteredCards"),
       collectionBar: document.querySelector("#collectionBar"),
       progressLegend: document.querySelector("#progressLegend"),
+      studyFromProgress: document.querySelector("#studyFromProgress"),
       startTest: document.querySelector("#startTest"),
       restartTest: document.querySelector("#restartTest"),
       testCounter: document.querySelector("#testCounter"),
@@ -1138,7 +1318,18 @@
 
     function load() {
       const saved = localStorage.getItem(storeKey);
-      return saved ? JSON.parse(saved) : initialData;
+      return normalizeData(saved ? JSON.parse(saved) : structuredClone(initialData));
+    }
+
+    function normalizeData(value) {
+      const normalized = value && typeof value === "object" ? value : structuredClone(initialData);
+      normalized.folders = Array.isArray(normalized.folders) ? normalized.folders : [];
+      normalized.subjects = Array.isArray(normalized.subjects) ? normalized.subjects : [];
+      normalized.subjects.forEach(subject => {
+        subject.cards = Array.isArray(subject.cards) ? subject.cards : [];
+        subject.folder = subject.folder || "";
+      });
+      return normalized;
     }
 
     function save() {
@@ -1179,7 +1370,7 @@
       if (error) {
         console.warn("Não consegui carregar do Supabase:", error.message);
       } else if (row?.data) {
-        data = row.data;
+        data = normalizeData(row.data);
         localStorage.setItem(storeKey, JSON.stringify(data));
       } else {
         await saveCloudData();
@@ -1356,18 +1547,53 @@
       return data.subjects.find(subject => subject.id === data.selected) || data.subjects[0];
     }
 
-    function findOrCreateSubject(name) {
+    function folderName(id) {
+      return data.folders.find(folder => folder.id === id)?.name || "Sem pasta";
+    }
+
+    function renderFolderSelect() {
+      if (!el.collectionFolder) return;
+      el.collectionFolder.innerHTML = `
+        <option value="">Sem pasta</option>
+        ${data.folders.map(folder => `<option value="${escapeHtml(folder.id)}">${escapeHtml(folder.name)}</option>`).join("")}
+      `;
+    }
+
+    function createFolder(name) {
+      const cleanName = String(name || "").trim();
+      if (!cleanName) return null;
+      const existing = data.folders.find(folder => folder.name.toLowerCase() === cleanName.toLowerCase());
+      if (existing) return existing;
+      const folder = { id: slug(cleanName), name: cleanName };
+      data.folders.push(folder);
+      return folder;
+    }
+
+    function findOrCreateSubject(name, folder = "") {
       const cleanName = name.trim();
       if (!cleanName) return null;
       const existing = data.subjects.find(subject => subject.name.toLowerCase() === cleanName.toLowerCase());
       if (existing) {
+        if (folder) existing.folder = folder;
         data.selected = existing.id;
         return existing;
       }
-      const subject = { id: slug(cleanName), name: cleanName, cards: [] };
+      const subject = { id: slug(cleanName), name: cleanName, folder, cards: [] };
       data.subjects.push(subject);
       data.selected = subject.id;
       return subject;
+    }
+
+    function groupedSubjects(subjects) {
+      const groups = [];
+      const knownFolders = data.folders.map(folder => ({ id: folder.id, name: folder.name }));
+      const looseSubjects = subjects.filter(subject => !subject.folder);
+      if (looseSubjects.length) groups.push({ id: "", name: "Sem pasta", subjects: looseSubjects });
+      knownFolders.forEach(folder => {
+        const items = subjects.filter(subject => subject.folder === folder.id);
+        if (items.length) groups.push({ ...folder, subjects: items });
+      });
+      return groups;
     }
 
     function slug(text) {
@@ -1379,6 +1605,7 @@
 
     function render() {
       const subject = currentSubject();
+      renderFolderSelect();
       if (!subject) {
         el.subjects.innerHTML = `<div class="empty">Crie uma coleção na aba Adicionar.</div>`;
         el.subjectTitle.textContent = "Questões";
@@ -1392,10 +1619,15 @@
       }
       data.selected = subject.id;
 
-      el.subjects.innerHTML = data.subjects.map(item => `
-        <div class="subject ${item.id === subject.id ? "active" : ""}" data-id="${item.id}">
-          <span>${escapeHtml(item.name)}</span>
-          <small>${item.cards.length}</small>
+      el.subjects.innerHTML = groupedSubjects(data.subjects).map(group => `
+        <div class="folder-block">
+          <div class="folder-title">${escapeHtml(group.name)}</div>
+          ${group.subjects.map(item => `
+            <div class="subject ${item.id === subject.id ? "active" : ""}" data-id="${item.id}">
+              <span>${escapeHtml(item.name)}</span>
+              <small>${item.cards.length}</small>
+            </div>
+          `).join("")}
         </div>
       `).join("");
 
@@ -1438,10 +1670,15 @@
         <article class="question-item">
           <div class="meta">
             <span class="pill">${labelDifficulty(card.difficulty)} · ${labelStatus(card.status)}</span>
-            <div class="row">
-              <button class="ghost" data-freeze="${index}">${card.status === "frozen" ? "Descongelar" : "Congelar"}</button>
-              <button class="ghost" data-delete="${index}">Excluir</button>
-            </div>
+            <details class="card-menu">
+              <summary aria-label="Opções do cartão">⋮</summary>
+              <div class="card-menu-panel">
+                <button type="button" data-edit="${index}">Editar cartão</button>
+                <button type="button" data-move="${index}">Mover cartão</button>
+                <button type="button" data-freeze="${index}">${card.status === "frozen" ? "Descongelar" : "Congelar"} cartão</button>
+                <button type="button" data-delete="${index}">Excluir cartão</button>
+              </div>
+            </details>
           </div>
           <strong>${escapeHtml(card.q)}</strong>
           ${renderQuestionMedia(card)}
@@ -1517,6 +1754,13 @@
       el.progressBar.style.width = `${((studyIndex + 1) / cards.length) * 100}%`;
       el.studyHint.textContent = `Cartão ${studyIndex + 1} de ${cards.length}. Clique para ${showingAnswer ? "voltar à pergunta" : "ver a resposta"}.`;
       el.studyActions.classList.toggle("show", showingAnswer);
+    }
+
+    function activeStudyCards(subject = currentSubject()) {
+      if (!subject) return [];
+      return subject.cards
+        .map((card, index) => ({ card, index }))
+        .filter(item => item.card.status !== "frozen");
     }
 
     function shuffleList(items) {
@@ -1667,7 +1911,8 @@
       return {
         new: "Não estudado",
         learning: "Em andamento",
-        mastered: "Dominado"
+        mastered: "Dominado",
+        frozen: "Congelado"
       }[value || "new"] || "Não estudado";
     }
 
@@ -1686,6 +1931,41 @@
       testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0 };
       render();
     });
+
+    el.openQuickMenu.addEventListener("click", event => {
+      event.stopPropagation();
+      el.quickMenu.classList.toggle("open");
+    });
+
+    document.addEventListener("click", event => {
+      if (!event.target.closest(".add-wrap")) {
+        el.quickMenu.classList.remove("open");
+      }
+    });
+
+    el.quickMenu.addEventListener("click", event => {
+      const action = event.target.closest("[data-menu-action]")?.dataset.menuAction;
+      if (!action) return;
+      el.quickMenu.classList.remove("open");
+      if (action === "folder") {
+        const name = prompt("Nome da pasta:");
+        const folder = createFolder(name);
+        if (!folder) return;
+        save();
+        render();
+        return;
+      }
+      showView("add");
+      if (action === "collection") {
+        el.collectionName.focus();
+        return;
+      }
+      if (action === "import") {
+        el.bulkText.focus();
+      }
+    });
+
+    el.studyFromProgress.addEventListener("click", () => showView("study"));
 
     el.signIn.addEventListener("click", async () => {
       if (!supabaseClient) {
@@ -1860,7 +2140,7 @@
         setMessage(el.collectionMessage, "Digite o nome da coleção.", "error");
         return;
       }
-      const subject = findOrCreateSubject(name);
+      const subject = findOrCreateSubject(name, el.collectionFolder.value);
       el.collectionName.value = "";
       studyIndex = 0;
       showingAnswer = false;
@@ -1920,6 +2200,41 @@
     });
 
     el.questionList.addEventListener("click", event => {
+      const editButton = event.target.closest("[data-edit]");
+      if (editButton) {
+        const card = currentSubject().cards[Number(editButton.dataset.edit)];
+        const nextQuestion = prompt("Editar pergunta:", card.q);
+        if (nextQuestion === null) return;
+        const nextAnswer = prompt("Editar resposta/gabarito:", card.a);
+        if (nextAnswer === null) return;
+        if (!nextQuestion.trim() || !nextAnswer.trim()) {
+          alert("Pergunta e resposta não podem ficar vazias.");
+          return;
+        }
+        card.q = nextQuestion.trim();
+        card.a = nextAnswer.trim();
+        save();
+        render();
+        return;
+      }
+      const moveButton = event.target.closest("[data-move]");
+      if (moveButton) {
+        const subject = currentSubject();
+        const cardIndex = Number(moveButton.dataset.move);
+        const card = subject.cards[cardIndex];
+        const destinationName = prompt("Mover para qual coleção?", subject.name);
+        if (!destinationName || !destinationName.trim()) return;
+        const destination = findOrCreateSubject(destinationName.trim());
+        if (destination.id === subject.id) return;
+        subject.cards.splice(cardIndex, 1);
+        destination.cards.push(card);
+        data.selected = destination.id;
+        studyIndex = 0;
+        showingAnswer = false;
+        testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0 };
+        render();
+        return;
+      }
       const freezeButton = event.target.closest("[data-freeze]");
       if (freezeButton) {
         const card = currentSubject().cards[Number(freezeButton.dataset.freeze)];
@@ -1930,6 +2245,7 @@
       }
       const button = event.target.closest("[data-delete]");
       if (!button) return;
+      if (!confirm("Excluir este cartão?")) return;
       currentSubject().cards.splice(Number(button.dataset.delete), 1);
       studyIndex = 0;
       showingAnswer = false;
@@ -2015,10 +2331,11 @@
       if (!button) return;
       const subject = currentSubject();
       if (!subject) return;
-      const cards = subject.cards;
+      const cards = activeStudyCards(subject);
       if (!cards.length) return;
-      cards[studyIndex].status = button.dataset.rate;
-      cards[studyIndex].reviews = (cards[studyIndex].reviews || 0) + 1;
+      const item = cards[Math.min(studyIndex, cards.length - 1)];
+      subject.cards[item.index].status = button.dataset.rate;
+      subject.cards[item.index].reviews = (subject.cards[item.index].reviews || 0) + 1;
       studyIndex = (studyIndex + 1) % cards.length;
       showingAnswer = false;
       render();
@@ -2027,7 +2344,7 @@
     el.prevCard.addEventListener("click", () => {
       const subject = currentSubject();
       if (!subject) return;
-      const cards = subject.cards;
+      const cards = activeStudyCards(subject);
       if (!cards.length) return;
       studyIndex = (studyIndex - 1 + cards.length) % cards.length;
       showingAnswer = false;
@@ -2037,7 +2354,7 @@
     el.nextCard.addEventListener("click", () => {
       const subject = currentSubject();
       if (!subject) return;
-      const cards = subject.cards;
+      const cards = activeStudyCards(subject);
       if (!cards.length) return;
       studyIndex = (studyIndex + 1) % cards.length;
       showingAnswer = false;
