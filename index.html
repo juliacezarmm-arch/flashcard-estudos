@@ -324,6 +324,24 @@
       background: var(--danger);
     }
 
+    .danger-zone {
+      border-top: 1px solid var(--line);
+      padding-top: 8px;
+    }
+
+    .danger-zone summary {
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .danger-actions {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
     .subject.active {
       color: #fff;
       background: var(--brand);
@@ -1225,7 +1243,6 @@
             <button class="tab" data-view="add">Adicionar</button>
             <button class="tab" data-view="test">Teste</button>
           </div>
-          <button class="tiny-danger" id="deleteCollection" type="button">Excluir coleção</button>
         </div>
       </header>
 
@@ -1300,9 +1317,14 @@
                   <input id="newFolderName" placeholder="Ex: 2 Bimestre">
                 </label>
                 <button class="secondary" id="createFolder" type="button">Criar pasta</button>
-              </div>
-              <button class="tiny-danger" id="deleteFolder" type="button">Excluir pasta selecionada</button>
-              <button id="createCollection" type="button">Criar coleção</button>
+              </div>              <button id="createCollection" type="button">Criar coleção</button>
+              <details class="danger-zone">
+                <summary>Opções de exclusão</summary>
+                <div class="danger-actions">
+                  <button class="tiny-danger" id="deleteFolder" type="button">Excluir pasta selecionada</button>
+                  <button class="tiny-danger" id="deleteCollection" type="button">Excluir coleção atual</button>
+                </div>
+              </details>
               <p class="notice" id="collectionMessage"></p>
             </div>
           </div>
@@ -1344,18 +1366,15 @@
                   <div id="listItems"></div>
                   <button class="secondary" id="addListItem" type="button">+ item</button>
                 </div>
-                <label>
-                  Resposta
-                  <textarea id="answerText" placeholder="Escreva a resposta correta ou explicação"></textarea>
+                <label id="correctAnswerWrap">
+                  Resposta correta
+                  <select id="correctAnswer"></select>
                 </label>
                 <label>
-                  Dificuldade
-                  <select id="difficulty">
-                    <option value="normal">Normal</option>
-                    <option value="facil">Fácil</option>
-                    <option value="dificil">Difícil</option>
-                  </select>
+                  Explicação (opcional)
+                  <textarea id="answerText" placeholder="Escreva a explicação da resposta, se tiver"></textarea>
                 </label>
+                <input id="difficulty" type="hidden" value="normal">
                 <button id="saveQuestion" type="submit">Salvar questão</button>
                 <p class="notice" id="questionMessage"></p>
               </form>
@@ -1373,7 +1392,7 @@
                 <textarea id="bulkText" placeholder="Pergunta 1&#10;---&#10;Resposta 1&#10;&#10;Pergunta 2&#10;---&#10;Resposta 2"></textarea>
                 <div class="row">
                   <button id="bulkImport" type="button">Importar questões</button>
-                  <button class="secondary" id="loadExample" type="button">Usar exemplo</button>
+                  <button class="secondary" id="loadExample" type="button">Pré-visualizar</button>
                 </div>
                 <p class="notice" id="importMessage"></p>
               </div>
@@ -1523,6 +1542,8 @@
       addListChoice: document.querySelector("#addListChoice"),
       listItems: document.querySelector("#listItems"),
       addListItem: document.querySelector("#addListItem"),
+      correctAnswerWrap: document.querySelector("#correctAnswerWrap"),
+      correctAnswer: document.querySelector("#correctAnswer"),
       answerText: document.querySelector("#answerText"),
       saveQuestion: document.querySelector("#saveQuestion"),
       questionMessage: document.querySelector("#questionMessage"),
@@ -1604,10 +1625,33 @@
       normalized.subjects.forEach(subject => {
         subject.cards = Array.isArray(subject.cards) ? subject.cards : [];
         subject.folder = subject.folder || "";
+        subject.cards.forEach(card => normalizeCard(card));
       });
       return normalized;
     }
 
+    function normalizeCard(card) {
+      card.type = card.type || "multiple";
+      card.options = Array.isArray(card.options) ? card.options : [];
+      card.listChoices = Array.isArray(card.listChoices) ? card.listChoices : [];
+      card.listItems = Array.isArray(card.listItems) ? card.listItems : [];
+      card.difficulty = card.difficulty || "normal";
+      card.status = card.status || "new";
+      card.reviews = card.reviews || 0;
+      if (card.type === "multiple" && card.options.length < 2) {
+        const extracted = extractOptionsFromQuestion(card.q || "");
+        if (extracted.options.length >= 2) {
+          card.q = extracted.question;
+          card.options = extracted.options;
+        }
+      }
+      card.correctAnswer = answerLetter(card) || card.correctAnswer || "";
+      card.explanation = card.explanation || explanationFromAnswer(card.a);
+      if (card.type === "multiple" && card.correctAnswer && card.options.length >= 2) {
+        card.a = buildAnswerText(card.correctAnswer, card.options, card.explanation, "multiple");
+      }
+      return card;
+    }
     function save() {
       localStorage.setItem(storeKey, JSON.stringify(data));
       scheduleCloudSave();
@@ -1774,6 +1818,7 @@
       editingCardIndex = null;
       el.saveQuestion.textContent = "Salvar questão";
       el.questionText.value = "";
+      el.correctAnswer.value = "A";
       el.answerText.value = "";
       el.questionImage.value = "";
       el.difficulty.value = "normal";
@@ -1789,12 +1834,14 @@
       showAddMode("add");
       el.saveQuestion.textContent = "Salvar alterações";
       el.questionText.value = card.q || "";
-      el.answerText.value = card.a || "";
+      el.correctAnswer.value = answerLetter(card) || card.correctAnswer || "A";
+      el.answerText.value = card.explanation || explanationFromAnswer(card.a) || "";
       el.difficulty.value = card.difficulty || "normal";
       el.questionType.value = card.type || "multiple";
       const isList = el.questionType.value === "select-list";
       el.multipleBox.hidden = isList;
       el.listBox.hidden = !isList;
+      el.correctAnswerWrap.hidden = isList;
       if (isList) {
         listChoiceCount = Math.max(2, (card.listChoices || []).length || 2);
         listItemCount = Math.max(1, (card.listItems || []).length || 1);
@@ -1806,6 +1853,7 @@
         document.querySelectorAll(".option-input").forEach((input, optionIndex) => {
           input.value = card.options?.[optionIndex] || "";
         });
+        renderCorrectAnswerOptions(answerLetter(card) || card.correctAnswer || "A");
       }
       setMessage(el.questionMessage, "Editando cartão. Faça as alterações e salve.");
       el.questionText.focus();
@@ -1816,6 +1864,7 @@
     }
 
     function renderOptionInputs() {
+      const selected = el.correctAnswer?.value || "A";
       el.optionsList.innerHTML = Array.from({ length: optionCount }, (_, index) => `
         <div class="option-row">
           <span class="option-letter">${optionLetter(index)}</span>
@@ -1823,6 +1872,15 @@
           <button class="ghost remove-option" type="button" data-remove-option="${index}" ${optionCount <= 2 ? "disabled" : ""}>Remover</button>
         </div>
       `).join("");
+      renderCorrectAnswerOptions(selected);
+    }
+
+    function renderCorrectAnswerOptions(selected = el.correctAnswer?.value || "A") {
+      if (!el.correctAnswer) return;
+      el.correctAnswer.innerHTML = Array.from({ length: optionCount }, (_, index) => {
+        const letter = optionLetter(index);
+        return `<option value="${letter}" ${selected === letter ? "selected" : ""}>${letter}</option>`;
+      }).join("");
     }
 
     function getOptionValues() {
@@ -1886,6 +1944,7 @@
       listChoiceCount = 2;
       listItemCount = 2;
       renderOptionInputs();
+      if (el.correctAnswer) el.correctAnswer.value = "A";
       renderListChoiceInputs([]);
       renderListItemInputs([]);
     }
@@ -2174,8 +2233,29 @@
     }
 
     function answerLetter(card) {
-      const match = String(card.a || "").trim().match(/^([A-Z])/i);
-      return match ? match[1].toUpperCase() : "";
+      if (card?.correctAnswer) return String(card.correctAnswer).trim().toUpperCase();
+      const text = String(card?.a || "").trim();
+      const explicit = text.match(/(?:resposta\s+correta|gabarito|alternativa\s+correta)\s*:?\s*([A-H])/i);
+      if (explicit) return explicit[1].toUpperCase();
+      const simple = text.match(/^([A-H])(?:\b|\)|\.|\s*-)/i);
+      return simple ? simple[1].toUpperCase() : "";
+    }
+
+    function explanationFromAnswer(answer) {
+      const text = String(answer || "").trim();
+      if (!text) return "";
+      return text
+        .replace(/^(?:resposta\s+correta|gabarito|alternativa\s+correta)\s*:?\s*[A-H](?:\s*-\s*[^.\n]+)?\.?\s*/i, "")
+        .replace(/^explica[cç][aã]o\s*:?\s*/i, "")
+        .trim();
+    }
+
+    function buildAnswerText(letter, options, explanation, type) {
+      if (type === "select-list") return explanation || "";
+      const index = Math.max(0, letter.charCodeAt(0) - 65);
+      const optionText = options[index] || "";
+      const base = `Resposta correta: ${letter}${optionText ? ` - ${optionText}` : ""}.`;
+      return explanation ? `${base} Explicação: ${explanation}` : base;
     }
 
     function testableCards() {
@@ -2195,7 +2275,11 @@
         };
       }
       const originalLetter = answerLetter(card);
-      const correctIndex = originalLetter ? originalLetter.charCodeAt(0) - 65 : -1;
+      let correctIndex = originalLetter ? originalLetter.charCodeAt(0) - 65 : -1;
+      if (correctIndex < 0) {
+        const answerText = String(card.a || "").toLowerCase();
+        correctIndex = (card.options || []).findIndex(option => answerText.includes(String(option).toLowerCase()));
+      }
       const options = (card.options || []).map((text, index) => ({
         text,
         isCorrect: index === correctIndex
@@ -2296,7 +2380,7 @@
       const question = testState.questions[testState.index];
       el.testCounter.textContent = `Questão ${testState.index + 1} de ${testState.questions.length}`;
       el.testScore.textContent = `${testState.score} acerto${testState.score === 1 ? "" : "s"}`;
-      el.testQuestion.textContent = question.q;
+      el.testQuestion.innerHTML = `${escapeHtml(question.q)}${renderQuestionMedia(question)}`;
       if (question.type === "select-list") {
         el.testOptions.innerHTML = (question.listItems || []).map((item, index) => `
           <div class="card-option">
@@ -2333,13 +2417,21 @@
           ? `<strong>Gabarito:</strong>${renderListQuestion(question)}`
           : `Resposta: ${formatAnswer(question.a)}`
         : "";
-      el.confirmTestAnswer.disabled = (testState.selected === null || testState.selected === undefined) || testState.answered;
+      el.confirmTestAnswer.disabled = !isTestSelectionComplete(question) || testState.answered;
       el.nextTestQuestion.disabled = !testState.answered;
       el.testHint.textContent = testState.answered
         ? "Veja o gabarito e toque em Próxima."
         : "Escolha uma alternativa e confirme.";
     }
 
+    function isTestSelectionComplete(question) {
+      if (question.type !== "select-list") {
+        return testState.selected !== null && testState.selected !== undefined;
+      }
+      const items = question.listItems || [];
+      if (!items.length || !testState.selected || typeof testState.selected !== "object") return false;
+      return items.every((item, index) => Boolean(testState.selected[index]));
+    }
     function labelDifficulty(value) {
       return { facil: "Fácil", normal: "Normal", dificil: "Difícil" }[value] || "Normal";
     }
@@ -2355,9 +2447,7 @@
 
     function formatAnswer(answer) {
       const text = String(answer || "").trim();
-      if (!text) return "Adicione uma explicação.";
-      if (/explica[cç][aã]o/i.test(text)) return escapeHtml(text);
-      return `${escapeHtml(text)} <span class="hint">Adicione uma explicação.</span>`;
+      return text ? escapeHtml(text) : "";
     }
 
     function escapeHtml(text) {
@@ -2658,9 +2748,10 @@
       const isList = el.questionType.value === "select-list";
       el.multipleBox.hidden = isList;
       el.listBox.hidden = !isList;
+      el.correctAnswerWrap.hidden = isList;
       el.answerText.placeholder = isList
-        ? "Resumo/gabarito geral. Ex: Linha 1 Direto, Linha 2 Indireto..."
-        : "Escreva a resposta correta ou explicação";
+        ? "Explicação geral da lista, se tiver"
+        : "Escreva a explicação da resposta, se tiver";
     });
 
     el.createCollection.addEventListener("click", () => {
@@ -2682,7 +2773,8 @@
       event.preventDefault();
       const subject = currentSubject();
       const q = el.questionText.value.trim();
-      const a = el.answerText.value.trim();
+      const correctAnswer = el.correctAnswer.value || "A";
+      const explanation = el.answerText.value.trim();
       const type = el.questionType.value;
       const options = getOptionValues();
       const listChoices = getListChoices();
@@ -2691,8 +2783,12 @@
         setMessage(el.questionMessage, "Crie ou selecione uma coleção antes de salvar a questão.", "error");
         return;
       }
-      if (!q || !a) {
-        setMessage(el.questionMessage, "Preencha pergunta e resposta.", "error");
+      if (!q) {
+        setMessage(el.questionMessage, "Preencha a pergunta.", "error");
+        return;
+      }
+      if (type === "multiple" && !correctAnswer) {
+        setMessage(el.questionMessage, "Escolha a resposta correta.", "error");
         return;
       }
       if (type === "select-list" && (!listChoices.length || !listItems.length)) {
@@ -2712,13 +2808,15 @@
       const cardData = {
         ...(oldCard || {}),
         q,
-        a,
+        a: buildAnswerText(correctAnswer, options, explanation, type),
+        correctAnswer: type === "multiple" ? correctAnswer : "",
+        explanation,
         type,
         image,
         options: type === "multiple" ? options : [],
         listChoices: type === "select-list" ? listChoices : [],
         listItems: type === "select-list" ? listItems : [],
-        difficulty: el.difficulty.value,
+        difficulty: "normal",
         status: oldCard?.status || "new",
         reviews: oldCard?.reviews || 0,
         createdAt: oldCard?.createdAt || new Date().toISOString(),
@@ -2867,8 +2965,9 @@
     });
 
     el.confirmTestAnswer.addEventListener("click", () => {
-      if (!testState.active || testState.selected === null || testState.answered) return;
+      if (!testState.active || testState.answered) return;
       const question = testState.questions[testState.index];
+      if (!isTestSelectionComplete(question)) return;
       const selectedOption = question.type === "select-list" ? null : question.testOptions[testState.selected];
       testState.answered = true;
       const isCorrect = question.type === "select-list"
@@ -2959,12 +3058,26 @@
       render();
     });
 
+    function extractOptionsFromQuestion(question) {
+      const text = String(question || "").replace(/\s+/g, " ").trim();
+      const matches = [...text.matchAll(/(?:^|\s)([A-H])[\)\.]\s*/gi)];
+      if (matches.length < 2) return { question: String(question || "").trim(), options: [] };
+      const first = matches[0];
+      const cleanQuestion = text.slice(0, first.index).trim();
+      const options = matches.map((match, index) => {
+        const start = match.index + match[0].length;
+        const end = matches[index + 1]?.index ?? text.length;
+        return text.slice(start, end).trim();
+      }).filter(Boolean);
+      return { question: cleanQuestion || String(question || "").trim(), options };
+    }
+
     function parseTextCards(text) {
-      return text.split(/\n\s*\n/)
+      return text.split(/\r?\n\s*\r?\n/)
         .map(part => part.trim())
         .filter(Boolean)
         .map(chunk => {
-          const parts = chunk.split(/\n---\n/);
+          const parts = chunk.split(/\r?\n---\r?\n/);
           if (parts.length < 2) return null;
           return makeCard(parts[0], parts.slice(1).join("\n---\n"));
         })
@@ -3012,10 +3125,30 @@
     }
 
     function makeCard(question, answer) {
-      const q = String(question || "").trim();
-      const a = String(answer || "").trim();
-      if (!q || !a) return null;
-      return { q, a, options: [], difficulty: "normal", status: "new", reviews: 0 };
+      const extracted = extractOptionsFromQuestion(question);
+      const q = extracted.question;
+      const rawAnswer = String(answer || "").trim();
+      if (!q || !rawAnswer) return null;
+      const temporary = { a: rawAnswer };
+      const correctAnswer = answerLetter(temporary);
+      const explanation = explanationFromAnswer(rawAnswer);
+      return {
+        q,
+        a: extracted.options.length && correctAnswer
+          ? buildAnswerText(correctAnswer, extracted.options, explanation, "multiple")
+          : rawAnswer,
+        correctAnswer,
+        explanation,
+        type: "multiple",
+        options: extracted.options,
+        image: "",
+        listChoices: [],
+        listItems: [],
+        difficulty: "normal",
+        status: "new",
+        reviews: 0,
+        createdAt: new Date().toISOString()
+      };
     }
 
     function importCards(cards, fallbackSubject) {
@@ -3076,6 +3209,7 @@
         setMessage(el.importMessage, pendingImportFile ? "Não encontrei questões válidas nesse arquivo." : "Cole questões no formato pergunta, linha ---, resposta.", "error");
         return;
       }
+      imported.forEach(card => normalizeCard(card));
       const total = importCards(imported, currentSubject()?.name || "");
       if (!total) return;
       el.bulkText.value = "";
@@ -3087,15 +3221,43 @@
       render();
     });
 
-    el.importFile.addEventListener("change", () => {
+    function formatImportPreview(cards) {
+      if (!cards.length) return "Não encontrei questões válidas para pré-visualizar.";
+      return cards.slice(0, 10).map((card, index) => {
+        const options = (card.options || []).length
+          ? `\n${card.options.map((option, optionIndex) => `${optionLetter(optionIndex)}) ${option}`).join("\n")}`
+          : "";
+        const list = card.type === "select-list" && (card.listItems || []).length
+          ? `\n${card.listItems.map(item => `${item.label} = ${item.answer}`).join("\n")}`
+          : "";
+        return `Questão ${index + 1}: ${card.q}${options}${list}\nResposta: ${card.a}`;
+      }).join("\n\n---\n\n");
+    }
+
+    el.importFile.addEventListener("change", async () => {
       const file = el.importFile.files[0];
       pendingImportFile = file || null;
       el.importFileName.textContent = file ? file.name : "Nenhum arquivo escolhido";
-      setMessage(el.importMessage, file ? "Arquivo selecionado. Clique em Importar questões para importar." : "");
+      if (!file) {
+        setMessage(el.importMessage, "");
+        return;
+      }
+      try {
+        el.bulkText.value = await file.text();
+        setMessage(el.importMessage, "Arquivo selecionado. A prévia do conteúdo apareceu no campo acima. Clique em Importar questões para salvar.");
+      } catch (error) {
+        setMessage(el.importMessage, "Não consegui mostrar a prévia desse arquivo.", "error");
+      }
     });
 
-    el.loadExample.addEventListener("click", () => {
-      el.bulkText.value = `Explique o conceito principal deste tópico.\n---\nEscreva aqui a resposta resumida que você quer revisar depois.\n\nQual é a diferença entre os dois conceitos apresentados na aula?\n---\nColoque aqui a comparação ou explicação correta.`;
+    el.loadExample.addEventListener("click", async () => {
+      try {
+        const cards = pendingImportFile ? await parseImportFile(pendingImportFile) : parseTextCards(el.bulkText.value);
+        el.bulkText.value = formatImportPreview(cards);
+        setMessage(el.importMessage, `${cards.length} questão${cards.length === 1 ? "" : "ões"} encontrada${cards.length === 1 ? "" : "s"} na pré-visualização. Isso ainda não importou nada.`);
+      } catch (error) {
+        setMessage(el.importMessage, "Não consegui montar a pré-visualização desse conteúdo.", "error");
+      }
     });
 
     renderOptionInputs();
