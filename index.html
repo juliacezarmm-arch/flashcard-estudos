@@ -722,8 +722,6 @@
 
         <input id="authEmail" type="email" placeholder="Seu e-mail">
         <input id="authPassword" type="password" placeholder="Senha">
-        <input id="authPhone" type="tel" placeholder="Telefone (opcional)" hidden>
-
         <button id="signIn" type="button">Entrar</button>
         <button id="signUp" type="button" hidden>Criar conta</button>
         <button class="auth-link" id="showReset" type="button">Esqueci minha senha</button>
@@ -906,7 +904,6 @@
       showSignUp: document.querySelector("#showSignUp"),
       authEmail: document.querySelector("#authEmail"),
       authPassword: document.querySelector("#authPassword"),
-      authPhone: document.querySelector("#authPhone"),
       signIn: document.querySelector("#signIn"),
       signUp: document.querySelector("#signUp"),
       showReset: document.querySelector("#showReset"),
@@ -1036,7 +1033,7 @@
         : isReset
           ? "Informe seu e-mail. Você receberá um link para redefinir a senha."
           : isSignUp
-            ? "Crie sua conta. Se a confirmação por e-mail estiver ativa, você precisa verificar o e-mail antes de entrar."
+            ? "Crie sua conta e confirme o e-mail recebido antes de entrar."
             : "Acesse sua conta para carregar seus flashcards.";
       el.showSignIn.classList.toggle("active", mode === "signin");
       el.showSignUp.classList.toggle("active", isSignUp);
@@ -1045,8 +1042,8 @@
       el.sendReset.hidden = mode !== "reset";
       el.updatePassword.hidden = mode !== "update-password";
       el.showReset.hidden = mode !== "signin";
-      el.authPhone.hidden = !isSignUp;
       el.authEmail.hidden = isUpdatePassword;
+      el.authPassword.hidden = isReset;
       setAuthNotice("");
     }
 
@@ -1299,15 +1296,7 @@
         setAuthNotice("Preencha e-mail e senha para criar a conta.", "error");
         return;
       }
-      const { data: authData, error } = await supabaseClient.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            phone: el.authPhone.value.trim()
-          }
-        }
-      });
+      const { data: authData, error } = await supabaseClient.auth.signUp({ email, password });
       if (error) {
         setAuthNotice(`Erro ao criar conta: ${error.message}`, "error");
         return;
@@ -1315,7 +1304,7 @@
       if (authData.session) {
         setAuthNotice("Conta criada e conectada.");
       } else {
-        setAuthNotice("Conta criada. Verifique seu e-mail para confirmar o cadastro e depois volte para entrar.");
+        setAuthNotice("Enviamos um e-mail de confirmação. Abra seu e-mail, clique no botão de verificação e depois volte para entrar.");
         setAuthMode("signin");
       }
     });
@@ -1338,7 +1327,7 @@
         redirectTo: window.location.href.split("#")[0]
       });
       if (error) {
-        setAuthNotice(`Erro ao enviar recuperação: ${error.message}`, "error");
+        setAuthNotice("E-mail não cadastrado ou inválido.", "error");
         return;
       }
       setAuthNotice("Enviamos um link de recuperação para seu e-mail. Abra o link e cadastre uma nova senha.");
