@@ -283,6 +283,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      color: #7a859b;
     }
 
     .auth-rule::before {
@@ -292,8 +293,17 @@
       border-radius: 999px;
       display: grid;
       place-items: center;
-      color: #fff;
+      color: #8a94a9;
       font-size: 12px;
+      background: #eef2f8;
+    }
+
+    .auth-rule.done {
+      color: var(--text);
+    }
+
+    .auth-rule.done::before {
+      color: #fff;
       background: var(--brand);
     }
 
@@ -2700,7 +2710,7 @@
               <rect x="5" y="11" width="14" height="10" rx="2"></rect>
               <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
             </svg>
-            <input id="authPassword" type="password" placeholder="Digite sua senha" minlength="6" autocomplete="current-password">
+            <input id="authPassword" type="password" placeholder="Digite sua senha" minlength="8" autocomplete="current-password">
             <button class="auth-eye" id="toggleAuthPassword" type="button" aria-label="Mostrar ou ocultar senha">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path>
@@ -2717,7 +2727,7 @@
               <rect x="5" y="11" width="14" height="10" rx="2"></rect>
               <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
             </svg>
-            <input id="authPasswordConfirm" type="password" placeholder="Confirme sua senha" minlength="6" autocomplete="new-password">
+            <input id="authPasswordConfirm" type="password" placeholder="Confirme sua senha" minlength="8" autocomplete="new-password">
             <button class="auth-eye" id="toggleAuthPasswordConfirm" type="button" aria-label="Mostrar ou ocultar confirmação de senha">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path>
@@ -2728,10 +2738,11 @@
         </div>
 
         <div class="auth-rules" id="authRules" hidden>
-          <span class="auth-rule">Pelo menos 8 caracteres</span>
-          <span class="auth-rule">1 letra maiúscula</span>
-          <span class="auth-rule">1 letra minúscula</span>
-          <span class="auth-rule">1 número</span>
+          <span class="auth-rule" data-password-rule="length">Pelo menos 8 caracteres</span>
+          <span class="auth-rule" data-password-rule="upper">1 letra maiúscula</span>
+          <span class="auth-rule" data-password-rule="lower">1 letra minúscula</span>
+          <span class="auth-rule" data-password-rule="number">1 número</span>
+          <span class="auth-rule" data-password-rule="special">1 caractere especial</span>
         </div>
 
         <button class="auth-link" id="showReset" type="button">Esqueci minha senha</button>
@@ -3239,7 +3250,14 @@
   <script>
     const SUPABASE_URL = "https://rfmeiyjhugpsdnjbzpno.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_neuU8-peUJni1wus0dOnHQ_N6ZF-7f2";
-    const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        flowType: "pkce",
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false
+      }
+    });
     const cloudTable = "flashcard_data";
 
     const storeKey = "flashcard-estudos-v2";
@@ -3547,18 +3565,100 @@
       if (error.message === "Failed to fetch" || /fetch/i.test(error.message || "")) {
         return "Não consegui conectar ao Supabase. Abra o site pelo GitHub Pages e verifique sua internet.";
       }
+      if (/password|senha|weak/i.test(error.message || "")) {
+        return passwordRulesMessage();
+      }
       return fallback;
     }
 
     function authRedirectUrl() {
-      if (window.location.protocol === "http:" || window.location.protocol === "https:") {
-        return window.location.href.split("#")[0];
+      if (window.location.protocol !== "http:" && window.location.protocol !== "https:") {
+        return "https://juliacezarmm-arch.github.io/flashcard-estudos/";
       }
-      return "https://juliacezarmm-arch.github.io/flashcard-estudos/";
+      const localHost = ["localhost", "127.0.0.1", ""].includes(window.location.hostname);
+      if (window.location.hostname.endsWith("github.io")) {
+        return `${window.location.origin}/flashcard-estudos/`;
+      }
+      if (localHost) {
+        return new URL("./", window.location.href.split(/[?#]/)[0]).href;
+      }
+      return `${window.location.origin}${window.location.pathname.replace(/(?:index\.html)?$/, "")}`;
+    }
+
+    function cleanAuthCallbackUrl() {
+      if (!window.history?.replaceState) return;
+      window.history.replaceState({}, document.title, authRedirectUrl());
+    }
+
+    function authCallbackCode() {
+      return new URLSearchParams(window.location.search).get("code");
+    }
+
+    async function completeAuthCallback() {
+      const searchParams = new URLSearchParams(window.location.search);
+      const callbackError = searchParams.get("error_description") || searchParams.get("error");
+      if (callbackError) {
+        setAuthNotice("Não foi possível finalizar o login com Google. Tente entrar novamente.", "error");
+        cleanAuthCallbackUrl();
+        return null;
+      }
+      const code = authCallbackCode();
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const hashAccessToken = hashParams.get("access_token");
+      if (!code && !hashAccessToken) return null;
+      if (code) {
+        const { data: exchanged, error } = await supabaseClient.auth.exchangeCodeForSession(code);
+        if (error) {
+          setAuthNotice(authErrorMessage(error, "Não foi possível finalizar o login com Google. Tente entrar novamente."), "error");
+          cleanAuthCallbackUrl();
+          return null;
+        }
+        cleanAuthCallbackUrl();
+        return exchanged.session || null;
+      }
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      cleanAuthCallbackUrl();
+      return sessionData.session || null;
+    }
+
+    const specialPasswordPattern = /[!@#$%^&*()_+\-=\[\]{};:'"\\|<>?,.\/`~]/;
+
+    function passwordChecks(password) {
+      return {
+        length: password.length >= 8,
+        upper: /[A-Z]/.test(password),
+        lower: /[a-z]/.test(password),
+        number: /\d/.test(password),
+        special: specialPasswordPattern.test(password)
+      };
     }
 
     function isPasswordValid(password) {
-      return password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password);
+      return Object.values(passwordChecks(password)).every(Boolean);
+    }
+
+    function passwordRulesMessage() {
+      return "A senha precisa ter pelo menos 8 caracteres, 1 letra maiúscula, 1 letra minúscula, 1 número e 1 caractere especial.";
+    }
+
+    function updatePasswordRequirementState() {
+      if (!el.authRules) return;
+      const checks = passwordChecks(el.authPassword.value || "");
+      el.authRules.querySelectorAll("[data-password-rule]").forEach(rule => {
+        rule.classList.toggle("done", Boolean(checks[rule.dataset.passwordRule]));
+      });
+    }
+
+    function updateAuthButtonState() {
+      const password = el.authPassword.value || "";
+      const confirmPassword = el.authPasswordConfirm.value || "";
+      const email = el.authEmail.value.trim();
+      const name = el.authName.value.trim();
+      const passwordReady = isPasswordValid(password);
+      const confirmationReady = password && password === confirmPassword;
+      el.signUp.disabled = authMode === "signup" && (!name || !email || !passwordReady || !confirmationReady);
+      el.updatePassword.disabled = authMode === "update-password" && (!passwordReady || !confirmationReady);
+      updatePasswordRequirementState();
     }
 
     function setAuthMode(mode) {
@@ -3585,8 +3685,8 @@
       el.authNameField.hidden = !isSignUp;
       el.authEmailField.hidden = isUpdatePassword;
       el.authPasswordField.hidden = isReset;
-      el.authPasswordConfirmField.hidden = !isSignUp;
-      el.authRules.hidden = !isSignUp;
+      el.authPasswordConfirmField.hidden = !(isSignUp || isUpdatePassword);
+      el.authRules.hidden = !(isSignUp || isUpdatePassword);
       el.signIn.hidden = mode !== "signin";
       el.signUp.hidden = mode !== "signup";
       el.sendReset.hidden = mode !== "reset";
@@ -3600,6 +3700,11 @@
       el.authSwitchText.firstChild.textContent = isSignUp ? "Já tem conta? " : "Não tem conta? ";
       el.authSwitchAction.textContent = isSignUp ? "Fazer login" : "Criar cadastro";
       setAuthNotice("");
+      updateAuthButtonState();
+      if (isUpdatePassword) {
+        el.authScreen.hidden = false;
+        el.appShell.classList.add("locked");
+      }
     }
 
     function renderAuth() {
@@ -4620,7 +4725,7 @@
         return;
       }
       if (!isPasswordValid(password)) {
-        setAuthNotice("Use 8 caracteres, uma letra maiúscula, uma minúscula e um número.", "error");
+        setAuthNotice(passwordRulesMessage(), "error");
         return;
       }
       const { data: authData, error } = await supabaseClient.auth.signUp({
@@ -4649,6 +4754,9 @@
     el.authSwitchAction.addEventListener("click", () => setAuthMode(authMode === "signup" ? "signin" : "signup"));
     el.toggleAuthPassword.addEventListener("click", () => togglePasswordInput(el.authPassword));
     el.toggleAuthPasswordConfirm.addEventListener("click", () => togglePasswordInput(el.authPasswordConfirm));
+    [el.authName, el.authEmail, el.authPassword, el.authPasswordConfirm].forEach(input => {
+      input.addEventListener("input", updateAuthButtonState);
+    });
     el.userMenuToggle.addEventListener("click", event => {
       event.stopPropagation();
       toggleUserMenu();
@@ -4714,17 +4822,22 @@
         return;
       }
       const password = el.authPassword.value;
-      if (!password) {
-        setAuthNotice("Digite a nova senha.", "error");
+      const confirmPassword = el.authPasswordConfirm.value;
+      if (!password || !confirmPassword) {
+        setAuthNotice("Digite e confirme a nova senha.", "error");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setAuthNotice("As senhas não conferem.", "error");
         return;
       }
       if (!isPasswordValid(password)) {
-        setAuthNotice("A nova senha precisa ter 8 caracteres, letra maiúscula, minúscula e número.", "error");
+        setAuthNotice(passwordRulesMessage(), "error");
         return;
       }
       const { error } = await supabaseClient.auth.updateUser({ password });
       if (error) {
-        setAuthNotice(`Erro ao atualizar senha: ${error.message}`, "error");
+        setAuthNotice(authErrorMessage(error, "Não foi possível atualizar a senha. Verifique os requisitos e tente novamente."), "error");
         return;
       }
       setAuthNotice("Senha atualizada. Você já pode entrar com a nova senha.");
@@ -4744,6 +4857,24 @@
     el.signOut.addEventListener("click", leaveAccount);
     el.signOutFooter.addEventListener("click", leaveAccount);
 
+    async function applyAuthSession(session) {
+      currentUser = session?.user || null;
+      if (currentUser) {
+        const { data: userData, error } = await supabaseClient.auth.getUser();
+        if (!error && userData.user) {
+          currentUser = userData.user;
+        }
+      }
+      renderAuth();
+      if (currentUser) {
+        cloudReady = true;
+        await loadCloudData();
+      } else {
+        cloudReady = false;
+        render();
+      }
+    }
+
     async function initAuth() {
       if (!supabaseClient) {
         renderAuth();
@@ -4751,13 +4882,13 @@
         return;
       }
 
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      currentUser = sessionData.session?.user || null;
-      renderAuth();
-      if (currentUser) {
-        cloudReady = true;
-        await loadCloudData();
-      }
+      setAuthStatus("Verificando sessão...");
+
+      const callbackSession = await completeAuthCallback();
+      const { data: sessionData } = callbackSession
+        ? { data: { session: callbackSession } }
+        : await supabaseClient.auth.getSession();
+      await applyAuthSession(sessionData.session);
 
       supabaseClient.auth.onAuthStateChange(async (event, session) => {
         if (event === "PASSWORD_RECOVERY") {
@@ -4766,15 +4897,7 @@
           setAuthMode("update-password");
           return;
         }
-        currentUser = session?.user || null;
-        renderAuth();
-        if (currentUser) {
-          cloudReady = true;
-          await loadCloudData();
-        } else {
-          cloudReady = false;
-          render();
-        }
+        await applyAuthSession(session);
       });
     }
 
