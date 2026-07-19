@@ -3255,7 +3255,7 @@
         flowType: "pkce",
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: false
+        detectSessionInUrl: true
       }
     });
     const cloudTable = "flashcard_data";
@@ -3590,35 +3590,32 @@
       window.history.replaceState({}, document.title, authRedirectUrl());
     }
 
-    function authCallbackCode() {
-      return new URLSearchParams(window.location.search).get("code");
+    function hasAuthCallbackInUrl() {
+      const searchParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      return Boolean(searchParams.get("code") || searchParams.get("error") || searchParams.get("error_description") || hashParams.get("access_token"));
     }
 
-    async function completeAuthCallback() {
+    function logAuthDebug(event, session, error = null) {
+      const searchParams = new URLSearchParams(window.location.search);
+      console.log("[Fixa Auth]", {
+        event,
+        hasSession: Boolean(session),
+        errorName: error?.name || null,
+        errorMessage: error?.message || null,
+        errorCode: error?.code || null,
+        pathname: window.location.pathname,
+        hasCode: searchParams.has("code")
+      });
+    }
+
+    function authCallbackErrorMessage() {
       const searchParams = new URLSearchParams(window.location.search);
       const callbackError = searchParams.get("error_description") || searchParams.get("error");
       if (callbackError) {
-        setAuthNotice("Não foi possível finalizar o login com Google. Tente entrar novamente.", "error");
-        cleanAuthCallbackUrl();
-        return null;
+        return decodeURIComponent(callbackError.replace(/\+/g, " "));
       }
-      const code = authCallbackCode();
-      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-      const hashAccessToken = hashParams.get("access_token");
-      if (!code && !hashAccessToken) return null;
-      if (code) {
-        const { data: exchanged, error } = await supabaseClient.auth.exchangeCodeForSession(code);
-        if (error) {
-          setAuthNotice(authErrorMessage(error, "Não foi possível finalizar o login com Google. Tente entrar novamente."), "error");
-          cleanAuthCallbackUrl();
-          return null;
-        }
-        cleanAuthCallbackUrl();
-        return exchanged.session || null;
-      }
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      cleanAuthCallbackUrl();
-      return sessionData.session || null;
+      return "";
     }
 
     const specialPasswordPattern = /[!@#$%^&*()_+\-=\[\]{};:'"\\|<>?,.\/`~]/;
@@ -4863,16 +4860,42 @@
         const { data: userData, error } = await supabaseClient.auth.getUser();
         if (!error && userData.user) {
           currentUser = userData.user;
+        } else if (error) {
+          logAuthDebug("GET_USER_ERROR", session, error);
         }
       }
       renderAuth();
       if (currentUser) {
         cloudReady = true;
-        await loadCloudData();
+        setAuthStatus("Conectado. Carregando seus flashcards...");
+        loadCloudData().catch(error => {
+          console.error("[Fixa Auth] Falha ao carregar flashcards:", error);
+          setAuthStatus("Conectado, mas não consegui carregar os dados online agora.");
+        });
       } else {
         cloudReady = false;
         render();
       }
+    }
+
+    async function handleAuthStateChange(event, session) {
+      logAuthDebug(event, session);
+      if (event === "PASSWORD_RECOVERY") {
+        currentUser = session?.user || null;
+        renderAuth();
+        setAuthMode("update-password");
+        return;
+      }
+      if (["INITIAL_SESSION", "SIGNED_IN", "TOKEN_REFRESHED", "USER_UPDATED"].includes(event)) {
+        await applyAuthSession(session);
+        if (session && hasAuthCallbackInUrl()) cleanAuthCallbackUrl();
+        return;
+      }
+      if (event === "SIGNED_OUT") {
+        await applyAuthSession(null);
+        return;
+      }
+      await applyAuthSession(session);
     }
 
     async function initAuth() {
@@ -4883,22 +4906,58 @@
       }
 
       setAuthStatus("Verificando sessão...");
+      const hasCallback = hasAuthCallbackInUrl();
+      if (hasCallback) {
+        setAuthNotice("Finalizando acesso pelo Google...", "success");
+      }
+      let resolveCallbackSession = null;
+      const callbackSessionPromise = hasCallback
+        ? new Promise(resolve => {
+            resolveCallbackSession = resolve;
+            setTimeout(() => resolve(null), 5000);
+          })
+        : null;
 
-      const callbackSession = await completeAuthCallback();
-      const { data: sessionData } = callbackSession
-        ? { data: { session: callbackSession } }
-        : await supabaseClient.auth.getSession();
-      await applyAuthSession(sessionData.session);
-
-      supabaseClient.auth.onAuthStateChange(async (event, session) => {
-        if (event === "PASSWORD_RECOVERY") {
-          currentUser = session?.user || null;
-          renderAuth();
-          setAuthMode("update-password");
-          return;
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        logAuthDebug(event, session);
+        if (session && resolveCallbackSession) {
+          resolveCallbackSession(session);
+          resolveCallbackSession = null;
         }
-        await applyAuthSession(session);
+        setTimeout(() => {
+          handleAuthStateChange(event, session).catch(error => {
+            logAuthDebug(`${event}_HANDLER_ERROR`, session, error);
+            console.error("[Fixa Auth] Falha ao aplicar sessão:", error);
+            setAuthNotice("Seu acesso pelo Google foi autorizado, mas o Fixa não conseguiu criar a sessão local. Atualize a página e tente novamente.", "error");
+          });
+        }, 0);
       });
+
+      const callbackError = authCallbackErrorMessage();
+      const { data: sessionData, error } = await supabaseClient.auth.getSession();
+      if (error) {
+        logAuthDebug("GET_SESSION_ERROR", null, error);
+        const message = callbackError
+          ? `Não foi possível finalizar o login com Google: ${callbackError}`
+          : "Seu acesso pelo Google foi autorizado, mas o Fixa não conseguiu criar a sessão local. Atualize a página e tente novamente.";
+        setAuthNotice(message, "error");
+        renderAuth();
+        return;
+      }
+      logAuthDebug("GET_SESSION", sessionData.session);
+      let initialSession = sessionData.session;
+      if (!initialSession && callbackSessionPromise) {
+        initialSession = await callbackSessionPromise;
+        logAuthDebug("CALLBACK_SESSION_WAIT", initialSession);
+      }
+      if (!initialSession && hasAuthCallbackInUrl()) {
+        const message = callbackError
+          ? `Não foi possível finalizar o login com Google: ${callbackError}`
+          : "Seu acesso pelo Google foi autorizado, mas o Fixa não encontrou uma sessão local. Atualize a página e tente novamente.";
+        setAuthNotice(message, "error");
+      }
+      await applyAuthSession(initialSession);
+      if (initialSession && hasAuthCallbackInUrl()) cleanAuthCallbackUrl();
     }
 
     el.addOption.addEventListener("click", () => {
