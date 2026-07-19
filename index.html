@@ -1217,6 +1217,42 @@
       flex-wrap: wrap;
     }
 
+    .guidelines-modal-card {
+      width: min(100%, 780px);
+      max-height: calc(100vh - 36px);
+      overflow: hidden;
+    }
+
+    .guidelines-modal-copy {
+      margin: -4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .guidelines-text {
+      min-height: min(62vh, 590px);
+      max-height: 62vh;
+      resize: none;
+      overflow: auto;
+      padding: 14px;
+      color: #26324d;
+      background: #f8fafc;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre;
+    }
+
+    .guidelines-actions {
+      align-items: center;
+    }
+
+    .guidelines-actions .notice {
+      flex: 1 1 220px;
+      margin-right: auto;
+    }
+
     .meta {
       display: flex;
       justify-content: space-between;
@@ -2827,7 +2863,7 @@
           <span>Sair</span>
           <span class="chevron" aria-hidden="true">›</span>
         </button>
-        <div class="app-version">Fixa <span>•</span> v1.0.1</div>
+        <div class="app-version">Fixa <span>•</span> v1.0.2</div>
       </div>
     </aside>
 
@@ -3165,6 +3201,7 @@
                 <div class="row">
                   <button id="bulkImport" type="button">Importar questões</button>
                   <button class="secondary" id="loadExample" type="button">Pré-visualizar</button>
+                  <button class="secondary" id="openGuidelines" type="button">Diretrizes</button>
                 </div>
                 <p class="notice" id="importMessage"></p>
               </div>
@@ -3276,6 +3313,140 @@
       <h3 id="modalTitle">Confirmar ação</h3>
       <div id="modalBody"></div>
       <div class="modal-actions" id="modalActions"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="guidelinesModal" hidden>
+    <div class="modal-card guidelines-modal-card" role="dialog" aria-modal="true" aria-labelledby="guidelinesTitle">
+      <h3 id="guidelinesTitle">Diretrizes para criar o arquivo</h3>
+      <p class="guidelines-modal-copy">Copie o texto abaixo e envie ao ChatGPT para gerar um arquivo compatível com o Fixa.</p>
+      <textarea class="guidelines-text" id="guidelinesText" readonly spellcheck="false">O arquivo deve ser gerado em formato JSON e pode conter os seguintes tipos de flashcard:
+
+## 1. Múltipla escolha
+
+```json
+{
+  &quot;tipo&quot;: &quot;multiple&quot;,
+  &quot;pergunta&quot;: &quot;O que é um Byte?&quot;,
+  &quot;alternativas&quot;: [
+    &quot;Um conjunto de oito bits.&quot;,
+    &quot;Uma unidade de entrada e saída.&quot;,
+    &quot;A menor unidade de informação em um computador.&quot;,
+    &quot;Uma unidade de armazenamento.&quot;
+  ],
+  &quot;resposta&quot;: &quot;Um conjunto de oito bits.&quot;,
+  &quot;explicacao&quot;: &quot;Um Byte é formado por oito bits.&quot;
+}
+```
+
+A resposta deve ser o texto completo da alternativa correta, nunca apenas A, B, C ou D.
+
+---
+
+## 2. Lista suspensa
+
+```json
+{
+  &quot;tipo&quot;: &quot;select-list&quot;,
+  &quot;pergunta&quot;: &quot;Classifique os itens abaixo.&quot;,
+  &quot;opcoesLista&quot;: [
+    &quot;Direto&quot;,
+    &quot;Indireto&quot;
+  ],
+  &quot;itens&quot;: [
+    {
+      &quot;label&quot;: &quot;Hardware e Software&quot;,
+      &quot;answer&quot;: &quot;Direto&quot;
+    },
+    {
+      &quot;label&quot;: &quot;Manutenção predial&quot;,
+      &quot;answer&quot;: &quot;Indireto&quot;
+    }
+  ],
+  &quot;resposta&quot;: &quot;Hardware e Software = Direto; Manutenção predial = Indireto&quot;,
+  &quot;explicacao&quot;: &quot;Custos diretos estão ligados diretamente à atividade principal.&quot;
+}
+```
+
+---
+
+## 3. Lista suspensa com imagem
+
+```json
+{
+  &quot;tipo&quot;: &quot;select-list&quot;,
+  &quot;pergunta&quot;: &quot;Associe os números da figura aos elementos.&quot;,
+  &quot;imagem&quot;: &quot;elementos_do_sistema.png&quot;,
+  &quot;opcoesLista&quot;: [
+    &quot;Entrada&quot;,
+    &quot;Processamento&quot;,
+    &quot;Saída&quot;,
+    &quot;Retroalimentação&quot;
+  ],
+  &quot;itens&quot;: [
+    {
+      &quot;label&quot;: &quot;1&quot;,
+      &quot;answer&quot;: &quot;Entrada&quot;
+    },
+    {
+      &quot;label&quot;: &quot;2&quot;,
+      &quot;answer&quot;: &quot;Processamento&quot;
+    },
+    {
+      &quot;label&quot;: &quot;3&quot;,
+      &quot;answer&quot;: &quot;Saída&quot;
+    },
+    {
+      &quot;label&quot;: &quot;4&quot;,
+      &quot;answer&quot;: &quot;Retroalimentação&quot;
+    }
+  ],
+  &quot;resposta&quot;: &quot;1 = Entrada; 2 = Processamento; 3 = Saída; 4 = Retroalimentação&quot;,
+  &quot;explicacao&quot;: &quot;A figura representa o fluxo básico de um sistema.&quot;
+}
+```
+
+---
+
+## 4. Múltipla escolha com imagem
+
+```json
+{
+  &quot;tipo&quot;: &quot;multiple&quot;,
+  &quot;pergunta&quot;: &quot;Qual alternativa representa corretamente a figura?&quot;,
+  &quot;imagem&quot;: &quot;figura_da_questao.png&quot;,
+  &quot;alternativas&quot;: [
+    &quot;Alternativa 1&quot;,
+    &quot;Alternativa 2&quot;,
+    &quot;Alternativa 3&quot;,
+    &quot;Alternativa 4&quot;
+  ],
+  &quot;resposta&quot;: &quot;Alternativa 2&quot;,
+  &quot;explicacao&quot;: &quot;A alternativa 2 corresponde corretamente ao que aparece na figura.&quot;
+}
+```
+
+Todas as questões devem ficar dentro de uma lista JSON:
+
+```json
+[
+  {
+    &quot;tipo&quot;: &quot;multiple&quot;
+  },
+  {
+    &quot;tipo&quot;: &quot;select-list&quot;
+  }
+]
+```
+
+Quando houver imagem, o arquivo JSON e as imagens devem ser colocados juntos em um arquivo ZIP.
+
+A imagem deve conter somente a figura necessária, sem respostas, correções, marcações ou gabarito.</textarea>
+      <div class="modal-actions guidelines-actions">
+        <p class="notice" id="guidelinesNotice"></p>
+        <button class="secondary" id="closeGuidelines" type="button">Fechar</button>
+        <button id="copyGuidelines" type="button">Copiar diretrizes</button>
+      </div>
     </div>
   </div>
 
@@ -3433,6 +3604,12 @@
       bulkImport: document.querySelector("#bulkImport"),
       importMessage: document.querySelector("#importMessage"),
       loadExample: document.querySelector("#loadExample"),
+      openGuidelines: document.querySelector("#openGuidelines"),
+      guidelinesModal: document.querySelector("#guidelinesModal"),
+      guidelinesText: document.querySelector("#guidelinesText"),
+      guidelinesNotice: document.querySelector("#guidelinesNotice"),
+      copyGuidelines: document.querySelector("#copyGuidelines"),
+      closeGuidelines: document.querySelector("#closeGuidelines"),
       actionModal: document.querySelector("#actionModal"),
       modalTitle: document.querySelector("#modalTitle"),
       modalBody: document.querySelector("#modalBody"),
@@ -3772,6 +3949,36 @@
       el.actionModal.hidden = true;
       el.modalBody.innerHTML = "";
       el.modalActions.innerHTML = "";
+    }
+
+    function openGuidelinesModal() {
+      el.guidelinesModal.hidden = false;
+      el.guidelinesModal.classList.add("show");
+      setMessage(el.guidelinesNotice, "");
+      requestAnimationFrame(() => el.guidelinesText.focus());
+    }
+
+    function closeGuidelinesModal() {
+      el.guidelinesModal.classList.remove("show");
+      el.guidelinesModal.hidden = true;
+      setMessage(el.guidelinesNotice, "");
+    }
+
+    async function copyGuidelinesText() {
+      const text = el.guidelinesText.value;
+      try {
+        await navigator.clipboard.writeText(text);
+        setMessage(el.guidelinesNotice, "Diretrizes copiadas.");
+      } catch (error) {
+        el.guidelinesText.focus();
+        el.guidelinesText.select();
+        const copied = document.execCommand("copy");
+        setMessage(
+          el.guidelinesNotice,
+          copied ? "Diretrizes copiadas." : "Não consegui copiar automaticamente. Selecione o texto e copie manualmente.",
+          copied ? "info" : "error"
+        );
+      }
     }
 
     function showView(viewId) {
@@ -4810,7 +5017,9 @@
       if (!el.authPanel.contains(event.target)) closeUserMenu();
     });
     document.addEventListener("keydown", event => {
-      if (event.key === "Escape") closeUserMenu();
+      if (event.key !== "Escape") return;
+      closeUserMenu();
+      if (!el.guidelinesModal.hidden) closeGuidelinesModal();
     });
     el.googleAuth.addEventListener("click", async () => {
       if (!supabaseClient) {
@@ -5761,6 +5970,13 @@
       } catch (error) {
         setMessage(el.importMessage, "Não consegui montar a pré-visualização desse conteúdo.", "error");
       }
+    });
+
+    el.openGuidelines.addEventListener("click", openGuidelinesModal);
+    el.closeGuidelines.addEventListener("click", closeGuidelinesModal);
+    el.copyGuidelines.addEventListener("click", copyGuidelinesText);
+    el.guidelinesModal.addEventListener("click", event => {
+      if (event.target === el.guidelinesModal) closeGuidelinesModal();
     });
 
     renderOptionInputs();
