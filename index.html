@@ -1944,36 +1944,42 @@
 
     .auth-panel {
       position: relative;
-      min-height: 58px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
     }
 
     .user-trigger {
-      min-height: 58px;
-      min-width: 236px;
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      min-height: 48px;
       border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      border-radius: 999px;
+      padding: 0;
+      display: grid;
+      place-items: center;
       color: var(--text);
-      background: rgba(255, 255, 255, 0.92);
-      box-shadow: var(--shadow-soft);
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 6px 18px rgba(17, 26, 49, 0.06);
     }
 
     .user-trigger:hover,
     .user-trigger[aria-expanded="true"] {
+      color: var(--brand);
       background: #fff;
-      border-color: #cbd5e1;
+      border-color: #bfd0ee;
+      box-shadow: 0 8px 22px rgba(37, 99, 235, 0.12);
     }
 
     .user-avatar {
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: 999px;
       position: relative;
-      flex: 0 0 38px;
-      background: #e5eaf3;
+      flex: 0 0 36px;
+      background: #e7edf7;
     }
 
     .user-avatar::before,
@@ -1986,39 +1992,24 @@
     }
 
     .user-avatar::before {
-      top: 8px;
-      width: 11px;
-      height: 11px;
+      top: 7px;
+      width: 10px;
+      height: 10px;
       border-radius: 999px;
     }
 
     .user-avatar::after {
-      bottom: 7px;
-      width: 22px;
+      bottom: 6px;
+      width: 21px;
       height: 12px;
       border-radius: 999px 999px 6px 6px;
     }
 
-    .user-copy {
-      min-width: 0;
-    }
-
-    .user-copy strong {
-      display: block;
-      color: var(--text);
-      font-size: 15px;
-      line-height: 1.2;
-    }
-
     .auth-status {
-      max-width: 210px;
-      margin: 2px 0 0;
-      overflow: hidden;
+      margin: 3px 0 0;
       color: var(--muted);
       font-size: 12px;
-      line-height: 1.25;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      line-height: 1.35;
     }
 
     .sign-out-button {
@@ -2028,34 +2019,82 @@
       font-size: 13px;
     }
 
-    .user-chevron {
-      margin-left: auto;
-      color: #0f172a;
-      font-size: 22px;
-      line-height: 1;
-      transform: rotate(90deg);
-      transition: transform 0.18s ease;
-    }
-
-    .user-trigger[aria-expanded="true"] .user-chevron {
-      transform: rotate(-90deg);
-    }
-
     .user-menu {
       position: absolute;
-      top: calc(100% + 8px);
+      top: calc(100% + 10px);
       right: 0;
       z-index: 40;
       width: 300px;
       border: 1px solid var(--line);
       border-radius: 14px;
       padding: 14px;
-      background: rgba(255, 255, 255, 0.98);
+      background: rgba(255, 255, 255, 0.99);
       box-shadow: 0 22px 60px rgba(15, 23, 42, 0.16);
+    }
+
+    .user-menu::before {
+      content: "";
+      position: absolute;
+      top: -7px;
+      right: 17px;
+      width: 12px;
+      height: 12px;
+      border-left: 1px solid var(--line);
+      border-top: 1px solid var(--line);
+      background: #fff;
+      transform: rotate(45deg);
     }
 
     .user-menu[hidden] {
       display: none;
+    }
+
+    .user-menu-header {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      padding: 2px 4px 4px;
+    }
+
+    .user-menu-avatar {
+      width: 44px;
+      height: 44px;
+      flex-basis: 44px;
+      background: #e9eff9;
+    }
+
+    .user-menu-avatar::before {
+      top: 9px;
+      width: 12px;
+      height: 12px;
+    }
+
+    .user-menu-avatar::after {
+      bottom: 7px;
+      width: 25px;
+      height: 14px;
+    }
+
+    .user-menu-header-copy {
+      min-width: 0;
+    }
+
+    .user-menu-header-copy strong {
+      display: block;
+      overflow: hidden;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.25;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-menu-header .auth-status {
+      max-width: none;
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
     }
 
     .user-menu-list {
@@ -2090,9 +2129,16 @@
       background: #f4f7fc;
     }
 
-    .user-menu-item.danger:hover {
-      color: var(--danger);
+    .user-menu-item.danger {
+      border: 1px solid #fecdd3;
+      color: #c2414b;
       background: #fff1f2;
+    }
+
+    .user-menu-item.danger:hover {
+      border-color: #fda4af;
+      color: #b42332;
+      background: #ffe4e6;
     }
 
     .user-menu-item svg {
@@ -2781,7 +2827,7 @@
           <span>Sair</span>
           <span class="chevron" aria-hidden="true">›</span>
         </button>
-        <div class="app-version">Fixa <span>•</span> v1.0.0</div>
+        <div class="app-version">Fixa <span>•</span> v1.0.1</div>
       </div>
     </aside>
 
@@ -2816,15 +2862,18 @@
             </button>
           </div>
           <section class="auth-panel signed-in" id="authPanel">
-            <button class="user-trigger" id="userMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false">
+            <button class="user-trigger" id="userMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Abrir menu do usuário" title="Menu do usuário">
               <span class="user-avatar" aria-hidden="true"></span>
-              <span class="user-copy">
-                <strong id="userDisplayName">Usuário</strong>
-                <span class="auth-status" id="authStatus">Conectado</span>
-              </span>
-              <span class="chevron user-chevron" aria-hidden="true">›</span>
             </button>
             <div class="user-menu" id="userMenu" role="menu" hidden>
+              <div class="user-menu-header">
+                <span class="user-avatar user-menu-avatar" aria-hidden="true"></span>
+                <div class="user-menu-header-copy">
+                  <strong id="userDisplayName">Usuário</strong>
+                  <span class="auth-status" id="authStatus">Conectado</span>
+                </div>
+              </div>
+              <div class="user-menu-divider"></div>
               <div class="user-menu-list">
                 <button class="user-menu-item" type="button" data-user-action="profile" role="menuitem">
                   <svg viewBox="0 0 24 24" aria-hidden="true">
