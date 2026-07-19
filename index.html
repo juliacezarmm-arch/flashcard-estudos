@@ -1933,19 +1933,28 @@
     }
 
     .auth-panel {
+      position: relative;
       min-height: 58px;
+    }
+
+    .user-trigger {
+      min-height: 58px;
+      min-width: 236px;
       border: 1px solid var(--line);
       border-radius: 12px;
-      padding: 8px 10px;
+      padding: 8px 12px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      color: var(--text);
       background: rgba(255, 255, 255, 0.92);
       box-shadow: var(--shadow-soft);
     }
 
-    .auth-panel.signed-in {
-      justify-content: flex-start;
+    .user-trigger:hover,
+    .user-trigger[aria-expanded="true"] {
+      background: #fff;
+      border-color: #cbd5e1;
     }
 
     .user-avatar {
@@ -1987,7 +1996,7 @@
     .user-copy strong {
       display: block;
       color: var(--text);
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.2;
     }
 
@@ -2010,8 +2019,80 @@
     }
 
     .user-chevron {
-      margin-left: 2px;
-      color: #8a94a9;
+      margin-left: auto;
+      color: #0f172a;
+      font-size: 22px;
+      line-height: 1;
+      transform: rotate(90deg);
+      transition: transform 0.18s ease;
+    }
+
+    .user-trigger[aria-expanded="true"] .user-chevron {
+      transform: rotate(-90deg);
+    }
+
+    .user-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 40;
+      width: 300px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 22px 60px rgba(15, 23, 42, 0.16);
+    }
+
+    .user-menu[hidden] {
+      display: none;
+    }
+
+    .user-menu-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .user-menu-divider {
+      height: 1px;
+      margin: 12px -14px;
+      background: var(--line);
+    }
+
+    .user-menu-item {
+      width: 100%;
+      min-height: 52px;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      align-items: center;
+      gap: 12px;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      text-align: left;
+      background: transparent;
+    }
+
+    .user-menu-item:hover {
+      background: #f4f7fc;
+    }
+
+    .user-menu-item.danger:hover {
+      color: var(--danger);
+      background: #fff1f2;
+    }
+
+    .user-menu-item svg {
+      width: 23px;
+      height: 23px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .tab-icon {
@@ -2741,13 +2822,58 @@
             </button>
           </div>
           <section class="auth-panel signed-in" id="authPanel">
-            <div class="user-avatar" aria-hidden="true"></div>
-            <div class="user-copy">
-              <strong>Usuário</strong>
-              <p class="auth-status" id="authStatus">Conectado.</p>
+            <button class="user-trigger" id="userMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false">
+              <span class="user-avatar" aria-hidden="true"></span>
+              <span class="user-copy">
+                <strong id="userDisplayName">Usuário</strong>
+                <span class="auth-status" id="authStatus">Conectado</span>
+              </span>
+              <span class="chevron user-chevron" aria-hidden="true">›</span>
+            </button>
+            <div class="user-menu" id="userMenu" role="menu" hidden>
+              <div class="user-menu-list">
+                <button class="user-menu-item" type="button" data-user-action="profile" role="menuitem">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="7" r="4"></circle>
+                    <path d="M4 21a8 8 0 0 1 16 0"></path>
+                  </svg>
+                  <span>Meu perfil</span>
+                </button>
+                <button class="user-menu-item" type="button" data-user-action="personal" role="menuitem">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M2 21a7 7 0 0 1 14 0"></path>
+                    <rect x="14" y="12" width="8" height="7" rx="1"></rect>
+                    <path d="M16 15h4"></path>
+                  </svg>
+                  <span>Dados pessoais</span>
+                </button>
+                <button class="user-menu-item" type="button" data-user-action="settings" role="menuitem">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.04.04a2.1 2.1 0 0 1-2.98 2.98l-.04-.04A1.8 1.8 0 0 0 14.8 19.6a1.8 1.8 0 0 0-1.08 1.65V21a2.1 2.1 0 0 1-4.2 0v-.06A1.8 1.8 0 0 0 8.4 19.3a1.8 1.8 0 0 0-1.98.36l-.04.04a2.1 2.1 0 0 1-2.98-2.98l.04-.04A1.8 1.8 0 0 0 3.8 14.7a1.8 1.8 0 0 0-1.65-1.08H2a2.1 2.1 0 0 1 0-4.2h.06A1.8 1.8 0 0 0 3.7 8.3a1.8 1.8 0 0 0-.36-1.98l-.04-.04A2.1 2.1 0 0 1 6.28 3.3l.04.04A1.8 1.8 0 0 0 8.3 3.7a1.8 1.8 0 0 0 1.08-1.65V2a2.1 2.1 0 0 1 4.2 0v.06A1.8 1.8 0 0 0 14.7 3.7a1.8 1.8 0 0 0 1.98-.36l.04-.04a2.1 2.1 0 0 1 2.98 2.98l-.04.04A1.8 1.8 0 0 0 19.3 8.3a1.8 1.8 0 0 0 1.65 1.08H21a2.1 2.1 0 0 1 0 4.2h-.06A1.8 1.8 0 0 0 19.4 15z"></path>
+                  </svg>
+                  <span>Configurações</span>
+                </button>
+                <button class="user-menu-item" type="button" data-user-action="help" role="menuitem">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M9.8 9a2.5 2.5 0 0 1 4.6 1.4c0 1.7-2.4 2.1-2.4 3.6"></path>
+                    <path d="M12 17h.01"></path>
+                  </svg>
+                  <span>Ajuda</span>
+                </button>
+              </div>
+              <div class="user-menu-divider"></div>
+              <button class="user-menu-item danger" id="signOut" type="button" role="menuitem" hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M14 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-3"></path>
+                  <path d="M9 12h11"></path>
+                  <path d="M17 9l3 3-3 3"></path>
+                </svg>
+                <span>Sair</span>
+              </button>
             </div>
-            <span class="chevron user-chevron" aria-hidden="true">›</span>
-            <button class="secondary sign-out-button" id="signOut" type="button" hidden>Sair</button>
           </section>
         </div>
       </header>
@@ -3141,6 +3267,9 @@
       appShell: document.querySelector("#appShell"),
       authPanel: document.querySelector("#authPanel"),
       authStatus: document.querySelector("#authStatus"),
+      userDisplayName: document.querySelector("#userDisplayName"),
+      userMenuToggle: document.querySelector("#userMenuToggle"),
+      userMenu: document.querySelector("#userMenu"),
       authTitle: document.querySelector("#authTitle"),
       authSubtitle: document.querySelector("#authSubtitle"),
       authNotice: document.querySelector("#authNotice"),
@@ -3391,6 +3520,28 @@
       setMessage(el.authNotice, text, type);
     }
 
+    function closeUserMenu() {
+      if (!el.userMenu || !el.userMenuToggle) return;
+      el.userMenu.hidden = true;
+      el.userMenuToggle.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleUserMenu() {
+      if (!el.userMenu || !el.userMenuToggle || !currentUser) return;
+      const isOpen = !el.userMenu.hidden;
+      el.userMenu.hidden = isOpen;
+      el.userMenuToggle.setAttribute("aria-expanded", String(!isOpen));
+    }
+
+    function showUserInfoPanel(title, text) {
+      closeUserMenu();
+      openModal(
+        title,
+        `<p>${escapeHtml(text)}</p>`,
+        `<button class="secondary" type="button" data-modal-close>Fechar</button>`
+      );
+    }
+
     function authErrorMessage(error, fallback) {
       if (!error) return fallback;
       if (error.message === "Failed to fetch" || /fetch/i.test(error.message || "")) {
@@ -3456,11 +3607,13 @@
       el.authScreen.hidden = signedIn;
       el.appShell.classList.toggle("locked", !signedIn);
       el.signOut.hidden = !signedIn;
-      el.signOutFooter.hidden = !signedIn;
+      el.signOutFooter.hidden = true;
       if (signedIn) {
         const userName = currentUser.user_metadata?.name || currentUser.email || "Usuário";
-        setAuthStatus(`Conectado: ${userName}`);
+        el.userDisplayName.textContent = userName;
+        setAuthStatus("Conectado");
       } else {
+        closeUserMenu();
         setAuthStatus("Entre para salvar seus flashcards no Supabase e acessar no celular.");
       }
     }
@@ -4496,6 +4649,31 @@
     el.authSwitchAction.addEventListener("click", () => setAuthMode(authMode === "signup" ? "signin" : "signup"));
     el.toggleAuthPassword.addEventListener("click", () => togglePasswordInput(el.authPassword));
     el.toggleAuthPasswordConfirm.addEventListener("click", () => togglePasswordInput(el.authPasswordConfirm));
+    el.userMenuToggle.addEventListener("click", event => {
+      event.stopPropagation();
+      toggleUserMenu();
+    });
+    el.userMenu.addEventListener("click", event => {
+      event.stopPropagation();
+      const action = event.target.closest("[data-user-action]");
+      if (!action) return;
+      const email = currentUser?.email || "usuario conectado";
+      const name = currentUser?.user_metadata?.name || currentUser?.email || "Usuario";
+      const panels = {
+        profile: ["Meu perfil", `Nome: ${name}\nE-mail: ${email}`],
+        personal: ["Dados pessoais", "Em breve voce podera editar nome, e-mail e outras informacoes pessoais por aqui."],
+        settings: ["Configuracoes", "As configuracoes do Fixa ficarao reunidas aqui."],
+        help: ["Ajuda", "Use Adicionar para criar colecoes ou importar questoes. Depois entre em Teste para revisar ate 14 questoes por rodada."]
+      };
+      const [title, text] = panels[action.dataset.userAction] || ["Fixa", "Opcao em preparacao."];
+      showUserInfoPanel(title, text);
+    });
+    document.addEventListener("click", event => {
+      if (!el.authPanel.contains(event.target)) closeUserMenu();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") closeUserMenu();
+    });
     el.googleAuth.addEventListener("click", async () => {
       if (!supabaseClient) {
         setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
@@ -4555,6 +4733,7 @@
     });
 
     async function leaveAccount() {
+      closeUserMenu();
       currentUser = null;
       cloudReady = false;
       if (supabaseClient) await supabaseClient.auth.signOut();
