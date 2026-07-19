@@ -1,0 +1,299 @@
+Quero melhorar completamente o design da interface do meu aplicativo de flashcards, que agora se chama “Fixa”.
+
+Use a imagem que estou enviando como referência visual para o novo layout. Analise também a estrutura atual do projeto e faça as alterações diretamente no código, mantendo todas as funcionalidades existentes.
+
+OBJETIVO
+
+Criar uma interface mais moderna, organizada, agradável e profissional, com melhor hierarquia visual, espaçamento e aproveitamento da tela.
+
+O aplicativo deve continuar com foco em desktop, mas também precisa se adaptar corretamente a telas menores.
+
+IDENTIDADE DO APLICATIVO
+
+Substituir o nome atual “Flashcard Estudos” por:
+
+Fixa
+
+Adicionar abaixo do nome uma frase curta, como:
+
+“Estude com flashcards”
+
+Criar uma identidade visual simples para o Fixa, utilizando um ícone com a letra “F” ou um símbolo relacionado a cartões de estudo.
+
+Não utilizar uma logomarca complexa. O ícone pode ser feito com CSS ou com uma biblioteca de ícones já existente no projeto.
+
+ESTILO VISUAL
+
+Utilizar:
+
+- Fundo geral em cinza muito claro;
+- Áreas principais em branco;
+- Azul como cor principal;
+- Bordas finas e suaves;
+- Cantos levemente arredondados;
+- Ícones em estilo linear;
+- Tipografia limpa e moderna;
+- Espaçamento consistente;
+- Pouca ou nenhuma sombra;
+- Aparência leve, organizada e profissional.
+
+Evitar:
+
+- Sombras fortes;
+- Excesso de cores;
+- Elementos muito grandes;
+- Áreas vazias sem propósito;
+- Bordas pontilhadas em excesso;
+- Botões com tamanhos ou estilos inconsistentes;
+- Textos desalinhados;
+- Informações visualmente apertadas.
+
+ESTRUTURA GERAL
+
+A tela deve ser dividida em duas áreas principais:
+
+1. Barra lateral esquerda;
+2. Área principal de conteúdo.
+
+BARRA LATERAL
+
+Na parte superior, exibir:
+
+- Ícone do Fixa;
+- Nome “Fixa”;
+- Texto “Estude com flashcards”.
+
+Abaixo, criar a seção:
+
+“COLEÇÕES”
+
+Quando não houver nenhuma coleção, apresentar um estado vazio com:
+
+- Ícone de pasta ou coleção;
+- Ícone de adicionar;
+- Título: “Crie sua coleção”;
+- Texto: “Crie uma coleção na aba Adicionar para começar.”
+
+O estado vazio deve ficar dentro de um bloco visual discreto, centralizado e bem alinhado.
+
+Quando existirem coleções, manter a listagem e todas as funcionalidades atuais.
+
+NAVEGAÇÃO SUPERIOR
+
+Manter as três abas:
+
+- Questões;
+- Adicionar;
+- Teste.
+
+A aba ativa deve ter:
+
+- Fundo azul;
+- Texto branco;
+- Ícone;
+- Destaque visual claro.
+
+As abas inativas devem ter:
+
+- Fundo branco ou cinza muito claro;
+- Borda suave;
+- Texto escuro;
+- Ícone correspondente.
+
+Adicionar os seguintes ícones:
+
+- Questões: cartões, livro ou lista;
+- Adicionar: símbolo de mais dentro de um círculo;
+- Teste: botão de reprodução, gráfico ou seta de avanço.
+
+PAINEL DE DESEMPENHO
+
+Criar um painel principal com o total de cartões para estudar.
+
+No centro superior, apresentar:
+
+- Número total de cartões;
+- Texto “cartões para estudar”.
+
+Abaixo, criar três cartões de indicadores:
+
+1. Não estudados;
+2. Em andamento;
+3. Dominados.
+
+Cada indicador deve possuir:
+
+- Ícone;
+- Número;
+- Nome da categoria;
+- Cor correspondente;
+- Layout alinhado e consistente.
+
+Sugestão de cores:
+
+- Não estudados: cinza ou azul-claro;
+- Em andamento: azul ou amarelo;
+- Dominados: verde;
+- Congelados: vermelho ou coral.
+
+Manter a barra de progresso com as categorias:
+
+- Não estudados;
+- Em andamento;
+- Dominados;
+- Congelados.
+
+A barra deve ser mais fina, elegante e proporcional aos valores reais.
+
+A legenda precisa ficar alinhada abaixo da barra, com pequenos círculos coloridos e os nomes das categorias.
+
+BOTÃO DE TESTE
+
+O botão “Começar teste” deve ser o principal destaque da tela.
+
+Utilizar:
+
+- Fundo azul;
+- Texto branco;
+- Ícone de reprodução;
+- Largura adequada;
+- Cantos arredondados;
+- Estado de hover;
+- Estado de foco;
+- Estado desabilitado quando não houver cartões disponíveis.
+
+Não permitir que o botão inicie o teste quando não houver nenhuma questão cadastrada.
+
+QUESTÕES DA COLEÇÃO
+
+Criar um segundo painel com o título:
+
+“Questões da coleção”
+
+No cabeçalho desse painel, manter os botões:
+
+- Exportar;
+- Minimizar.
+
+Adicionar ícones adequados aos dois botões.
+
+Os botões devem ser secundários, com fundo claro, borda suave e estados de interação.
+
+FILTROS
+
+Organizar os filtros na mesma linha sempre que houver espaço:
+
+- Filtro de status;
+- Ordenação.
+
+Exemplos:
+
+- “Todos ativos”;
+- “Mais novo”.
+
+Adicionar ícones de filtro e ordenação.
+
+Em telas menores, os filtros podem ficar um abaixo do outro.
+
+ESTADO VAZIO
+
+Quando não houver questões cadastradas, apresentar um estado vazio mais bem elaborado, contendo:
+
+- Ilustração simples de cartões;
+- Título: “Nenhuma questão cadastrada ainda.”
+- Texto: “Adicione seus primeiros cartões e comece a estudar!”
+- Opcionalmente, um botão “Adicionar questão”.
+
+Esse botão deve direcionar o usuário para a aba “Adicionar”.
+
+FUNCIONALIDADES
+
+Não remover nem quebrar nenhuma funcionalidade já existente.
+
+Manter:
+
+- Criação de coleções;
+- Seleção de coleção;
+- Cadastro de questões;
+- Filtros;
+- Ordenação;
+- Exportação;
+- Minimização;
+- Contadores;
+- Categorias de estudo;
+- Barra de progresso;
+- Início do teste;
+- Persistência dos dados;
+- Navegação entre as abas.
+
+Preservar os nomes das funções, estados, objetos, propriedades e estruturas de dados quando não houver necessidade técnica de alteração.
+
+RESPONSIVIDADE
+
+A interface deve funcionar corretamente em:
+
+- Monitores grandes;
+- Notebooks;
+- Tablets;
+- Telas menores.
+
+Em telas menores:
+
+- A barra lateral pode ficar recolhível;
+- Os cartões de indicadores podem quebrar para mais de uma linha;
+- Os filtros podem ficar empilhados;
+- Os botões não podem ultrapassar a largura da tela;
+- Não deve existir rolagem horizontal desnecessária.
+
+ACESSIBILIDADE
+
+Adicionar:
+
+- Contraste adequado;
+- Estados de hover;
+- Estados de foco visíveis;
+- Cursor correto nos elementos clicáveis;
+- Rótulos ou aria-label nos ícones;
+- Botões reais para ações;
+- Navegação por teclado;
+- Textos legíveis.
+
+ORGANIZAÇÃO DO CÓDIGO
+
+Analise a estrutura atual antes de alterar.
+
+Reaproveite os componentes existentes sempre que possível.
+
+Evite duplicação de código.
+
+Crie componentes reutilizáveis para:
+
+- Abas;
+- Cartões de indicadores;
+- Botões;
+- Estados vazios;
+- Filtros;
+- Ícones;
+- Painéis.
+
+Centralize cores, espaçamentos, tamanhos, bordas e tipografia em variáveis ou tokens de estilo.
+
+Não adicionar bibliotecas desnecessárias.
+
+Caso já exista uma biblioteca de ícones no projeto, reutilize-a.
+
+ENTREGA
+
+Faça as alterações diretamente nos arquivos do projeto.
+
+Não crie apenas uma demonstração separada ou uma página estática sem funcionamento.
+
+Não gere uma prévia visual antes da entrega.
+
+Ao finalizar:
+
+1. Informe resumidamente os arquivos alterados;
+2. Explique as principais melhorias realizadas;
+3. Informe se encontrou algum problema no código existente;
+4. Confirme que as funcionalidades anteriores foram preservadas;
+5. Entregue o projeto atualizado e funcional.
