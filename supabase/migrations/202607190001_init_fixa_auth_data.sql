@@ -1,6 +1,5 @@
--- Fixa: SQL completo para colar no Supabase SQL Editor.
--- A mesma estrutura tambem esta versionada em:
--- supabase/migrations/202607190001_init_fixa_auth_data.sql
+-- Fixa: profiles and per-user flashcard storage.
+-- Apply this SQL to the new Supabase project before testing login data sync.
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,

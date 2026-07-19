@@ -3111,11 +3111,10 @@
   </div>
 
   <script>
-    const SUPABASE_URL = "https://oygsqfjjmpnvdsrpatgdt.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_PufEF3SrKWglbLH_RaRFDg_ZT5sVBKM";
+    const SUPABASE_URL = "https://rfmeiyjhugpsdnjbzpno.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_neuU8-peUJni1wus0dOnHQ_N6ZF-7f2";
     const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const cloudTable = "flashcard_single_data";
-    const cloudRowId = "main";
+    const cloudTable = "flashcard_data";
 
     const storeKey = "flashcard-estudos-v2";
     const initialData = {
@@ -3329,41 +3328,44 @@
     }
 
     function scheduleCloudSave() {
-      if (!cloudReady || loadingCloud || !supabaseClient) return;
+      if (!currentUser || !cloudReady || loadingCloud || !supabaseClient) return;
       clearTimeout(saveTimer);
       saveTimer = setTimeout(saveCloudData, 350);
     }
 
     async function saveCloudData() {
-      if (!cloudReady || !supabaseClient) return;
+      if (!currentUser || !cloudReady || !supabaseClient) return;
       const { error } = await supabaseClient
         .from(cloudTable)
         .upsert({
-          id: cloudRowId,
+          user_id: currentUser.id,
           data,
           updated_at: new Date().toISOString()
-        }, { onConflict: "id" });
+        }, { onConflict: "user_id" });
 
       if (error) {
         console.warn("Não consegui salvar no Supabase:", error.message);
+        setAuthStatus("Conectado, mas não consegui salvar online agora.");
       }
     }
 
     async function loadCloudData() {
-      if (!supabaseClient) return;
+      if (!currentUser || !supabaseClient) return;
       loadingCloud = true;
       const { data: row, error } = await supabaseClient
         .from(cloudTable)
         .select("data")
-        .eq("id", cloudRowId)
+        .eq("user_id", currentUser.id)
         .maybeSingle();
 
       if (error) {
         console.warn("Não consegui carregar do Supabase:", error.message);
+        setAuthStatus("Conectado, mas não consegui carregar os dados online.");
       } else if (row?.data) {
         data = normalizeData(row.data);
         localStorage.setItem(storeKey, JSON.stringify(data));
       } else {
+        data = normalizeData(data);
         await saveCloudData();
       }
 
@@ -4554,6 +4556,7 @@
 
     async function leaveAccount() {
       currentUser = null;
+      cloudReady = false;
       if (supabaseClient) await supabaseClient.auth.signOut();
       renderAuth();
       setAuthMode("signin");
@@ -4572,7 +4575,10 @@
       const { data: sessionData } = await supabaseClient.auth.getSession();
       currentUser = sessionData.session?.user || null;
       renderAuth();
-      if (currentUser) await loadCloudData();
+      if (currentUser) {
+        cloudReady = true;
+        await loadCloudData();
+      }
 
       supabaseClient.auth.onAuthStateChange(async (event, session) => {
         if (event === "PASSWORD_RECOVERY") {
@@ -4584,8 +4590,10 @@
         currentUser = session?.user || null;
         renderAuth();
         if (currentUser) {
+          cloudReady = true;
           await loadCloudData();
         } else {
+          cloudReady = false;
           render();
         }
       });
@@ -5364,7 +5372,7 @@
     renderOptionInputs();
     renderListChoiceInputs();
     render();
-    initCloudSync();
+    initAuth();
   </script>
 </body>
 </html>
