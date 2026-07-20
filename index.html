@@ -2727,6 +2727,323 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* Mobile layout for Fixa: keeps desktop unchanged and reorganizes only small screens */
+    .mobile-topline,
+    .mobile-menu-toggle,
+    .mobile-nav-backdrop {
+      display: none;
+    }
+
+    .mobile-topline {
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .mobile-topline-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .mobile-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .mobile-brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+      font-size: 23px;
+      font-weight: 900;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+      flex: 0 0 36px;
+    }
+
+    .mobile-brand-name {
+      margin: 0;
+      color: var(--text);
+      font-size: 22px;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      font-weight: 800;
+    }
+
+    .mobile-menu-toggle {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      display: none;
+      place-items: center;
+      color: var(--text);
+      background: #fff;
+      box-shadow: 0 8px 22px rgba(17, 26, 49, 0.06);
+    }
+
+    .mobile-menu-toggle:hover {
+      color: var(--brand);
+      background: #f8fbff;
+    }
+
+    .mobile-menu-toggle svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .mobile-nav-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 84;
+      background: rgba(17, 26, 49, 0.42);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    @media (max-width: 860px) {
+      body {
+        overflow-x: hidden;
+      }
+
+      .app {
+        grid-template-columns: 1fr;
+        max-width: none;
+        min-height: 100vh;
+      }
+
+      .mobile-topline {
+        display: flex;
+      }
+
+      .mobile-menu-toggle {
+        display: grid;
+      }
+
+      .topbar {
+        gap: 10px;
+      }
+
+      .topbar-title {
+        display: none;
+      }
+
+      .topbar-right {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .topbar-right .tabs {
+        order: 2;
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        width: 100%;
+      }
+
+      .topbar-right .auth-panel {
+        order: 1;
+        width: auto;
+        justify-self: end;
+      }
+
+      .tab {
+        min-width: 0;
+        width: 100%;
+        padding: 11px 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      main {
+        width: 100%;
+        padding: 12px 12px 20px;
+      }
+
+      aside {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: min(84vw, 340px);
+        max-width: 340px;
+        border-right: 1px solid var(--line);
+        border-bottom: 0;
+        padding: 16px;
+        z-index: 90;
+        background: var(--panel);
+        box-shadow: 0 24px 70px rgba(17, 26, 49, 0.22);
+        transform: translateX(calc(-100% - 20px));
+        transition: transform 0.22s ease;
+        overflow: hidden;
+      }
+
+      .app.mobile-nav-open aside {
+        transform: translateX(0);
+      }
+
+      .app.mobile-nav-open .mobile-nav-backdrop {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .side-head {
+        align-items: center;
+      }
+
+      .brand {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand span,
+      .folder-title {
+        display: block;
+      }
+
+      .subjects {
+        grid-auto-flow: row;
+        grid-auto-columns: auto;
+        align-content: start;
+        gap: 8px;
+        overflow: auto;
+        padding-right: 0;
+      }
+
+      .subjects::before {
+        margin-bottom: 2px;
+      }
+
+      .folder-block {
+        display: grid;
+      }
+
+      .side-footer {
+        display: grid;
+      }
+
+      .workspace,
+      .test-start-card,
+      .test-card,
+      .result-grid,
+      .folder-create,
+      .auth-form,
+      .add-mode,
+      .list-choice-row,
+      .list-item-row {
+        grid-template-columns: 1fr;
+      }
+
+      .result-grid,
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      #questionsContent > .row,
+      #manage .row,
+      #add .row,
+      .folder-create,
+      .meta {
+        align-items: stretch;
+      }
+
+      #questionsContent > .row > *,
+      .folder-create > *,
+      .import-box .row > *,
+      .meta > * {
+        width: 100%;
+      }
+
+      .select-with-icon,
+      .progress-card .start-study,
+      .test-start-action #startTest,
+      .empty button,
+      .import-box .row button,
+      .guidelines-actions button {
+        width: 100%;
+      }
+
+      .progress-card {
+        padding: 12px;
+      }
+
+      .progress-hero strong {
+        font-size: 34px;
+      }
+
+      .option-row {
+        grid-template-columns: 34px 1fr;
+      }
+
+      .remove-option {
+        grid-column: 2;
+        justify-self: start;
+      }
+
+      .list-item-row select,
+      .list-card-option select {
+        min-width: 0;
+      }
+
+      .guidelines-modal-card,
+      .modal-card {
+        width: min(100%, 96vw);
+      }
+
+      .guidelines-text {
+        min-height: 46vh;
+        max-height: 46vh;
+      }
+
+      .user-menu {
+        right: 0;
+        width: min(92vw, 300px);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .stats,
+      .result-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tab {
+        font-size: 14px;
+        padding: 10px 8px;
+      }
+
+      .tab-svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -2841,7 +3158,8 @@
   </section>
 
   <div class="app locked" id="appShell">
-    <aside>
+    <div class="mobile-nav-backdrop" id="mobileNavBackdrop" hidden></div>
+    <aside id="collectionsSidebar">
       <div class="side-head">
         <div class="brand">
           <div class="brand-mark" aria-hidden="true">F</div>
@@ -2863,12 +3181,27 @@
           <span>Sair</span>
           <span class="chevron" aria-hidden="true">›</span>
         </button>
-        <div class="app-version">Fixa <span>•</span> v1.0.2</div>
+        <div class="app-version">Fixa <span>•</span> v1.0.3</div>
       </div>
     </aside>
 
     <main>
       <header class="topbar">
+        <div class="mobile-topline">
+          <div class="mobile-topline-left">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="Abrir coleções" title="Coleções">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7h16"></path>
+                <path d="M4 12h16"></path>
+                <path d="M4 17h16"></path>
+              </svg>
+            </button>
+            <div class="mobile-brand" aria-hidden="true">
+              <div class="mobile-brand-mark">F</div>
+              <span class="mobile-brand-name">Fixa</span>
+            </div>
+          </div>
+        </div>
         <div class="topbar-title">
           <h2 id="subjectTitle">Coleção</h2>
           <p id="subjectSummary">Selecione ou crie uma disciplina, curso ou material para começar.</p>
@@ -3519,6 +3852,9 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       authSwitchAction: document.querySelector("#authSwitchAction"),
       signOut: document.querySelector("#signOut"),
       signOutFooter: document.querySelector("#signOutFooter"),
+      collectionsSidebar: document.querySelector("#collectionsSidebar"),
+      mobileMenuToggle: document.querySelector("#mobileMenuToggle"),
+      mobileNavBackdrop: document.querySelector("#mobileNavBackdrop"),
       subjects: document.querySelector("#subjects"),
       subjectTitle: document.querySelector("#subjectTitle"),
       subjectSummary: document.querySelector("#subjectSummary"),
@@ -3981,7 +4317,39 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       }
     }
 
+
+    function isMobileLayout() {
+      return window.matchMedia("(max-width: 860px)").matches;
+    }
+
+    function closeMobileNav() {
+      if (!el.appShell) return;
+      el.appShell.classList.remove("mobile-nav-open");
+      document.body.classList.remove("mobile-nav-open");
+      if (el.mobileNavBackdrop) el.mobileNavBackdrop.hidden = true;
+      if (el.mobileMenuToggle) el.mobileMenuToggle.setAttribute("aria-expanded", "false");
+    }
+
+    function openMobileNav() {
+      if (!isMobileLayout() || !el.appShell) return;
+      el.appShell.classList.add("mobile-nav-open");
+      document.body.classList.add("mobile-nav-open");
+      if (el.mobileNavBackdrop) el.mobileNavBackdrop.hidden = false;
+      if (el.mobileMenuToggle) el.mobileMenuToggle.setAttribute("aria-expanded", "true");
+    }
+
+    function toggleMobileNav() {
+      if (!isMobileLayout()) return;
+      const isOpen = el.appShell?.classList.contains("mobile-nav-open");
+      if (isOpen) {
+        closeMobileNav();
+      } else {
+        openMobileNav();
+      }
+    }
+
     function showView(viewId) {
+      closeMobileNav();
       el.tabs.forEach(item => {
         const active = item.dataset.view === viewId;
         item.classList.toggle("active", active);
@@ -4862,6 +5230,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       showingAnswer = false;
       resetTestState();
       render();
+      closeMobileNav();
     });
 
     el.studyFromProgress.addEventListener("click", () => showView("test"));
@@ -5020,6 +5389,13 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (event.key !== "Escape") return;
       closeUserMenu();
       if (!el.guidelinesModal.hidden) closeGuidelinesModal();
+      closeMobileNav();
+    });
+
+    el.mobileMenuToggle?.addEventListener("click", toggleMobileNav);
+    el.mobileNavBackdrop?.addEventListener("click", closeMobileNav);
+    window.addEventListener("resize", () => {
+      if (!isMobileLayout()) closeMobileNav();
     });
     el.googleAuth.addEventListener("click", async () => {
       if (!supabaseClient) {
