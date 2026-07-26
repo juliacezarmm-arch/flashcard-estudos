@@ -3279,6 +3279,76 @@
       box-shadow: var(--shadow-soft);
     }
 
+    .analysis-tabs-card {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .analysis-inner-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-bottom: 1px solid var(--line);
+      background: #fbfdff;
+    }
+
+    .analysis-inner-tab {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #52607b;
+      box-shadow: none;
+      padding: 16px 18px;
+      font-weight: 800;
+    }
+
+    .analysis-inner-tab.active {
+      color: var(--primary);
+      background: #fff;
+      border-bottom: 3px solid var(--primary);
+    }
+
+    .analysis-inner-panel {
+      padding: 16px;
+    }
+
+    .analysis-two-column {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .analysis-subcard {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .analysis-footnote {
+      margin: 14px 0 0;
+      text-align: center;
+      color: #6b7590;
+      font-size: .9rem;
+    }
+
+    .test-skip-button {
+      min-height: 34px;
+      padding: 7px 12px;
+      box-shadow: none;
+    }
+
+    .test-question-code {
+      margin-left: 8px;
+      color: var(--primary);
+      font-weight: 900;
+    }
+
+    .question-code-pill {
+      color: var(--primary);
+      background: #eef4ff;
+    }
+
     .analysis-card-head {
       display: flex;
       align-items: center;
@@ -3742,6 +3812,17 @@
     .test-count-input:focus {
       border-color: var(--brand);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+    @media (max-width: 860px) {
+      .analysis-two-column {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .analysis-inner-tabs {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -4332,6 +4413,7 @@
                     <div class="meta">
                       <span class="pill" id="testCounter">Teste não iniciado</span>
                       <span id="testScore">0 acertos</span>
+                      <button class="secondary test-skip-button" id="skipTestQuestion" type="button">Pular</button>
                     </div>
                   </div>
                   <div class="test-progress-line" id="testProgressLine"><span></span></div>
@@ -4374,65 +4456,77 @@
               </div>
 
               <div class="analysis-dashboard" id="analysisContent" hidden>
-                <section class="analysis-card">
+                <section class="analysis-card analysis-summary-card">
                   <div class="analysis-card-head">
                     <h3 id="analysisSummaryTitle">Resumo geral da pasta</h3>
                     <select id="analysisPeriod" aria-label="Período da análise">
                       <option value="all">Período: Todos os testes</option>
-                      <option value="5">Últimos 5 testes</option>
-                      <option value="10">Últimos 10 testes</option>
-                      <option value="7d">Últimos 7 dias</option>
-                      <option value="30d">Últimos 30 dias</option>
+                      <option value="5">Período: Últimos 5 testes</option>
+                      <option value="10">Período: Últimos 10 testes</option>
                     </select>
                   </div>
                   <div class="analysis-summary-stats" id="analysisSummaryStats"></div>
                   <div class="analysis-insight" id="analysisInsight"></div>
                 </section>
 
-                <div class="analysis-grid">
-                  <section class="analysis-card">
-                    <div class="analysis-card-head"><h4>O que estudar agora</h4></div>
-                    <div class="analysis-list" id="analysisStudyNow"></div>
-                  </section>
-
-                  <section class="analysis-card">
-                    <div class="analysis-card-head"><h4>Assuntos que precisam de atenção</h4></div>
-                    <div class="analysis-topic-table" id="analysisSubjects"></div>
-                  </section>
-
-                  <section class="analysis-card">
-                    <div class="analysis-card-head"><h4>Questões críticas</h4></div>
-                    <div class="analysis-list" id="analysisCritical"></div>
-                  </section>
-                </div>
-
-                <div class="analysis-grid">
-                  <section class="analysis-card">
-                    <div class="analysis-card-head"><h4>Evolução do desempenho</h4></div>
-                    <div class="analysis-chart-wrap" id="analysisEvolution"></div>
-                    <div class="analysis-chart-note" id="analysisEvolutionNote"></div>
-                  </section>
-
-                  <section class="analysis-card">
-                    <div class="analysis-card-head"><h4>Padrão das avaliações</h4></div>
-                    <div class="analysis-rating-wrap" id="analysisRatings"></div>
-                    <div class="analysis-chart-note" id="analysisRatingNote"></div>
-                  </section>
-
-                  <section class="analysis-card">
-                    <div class="analysis-card-head"><h4>Quase dominadas</h4></div>
-                    <div class="analysis-list" id="analysisNearMastered"></div>
-                  </section>
-                </div>
-
                 <section class="analysis-card analysis-review-card">
-                  <div class="analysis-review-icon" aria-hidden="true">↗</div>
-                  <div class="analysis-review-copy">
+                  <div class="review-illustration" aria-hidden="true">↗</div>
+                  <div>
                     <strong>Teste de revisão recomendado</strong>
                     <p>Preparamos uma revisão com as questões que mais precisam da sua atenção.</p>
                     <div class="analysis-review-tags" id="analysisReviewTags"></div>
                   </div>
                   <button type="button" id="analysisReviewButton">Criar teste de revisão</button>
+                </section>
+
+                <section class="analysis-card analysis-tabs-card">
+                  <div class="analysis-inner-tabs" role="tablist" aria-label="Seções da análise">
+                    <button class="analysis-inner-tab active" type="button" data-analysis-tab="priorities" aria-selected="true">☆ Prioridades</button>
+                    <button class="analysis-inner-tab" type="button" data-analysis-tab="status" aria-selected="false">☷ Status das questões</button>
+                    <button class="analysis-inner-tab" type="button" data-analysis-tab="charts" aria-selected="false">▥ Gráficos</button>
+                  </div>
+
+                  <div class="analysis-inner-panel" data-analysis-tab-panel="priorities">
+                    <div class="analysis-two-column">
+                      <section class="analysis-subcard">
+                        <div class="analysis-card-head"><h4>O que estudar agora</h4></div>
+                        <div class="analysis-list" id="analysisStudyNow"></div>
+                      </section>
+                      <section class="analysis-subcard">
+                        <div class="analysis-card-head"><h4>Assuntos que precisam de atenção</h4></div>
+                        <div class="analysis-topic-table" id="analysisSubjects"></div>
+                      </section>
+                    </div>
+                  </div>
+
+                  <div class="analysis-inner-panel" data-analysis-tab-panel="status" hidden>
+                    <div class="analysis-two-column">
+                      <section class="analysis-subcard">
+                        <div class="analysis-card-head"><h4>Questões críticas</h4></div>
+                        <div class="analysis-list" id="analysisCritical"></div>
+                      </section>
+                      <section class="analysis-subcard">
+                        <div class="analysis-card-head"><h4>Quase dominadas</h4></div>
+                        <div class="analysis-list" id="analysisNearMastered"></div>
+                      </section>
+                    </div>
+                    <p class="analysis-footnote">Crítica = erros repetidos, perda de domínio ou avaliações difíceis recorrentes.</p>
+                  </div>
+
+                  <div class="analysis-inner-panel" data-analysis-tab-panel="charts" hidden>
+                    <div class="analysis-two-column">
+                      <section class="analysis-subcard">
+                        <div class="analysis-card-head"><h4>Evolução do desempenho</h4></div>
+                        <div class="analysis-chart-wrap" id="analysisEvolution"></div>
+                        <p class="analysis-note" id="analysisEvolutionNote"></p>
+                      </section>
+                      <section class="analysis-subcard">
+                        <div class="analysis-card-head"><h4>Padrão das avaliações</h4></div>
+                        <div class="analysis-rating-wrap" id="analysisRatings"></div>
+                        <p class="analysis-note" id="analysisRatingNote"></p>
+                      </section>
+                    </div>
+                  </div>
                 </section>
               </div>
             </div>
@@ -4734,6 +4828,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       testCard: document.querySelector("#testCard"),
       testCounter: document.querySelector("#testCounter"),
       testScore: document.querySelector("#testScore"),
+      skipTestQuestion: document.querySelector("#skipTestQuestion"),
       testProgressLine: document.querySelector("#testProgressLine"),
       testQuestion: document.querySelector("#testQuestion"),
       testOptions: document.querySelector("#testOptions"),
@@ -4785,6 +4880,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     let listChoiceCount = 2;
     let listItemCount = 2;
     let editingCardIndex = null;
+    let currentAnalysisTab = "priorities";
+
     let testState = {
       active: false,
       questions: [],
@@ -4800,11 +4897,12 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       attempts: {},
       ratings: { again: 0, hard: 0, good: 0, easy: 0 },
       mode: "quick",
-      subjectIds: []
+      subjectIds: [],
+      skipped: 0
     };
 
     function resetTestState(subjectName = currentSubject()?.name || "") {
-      testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName, startedAt: null, finishedAt: null, id: "", attempts: {}, ratings: { again: 0, hard: 0, good: 0, easy: 0 }, mode: "quick", subjectIds: [] };
+      testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName, startedAt: null, finishedAt: null, id: "", attempts: {}, ratings: { again: 0, hard: 0, good: 0, easy: 0 }, mode: "quick", subjectIds: [], skipped: 0 };
     }
 
     function load() {
@@ -5710,7 +5808,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       el.questionList.innerHTML = cards.map(({ card, index }) => `
         <article class="question-item">
           <div class="meta">
-            <span class="pill">${labelDifficulty(card.difficulty)} · ${labelStatus(card.status)}</span>
+            <span class="pill question-code-pill">${escapeHtml(card.questionCode || "")}</span>
+            <span class="pill">${labelStatus(card.status)}</span>
             <div class="row">
               <button class="quick-delete" type="button" title="Excluir cartão" data-delete="${index}">×</button>
               <details class="card-menu">
@@ -5912,7 +6011,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const cards = testableCards();
       const subject = currentSubject();
       if (!cards.length) {
-        testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName: subject?.name || "", startedAt: null, finishedAt: null, id: "", attempts: {}, ratings: { again: 0, hard: 0, good: 0, easy: 0 }, mode: "quick", subjectIds: subject?.id ? [subject.id] : [] };
+        testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName: subject?.name || "", startedAt: null, finishedAt: null, id: "", attempts: {}, ratings: { again: 0, hard: 0, good: 0, easy: 0 }, mode: "quick", subjectIds: subject?.id ? [subject.id] : [], skipped: 0 };
         renderTest();
         return;
       }
@@ -5938,7 +6037,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         attempts: {},
         ratings: defaultRatings(),
         mode: "quick",
-        subjectIds: subject?.id ? [subject.id] : []
+        subjectIds: subject?.id ? [subject.id] : [],
+        skipped: 0
       };
       renderTest();
     }
@@ -6083,17 +6183,22 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       question.rated = true;
     }
 
+    function testAnsweredTotal() {
+      return Math.max(0, (testState.questions?.length || 0) - (testState.skipped || 0));
+    }
+
     function recordFinishedTest() {
       if (testState.recorded || !testState.questions.length) return;
       testState.finishedAt = testState.finishedAt || Date.now();
       const subject = currentSubject();
+      const answeredTotal = testAnsweredTotal();
       data.testHistory.unshift({
         id: testState.id || Date.now().toString(36),
         subject: testState.subjectName || subject?.name || "Coleção",
         subjectId: subject?.id || "",
         subjectIds: Array.isArray(testState.subjectIds) && testState.subjectIds.length ? testState.subjectIds : (subject?.id ? [subject.id] : []),
         score: testState.score,
-        total: testState.questions.length,
+        total: answeredTotal,
         durationMs: testDurationMs(),
         ratings: testState.ratings || defaultRatings(),
         mode: testState.mode || "quick",
@@ -6196,7 +6301,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     }
 
     function cardNeedsAttention(card) {
-      const attempts = (Number(card.totalCorrect) || 0) + (Number(card.totalWrong) || 0);
+      const attempts = (card.totalCorrect || 0) + (card.totalWrong || 0);
       return Boolean(
         card.testPriority ||
         card.lostMasteryCount ||
@@ -6205,6 +6310,50 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         (Number(card.totalWrong) || 0) > (Number(card.totalCorrect) || 0) ||
         (attempts > 0 && cardAccuracy(card) < 60)
       );
+    }
+
+    function cardErrorTestCount(card) {
+      const history = Array.isArray(card.attemptHistory) ? card.attemptHistory : [];
+      const errorKeys = history
+        .filter(item => item && item.correct === false)
+        .map(item => item.testId || item.date || item.createdAt || item.questionCode || JSON.stringify(item.selected || ""));
+      return new Set(errorKeys).size;
+    }
+
+    function cardIsCritical(card) {
+      const wrong = Number(card.totalWrong) || 0;
+      const hard = Number(card.ratingCounts?.hard) || 0;
+      const again = Number(card.ratingCounts?.again) || 0;
+      const lost = Number(card.lostMasteryCount) || 0;
+      const errorTests = cardErrorTestCount(card);
+      return Boolean(
+        lost > 0 ||
+        errorTests >= 2 ||
+        wrong >= 2 ||
+        (wrong >= 1 && again >= 2) ||
+        (wrong >= 1 && hard >= 2)
+      );
+    }
+
+    function reviewPriorityScore(card) {
+      const wrong = Number(card.totalWrong) || 0;
+      const hard = Number(card.ratingCounts?.hard) || 0;
+      const again = Number(card.ratingCounts?.again) || 0;
+      const lost = Number(card.lostMasteryCount) || 0;
+      const near = card.masteryCount === 3 ? 45 : card.masteryCount === 2 ? 20 : 0;
+      return (lost * 10000) + (again * 800) + (cardErrorTestCount(card) * 600) + (wrong * 300) + (hard * 120) + near;
+    }
+
+    function setAnalysisTab(tab = currentAnalysisTab) {
+      currentAnalysisTab = ["priorities", "status", "charts"].includes(tab) ? tab : "priorities";
+      document.querySelectorAll("[data-analysis-tab]").forEach(button => {
+        const active = button.dataset.analysisTab === currentAnalysisTab;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-selected", active ? "true" : "false");
+      });
+      document.querySelectorAll("[data-analysis-tab-panel]").forEach(panel => {
+        panel.hidden = panel.dataset.analysisTabPanel !== currentAnalysisTab;
+      });
     }
 
     function shortQuestionText(card, max = 58) {
@@ -6395,19 +6544,21 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       }).join("") : `<p class="hint">Sem assuntos avaliados.</p>`;
 
       const critical = [...cards]
-        .filter(item => cardNeedsAttention(item.card))
-        .sort((a, b) => cardAttentionScore(b.card) - cardAttentionScore(a.card))
+        .filter(item => cardIsCritical(item.card))
+        .sort((a, b) => reviewPriorityScore(b.card) - reviewPriorityScore(a.card))
         .slice(0, 3);
       el.analysisCritical.innerHTML = critical.length ? critical.map(item => {
         const card = item.card;
+        const errorTests = cardErrorTestCount(card);
+        const hard = Number(card.ratingCounts?.hard) || 0;
         const reason = card.lostMasteryCount
           ? "Perdeu o domínio"
-          : card.lastRating === "again"
-            ? "Última avaliação: De novo"
-            : card.ratingCounts?.hard
-              ? `${card.ratingCounts.hard} avaliação${card.ratingCounts.hard === 1 ? "" : "ões"} Difícil`
-              : `${card.totalWrong || 0} erro${card.totalWrong === 1 ? "" : "s"}`;
-        return `<button class="analysis-list-item" type="button" data-analysis-open="${escapeHtml(item.subject.id)}|${escapeHtml(card.questionCode)}"><span class="analysis-list-main"><span class="analysis-code">${escapeHtml(card.questionCode)}</span><strong>${escapeHtml(shortQuestionText(card))}</strong><small>${escapeHtml(reason)} · sequência ${card.masteryCount || 0} de ${MASTERY_TARGET}</small></span><span class="analysis-list-side">${card.totalWrong || 0} erro${card.totalWrong === 1 ? "" : "s"}</span></button>`;
+          : errorTests >= 2
+            ? `${errorTests} testes com erro`
+            : hard >= 2
+              ? `${hard} avaliações difíceis`
+              : `${card.totalWrong || 0} erros registrados`;
+        return `<button class="analysis-list-item" type="button" data-analysis-open="${escapeHtml(item.subject.id)}|${escapeHtml(card.questionCode)}"><span class="analysis-list-main"><span class="analysis-code">${escapeHtml(card.questionCode)}</span><strong>${escapeHtml(shortQuestionText(card))}</strong><small>${escapeHtml(reason)} · sequência ${card.masteryCount || 0} de ${MASTERY_TARGET}</small></span><span class="analysis-list-side">${card.totalWrong || 0} erro${card.totalWrong === 1 ? "" : "s"}<br>em ${errorTests || 1} teste${(errorTests || 1) === 1 ? "" : "s"}</span></button>`;
       }).join("") : `<p class="hint">Nenhuma questão crítica identificada.</p>`;
 
       const near = [...cards]
@@ -6419,11 +6570,12 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       renderAnalysisEvolution(history);
       const ratings = renderAnalysisRatings(cards, history);
 
-      const recentErrors = attentionCards.reduce((sum, item) => sum + (item.card.totalWrong || 0), 0);
+      const recentErrors = critical.reduce((sum, item) => sum + (item.card.totalWrong || 0), 0);
       const hardCount = cards.reduce((sum, item) => sum + (item.card.ratingCounts?.hard || 0), 0);
       const nearCount = near.length;
-      el.analysisReviewTags.innerHTML = `<span class="analysis-review-tag">${recentErrors} erro${recentErrors === 1 ? "" : "s"} registrado${recentErrors === 1 ? "" : "s"}</span><span class="analysis-review-tag is-orange">${hardCount} avaliação${hardCount === 1 ? "" : "ões"} difícil${hardCount === 1 ? "" : "eis"}</span><span class="analysis-review-tag is-green">${nearCount} próxima${nearCount === 1 ? "" : "s"} de dominar</span>`;
+      el.analysisReviewTags.innerHTML = `<span class="analysis-review-tag">${recentErrors} erro${recentErrors === 1 ? "" : "s"} recente${recentErrors === 1 ? "" : "s"}</span><span class="analysis-review-tag is-orange">${hardCount} avaliação${hardCount === 1 ? "" : "ões"} difícil${hardCount === 1 ? "" : "eis"}</span><span class="analysis-review-tag is-green">${nearCount} próxima${nearCount === 1 ? "" : "s"} de dominar</span>`;
       el.analysisReviewButton.disabled = !cards.some(item => isMultipleChoiceTestable(item.card) || (item.card.type === "select-list" && item.card.listItems?.length));
+      setAnalysisTab(currentAnalysisTab);
     }
 
     function startRecommendedReviewTest() {
@@ -6432,11 +6584,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         .filter(card => card.status !== "frozen")
         .filter(card => card.type === "select-list" ? (card.listItems || []).length > 0 : isMultipleChoiceTestable(card));
       if (!candidates.length) return;
-      const ranked = [...candidates].sort((a, b) => {
-        const nearA = a.masteryCount === 3 ? 25 : a.masteryCount === 2 ? 10 : 0;
-        const nearB = b.masteryCount === 3 ? 25 : b.masteryCount === 2 ? 10 : 0;
-        return (cardAttentionScore(b) + nearB) - (cardAttentionScore(a) + nearA);
-      });
+      const ranked = [...candidates].sort((a, b) => reviewPriorityScore(b) - reviewPriorityScore(a));
       const selectedCards = ranked.slice(0, selectedTestLimit(candidates.length));
       const selectedSubjects = [...new Set(selectedCards.map(card => card.subjectId))];
       testState = {
@@ -6454,7 +6602,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         attempts: {},
         ratings: { again: 0, hard: 0, good: 0, easy: 0 },
         mode: "review",
-        subjectIds: selectedSubjects
+        subjectIds: selectedSubjects,
+        skipped: 0
       };
       showTestPanel("quick");
       renderTest();
@@ -6486,6 +6635,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         el.testRunningPanel.hidden = true;
         el.testCounter.textContent = "Teste não iniciado";
         el.testScore.textContent = "0 acertos";
+        if (el.skipTestQuestion) el.skipTestQuestion.disabled = true;
         el.testProgressLine.querySelector("span").style.width = "0%";
         el.testQuestion.innerHTML = count
           ? "Há questões prontas. Clique em <strong>Começar teste</strong> para sortear e embaralhar."
@@ -6513,7 +6663,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
 
       if (testState.index >= testState.questions.length) {
         recordFinishedTest();
-        const total = testState.questions.length;
+        const total = testAnsweredTotal();
         const errors = Math.max(0, total - testState.score);
         const percent = total ? Math.round((testState.score / total) * 100) : 0;
         el.testCounter.textContent = "Teste finalizado";
@@ -6533,13 +6683,15 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         el.testRateActions.classList.remove("show");
         el.testRatingHint.hidden = true;
         el.confirmTestAnswer.disabled = true;
+        if (el.skipTestQuestion) el.skipTestQuestion.disabled = true;
         el.nextTestQuestion.disabled = true;
         el.testHint.textContent = "Teste concluído.";
         return;
       }
 
       const question = testState.questions[testState.index];
-      el.testCounter.textContent = `Questão ${testState.index + 1} de ${testState.questions.length}`;
+      const questionCodeLabel = question.questionCode ? ` <span class="test-question-code">${escapeHtml(question.questionCode)}</span>` : "";
+      el.testCounter.innerHTML = `Questão ${testState.index + 1} de ${testState.questions.length}${questionCodeLabel}`;
       el.testScore.textContent = `${testState.score} acerto${testState.score === 1 ? "" : "s"} · ${formatDuration(testDurationMs())}`;
       el.testProgressLine.querySelector("span").style.width = `${Math.round((testState.index / testState.questions.length) * 100)}%`;
       el.testQuestion.innerHTML = `<div class="test-question-text">${escapeHtml(question.q)}</div>${renderQuestionMedia(question)}`;
@@ -6579,10 +6731,31 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       el.testRatingHint.hidden = !testState.answered;
       if (!testState.answered) el.testRateActions.querySelectorAll("button").forEach(item => item.classList.remove("selected"));
       el.confirmTestAnswer.disabled = !isTestSelectionComplete(question) || testState.answered;
+      if (el.skipTestQuestion) el.skipTestQuestion.disabled = testState.answered;
       el.nextTestQuestion.disabled = !testState.answered;
       el.testHint.textContent = testState.answered
         ? ""
         : "Escolha uma alternativa para responder.";
+    }
+
+    function skipCurrentTestQuestion() {
+      if (!testState.active || testState.answered || !testState.questions.length) return;
+      const question = testState.questions[testState.index];
+      if (!question) return;
+      question.skipCount = Number(question.skipCount) || 0;
+      const hasNextQuestion = testState.questions.length - testState.index > 1;
+      if (hasNextQuestion && question.skipCount < 1) {
+        question.skipCount += 1;
+        testState.questions.splice(testState.index, 1);
+        testState.questions.push(question);
+      } else {
+        testState.skipped = (testState.skipped || 0) + 1;
+        testState.index += 1;
+      }
+      testState.selected = null;
+      testState.answered = false;
+      save();
+      renderTest();
     }
 
     function isTestSelectionComplete(question) {
@@ -7278,6 +7451,11 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     });
     el.analysisReviewButton?.addEventListener("click", startRecommendedReviewTest);
     el.analysisDashboard?.addEventListener("click", event => {
+      const tabButton = event.target.closest("[data-analysis-tab]");
+      if (tabButton) {
+        setAnalysisTab(tabButton.dataset.analysisTab);
+        return;
+      }
       const subjectButton = event.target.closest("[data-analysis-subject]");
       if (subjectButton) {
         data.selected = subjectButton.dataset.analysisSubject;
@@ -7362,6 +7540,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       goToNextTestQuestion();
     });
     el.nextTestQuestion.addEventListener("click", goToNextTestQuestion);
+    el.skipTestQuestion?.addEventListener("click", skipCurrentTestQuestion);
 
     el.flipCard.addEventListener("click", flip);
 
