@@ -1217,8 +1217,23 @@
 
     .test-question {
       color: var(--text);
+      display: grid;
       font-size: 19px;
+      gap: 14px;
       line-height: 1.4;
+    }
+
+    .question-media {
+      display: block;
+      width: 100%;
+    }
+
+    .question-media img {
+      border-radius: 8px;
+      display: block;
+      height: auto;
+      margin: 0 auto;
+      max-width: 100%;
     }
 
     .test-option {
@@ -5455,7 +5470,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     }
 
     function renderQuestionMedia(card) {
-      return card.image ? `<img src="${escapeHtml(card.image)}" alt="Imagem da questão" style="max-width:100%;border-radius:8px;margin-top:12px;">` : "";
+      return card.image ? `<div class="question-media"><img src="${escapeHtml(card.image)}" alt="Imagem da questão"></div>` : "";
     }
 
     function readImageFile(file) {
@@ -6527,7 +6542,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       el.testCounter.textContent = `Questão ${testState.index + 1} de ${testState.questions.length}`;
       el.testScore.textContent = `${testState.score} acerto${testState.score === 1 ? "" : "s"} · ${formatDuration(testDurationMs())}`;
       el.testProgressLine.querySelector("span").style.width = `${Math.round((testState.index / testState.questions.length) * 100)}%`;
-      el.testQuestion.innerHTML = `${escapeHtml(question.q)}${renderQuestionMedia(question)}`;
+      el.testQuestion.innerHTML = `<div class="test-question-text">${escapeHtml(question.q)}</div>${renderQuestionMedia(question)}`;
       if (question.type === "select-list") {
         el.testOptions.innerHTML = (question.listItems || []).map((item, index) => `
           <div class="list-card-option">
