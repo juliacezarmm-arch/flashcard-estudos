@@ -3691,36 +3691,24 @@
 
       .analysis-review-card > button { width: 100%; }
     }
-
-
-    .test-count-control {
-      align-items: center;
+    .test-count-input {
+      width: 54px;
+      min-width: 54px;
+      height: 28px;
+      border: 1px solid #cfe0f5;
+      border-radius: 8px;
+      color: var(--brand-dark);
       background: #ffffff;
-      border: 1px solid #dbe4f3;
-      border-radius: 12px;
-      color: #58657f;
-      display: inline-flex;
-      font-size: 0.86rem;
-      font-weight: 700;
-      gap: 8px;
-      padding: 7px 10px;
-    }
-
-    .test-count-control input {
-      border: 0;
-      border-left: 1px solid #dbe4f3;
-      color: #0f1b33;
       font: inherit;
-      max-width: 64px;
-      outline: 0;
-      padding: 2px 0 2px 8px;
+      font-weight: 850;
+      text-align: center;
+      outline: none;
+      padding: 0 4px;
     }
 
-    @media (max-width: 720px) {
-      .test-count-control {
-        justify-content: space-between;
-        width: 100%;
-      }
+    .test-count-input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -4286,12 +4274,11 @@
                   </div>
                   <div class="test-start-copy">
                     <h3>Teste rápido</h3>
-                    <p class="hint" id="testIntro">Comece um teste com até 14 questões sem repetição. As alternativas são embaralhadas a cada novo teste.</p>
+                    <p class="hint" id="testIntro">Comece um teste com a quantidade escolhida, sem repetição. As alternativas são embaralhadas a cada novo teste.</p>
                     <div class="test-badges" aria-label="Regras do teste">
-                      <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path></svg>Até <span id="testLimitBadge">14</span> questões</span>
+                      <span class="test-count-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path></svg>Até <input id="testQuestionAmount" class="test-count-input" type="number" min="1" max="80" value="14" inputmode="numeric" aria-label="Quantidade de questões por teste"> questões</span>
                       <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>Sem repetição</span>
                       <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h.01M10 7h.01M16 7h.01M4 12h.01M10 12h.01M16 12h.01M4 17h.01M10 17h.01M16 17h.01"></path></svg>Alternativas embaralhadas</span>
-                      <label class="test-count-control" for="testQuestionAmount"><span>Questões por teste</span><input id="testQuestionAmount" type="number" min="1" max="80" value="14" inputmode="numeric" aria-label="Quantidade de questões por teste"></label>
                     </div>
                     <p class="hint test-start-note" id="testStartNote"></p>
                   </div>
@@ -4709,7 +4696,6 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       testRunningPanel: document.querySelector("#testRunningPanel"),
       startTest: document.querySelector("#startTest"),
       testStartNote: document.querySelector("#testStartNote"),
-      testLimitBadge: document.querySelector("#testLimitBadge"),
       testQuestionAmount: document.querySelector("#testQuestionAmount"),
       restartTest: document.querySelector("#restartTest"),
       testCard: document.querySelector("#testCard"),
@@ -5880,6 +5866,11 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       return Math.max(1, Math.min(cappedAvailable, requested));
     }
 
+    function requestedTestLimit() {
+      const raw = Number(el.testQuestionAmount?.value);
+      return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 14;
+    }
+
     function defaultRatings() {
       return { again: 0, hard: 0, good: 0, easy: 0 };
     }
@@ -6438,21 +6429,19 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     function updateTestStartState(count) {
       const hasCollection = Boolean(currentSubject());
       const disabled = !hasCollection || count <= 0;
-      const limit = selectedTestLimit(count || 1);
-      if (el.testQuestionAmount) {
-        el.testQuestionAmount.max = String(Math.max(1, count || 1));
-        if (!el.testQuestionAmount.value) el.testQuestionAmount.value = String(Math.min(14, Math.max(1, count || 1)));
-      }
-      if (el.testLimitBadge) el.testLimitBadge.textContent = String(Math.min(limit, Math.max(1, count || 1)));
+      const requested = requestedTestLimit();
+      const usable = Math.min(requested, Math.max(0, count || 0));
+      if (el.testQuestionAmount && !el.testQuestionAmount.value) el.testQuestionAmount.value = "14";
       el.startTest.disabled = disabled;
       if (!hasCollection) {
         el.testStartNote.textContent = "Crie uma coleção e adicione questões com alternativas para começar.";
       } else if (!count) {
         el.testStartNote.textContent = "O teste utiliza somente questões que possuem alternativas e resposta correta cadastrada.";
       } else {
-        el.testStartNote.textContent = `${count} questão${count === 1 ? "" : "ões"} compatível${count === 1 ? "" : "is"} disponível${count === 1 ? "" : "is"}. O teste usará até ${Math.min(limit, count)}.`;
+        el.testStartNote.textContent = `${count} questão${count === 1 ? "" : "ões"} compatível${count === 1 ? "" : "is"} disponível${count === 1 ? "" : "is"}. Você pediu ${requested}; o teste usará ${usable}.`;
       }
     }
+
     function renderTest() {
       const count = testableCards().length;
       updateTestStartState(count);
