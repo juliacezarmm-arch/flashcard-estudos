@@ -414,11 +414,51 @@
     }
 
     .folder-title {
+      width: 100%;
+      border: 1px solid rgba(37, 99, 235, 0.14);
+      border-radius: 8px;
       margin-top: 4px;
-      color: var(--muted);
+      padding: 7px 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: #31507f;
+      background: #edf5ff;
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 850;
+      text-align: left;
       text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .folder-title:hover {
+      border-color: rgba(37, 99, 235, 0.24);
+      background: #e6f0ff;
+    }
+
+    .folder-title span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .folder-title small {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      color: var(--brand);
+      background: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+
+    .folder-block.is-collapsed .subject {
+      display: none;
     }
 
     .subject {
@@ -3854,6 +3894,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     let cloudReady = false;
     let pendingImportFile = null;
     let addMode = "collection";
+    const collapsedFolders = new Set();
 
     const el = {
       authScreen: document.querySelector("#authScreen"),
@@ -4747,9 +4788,14 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       updateAddAvailability();
       el.deleteCollection.hidden = false;
 
-      el.subjects.innerHTML = groupedSubjects(data.subjects).map(group => `
-        <div class="folder-block">
-          <div class="folder-title">${escapeHtml(group.name)}</div>
+      el.subjects.innerHTML = groupedSubjects(data.subjects).map(group => {
+        const collapsed = collapsedFolders.has(group.id);
+        return `
+        <div class="folder-block ${collapsed ? "is-collapsed" : ""}" data-folder-id="${escapeHtml(group.id)}">
+          <button class="folder-title" type="button" data-folder-action="select" data-folder-id="${escapeHtml(group.id)}">
+            <span>${escapeHtml(group.name)}</span>
+            <small data-folder-action="toggle" data-folder-id="${escapeHtml(group.id)}" aria-label="${collapsed ? "Mostrar pasta" : "Minimizar pasta"}">${collapsed ? "+" : "−"}</small>
+          </button>
           ${group.subjects.map(item => `
             <div class="subject ${item.id === subject.id ? "active" : ""}" data-id="${item.id}">
               <span>${escapeHtml(item.name)}</span>
@@ -4757,7 +4803,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
             </div>
           `).join("")}
         </div>
-      `).join("");
+      `;
+      }).join("");
 
       renderQuestions(subject);
       renderProgress(subject);
@@ -5263,6 +5310,30 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     }
 
     el.subjects.addEventListener("click", event => {
+      const folderButton = event.target.closest(".folder-title");
+      if (folderButton) {
+        const folderId = folderButton.dataset.folderId || "";
+        const toggle = event.target.closest("[data-folder-action='toggle']");
+        if (toggle) {
+          if (collapsedFolders.has(folderId)) collapsedFolders.delete(folderId);
+          else collapsedFolders.add(folderId);
+          render();
+          return;
+        }
+        showView("add");
+        showAddMode("collection");
+        if (el.collectionFolder) {
+          el.collectionFolder.value = folderId;
+          updateCreateCollectionState();
+        }
+        const folder = data.folders.find(item => item.id === folderId);
+        setMessage(
+          el.collectionMessage,
+          folder ? `Pasta "${folder.name}" selecionada. Abra Opções de exclusão para excluir ou crie uma coleção dentro dela.` : "Sem pasta selecionada."
+        );
+        closeMobileNav();
+        return;
+      }
       const subject = event.target.closest(".subject");
       if (!subject) return;
       data.selected = subject.dataset.id;
@@ -6409,10 +6480,6 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
   </script>
 </body>
 </html>
-
-
-
-
 
 
 
