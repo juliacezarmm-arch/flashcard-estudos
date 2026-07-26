@@ -525,7 +525,7 @@
 
     main {
       width: min(100%, 1120px);
-      margin: 0 auto;
+      margin: 0 0 0 6px;
       padding: 14px;
       display: grid;
       gap: 9px;
@@ -2223,10 +2223,7 @@
     }
 
     .user-menu-header .auth-status {
-      max-width: none;
-      overflow: visible;
-      text-overflow: clip;
-      white-space: normal;
+      display: none;
     }
 
     .user-menu-list {
@@ -4526,7 +4523,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const subject = currentSubject();
       el.subjectTitle.textContent = subject ? subject.name : "Questões";
       el.subjectSummary.textContent = subject
-        ? `${subject.cards.length} questão${subject.cards.length === 1 ? "" : "ões"} salva${subject.cards.length === 1 ? "" : "s"} nesta coleção.`
+        ? folderName(subject.folder)
         : "Crie uma coleção antes de adicionar ou importar flashcards.";
     }
 
