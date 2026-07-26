@@ -378,34 +378,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
+      margin-bottom: -2px;
       color: #778199;
       font-size: 12px;
       font-weight: 850;
       letter-spacing: 0.07em;
       text-transform: uppercase;
-    }
-
-    .collections-toggle {
-      width: 28px;
-      height: 28px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      display: grid;
-      place-items: center;
-      background: #fff;
-      color: var(--text);
-      font-size: 18px;
-      line-height: 1;
-      cursor: pointer;
-    }
-
-    .collections-toggle:hover {
-      border-color: rgba(37, 99, 235, 0.28);
-      color: var(--brand);
-    }
-
-    .collections-collapsed .subjects {
-      display: none;
     }
 
     .folder-block {
@@ -3272,7 +3250,6 @@
 
       <div class="collections-title">
         <span>Coleções</span>
-        <button class="collections-toggle" id="toggleCollectionsList" type="button" aria-expanded="true" aria-label="Minimizar coleções" title="Minimizar coleções">−</button>
       </div>
       <div class="subjects" id="subjects"></div>
       <div class="side-footer">
@@ -3963,7 +3940,6 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       mobileMenuToggle: document.querySelector("#mobileMenuToggle"),
       mobileNavBackdrop: document.querySelector("#mobileNavBackdrop"),
       subjects: document.querySelector("#subjects"),
-      toggleCollectionsList: document.querySelector("#toggleCollectionsList"),
       subjectTitle: document.querySelector("#subjectTitle"),
       subjectSummary: document.querySelector("#subjectSummary"),
       collectionName: document.querySelector("#collectionName"),
@@ -5357,13 +5333,6 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     });
 
     el.studyFromProgress.addEventListener("click", () => showView("test"));
-    el.toggleCollectionsList.addEventListener("click", () => {
-      const collapsed = document.body.classList.toggle("collections-collapsed");
-      el.toggleCollectionsList.textContent = collapsed ? "+" : "−";
-      el.toggleCollectionsList.setAttribute("aria-expanded", String(!collapsed));
-      el.toggleCollectionsList.setAttribute("aria-label", collapsed ? "Mostrar coleções" : "Minimizar coleções");
-      el.toggleCollectionsList.title = collapsed ? "Mostrar coleções" : "Minimizar coleções";
-    });
     el.showCreateCollection.addEventListener("click", () => showAddMode("collection"));
     el.showAddQuestion.addEventListener("click", () => showAddMode("question"));
     el.showImportQuestion.addEventListener("click", () => showAddMode("import"));
@@ -6492,10 +6461,6 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
   </script>
 </body>
 </html>
-
-
-
-
 
 
 
