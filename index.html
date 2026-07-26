@@ -962,15 +962,33 @@
     .history-item {
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 10px;
+      padding: 9px 10px;
       background: #f9fbff;
       color: var(--muted);
-      line-height: 1.4;
+      line-height: 1.35;
+    }
+
+    .history-item-header {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
     }
 
     .history-item strong {
-      display: block;
       color: var(--text);
+      font-size: 14px;
+    }
+
+    .history-date {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .history-result {
+      color: var(--muted);
+      font-size: 13px;
     }
 
     .test-start-card {
@@ -1288,7 +1306,7 @@
 
     .history-item {
       display: grid;
-      gap: 4px;
+      gap: 3px;
     }
 
     .result-grid {
@@ -6091,9 +6109,11 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         const percent = item.total ? Math.round((item.score / item.total) * 100) : 0;
         return `
           <div class="history-item">
-            <strong>${escapeHtml(item.subject)}</strong>
-            <span>${date}</span>
-            <span>${item.score} acertos · ${errors} erros · ${percent}% de aproveitamento${item.durationMs ? ` · ${formatDuration(item.durationMs)}` : ""}</span>
+            <div class="history-item-header">
+              <strong>${escapeHtml(item.subject)}</strong>
+              <span class="history-date">${date}</span>
+            </div>
+            <span class="history-result">${item.score} acertos · ${errors} erros · ${percent}% de aproveitamento${item.durationMs ? ` · ${formatDuration(item.durationMs)}` : ""}</span>
           </div>
         `;
       }).join("");
