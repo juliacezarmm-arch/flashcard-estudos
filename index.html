@@ -373,6 +373,41 @@
       padding-right: 2px;
     }
 
+    .collections-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: #778199;
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .collections-toggle {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: #fff;
+      color: var(--text);
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .collections-toggle:hover {
+      border-color: rgba(37, 99, 235, 0.28);
+      color: var(--brand);
+    }
+
+    .collections-collapsed .subjects {
+      display: none;
+    }
+
     .folder-block {
       display: grid;
       gap: 6px;
@@ -381,7 +416,7 @@
     .folder-title {
       margin-top: 4px;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
     }
@@ -392,10 +427,11 @@
       justify-content: space-between;
       gap: 10px;
       border-radius: 8px;
-      padding: 8px 10px;
+      padding: 7px 10px;
       color: var(--text);
       background: #f2f5fb;
       cursor: pointer;
+      font-size: 13px;
     }
 
     .subject span {
@@ -403,6 +439,7 @@
       text-overflow: clip;
       white-space: normal;
       word-break: break-word;
+      line-height: 1.25;
     }
 
     .subject-actions {
@@ -1518,6 +1555,14 @@
       text-align: center;
       display: grid;
       gap: 4px;
+      justify-items: center;
+    }
+
+    .progress-total {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
 
     .progress-hero strong {
@@ -1734,14 +1779,6 @@
       display: block;
       margin-top: 3px;
       font-size: 14px;
-    }
-
-    .subjects::before {
-      content: "COLEÇÕES";
-      color: #778199;
-      font-size: 12px;
-      font-weight: 850;
-      letter-spacing: 0.07em;
     }
 
     .side-footer {
@@ -2285,9 +2322,9 @@
     }
 
     .hero-icon {
-      width: 40px;
-      height: 40px;
-      margin: 0 auto -4px;
+      width: 34px;
+      height: 34px;
+      margin: 0;
       border-radius: 999px;
       display: grid;
       place-items: center;
@@ -2307,7 +2344,7 @@
 
     .progress-hero strong {
       color: var(--brand);
-      font-size: 36px;
+      font-size: 34px;
       letter-spacing: -0.03em;
     }
 
@@ -2936,10 +2973,6 @@
         padding-right: 0;
       }
 
-      .subjects::before {
-        margin-bottom: 2px;
-      }
-
       .folder-block {
         display: grid;
       }
@@ -3170,6 +3203,10 @@
         </div>
       </div>
 
+      <div class="collections-title">
+        <span>Coleções</span>
+        <button class="collections-toggle" id="toggleCollectionsList" type="button" aria-expanded="true" aria-label="Minimizar coleções" title="Minimizar coleções">−</button>
+      </div>
       <div class="subjects" id="subjects"></div>
       <div class="side-footer">
 <button class="side-link" id="signOutFooter" type="button" hidden>
@@ -3293,14 +3330,16 @@
       <section class="view active" id="manage">
         <div class="progress-card">
           <div class="progress-hero">
-            <span class="hero-icon" aria-hidden="true">
+            <div class="progress-total">
+              <span class="hero-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24">
                 <path d="M8 4h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path>
                 <path d="M10 8h5M10 12h6M10 16h4"></path>
                 <path d="M5 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10"></path>
               </svg>
-            </span>
-            <strong id="todayCards">0</strong>
+              </span>
+              <strong id="todayCards">0</strong>
+            </div>
             <span>cartões para estudar</span>
           </div>
           <div class="stats">
@@ -3359,7 +3398,7 @@
             <span class="bar-frozen"></span>
           </div>
           <div class="legend" id="progressLegend"></div>
-          <button class="start-study" id="studyFromProgress" type="button"><span aria-hidden="true">▶</span> Começar teste</button>
+          <button class="start-study" id="studyFromProgress" type="button" hidden><span aria-hidden="true">▶</span> Começar teste</button>
         </div>
 
         <div class="card">
@@ -3856,6 +3895,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       mobileMenuToggle: document.querySelector("#mobileMenuToggle"),
       mobileNavBackdrop: document.querySelector("#mobileNavBackdrop"),
       subjects: document.querySelector("#subjects"),
+      toggleCollectionsList: document.querySelector("#toggleCollectionsList"),
       subjectTitle: document.querySelector("#subjectTitle"),
       subjectSummary: document.querySelector("#subjectSummary"),
       collectionName: document.querySelector("#collectionName"),
@@ -5234,6 +5274,13 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     });
 
     el.studyFromProgress.addEventListener("click", () => showView("test"));
+    el.toggleCollectionsList.addEventListener("click", () => {
+      const collapsed = document.body.classList.toggle("collections-collapsed");
+      el.toggleCollectionsList.textContent = collapsed ? "+" : "−";
+      el.toggleCollectionsList.setAttribute("aria-expanded", String(!collapsed));
+      el.toggleCollectionsList.setAttribute("aria-label", collapsed ? "Mostrar coleções" : "Minimizar coleções");
+      el.toggleCollectionsList.title = collapsed ? "Mostrar coleções" : "Minimizar coleções";
+    });
     el.showCreateCollection.addEventListener("click", () => showAddMode("collection"));
     el.showAddQuestion.addEventListener("click", () => showAddMode("question"));
     el.showImportQuestion.addEventListener("click", () => showAddMode("import"));
@@ -6362,7 +6409,6 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
   </script>
 </body>
 </html>
-
 
 
 
