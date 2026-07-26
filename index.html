@@ -2057,6 +2057,20 @@
       justify-content: flex-end;
     }
 
+    .auth-panel.signed-in {
+      width: auto;
+      min-height: 48px;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+      background: transparent;
+      box-shadow: none;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+
     .user-trigger {
       width: 48px;
       height: 48px;
@@ -2067,9 +2081,11 @@
       padding: 0;
       display: grid;
       place-items: center;
+      overflow: hidden;
       color: var(--text);
       background: rgba(255, 255, 255, 0.94);
       box-shadow: 0 6px 18px rgba(17, 26, 49, 0.06);
+      cursor: pointer;
     }
 
     .user-trigger:hover,
@@ -2087,6 +2103,10 @@
       position: relative;
       flex: 0 0 36px;
       background: #e7edf7;
+      overflow: hidden;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
     }
 
     .user-avatar::before,
@@ -2110,6 +2130,11 @@
       width: 21px;
       height: 12px;
       border-radius: 999px 999px 6px 6px;
+    }
+
+    .user-avatar.has-photo::before,
+    .user-avatar.has-photo::after {
+      content: none;
     }
 
     .auth-status {
@@ -2545,7 +2570,8 @@
       min-width: 118px;
     }
 
-    .select-with-icon {
+    .select-with-icon,
+    .search-with-icon {
       position: relative;
       display: block;
       width: 100%;
@@ -2553,6 +2579,7 @@
     }
 
     .select-with-icon span,
+    .search-with-icon span,
     .filter-svg {
       position: absolute;
       left: 14px;
@@ -2573,7 +2600,8 @@
       fill: none;
     }
 
-    .select-with-icon select {
+    .select-with-icon select,
+    .search-with-icon input {
       padding-left: 46px;
       min-height: 48px;
       background: #fff;
@@ -2581,7 +2609,7 @@
 
     #questionsContent > .row {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: minmax(170px, 0.85fr) minmax(240px, 1.3fr) minmax(170px, 0.85fr);
       gap: 12px;
       align-items: center;
     }
@@ -3046,6 +3074,7 @@
       }
 
       .select-with-icon,
+      .search-with-icon,
       .progress-card .start-study,
       .test-start-action #startTest,
       .empty button,
@@ -3450,6 +3479,13 @@
                   <option value="mastered">Dominados</option>
                   <option value="frozen">Congelados</option>
                 </select>
+              </label>
+              <label class="search-with-icon">
+                <svg class="filter-svg" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <path d="M16.5 16.5 21 21"></path>
+                </svg>
+                <input id="cardSearch" type="search" placeholder="Buscar por palavra-chave ou assunto..." aria-label="Buscar por palavra-chave ou assunto...">
               </label>
               <label class="select-with-icon">
                 <svg class="filter-svg" viewBox="0 0 24 24" aria-hidden="true">
@@ -3892,6 +3928,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       userDisplayName: document.querySelector("#userDisplayName"),
       userMenuToggle: document.querySelector("#userMenuToggle"),
       userMenu: document.querySelector("#userMenu"),
+      userAvatars: document.querySelectorAll(".user-avatar"),
       authTitle: document.querySelector("#authTitle"),
       authSubtitle: document.querySelector("#authSubtitle"),
       authNotice: document.querySelector("#authNotice"),
@@ -3964,6 +4001,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       toggleQuestions: document.querySelector("#toggleQuestions"),
       questionsContent: document.querySelector("#questionsContent"),
       cardFilter: document.querySelector("#cardFilter"),
+      cardSearch: document.querySelector("#cardSearch"),
       cardSort: document.querySelector("#cardSort"),
       questionList: document.querySelector("#questionList"),
       tabs: document.querySelectorAll(".tab"),
@@ -4174,6 +4212,28 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       );
     }
 
+    function getUserAvatarUrl(user) {
+      const metadata = user?.user_metadata || {};
+      const candidates = [metadata.avatar_url, metadata.picture];
+      return candidates.find(url => {
+        if (!url || typeof url !== "string") return false;
+        try {
+          const parsed = new URL(url);
+          return parsed.protocol === "https:" || parsed.protocol === "http:";
+        } catch {
+          return false;
+        }
+      }) || "";
+    }
+
+    function updateUserAvatars(user) {
+      const avatarUrl = getUserAvatarUrl(user);
+      el.userAvatars.forEach(avatar => {
+        avatar.classList.toggle("has-photo", Boolean(avatarUrl));
+        avatar.style.backgroundImage = avatarUrl ? `url(${JSON.stringify(avatarUrl)})` : "";
+      });
+    }
+
     function authErrorMessage(error, fallback) {
       if (!error) return fallback;
       if (error.message === "Failed to fetch" || /fetch/i.test(error.message || "")) {
@@ -4327,9 +4387,11 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (signedIn) {
         const userName = currentUser.user_metadata?.name || currentUser.email || "Usuário";
         el.userDisplayName.textContent = userName;
+        updateUserAvatars(currentUser);
         setAuthStatus("Conectado");
       } else {
         closeUserMenu();
+        updateUserAvatars(null);
         setAuthStatus("Entre para salvar seus flashcards no Supabase e acessar no celular.");
       }
     }
@@ -4803,6 +4865,26 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       save();
     }
 
+    function normalizeSearchText(text) {
+      return String(text || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    }
+
+    function cardSearchText(card) {
+      const parts = [
+        card.q,
+        card.a,
+        card.correctAnswer,
+        card.explanation,
+        ...(card.options || []),
+        ...(card.listChoices || []),
+        ...(card.listItems || []).flatMap(item => [item.label, item.answer])
+      ];
+      return normalizeSearchText(parts.join(" "));
+    }
+
     function renderQuestions(subject) {
       if (!subject.cards.length) {
         el.questionList.innerHTML = `
@@ -4822,6 +4904,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         cards = cards.filter(item => item.card.status !== "frozen");
       } else {
         cards = cards.filter(item => (item.card.status || "new") === filter);
+      }
+      const query = normalizeSearchText(el.cardSearch?.value || "").trim();
+      if (query) {
+        cards = cards.filter(item => cardSearchText(item.card).includes(query));
       }
       cards.sort((a, b) => {
         if (el.cardSort.value === "oldest") return a.index - b.index;
@@ -5921,6 +6007,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     });
     el.exportCollection.addEventListener("click", exportCurrentCollection);
     el.cardFilter.addEventListener("change", () => renderQuestions(currentSubject() || { cards: [] }));
+    el.cardSearch.addEventListener("input", () => renderQuestions(currentSubject() || { cards: [] }));
     el.cardSort.addEventListener("change", () => renderQuestions(currentSubject() || { cards: [] }));
 
     el.tabs.forEach(tab => {
@@ -6445,7 +6532,3 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
   </script>
 </body>
 </html>
-
-
-
-
