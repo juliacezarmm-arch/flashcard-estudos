@@ -987,6 +987,79 @@
       gap: 16px;
     }
 
+    .test-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .test-tabs button {
+      width: auto;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--text);
+      background: #fbfdff;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+    }
+
+    .test-tabs button:hover {
+      border-color: #c7d5ef;
+      background: #eef4ff;
+    }
+
+    .test-tabs button.active {
+      border-color: var(--brand);
+      color: #fff;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+    }
+
+    .test-tabs button.active svg {
+      stroke: currentColor;
+    }
+
+    .test-panel[hidden] {
+      display: none;
+    }
+
+    .test-intro {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .test-running {
+      display: grid;
+      gap: 14px;
+    }
+
+    .test-running[hidden],
+    .test-intro[hidden],
+    .test-rating-hint[hidden] {
+      display: none;
+    }
+
+    .test-running-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .test-running-head h3 {
+      margin: 0;
+      font-size: 20px;
+    }
+
     .test-start-icon,
     .test-state-icon {
       width: 78px;
@@ -1075,9 +1148,9 @@
     }
 
     .test-card {
-      grid-template-columns: auto minmax(0, 1fr);
-      gap: 22px;
-      padding: 24px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+      padding: 22px;
     }
 
     .test-card-body {
@@ -2719,6 +2792,24 @@
         grid-template-columns: 1fr;
       }
 
+      .test-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+
+      .test-tabs button {
+        flex: 0 0 auto;
+      }
+
+      .test-intro {
+        grid-template-columns: 1fr;
+      }
+
+      .test-running-head {
+        align-items: flex-start;
+      }
+
       .test-start-action {
         justify-items: stretch;
       }
@@ -3675,71 +3766,104 @@
       </section>
 
       <section class="view" id="test">
+        <div class="test-tabs" role="tablist" aria-label="Áreas do teste">
+          <button class="active" type="button" data-test-panel="quick" role="tab" aria-selected="true">
+            <svg class="button-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"></path></svg>
+            Teste rápido
+          </button>
+          <button type="button" data-test-panel="history" role="tab" aria-selected="false">
+            <svg class="button-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v5l3 2"></path></svg>
+            Histórico
+          </button>
+          <button type="button" data-test-panel="analysis" role="tab" aria-selected="false">
+            <svg class="button-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-4"></path></svg>
+            Análise
+          </button>
+        </div>
+
         <div class="test-layout">
-          <div class="card test-start-card">
-            <div class="test-start-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path d="M9 7.5v9l7-4.5z"></path>
-              </svg>
-            </div>
-            <div class="test-start-copy">
-              <h3>Teste rápido</h3>
-              <p class="hint" id="testIntro">Comece um teste com até 14 questões sem repetição. As alternativas são embaralhadas a cada novo teste.</p>
-              <div class="test-badges" aria-label="Regras do teste">
-                <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path></svg>Até 14 questões</span>
-                <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>Sem repetição</span>
-                <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h.01M10 7h.01M16 7h.01M4 12h.01M10 12h.01M16 12h.01M4 17h.01M10 17h.01M16 17h.01"></path></svg>Alternativas embaralhadas</span>
+          <div class="test-panel active" id="testPanelQuick" data-test-panel-view="quick">
+            <div class="test-card" id="testCard">
+              <div class="test-card-body">
+                <div class="test-intro" id="testIntroPanel">
+                  <div class="test-start-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M8 4h8l2 2v14H6V6z"></path>
+                      <path d="M9 10h6M9 14h4"></path>
+                      <circle cx="17" cy="17" r="3"></circle>
+                      <path d="M17 15.8v1.4M17 18.4h.01"></path>
+                    </svg>
+                  </div>
+                  <div class="test-start-copy">
+                    <h3>Teste rápido</h3>
+                    <p class="hint" id="testIntro">Comece um teste com até 14 questões sem repetição. As alternativas são embaralhadas a cada novo teste.</p>
+                    <div class="test-badges" aria-label="Regras do teste">
+                      <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path></svg>Até 14 questões</span>
+                      <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>Sem repetição</span>
+                      <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h.01M10 7h.01M16 7h.01M4 12h.01M10 12h.01M16 12h.01M4 17h.01M10 17h.01M16 17h.01"></path></svg>Alternativas embaralhadas</span>
+                    </div>
+                    <p class="hint test-start-note" id="testStartNote"></p>
+                  </div>
+                  <div class="test-start-action">
+                    <button id="startTest" type="button">
+                      <svg class="button-svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9 7.5v9l7-4.5z"></path>
+                      </svg>
+                      Começar teste
+                    </button>
+                    <button class="secondary" id="restartTest" type="button" hidden>Novo teste</button>
+                  </div>
+                </div>
+
+                <div class="test-running" id="testRunningPanel" hidden>
+                  <div class="test-running-head">
+                    <h3>Teste rápido</h3>
+                    <div class="meta">
+                      <span class="pill" id="testCounter">Teste não iniciado</span>
+                      <span id="testScore">0 acertos</span>
+                    </div>
+                  </div>
+                  <div class="test-progress-line" id="testProgressLine"><span></span></div>
+                  <div class="test-question" id="testQuestion">Clique em Começar teste para sortear as questões.</div>
+                  <div class="test-options" id="testOptions"></div>
+                  <div class="test-answer" id="testAnswer"></div>
+                  <p class="hint test-rating-hint" id="testRatingHint" hidden>Revise a resposta e informe como foi o seu desempenho.</p>
+                  <div class="study-actions" id="testRateActions">
+                    <button class="danger" data-test-rate="again">De novo</button>
+                    <button class="warning" data-test-rate="hard">Difícil</button>
+                    <button class="success" data-test-rate="good">Bom</button>
+                    <button class="secondary" data-test-rate="easy">Fácil</button>
+                  </div>
+                  <div class="row test-manual-actions" hidden>
+                    <button id="confirmTestAnswer" type="button">Confirmar resposta</button>
+                    <button class="secondary" id="nextTestQuestion" type="button">Próxima</button>
+                  </div>
+                  <p class="hint" id="testHint">O teste usa somente questões com alternativas cadastradas.</p>
+                </div>
               </div>
-              <p class="hint test-start-note" id="testStartNote"></p>
-            </div>
-            <div class="test-start-action">
-              <button id="startTest" type="button">
-                <svg class="button-svg" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M9 7.5v9l7-4.5z"></path>
-                </svg>
-                Começar teste
-              </button>
-              <button class="secondary" id="restartTest" type="button" hidden>Novo teste</button>
             </div>
           </div>
 
-          <div class="test-card" id="testCard">
-            <div class="test-state-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path d="M8 4h8l2 2v14H6V6z"></path>
-                <path d="M9 10h6M9 14h4"></path>
-                <circle cx="17" cy="17" r="3"></circle>
-                <path d="M17 15.8v1.4M17 18.4h.01"></path>
-              </svg>
-            </div>
-            <div class="test-card-body">
-            <div class="meta">
-              <span class="pill" id="testCounter">Teste não iniciado</span>
-              <span id="testScore">0 acertos</span>
-            </div>
-            <div class="test-progress-line" id="testProgressLine"><span></span></div>
-            <div class="test-question" id="testQuestion">Clique em Começar teste para sortear as questões.</div>
-            <div class="test-options" id="testOptions"></div>
-            <div class="test-answer" id="testAnswer"></div>
-            <div class="study-actions" id="testRateActions">
-              <button class="danger" data-test-rate="again">De novo<br><small>2 min</small></button>
-              <button class="warning" data-test-rate="hard">Difícil<br><small>repetir</small></button>
-              <button class="success" data-test-rate="good">Bom<br><small>ok</small></button>
-              <button class="secondary" data-test-rate="easy">Fácil<br><small>dominado</small></button>
-            </div>
-            <div class="row test-manual-actions" hidden>
-              <button id="confirmTestAnswer" type="button">Confirmar resposta</button>
-              <button class="secondary" id="nextTestQuestion" type="button">Próxima</button>
-            </div>
-            <p class="hint" id="testHint">O teste usa somente questões com alternativas cadastradas.</p>
+          <div class="test-panel" id="testPanelHistory" data-test-panel-view="history" hidden>
+            <div class="card test-history-card">
+              <div class="section-heading">
+                <h3>Histórico de testes</h3>
+              </div>
+              <div class="history-list" id="testHistory"></div>
             </div>
           </div>
 
-          <div class="card test-history-card">
-            <div class="section-heading">
-              <h3>Histórico de testes</h3>
+          <div class="test-panel" id="testPanelAnalysis" data-test-panel-view="analysis" hidden>
+            <div class="card test-history-card">
+              <div class="section-heading">
+                <h3>Análise de desempenho</h3>
+              </div>
+              <div class="test-empty">
+                <div class="test-empty-illustration" aria-hidden="true"><span>!</span></div>
+                <strong>Suas análises aparecerão aqui conforme você concluir novos testes.</strong>
+                <p>Em breve esta área pode reunir evolução, questões com mais erros e assuntos de maior dificuldade.</p>
+              </div>
             </div>
-            <div class="history-list" id="testHistory"></div>
           </div>
         </div>
       </section>
@@ -4027,6 +4151,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       collectionBar: document.querySelector("#collectionBar"),
       progressLegend: document.querySelector("#progressLegend"),
       studyFromProgress: document.querySelector("#studyFromProgress"),
+      testTabs: document.querySelectorAll("[data-test-panel]"),
+      testPanels: document.querySelectorAll("[data-test-panel-view]"),
+      testIntroPanel: document.querySelector("#testIntroPanel"),
+      testRunningPanel: document.querySelector("#testRunningPanel"),
       startTest: document.querySelector("#startTest"),
       testStartNote: document.querySelector("#testStartNote"),
       restartTest: document.querySelector("#restartTest"),
@@ -4038,6 +4166,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       testOptions: document.querySelector("#testOptions"),
       testAnswer: document.querySelector("#testAnswer"),
       testRateActions: document.querySelector("#testRateActions"),
+      testRatingHint: document.querySelector("#testRatingHint"),
       confirmTestAnswer: document.querySelector("#confirmTestAnswer"),
       nextTestQuestion: document.querySelector("#nextTestQuestion"),
       testHint: document.querySelector("#testHint"),
@@ -4075,11 +4204,13 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       recorded: false,
       subjectName: "",
       startedAt: null,
-      finishedAt: null
+      finishedAt: null,
+      id: "",
+      attempts: {}
     };
 
     function resetTestState(subjectName = currentSubject()?.name || "") {
-      testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName, startedAt: null, finishedAt: null };
+      testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName, startedAt: null, finishedAt: null, id: "", attempts: {} };
     }
 
     function load() {
@@ -4109,6 +4240,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       card.status = card.status || "new";
       card.reviews = card.reviews || 0;
       card.masteryCount = Number.isFinite(card.masteryCount) ? card.masteryCount : (card.status === "mastered" ? Math.min(card.reviews || 0, MASTERY_TARGET) : 0);
+      card.lastMasteryTestId = card.lastMasteryTestId || "";
+      card.testPriority = Boolean(card.testPriority);
+      card.totalCorrect = Number.isFinite(card.totalCorrect) ? card.totalCorrect : 0;
+      card.totalWrong = Number.isFinite(card.totalWrong) ? card.totalWrong : 0;
       if (card.status === "mastered" && card.masteryCount < MASTERY_TARGET) card.status = "learning";
       if (card.type === "multiple" && card.options.length < 2) {
         const extracted = extractOptionsFromQuestion(card.q || "");
@@ -4495,6 +4630,19 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       el.views.forEach(view => view.classList.toggle("active", view.id === viewId));
       if (viewId === "add" && !data.subjects.length) showAddMode("collection");
       updateTopbar(viewId);
+    }
+
+    function showTestPanel(panelId = "quick") {
+      el.testTabs.forEach(tab => {
+        const active = tab.dataset.testPanel === panelId;
+        tab.classList.toggle("active", active);
+        tab.setAttribute("aria-selected", String(active));
+      });
+      el.testPanels.forEach(panel => {
+        const active = panel.dataset.testPanelView === panelId;
+        panel.classList.toggle("active", active);
+        panel.hidden = !active;
+      });
     }
 
     function showAddMode(mode) {
@@ -5112,14 +5260,15 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const cards = testableCards();
       const subject = currentSubject();
       if (!cards.length) {
-        testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName: subject?.name || "", startedAt: null, finishedAt: null };
+        testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName: subject?.name || "", startedAt: null, finishedAt: null, id: "", attempts: {} };
         renderTest();
         return;
       }
 
-      const pendingCards = cards.filter(card => card.status !== "mastered");
+      const priorityCards = cards.filter(card => card.status !== "mastered" && card.testPriority);
+      const pendingCards = cards.filter(card => card.status !== "mastered" && !card.testPriority);
       const masteredCards = cards.filter(card => card.status === "mastered");
-      const selectedCards = [...shuffleList(pendingCards), ...shuffleList(masteredCards)].slice(0, 14);
+      const selectedCards = [...shuffleList(priorityCards), ...shuffleList(pendingCards), ...shuffleList(masteredCards)].slice(0, 14);
 
       testState = {
         active: true,
@@ -5131,7 +5280,9 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         recorded: false,
         subjectName: subject?.name || "Coleção",
         startedAt: Date.now(),
-        finishedAt: null
+        finishedAt: null,
+        id: Date.now().toString(36),
+        attempts: {}
       };
       renderTest();
     }
@@ -5153,8 +5304,12 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     function applyReviewRating(card, rating) {
       const normalizedRating = { new: "again", learning: "hard", mastered: "good" }[rating] || rating;
       card.masteryCount = Number.isFinite(card.masteryCount) ? card.masteryCount : 0;
-      if (normalizedRating === "again" || normalizedRating === "hard") {
+      if (normalizedRating === "again") {
         card.masteryCount = 0;
+        card.status = "learning";
+        return;
+      }
+      if (normalizedRating === "hard") {
         card.status = "learning";
         return;
       }
@@ -5166,6 +5321,62 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       card.status = normalizedRating || "learning";
     }
 
+    function testAttemptFor(index) {
+      const key = String(index);
+      testState.attempts = testState.attempts && typeof testState.attempts === "object" ? testState.attempts : {};
+      testState.attempts[key] = testState.attempts[key] || { hadAgain: false, counted: false };
+      return testState.attempts[key];
+    }
+
+    function requeueTestQuestion(card, originalIndex) {
+      const repeat = buildTestQuestion({ ...card, originalIndex });
+      const insertAt = Math.min(testState.index + 4, testState.questions.length);
+      testState.questions.splice(insertAt, 0, repeat);
+    }
+
+    function applyTestReviewRating(card, rating, question) {
+      const normalizedRating = { new: "again", learning: "hard", mastered: "good" }[rating] || rating;
+      const attempt = testAttemptFor(question.originalIndex);
+      card.masteryCount = Number.isFinite(card.masteryCount) ? card.masteryCount : 0;
+      card.totalCorrect = Number.isFinite(card.totalCorrect) ? card.totalCorrect : 0;
+      card.totalWrong = Number.isFinite(card.totalWrong) ? card.totalWrong : 0;
+      card.lastMasteryTestId = card.lastMasteryTestId || "";
+      if (normalizedRating === "again") {
+        attempt.hadAgain = true;
+        attempt.counted = true;
+        card.masteryCount = 0;
+        card.status = "learning";
+        card.testPriority = true;
+        card.totalWrong += 1;
+        requeueTestQuestion(card, question.originalIndex);
+        return;
+      }
+      if (!question.isCorrect) {
+        card.status = "learning";
+        card.testPriority = true;
+        card.totalWrong += 1;
+        return;
+      }
+      if (normalizedRating === "hard") {
+        card.status = "learning";
+        card.testPriority = true;
+        card.totalCorrect += 1;
+        return;
+      }
+      if (normalizedRating === "good" || normalizedRating === "easy") {
+        card.totalCorrect += 1;
+        if (!attempt.hadAgain && !attempt.counted && card.lastMasteryTestId !== testState.id) {
+          card.masteryCount = Math.min(MASTERY_TARGET, card.masteryCount + 1);
+          card.lastMasteryTestId = testState.id;
+          attempt.counted = true;
+        }
+        card.status = card.masteryCount >= MASTERY_TARGET ? "mastered" : "learning";
+        card.testPriority = false;
+        return;
+      }
+      card.status = card.status === "new" ? "learning" : card.status;
+    }
+
     function rateCurrentTestCard(rating) {
       const question = testState.questions[testState.index];
       const subject = currentSubject();
@@ -5173,7 +5384,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const card = subject.cards[question.originalIndex];
       if (!card) return;
       if (!question.rated) card.reviews = (card.reviews || 0) + 1;
-      applyReviewRating(card, rating);
+      applyTestReviewRating(card, rating, question);
       card.lastReviewedAt = new Date().toISOString();
       question.rated = true;
     }
@@ -5238,6 +5449,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       updateTestStartState(count);
       el.testCard.classList.toggle("is-running", testState.active && testState.index < testState.questions.length);
       if (!testState.active) {
+        el.testIntroPanel.hidden = false;
+        el.testRunningPanel.hidden = true;
         el.testCounter.textContent = "Teste não iniciado";
         el.testScore.textContent = "0 acertos";
         el.testProgressLine.querySelector("span").style.width = "0%";
@@ -5253,6 +5466,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         el.testAnswer.classList.remove("show");
         el.testAnswer.textContent = "";
         el.testRateActions.classList.remove("show");
+        el.testRatingHint.hidden = true;
         el.confirmTestAnswer.disabled = true;
         el.nextTestQuestion.disabled = true;
         el.testHint.textContent = count
@@ -5260,6 +5474,9 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
           : "O teste usa somente questões com alternativas cadastradas.";
         return;
       }
+
+      el.testIntroPanel.hidden = true;
+      el.testRunningPanel.hidden = false;
 
       if (testState.index >= testState.questions.length) {
         recordFinishedTest();
@@ -5281,6 +5498,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         el.testAnswer.classList.add("show");
         el.testAnswer.textContent = `Coleção: ${testState.subjectName || "Coleção"}. Tempo total: ${formatDuration(testDurationMs())}. Clique em Começar teste para sortear outras questões e embaralhar as alternativas novamente.`;
         el.testRateActions.classList.remove("show");
+        el.testRatingHint.hidden = true;
         el.confirmTestAnswer.disabled = true;
         el.nextTestQuestion.disabled = true;
         el.testHint.textContent = "Teste concluído.";
@@ -5325,11 +5543,12 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       el.testAnswer.classList.toggle("show", testState.answered);
       el.testAnswer.innerHTML = testState.answered ? renderTestAnswer(question) : "";
       el.testRateActions.classList.toggle("show", testState.answered);
+      el.testRatingHint.hidden = !testState.answered;
       if (!testState.answered) el.testRateActions.querySelectorAll("button").forEach(item => item.classList.remove("selected"));
       el.confirmTestAnswer.disabled = !isTestSelectionComplete(question) || testState.answered;
       el.nextTestQuestion.disabled = !testState.answered;
       el.testHint.textContent = testState.answered
-        ? "Veja o gabarito e marque De novo/Difícil/Bom/Fácil para continuar."
+        ? ""
         : "Escolha uma alternativa para responder.";
     }
 
@@ -6014,6 +6233,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       });
     });
 
+    el.testTabs.forEach(tab => {
+      tab.addEventListener("click", () => showTestPanel(tab.dataset.testPanel));
+    });
+
     el.startTest.addEventListener("click", startNewTest);
     el.restartTest.addEventListener("click", startNewTest);
 
@@ -6046,6 +6269,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const isCorrect = question.type === "select-list"
         ? (question.listItems || []).every((item, index) => testState.selected?.[index] === item.answer)
         : selectedOption?.isCorrect;
+      question.isCorrect = Boolean(isCorrect);
       if (isCorrect) {
         testState.score += 1;
       }
@@ -6062,9 +6286,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (!testState.active || !testState.answered) return;
       const question = testState.questions[testState.index];
       if (question && !question.rated) {
-        const autoStatus = question.type === "select-list"
-          ? "learning"
-          : (question.testOptions?.[testState.selected]?.isCorrect ? "good" : "hard");
+        const autoStatus = question.isCorrect ? "good" : "again";
         rateCurrentTestCard(autoStatus);
       }
       testState.index += 1;
