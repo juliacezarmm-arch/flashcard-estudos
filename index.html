@@ -911,6 +911,7 @@
       max-height: 760px;
       overflow-y: auto;
       padding-right: 4px;
+      margin-top: 10px;
     }
 
     .question-item {
@@ -1667,7 +1668,7 @@
     }
 
     #progressLegend {
-      display: none;
+      display: none !important;
     }
 
     .dot {
@@ -3456,7 +3457,7 @@
             <span class="bar-mastered"></span>
             <span class="bar-frozen"></span>
           </div>
-          <div class="legend" id="progressLegend"></div>
+          <div class="legend" id="progressLegend" hidden></div>
           <button class="start-study" id="studyFromProgress" type="button" hidden><span aria-hidden="true">▶</span> Começar teste</button>
         </div>
 
@@ -4980,12 +4981,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       el.collectionBar.style.setProperty("--mastered", `${Math.max(stats.mastered, 0.2)}fr`);
       el.collectionBar.style.setProperty("--frozen", `${Math.max(stats.frozen, 0.2)}fr`);
       el.studyFromProgress.disabled = due === 0;
-      el.progressLegend.innerHTML = `
-        <span><i class="dot bar-new"></i>${stats.new} Não estudados</span>
-        <span><i class="dot bar-learning"></i>${stats.learning} Em andamento</span>
-        <span><i class="dot bar-mastered"></i>${stats.mastered} Dominados</span>
-        <span><i class="dot bar-frozen"></i>${stats.frozen} Congelados</span>
-      `;
+      el.progressLegend.innerHTML = "";
     }
 
     function renderStudy() {
