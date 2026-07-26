@@ -3232,6 +3232,496 @@
       }
     }
 
+    .analysis-dashboard {
+      display: grid;
+      gap: 12px;
+    }
+
+    .analysis-card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.97);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .analysis-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .analysis-card-head h3,
+    .analysis-card-head h4 {
+      margin: 0;
+      color: var(--text);
+    }
+
+    .analysis-card-head h3 { font-size: 17px; }
+    .analysis-card-head h4 { font-size: 15px; }
+
+    .analysis-card-head select {
+      width: auto;
+      min-width: 160px;
+      min-height: 38px;
+      padding: 7px 34px 7px 10px;
+      font-size: 13px;
+    }
+
+    .analysis-summary-stats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .analysis-stat {
+      min-height: 82px;
+      border: 1px solid #e0e8f6;
+      border-radius: 10px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr);
+      grid-template-rows: auto auto auto;
+      align-items: center;
+      column-gap: 10px;
+      background: #fbfdff;
+    }
+
+    .analysis-stat-icon {
+      grid-row: 1 / 4;
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      color: var(--analysis-color, var(--brand));
+      background: var(--analysis-soft, #eaf2ff);
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    .analysis-stat strong {
+      color: var(--analysis-color, var(--brand));
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .analysis-stat span,
+    .analysis-stat small {
+      min-width: 0;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+
+    .analysis-stat span { font-size: 12px; font-weight: 750; }
+    .analysis-stat small { font-size: 11px; }
+
+    .analysis-stat.is-green { --analysis-color: #16a34a; --analysis-soft: #e6f8eb; }
+    .analysis-stat.is-orange { --analysis-color: #d97706; --analysis-soft: #fff3df; }
+    .analysis-stat.is-purple { --analysis-color: #7c3aed; --analysis-soft: #f1eaff; }
+    .analysis-stat.is-red { --analysis-color: #ef4444; --analysis-soft: #feecec; }
+
+    .analysis-insight {
+      margin-top: 10px;
+      border: 1px solid #cfe0ff;
+      border-radius: 9px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #31527f;
+      background: #f7fbff;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .analysis-insight::before {
+      content: "✦";
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 28px;
+      color: #d97706;
+      background: #fff4d9;
+      font-weight: 900;
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .analysis-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .analysis-list-item {
+      width: 100%;
+      min-height: 58px;
+      border: 1px solid #e1e8f4;
+      border-radius: 9px;
+      padding: 9px 10px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+      background: #fff;
+      text-align: left;
+    }
+
+    button.analysis-list-item:hover {
+      border-color: #bcd0f4;
+      color: var(--text);
+      background: #f7faff;
+    }
+
+    .analysis-list-main {
+      min-width: 0;
+      display: grid;
+      gap: 3px;
+    }
+
+    .analysis-list-main strong {
+      overflow: hidden;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.3;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .analysis-list-main small {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.3;
+    }
+
+    .analysis-list-side {
+      color: var(--analysis-item-color, #ef4444);
+      font-size: 11px;
+      font-weight: 800;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .analysis-rank {
+      display: inline-grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      margin-right: 7px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--analysis-item-color, #ef4444);
+      font-size: 11px;
+    }
+
+    .analysis-topic-table {
+      display: grid;
+      gap: 7px;
+    }
+
+    .analysis-topic-row {
+      display: grid;
+      grid-template-columns: minmax(90px, 1.1fr) minmax(100px, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    .analysis-topic-name {
+      overflow: hidden;
+      color: #34415c;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .analysis-topic-progress {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      align-items: center;
+      gap: 6px;
+      color: #52607b;
+    }
+
+    .analysis-mini-bar {
+      height: 5px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #e5eaf3;
+    }
+
+    .analysis-mini-bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--bar-color, #ef4444);
+    }
+
+    .analysis-situation {
+      color: var(--bar-color, #ef4444);
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .analysis-code {
+      width: max-content;
+      border: 1px solid currentColor;
+      border-radius: 6px;
+      padding: 3px 6px;
+      color: var(--analysis-item-color, #ef4444);
+      background: color-mix(in srgb, currentColor 8%, white);
+      font-size: 10px;
+      font-weight: 850;
+    }
+
+    .analysis-chart-wrap {
+      min-height: 210px;
+      display: grid;
+      align-items: center;
+    }
+
+    .analysis-line-chart {
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .analysis-chart-note {
+      margin-top: 8px;
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: #315fa8;
+      background: #f1f6ff;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .analysis-rating-wrap {
+      min-height: 210px;
+      display: grid;
+      grid-template-columns: 145px minmax(0, 1fr);
+      align-items: center;
+      gap: 16px;
+    }
+
+    .analysis-donut {
+      width: 138px;
+      height: 138px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--donut-bg, #e5eaf3);
+      position: relative;
+    }
+
+    .analysis-donut::after {
+      content: "";
+      position: absolute;
+      inset: 29px;
+      border-radius: inherit;
+      background: #fff;
+    }
+
+    .analysis-donut-center {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      justify-items: center;
+      color: var(--muted);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .analysis-donut-center strong {
+      color: var(--text);
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .analysis-rating-legend {
+      display: grid;
+      gap: 9px;
+      color: #4b5872;
+      font-size: 12px;
+    }
+
+    .analysis-rating-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .analysis-rating-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--rating-color);
+    }
+
+    .analysis-review-card {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .analysis-review-icon {
+      width: 48px;
+      height: 48px;
+      border: 1px solid #cfe0ff;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      color: var(--brand);
+      background: #eef5ff;
+      font-size: 24px;
+    }
+
+    .analysis-review-copy {
+      min-width: 0;
+      display: grid;
+      gap: 5px;
+    }
+
+    .analysis-review-copy strong {
+      color: var(--brand-dark);
+      font-size: 15px;
+    }
+
+    .analysis-review-copy p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .analysis-review-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .analysis-review-tag {
+      border-radius: 999px;
+      padding: 5px 9px;
+      color: #b42318;
+      background: #fff0ee;
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .analysis-review-tag.is-orange { color: #b45309; background: #fff4df; }
+    .analysis-review-tag.is-green { color: #15803d; background: #eaf8ee; }
+
+    .analysis-empty-state {
+      min-height: 300px;
+      display: grid;
+      place-content: center;
+      justify-items: center;
+      gap: 10px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .analysis-empty-state strong {
+      color: var(--text);
+      font-size: 18px;
+    }
+
+    .analysis-empty-state p {
+      max-width: 520px;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .analysis-empty-state button { margin-top: 6px; }
+
+    .question-code-pill {
+      border-radius: 6px;
+      padding: 3px 6px;
+      color: #315fa8;
+      background: #edf4ff;
+      font-size: 10px;
+      font-weight: 850;
+    }
+
+    @media (max-width: 1100px) {
+      .analysis-summary-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .analysis-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 860px) {
+      .analysis-summary-stats,
+      .analysis-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .analysis-card-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .analysis-card-head select { width: 100%; }
+
+      .analysis-rating-wrap {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+
+      .analysis-rating-legend { width: 100%; }
+
+      .analysis-review-card {
+        grid-template-columns: 1fr;
+      }
+
+      .analysis-review-card > button { width: 100%; }
+    }
+
+
+    .test-count-control {
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #dbe4f3;
+      border-radius: 12px;
+      color: #58657f;
+      display: inline-flex;
+      font-size: 0.86rem;
+      font-weight: 700;
+      gap: 8px;
+      padding: 7px 10px;
+    }
+
+    .test-count-control input {
+      border: 0;
+      border-left: 1px solid #dbe4f3;
+      color: #0f1b33;
+      font: inherit;
+      max-width: 64px;
+      outline: 0;
+      padding: 2px 0 2px 8px;
+    }
+
+    @media (max-width: 720px) {
+      .test-count-control {
+        justify-content: space-between;
+        width: 100%;
+      }
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -3798,9 +4288,10 @@
                     <h3>Teste rápido</h3>
                     <p class="hint" id="testIntro">Comece um teste com até 14 questões sem repetição. As alternativas são embaralhadas a cada novo teste.</p>
                     <div class="test-badges" aria-label="Regras do teste">
-                      <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path></svg>Até 14 questões</span>
+                      <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path></svg>Até <span id="testLimitBadge">14</span> questões</span>
                       <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>Sem repetição</span>
                       <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h.01M10 7h.01M16 7h.01M4 12h.01M10 12h.01M16 12h.01M4 17h.01M10 17h.01M16 17h.01"></path></svg>Alternativas embaralhadas</span>
+                      <label class="test-count-control" for="testQuestionAmount"><span>Questões por teste</span><input id="testQuestionAmount" type="number" min="1" max="80" value="14" inputmode="numeric" aria-label="Quantidade de questões por teste"></label>
                     </div>
                     <p class="hint test-start-note" id="testStartNote"></p>
                   </div>
@@ -3854,14 +4345,75 @@
           </div>
 
           <div class="test-panel" id="testPanelAnalysis" data-test-panel-view="analysis" hidden>
-            <div class="card test-history-card">
-              <div class="section-heading">
-                <h3>Análise de desempenho</h3>
-              </div>
-              <div class="test-empty">
+            <div class="analysis-dashboard" id="analysisDashboard">
+              <div class="analysis-card analysis-empty-state" id="analysisEmptyState" hidden>
                 <div class="test-empty-illustration" aria-hidden="true"><span>!</span></div>
-                <strong>Suas análises aparecerão aqui conforme você concluir novos testes.</strong>
-                <p>Em breve esta área pode reunir evolução, questões com mais erros e assuntos de maior dificuldade.</p>
+                <strong>Análise de desempenho</strong>
+                <p>Conclua alguns testes para que o Fixa identifique seus pontos fortes e os conteúdos que precisam de revisão.</p>
+                <button type="button" id="analysisStartTest">Começar teste</button>
+              </div>
+
+              <div class="analysis-dashboard" id="analysisContent" hidden>
+                <section class="analysis-card">
+                  <div class="analysis-card-head">
+                    <h3 id="analysisSummaryTitle">Resumo geral da pasta</h3>
+                    <select id="analysisPeriod" aria-label="Período da análise">
+                      <option value="all">Período: Todos os testes</option>
+                      <option value="5">Últimos 5 testes</option>
+                      <option value="10">Últimos 10 testes</option>
+                      <option value="7d">Últimos 7 dias</option>
+                      <option value="30d">Últimos 30 dias</option>
+                    </select>
+                  </div>
+                  <div class="analysis-summary-stats" id="analysisSummaryStats"></div>
+                  <div class="analysis-insight" id="analysisInsight"></div>
+                </section>
+
+                <div class="analysis-grid">
+                  <section class="analysis-card">
+                    <div class="analysis-card-head"><h4>O que estudar agora</h4></div>
+                    <div class="analysis-list" id="analysisStudyNow"></div>
+                  </section>
+
+                  <section class="analysis-card">
+                    <div class="analysis-card-head"><h4>Assuntos que precisam de atenção</h4></div>
+                    <div class="analysis-topic-table" id="analysisSubjects"></div>
+                  </section>
+
+                  <section class="analysis-card">
+                    <div class="analysis-card-head"><h4>Questões críticas</h4></div>
+                    <div class="analysis-list" id="analysisCritical"></div>
+                  </section>
+                </div>
+
+                <div class="analysis-grid">
+                  <section class="analysis-card">
+                    <div class="analysis-card-head"><h4>Evolução do desempenho</h4></div>
+                    <div class="analysis-chart-wrap" id="analysisEvolution"></div>
+                    <div class="analysis-chart-note" id="analysisEvolutionNote"></div>
+                  </section>
+
+                  <section class="analysis-card">
+                    <div class="analysis-card-head"><h4>Padrão das avaliações</h4></div>
+                    <div class="analysis-rating-wrap" id="analysisRatings"></div>
+                    <div class="analysis-chart-note" id="analysisRatingNote"></div>
+                  </section>
+
+                  <section class="analysis-card">
+                    <div class="analysis-card-head"><h4>Quase dominadas</h4></div>
+                    <div class="analysis-list" id="analysisNearMastered"></div>
+                  </section>
+                </div>
+
+                <section class="analysis-card analysis-review-card">
+                  <div class="analysis-review-icon" aria-hidden="true">↗</div>
+                  <div class="analysis-review-copy">
+                    <strong>Teste de revisão recomendado</strong>
+                    <p>Preparamos uma revisão com as questões que mais precisam da sua atenção.</p>
+                    <div class="analysis-review-tags" id="analysisReviewTags"></div>
+                  </div>
+                  <button type="button" id="analysisReviewButton">Criar teste de revisão</button>
+                </section>
               </div>
             </div>
           </div>
@@ -4157,6 +4709,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       testRunningPanel: document.querySelector("#testRunningPanel"),
       startTest: document.querySelector("#startTest"),
       testStartNote: document.querySelector("#testStartNote"),
+      testLimitBadge: document.querySelector("#testLimitBadge"),
+      testQuestionAmount: document.querySelector("#testQuestionAmount"),
       restartTest: document.querySelector("#restartTest"),
       testCard: document.querySelector("#testCard"),
       testCounter: document.querySelector("#testCounter"),
@@ -4171,6 +4725,24 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       nextTestQuestion: document.querySelector("#nextTestQuestion"),
       testHint: document.querySelector("#testHint"),
       testHistory: document.querySelector("#testHistory"),
+      analysisDashboard: document.querySelector("#analysisDashboard"),
+      analysisEmptyState: document.querySelector("#analysisEmptyState"),
+      analysisContent: document.querySelector("#analysisContent"),
+      analysisStartTest: document.querySelector("#analysisStartTest"),
+      analysisSummaryTitle: document.querySelector("#analysisSummaryTitle"),
+      analysisPeriod: document.querySelector("#analysisPeriod"),
+      analysisSummaryStats: document.querySelector("#analysisSummaryStats"),
+      analysisInsight: document.querySelector("#analysisInsight"),
+      analysisStudyNow: document.querySelector("#analysisStudyNow"),
+      analysisSubjects: document.querySelector("#analysisSubjects"),
+      analysisCritical: document.querySelector("#analysisCritical"),
+      analysisEvolution: document.querySelector("#analysisEvolution"),
+      analysisEvolutionNote: document.querySelector("#analysisEvolutionNote"),
+      analysisRatings: document.querySelector("#analysisRatings"),
+      analysisRatingNote: document.querySelector("#analysisRatingNote"),
+      analysisNearMastered: document.querySelector("#analysisNearMastered"),
+      analysisReviewTags: document.querySelector("#analysisReviewTags"),
+      analysisReviewButton: document.querySelector("#analysisReviewButton"),
       importFile: document.querySelector("#importFile"),
       importCollection: document.querySelector("#importCollection"),
       importFileName: document.querySelector("#importFileName"),
@@ -4206,11 +4778,14 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       startedAt: null,
       finishedAt: null,
       id: "",
-      attempts: {}
+      attempts: {},
+      ratings: { again: 0, hard: 0, good: 0, easy: 0 },
+      mode: "quick",
+      subjectIds: []
     };
 
     function resetTestState(subjectName = currentSubject()?.name || "") {
-      testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName, startedAt: null, finishedAt: null, id: "", attempts: {} };
+      testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName, startedAt: null, finishedAt: null, id: "", attempts: {}, ratings: { again: 0, hard: 0, good: 0, easy: 0 }, mode: "quick", subjectIds: [] };
     }
 
     function load() {
@@ -4223,11 +4798,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       normalized.folders = Array.isArray(normalized.folders) ? normalized.folders : [];
       normalized.testHistory = Array.isArray(normalized.testHistory) ? normalized.testHistory.slice(0, 10) : [];
       normalized.subjects = Array.isArray(normalized.subjects) ? normalized.subjects : [];
-      normalized.subjects.forEach(subject => {
-        subject.cards = Array.isArray(subject.cards) ? subject.cards : [];
-        subject.folder = subject.folder || "";
-        subject.cards.forEach(card => normalizeCard(card));
-      });
+
+      ensureAllQuestionCodes(normalized);
       return normalized;
     }
 
@@ -4244,6 +4816,12 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       card.testPriority = Boolean(card.testPriority);
       card.totalCorrect = Number.isFinite(card.totalCorrect) ? card.totalCorrect : 0;
       card.totalWrong = Number.isFinite(card.totalWrong) ? card.totalWrong : 0;
+      card.ratingCounts = card.ratingCounts && typeof card.ratingCounts === "object" ? { again: Number(card.ratingCounts.again) || 0, hard: Number(card.ratingCounts.hard) || 0, good: Number(card.ratingCounts.good) || 0, easy: Number(card.ratingCounts.easy) || 0 } : { again: 0, hard: 0, good: 0, easy: 0 };
+      card.lastRating = card.lastRating || "";
+      card.lostMasteryCount = Number.isFinite(card.lostMasteryCount) ? card.lostMasteryCount : 0;
+      card.attemptHistory = Array.isArray(card.attemptHistory) ? card.attemptHistory : [];
+      card.topic = card.topic || "";
+      card.subtopic = card.subtopic || "";
       if (card.status === "mastered" && card.masteryCount < MASTERY_TARGET) card.status = "learning";
       if (card.type === "multiple" && card.options.length < 2) {
         const extracted = extractOptionsFromQuestion(card.q || "");
@@ -4258,6 +4836,43 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         card.a = buildAnswerText(card.correctAnswer, card.options, card.explanation, "multiple");
       }
       return card;
+    }
+
+    function questionCodePrefix(name = "") {
+      const cleaned = String(name || "COL").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim();
+      const words = cleaned.split(/\s+/).filter(Boolean);
+      const source = words.length > 1 ? words.map(word => word[0]).join("") : (words[0] || "COL");
+      return source.slice(0, 3).toUpperCase().padEnd(3, "X");
+    }
+
+    function ensureAllQuestionCodes(source = data) {
+      if (!source || !Array.isArray(source.subjects)) return;
+      source.subjects.forEach(subject => {
+        const prefix = questionCodePrefix(subject.name);
+        const used = new Set();
+        let next = 1;
+        (subject.cards || []).forEach(card => {
+          const current = String(card.questionCode || "").trim().toUpperCase();
+          if (current && !used.has(current)) {
+            card.questionCode = current;
+            used.add(current);
+            const number = Number(current.replace(/^.*?(\d+)$/, "$1"));
+            if (Number.isFinite(number)) next = Math.max(next, number + 1);
+          } else {
+            card.questionCode = "";
+          }
+        });
+        (subject.cards || []).forEach(card => {
+          if (card.questionCode) return;
+          let candidate;
+          do {
+            candidate = `${prefix}-${String(next).padStart(3, "0")}`;
+            next += 1;
+          } while (used.has(candidate));
+          card.questionCode = candidate;
+          used.add(candidate);
+        });
+      });
     }
     function save() {
       localStorage.setItem(storeKey, JSON.stringify(data));
@@ -5012,6 +5627,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       renderStudy();
       renderTest();
       renderTestHistory();
+      if (!el.testPanelAnalysis?.hidden) renderAnalysis();
       updateTopbar();
       save();
     }
@@ -5256,11 +5872,23 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       };
     }
 
+
+    function selectedTestLimit(maxAvailable = testableCards().length) {
+      const raw = Number(el.testQuestionAmount?.value);
+      const requested = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 14;
+      const cappedAvailable = Math.max(1, Number(maxAvailable) || 1);
+      return Math.max(1, Math.min(cappedAvailable, requested));
+    }
+
+    function defaultRatings() {
+      return { again: 0, hard: 0, good: 0, easy: 0 };
+    }
+
     function startNewTest() {
       const cards = testableCards();
       const subject = currentSubject();
       if (!cards.length) {
-        testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName: subject?.name || "", startedAt: null, finishedAt: null, id: "", attempts: {} };
+        testState = { active: false, questions: [], index: 0, selected: null, answered: false, score: 0, recorded: false, subjectName: subject?.name || "", startedAt: null, finishedAt: null, id: "", attempts: {}, ratings: { again: 0, hard: 0, good: 0, easy: 0 }, mode: "quick", subjectIds: subject?.id ? [subject.id] : [] };
         renderTest();
         return;
       }
@@ -5268,7 +5896,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const priorityCards = cards.filter(card => card.status !== "mastered" && card.testPriority);
       const pendingCards = cards.filter(card => card.status !== "mastered" && !card.testPriority);
       const masteredCards = cards.filter(card => card.status === "mastered");
-      const selectedCards = [...shuffleList(priorityCards), ...shuffleList(pendingCards), ...shuffleList(masteredCards)].slice(0, 14);
+      const limit = selectedTestLimit(cards.length);
+      const selectedCards = [...shuffleList(priorityCards), ...shuffleList(pendingCards), ...shuffleList(masteredCards)].slice(0, limit).map(card => ({ ...card, subjectId: subject?.id || "" }));
 
       testState = {
         active: true,
@@ -5282,7 +5911,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         startedAt: Date.now(),
         finishedAt: null,
         id: Date.now().toString(36),
-        attempts: {}
+        attempts: {},
+        ratings: defaultRatings(),
+        mode: "quick",
+        subjectIds: subject?.id ? [subject.id] : []
       };
       renderTest();
     }
@@ -5329,7 +5961,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     }
 
     function requeueTestQuestion(card, originalIndex) {
-      const repeat = buildTestQuestion({ ...card, originalIndex });
+      const repeat = buildTestQuestion({ ...card, originalIndex, subjectId: card.subjectId || currentSubject()?.id || "" });
       const insertAt = Math.min(testState.index + 4, testState.questions.length);
       testState.questions.splice(insertAt, 0, repeat);
     }
@@ -5340,6 +5972,12 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       card.masteryCount = Number.isFinite(card.masteryCount) ? card.masteryCount : 0;
       card.totalCorrect = Number.isFinite(card.totalCorrect) ? card.totalCorrect : 0;
       card.totalWrong = Number.isFinite(card.totalWrong) ? card.totalWrong : 0;
+      card.ratingCounts = card.ratingCounts && typeof card.ratingCounts === "object" ? { again: Number(card.ratingCounts.again) || 0, hard: Number(card.ratingCounts.hard) || 0, good: Number(card.ratingCounts.good) || 0, easy: Number(card.ratingCounts.easy) || 0 } : { again: 0, hard: 0, good: 0, easy: 0 };
+      card.lastRating = card.lastRating || "";
+      card.lostMasteryCount = Number.isFinite(card.lostMasteryCount) ? card.lostMasteryCount : 0;
+      card.attemptHistory = Array.isArray(card.attemptHistory) ? card.attemptHistory : [];
+      card.topic = card.topic || "";
+      card.subtopic = card.subtopic || "";
       card.lastMasteryTestId = card.lastMasteryTestId || "";
       if (normalizedRating === "again") {
         attempt.hadAgain = true;
@@ -5379,30 +6017,69 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
 
     function rateCurrentTestCard(rating) {
       const question = testState.questions[testState.index];
-      const subject = currentSubject();
+      const subject = data.subjects.find(item => item.id === question?.subjectId) || currentSubject();
       if (!question || !subject || !Number.isInteger(question.originalIndex)) return;
       const card = subject.cards[question.originalIndex];
-      if (!card) return;
-      if (!question.rated) card.reviews = (card.reviews || 0) + 1;
-      applyTestReviewRating(card, rating, question);
+      if (!card || question.rated) return;
+      const normalizedRating = { new: "again", learning: "hard", mastered: "good" }[rating] || rating;
+      const statusBefore = card.status || "new";
+      const masteryBefore = Number(card.masteryCount) || 0;
+      const wasMastered = statusBefore === "mastered";
+      card.reviews = (card.reviews || 0) + 1;
+      applyTestReviewRating(card, normalizedRating, question);
+      if (wasMastered && card.status !== "mastered") card.lostMasteryCount = (card.lostMasteryCount || 0) + 1;
+      card.ratingCounts = card.ratingCounts && typeof card.ratingCounts === "object" ? card.ratingCounts : defaultRatings();
+      if (card.ratingCounts[normalizedRating] !== undefined) card.ratingCounts[normalizedRating] += 1;
+      card.lastRating = normalizedRating;
       card.lastReviewedAt = new Date().toISOString();
+      testState.ratings = testState.ratings || defaultRatings();
+      if (testState.ratings[normalizedRating] !== undefined) testState.ratings[normalizedRating] += 1;
+      const attemptRecord = {
+        testId: testState.id,
+        questionId: question.id || card.questionCode || "",
+        questionCode: card.questionCode || "",
+        folder: subject.folder || "",
+        collection: subject.name || "Coleção",
+        subjectId: subject.id || "",
+        topic: card.topic || subject.name || "Sem assunto definido",
+        subtopic: card.subtopic || "",
+        date: new Date().toISOString(),
+        selected: testState.selected,
+        correct: Boolean(question.isCorrect),
+        rating: normalizedRating,
+        masteryBefore,
+        masteryAfter: Number(card.masteryCount) || 0,
+        statusBefore,
+        statusAfter: card.status || "learning",
+        lostMastery: wasMastered && card.status !== "mastered"
+      };
+      card.attemptHistory = Array.isArray(card.attemptHistory) ? card.attemptHistory : [];
+      card.attemptHistory.unshift(attemptRecord);
+      card.attemptHistory = card.attemptHistory.slice(0, 50);
       question.rated = true;
     }
+
     function recordFinishedTest() {
       if (testState.recorded || !testState.questions.length) return;
       testState.finishedAt = testState.finishedAt || Date.now();
+      const subject = currentSubject();
       data.testHistory.unshift({
-        id: Date.now().toString(36),
-        subject: testState.subjectName || currentSubject()?.name || "Coleção",
+        id: testState.id || Date.now().toString(36),
+        subject: testState.subjectName || subject?.name || "Coleção",
+        subjectId: subject?.id || "",
+        subjectIds: Array.isArray(testState.subjectIds) && testState.subjectIds.length ? testState.subjectIds : (subject?.id ? [subject.id] : []),
         score: testState.score,
         total: testState.questions.length,
         durationMs: testDurationMs(),
+        ratings: testState.ratings || defaultRatings(),
+        mode: testState.mode || "quick",
         date: new Date().toISOString()
       });
       data.testHistory = data.testHistory.slice(0, 10);
       testState.recorded = true;
       save();
       renderTestHistory();
+      renderAnalysis();
     }
 
     function renderTestHistory() {
@@ -5431,19 +6108,351 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       }).join("");
     }
 
+    function analysisScopeSubjects() {
+      const selected = currentSubject();
+      if (!selected) return [];
+      if (!selected.folder) return [selected];
+      return data.subjects.filter(subject => subject.folder === selected.folder);
+    }
+
+    function analysisScopeTitle(subjects = analysisScopeSubjects()) {
+      const selected = currentSubject();
+      if (!selected) return "Análise";
+      if (selected.folder) return folderName(selected.folder);
+      return selected.name;
+    }
+
+    function analysisCards(subjects = analysisScopeSubjects()) {
+      ensureAllQuestionCodes(data);
+      return subjects.flatMap(subject => (subject.cards || []).map((card, index) => ({ card, subject, index })));
+    }
+
+    function filteredAnalysisHistory(subjects = analysisScopeSubjects()) {
+      const ids = new Set(subjects.map(subject => subject.id));
+      const names = new Set(subjects.map(subject => subject.name));
+      let history = (data.testHistory || []).filter(item => {
+        if (Array.isArray(item.subjectIds) && item.subjectIds.some(id => ids.has(id))) return true;
+        if (item.subjectId && ids.has(item.subjectId)) return true;
+        return names.has(item.subject);
+      });
+      const period = el.analysisPeriod?.value || "all";
+      if (period === "5" || period === "10") history = history.slice(0, Number(period));
+      if (period === "7d" || period === "30d") {
+        const days = period === "7d" ? 7 : 30;
+        const minDate = Date.now() - days * 24 * 60 * 60 * 1000;
+        history = history.filter(item => new Date(item.date).getTime() >= minDate);
+      }
+      return history;
+    }
+
+    function cardAccuracy(card) {
+      const correct = Number(card.totalCorrect) || 0;
+      const wrong = Number(card.totalWrong) || 0;
+      const total = correct + wrong;
+      return total ? Math.round((correct / total) * 100) : 0;
+    }
+
+    function cardAttentionScore(card) {
+      const ratings = card.ratingCounts || {};
+      const wrong = Number(card.totalWrong) || 0;
+      const correct = Number(card.totalCorrect) || 0;
+      const attempts = wrong + correct;
+      const accuracyPenalty = attempts ? Math.max(0, 70 - cardAccuracy(card)) : 0;
+      return (
+        (card.lostMasteryCount || 0) * 120 +
+        (card.testPriority ? 35 : 0) +
+        wrong * 16 +
+        (ratings.again || 0) * 12 +
+        (ratings.hard || 0) * 6 +
+        accuracyPenalty -
+        (card.masteryCount || 0) * 3
+      );
+    }
+
+    function cardNeedsAttention(card) {
+      const attempts = (Number(card.totalCorrect) || 0) + (Number(card.totalWrong) || 0);
+      return Boolean(
+        card.testPriority ||
+        card.lostMasteryCount ||
+        card.lastRating === "again" ||
+        card.lastRating === "hard" ||
+        (Number(card.totalWrong) || 0) > (Number(card.totalCorrect) || 0) ||
+        (attempts > 0 && cardAccuracy(card) < 60)
+      );
+    }
+
+    function shortQuestionText(card, max = 58) {
+      const topic = card.subtopic || card.topic;
+      const source = topic || card.q || "Questão sem título";
+      return source.length > max ? `${source.slice(0, max).trim()}…` : source;
+    }
+
+    function analysisSubjectMetrics(subject) {
+      const cards = subject.cards || [];
+      const correct = cards.reduce((sum, card) => sum + (Number(card.totalCorrect) || 0), 0);
+      const wrong = cards.reduce((sum, card) => sum + (Number(card.totalWrong) || 0), 0);
+      const hard = cards.reduce((sum, card) => sum + (card.ratingCounts?.hard || 0), 0);
+      const again = cards.reduce((sum, card) => sum + (card.ratingCounts?.again || 0), 0);
+      const total = correct + wrong;
+      const attention = cards.filter(cardNeedsAttention).length;
+      const lost = cards.reduce((sum, card) => sum + (card.lostMasteryCount || 0), 0);
+      return {
+        subject,
+        correct,
+        wrong,
+        hard,
+        again,
+        total,
+        attention,
+        lost,
+        accuracy: total ? Math.round((correct / total) * 100) : 0,
+        score: lost * 120 + attention * 24 + wrong * 9 + hard * 4 + again * 6
+      };
+    }
+
+    function analysisBarStatus(percent, hasAttempts) {
+      if (!hasAttempts) return { label: "Sem dados", color: "#94a3b8" };
+      if (percent < 50) return { label: "Atenção alta", color: "#ef4444" };
+      if (percent < 70) return { label: "Precisa revisar", color: "#f59e0b" };
+      if (percent < 90) return { label: "Bom desempenho", color: "#22c55e" };
+      return { label: "Dominado", color: "#16a34a" };
+    }
+
+    function renderAnalysisEvolution(history) {
+      if (!el.analysisEvolution) return;
+      const points = [...history].reverse().slice(-10);
+      if (!points.length) {
+        el.analysisEvolution.innerHTML = `<div class="hint">Conclua testes para visualizar sua evolução.</div>`;
+        el.analysisEvolutionNote.textContent = "A comparação aparecerá após os primeiros resultados.";
+        return;
+      }
+      const width = 360;
+      const height = 180;
+      const left = 34;
+      const right = 14;
+      const top = 16;
+      const bottom = 32;
+      const usableWidth = width - left - right;
+      const usableHeight = height - top - bottom;
+      const values = points.map(item => item.total ? Math.round((item.score / item.total) * 100) : 0);
+      const coords = values.map((value, index) => ({
+        x: left + (points.length === 1 ? usableWidth / 2 : (index / (points.length - 1)) * usableWidth),
+        y: top + ((100 - value) / 100) * usableHeight,
+        value
+      }));
+      const polyline = coords.map(point => `${point.x},${point.y}`).join(" ");
+      const grid = [0, 25, 50, 75, 100].map(value => {
+        const y = top + ((100 - value) / 100) * usableHeight;
+        return `<line x1="${left}" y1="${y}" x2="${width - right}" y2="${y}" stroke="#e6ebf4" stroke-width="1"/><text x="3" y="${y + 4}" fill="#7b879f" font-size="9">${value}%</text>`;
+      }).join("");
+      const dots = coords.map((point, index) => {
+        const date = new Date(points[index].date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+        return `<g><circle cx="${point.x}" cy="${point.y}" r="4" fill="#2563eb"/><text x="${point.x}" y="${point.y - 9}" text-anchor="middle" fill="#26324d" font-size="9" font-weight="700">${point.value}%</text><text x="${point.x}" y="${height - 10}" text-anchor="middle" fill="#7b879f" font-size="8">${date}</text></g>`;
+      }).join("");
+      el.analysisEvolution.innerHTML = `<svg class="analysis-line-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Evolução do aproveitamento nos testes">${grid}<polyline points="${polyline}" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}</svg>`;
+      const first = values[0];
+      const last = values[values.length - 1];
+      const delta = last - first;
+      el.analysisEvolutionNote.textContent = values.length === 1
+        ? `Seu último aproveitamento foi de ${last}%.`
+        : delta > 2
+          ? `Seu aproveitamento aumentou ${delta} pontos percentuais no período.`
+          : delta < -2
+            ? `Seu aproveitamento caiu ${Math.abs(delta)} pontos percentuais no período.`
+            : "Seu desempenho permaneceu estável no período.";
+    }
+
+    function renderAnalysisRatings(cards, history) {
+      const historyHasRatings = history.some(item => item.ratings && Object.values(item.ratings).some(Boolean));
+      const ratings = historyHasRatings
+        ? history.reduce((total, item) => {
+            ["again", "hard", "good", "easy"].forEach(key => total[key] += Number(item.ratings?.[key]) || 0);
+            return total;
+          }, { again: 0, hard: 0, good: 0, easy: 0 })
+        : cards.reduce((total, item) => {
+            ["again", "hard", "good", "easy"].forEach(key => total[key] += Number(item.card.ratingCounts?.[key]) || 0);
+            return total;
+          }, { again: 0, hard: 0, good: 0, easy: 0 });
+      const total = Object.values(ratings).reduce((sum, value) => sum + value, 0);
+      const config = [
+        ["again", "De novo", "#ef4444"],
+        ["hard", "Difícil", "#f59e0b"],
+        ["good", "Bom", "#22c55e"],
+        ["easy", "Fácil", "#3b82f6"]
+      ];
+      let current = 0;
+      const segments = config.map(([key, label, color]) => {
+        const percent = total ? (ratings[key] / total) * 100 : 0;
+        const start = current;
+        current += percent;
+        return `${color} ${start}% ${current}%`;
+      }).join(", ");
+      const legend = config.map(([key, label, color]) => {
+        const percent = total ? Math.round((ratings[key] / total) * 100) : 0;
+        return `<div class="analysis-rating-row"><span class="analysis-rating-dot" style="--rating-color:${color}"></span><span>${label}</span><strong>${ratings[key]} (${percent}%)</strong></div>`;
+      }).join("");
+      el.analysisRatings.innerHTML = `<div class="analysis-donut" style="--donut-bg:${total ? `conic-gradient(${segments})` : "#e5eaf3"}"><div class="analysis-donut-center"><strong>${total}</strong><span>avaliações<br>registradas</span></div></div><div class="analysis-rating-legend">${legend}</div>`;
+      if (!total) {
+        el.analysisRatingNote.textContent = "As avaliações De novo, Difícil, Bom e Fácil aparecerão aqui.";
+      } else if (ratings.again > ratings.good + ratings.easy) {
+        el.analysisRatingNote.textContent = "Há muitos registros De novo. Priorize as questões críticas no próximo teste.";
+      } else if (ratings.hard > ratings.easy) {
+        el.analysisRatingNote.textContent = "Você acerta várias questões, mas ainda marca Difícil com frequência.";
+      } else {
+        el.analysisRatingNote.textContent = "A maior parte das suas avaliações está entre Bom e Fácil.";
+      }
+      return ratings;
+    }
+
+    function renderAnalysis() {
+      if (!el.analysisDashboard) return;
+      const subjects = analysisScopeSubjects();
+      const cards = analysisCards(subjects);
+      const history = filteredAnalysisHistory(subjects);
+      const hasPractice = cards.some(item => (item.card.reviews || 0) > 0 || (item.card.totalCorrect || 0) > 0 || (item.card.totalWrong || 0) > 0) || history.length > 0;
+      el.analysisEmptyState.hidden = hasPractice;
+      el.analysisContent.hidden = !hasPractice;
+      if (!hasPractice) return;
+
+      const scopeTitle = analysisScopeTitle(subjects);
+      const selected = currentSubject();
+      el.analysisSummaryTitle.textContent = selected?.folder ? `Resumo geral da pasta — ${scopeTitle}` : `Resumo geral — ${scopeTitle}`;
+
+      const cardCorrect = cards.reduce((sum, item) => sum + (Number(item.card.totalCorrect) || 0), 0);
+      const cardWrong = cards.reduce((sum, item) => sum + (Number(item.card.totalWrong) || 0), 0);
+      const historyCorrect = history.reduce((sum, item) => sum + (Number(item.score) || 0), 0);
+      const historyTotal = history.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
+      const evaluated = cardCorrect + cardWrong;
+      const accuracy = evaluated
+        ? Math.round((cardCorrect / evaluated) * 100)
+        : historyTotal
+          ? Math.round((historyCorrect / historyTotal) * 100)
+          : 0;
+      const practiced = cards.filter(item => (item.card.reviews || 0) > 0 || (item.card.totalCorrect || 0) + (item.card.totalWrong || 0) > 0).length;
+      const mastered = cards.filter(item => item.card.status === "mastered").length;
+      const learning = cards.filter(item => item.card.status === "learning").length;
+      const attentionCards = cards.filter(item => cardNeedsAttention(item.card));
+
+      el.analysisSummaryStats.innerHTML = `
+        <div class="analysis-stat"><span class="analysis-stat-icon">◔</span><strong>${accuracy}%</strong><span>Aproveitamento geral</span><small>Média de acertos</small></div>
+        <div class="analysis-stat is-green"><span class="analysis-stat-icon">✓</span><strong>${practiced}</strong><span>Questões praticadas</span><small>${cards.length} cadastradas</small></div>
+        <div class="analysis-stat is-orange"><span class="analysis-stat-icon">◎</span><strong>${mastered}</strong><span>Dominadas</span><small>${cards.length ? Math.round((mastered / cards.length) * 100) : 0}% do total</small></div>
+        <div class="analysis-stat is-purple"><span class="analysis-stat-icon">⌛</span><strong>${learning}</strong><span>Em andamento</span><small>${cards.length ? Math.round((learning / cards.length) * 100) : 0}% do total</small></div>
+        <div class="analysis-stat is-red"><span class="analysis-stat-icon">!</span><strong>${attentionCards.length}</strong><span>Precisam de atenção</span><small>${cards.length ? Math.round((attentionCards.length / cards.length) * 100) : 0}% do total</small></div>
+      `;
+
+      const metrics = subjects.map(analysisSubjectMetrics).sort((a, b) => b.score - a.score || a.accuracy - b.accuracy);
+      const weakest = metrics.filter(metric => metric.total || metric.attention).slice(0, 3);
+      const best = [...metrics].filter(metric => metric.total).sort((a, b) => b.accuracy - a.accuracy)[0];
+      const latestValues = [...history].reverse().map(item => item.total ? Math.round((item.score / item.total) * 100) : 0);
+      const trend = latestValues.length > 1 ? latestValues.at(-1) - latestValues[0] : 0;
+      if (weakest.length) {
+        const weakNames = weakest.map(metric => metric.subject.name).join(", ");
+        el.analysisInsight.innerHTML = `${trend > 4 ? "Seu desempenho está evoluindo, mas" : "Sua análise indica que"} você ainda precisa dedicar mais atenção a <strong>${escapeHtml(weakNames)}</strong>${best ? `. Seu melhor desempenho atual está em <strong>${escapeHtml(best.subject.name)}</strong>.` : "."}`;
+      } else {
+        el.analysisInsight.textContent = "Continue realizando testes para que o Fixa identifique padrões mais precisos.";
+      }
+
+      const studyNow = metrics.filter(metric => metric.score > 0 || metric.total > 0).slice(0, 3);
+      el.analysisStudyNow.innerHTML = studyNow.length ? studyNow.map((metric, index) => {
+        const reason = metric.lost
+          ? `${metric.lost} perda${metric.lost === 1 ? "" : "s"} de domínio`
+          : metric.wrong
+            ? `${metric.wrong} erro${metric.wrong === 1 ? "" : "s"}`
+            : `${metric.hard} avaliação${metric.hard === 1 ? "" : "ões"} Difícil`;
+        return `<button class="analysis-list-item" type="button" data-analysis-subject="${escapeHtml(metric.subject.id)}"><span class="analysis-list-main"><strong><span class="analysis-rank" style="--analysis-item-color:${index === 0 ? "#ef4444" : "#f59e0b"}">${index + 1}</span>${escapeHtml(metric.subject.name)}</strong><small>Aproveitamento: ${metric.accuracy}%</small></span><span class="analysis-list-side" style="--analysis-item-color:${index === 0 ? "#ef4444" : "#f59e0b"}">${reason}</span></button>`;
+      }).join("") : `<p class="hint">Ainda não há prioridades suficientes para recomendar.</p>`;
+
+      el.analysisSubjects.innerHTML = metrics.length ? metrics.slice(0, 6).map(metric => {
+        const status = analysisBarStatus(metric.accuracy, metric.total > 0);
+        return `<div class="analysis-topic-row"><span class="analysis-topic-name" title="${escapeHtml(metric.subject.name)}">${escapeHtml(metric.subject.name)}</span><span class="analysis-topic-progress"><strong>${metric.accuracy}%</strong><span class="analysis-mini-bar" style="--bar-color:${status.color}"><span style="width:${metric.accuracy}%"></span></span></span><span class="analysis-situation" style="--bar-color:${status.color}">${status.label}</span></div>`;
+      }).join("") : `<p class="hint">Sem assuntos avaliados.</p>`;
+
+      const critical = [...cards]
+        .filter(item => cardNeedsAttention(item.card))
+        .sort((a, b) => cardAttentionScore(b.card) - cardAttentionScore(a.card))
+        .slice(0, 3);
+      el.analysisCritical.innerHTML = critical.length ? critical.map(item => {
+        const card = item.card;
+        const reason = card.lostMasteryCount
+          ? "Perdeu o domínio"
+          : card.lastRating === "again"
+            ? "Última avaliação: De novo"
+            : card.ratingCounts?.hard
+              ? `${card.ratingCounts.hard} avaliação${card.ratingCounts.hard === 1 ? "" : "ões"} Difícil`
+              : `${card.totalWrong || 0} erro${card.totalWrong === 1 ? "" : "s"}`;
+        return `<button class="analysis-list-item" type="button" data-analysis-open="${escapeHtml(item.subject.id)}|${escapeHtml(card.questionCode)}"><span class="analysis-list-main"><span class="analysis-code">${escapeHtml(card.questionCode)}</span><strong>${escapeHtml(shortQuestionText(card))}</strong><small>${escapeHtml(reason)} · sequência ${card.masteryCount || 0} de ${MASTERY_TARGET}</small></span><span class="analysis-list-side">${card.totalWrong || 0} erro${card.totalWrong === 1 ? "" : "s"}</span></button>`;
+      }).join("") : `<p class="hint">Nenhuma questão crítica identificada.</p>`;
+
+      const near = [...cards]
+        .filter(item => item.card.status !== "mastered" && (item.card.masteryCount || 0) >= 2)
+        .sort((a, b) => (b.card.masteryCount || 0) - (a.card.masteryCount || 0) || cardAttentionScore(a.card) - cardAttentionScore(b.card))
+        .slice(0, 5);
+      el.analysisNearMastered.innerHTML = near.length ? near.map(item => `<button class="analysis-list-item" type="button" data-analysis-open="${escapeHtml(item.subject.id)}|${escapeHtml(item.card.questionCode)}"><span class="analysis-list-main"><span class="analysis-code" style="--analysis-item-color:#16a34a">${escapeHtml(item.card.questionCode)}</span><strong>${escapeHtml(shortQuestionText(item.card))}</strong><small>${escapeHtml(item.subject.name)}</small></span><span class="analysis-list-side" style="--analysis-item-color:#16a34a">${item.card.masteryCount} de ${MASTERY_TARGET}</span></button>`).join("") : `<p class="hint">Nenhuma questão está próxima de dominar neste momento.</p>`;
+
+      renderAnalysisEvolution(history);
+      const ratings = renderAnalysisRatings(cards, history);
+
+      const recentErrors = attentionCards.reduce((sum, item) => sum + (item.card.totalWrong || 0), 0);
+      const hardCount = cards.reduce((sum, item) => sum + (item.card.ratingCounts?.hard || 0), 0);
+      const nearCount = near.length;
+      el.analysisReviewTags.innerHTML = `<span class="analysis-review-tag">${recentErrors} erro${recentErrors === 1 ? "" : "s"} registrado${recentErrors === 1 ? "" : "s"}</span><span class="analysis-review-tag is-orange">${hardCount} avaliação${hardCount === 1 ? "" : "ões"} difícil${hardCount === 1 ? "" : "eis"}</span><span class="analysis-review-tag is-green">${nearCount} próxima${nearCount === 1 ? "" : "s"} de dominar</span>`;
+      el.analysisReviewButton.disabled = !cards.some(item => isMultipleChoiceTestable(item.card) || (item.card.type === "select-list" && item.card.listItems?.length));
+    }
+
+    function startRecommendedReviewTest() {
+      const subjects = analysisScopeSubjects();
+      const candidates = subjects.flatMap(subject => (subject.cards || []).map((card, index) => ({ ...card, originalIndex: index, subjectId: subject.id })))
+        .filter(card => card.status !== "frozen")
+        .filter(card => card.type === "select-list" ? (card.listItems || []).length > 0 : isMultipleChoiceTestable(card));
+      if (!candidates.length) return;
+      const ranked = [...candidates].sort((a, b) => {
+        const nearA = a.masteryCount === 3 ? 25 : a.masteryCount === 2 ? 10 : 0;
+        const nearB = b.masteryCount === 3 ? 25 : b.masteryCount === 2 ? 10 : 0;
+        return (cardAttentionScore(b) + nearB) - (cardAttentionScore(a) + nearA);
+      });
+      const selectedCards = ranked.slice(0, selectedTestLimit(candidates.length));
+      const selectedSubjects = [...new Set(selectedCards.map(card => card.subjectId))];
+      testState = {
+        active: true,
+        questions: selectedCards.map(buildTestQuestion),
+        index: 0,
+        selected: null,
+        answered: false,
+        score: 0,
+        recorded: false,
+        subjectName: `${analysisScopeTitle(subjects)} — Revisão recomendada`,
+        startedAt: Date.now(),
+        finishedAt: null,
+        id: Date.now().toString(36),
+        attempts: {},
+        ratings: { again: 0, hard: 0, good: 0, easy: 0 },
+        mode: "review",
+        subjectIds: selectedSubjects
+      };
+      showTestPanel("quick");
+      renderTest();
+    }
+
+
     function updateTestStartState(count) {
       const hasCollection = Boolean(currentSubject());
       const disabled = !hasCollection || count <= 0;
+      const limit = selectedTestLimit(count || 1);
+      if (el.testQuestionAmount) {
+        el.testQuestionAmount.max = String(Math.max(1, count || 1));
+        if (!el.testQuestionAmount.value) el.testQuestionAmount.value = String(Math.min(14, Math.max(1, count || 1)));
+      }
+      if (el.testLimitBadge) el.testLimitBadge.textContent = String(Math.min(limit, Math.max(1, count || 1)));
       el.startTest.disabled = disabled;
       if (!hasCollection) {
         el.testStartNote.textContent = "Crie uma coleção e adicione questões com alternativas para começar.";
       } else if (!count) {
         el.testStartNote.textContent = "O teste utiliza somente questões que possuem alternativas e resposta correta cadastrada.";
       } else {
-        el.testStartNote.textContent = `${count} questão${count === 1 ? "" : "ões"} compatível${count === 1 ? "" : "is"} disponível${count === 1 ? "" : "is"} para o teste.`;
+        el.testStartNote.textContent = `${count} questão${count === 1 ? "" : "ões"} compatível${count === 1 ? "" : "is"} disponível${count === 1 ? "" : "is"}. O teste usará até ${Math.min(limit, count)}.`;
       }
     }
-
     function renderTest() {
       const count = testableCards().length;
       updateTestStartState(count);
@@ -6237,8 +7246,32 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       tab.addEventListener("click", () => showTestPanel(tab.dataset.testPanel));
     });
 
+
+    el.analysisPeriod?.addEventListener("change", renderAnalysis);
+    el.analysisStartTest?.addEventListener("click", () => {
+      showTestPanel("quick");
+      startNewTest();
+    });
+    el.analysisReviewButton?.addEventListener("click", startRecommendedReviewTest);
+    el.analysisDashboard?.addEventListener("click", event => {
+      const subjectButton = event.target.closest("[data-analysis-subject]");
+      if (subjectButton) {
+        data.selected = subjectButton.dataset.analysisSubject;
+        showView("manage");
+        render();
+        return;
+      }
+      const questionButton = event.target.closest("[data-analysis-open]");
+      if (!questionButton) return;
+      const [subjectId, questionCode] = questionButton.dataset.analysisOpen.split("|");
+      if (subjectId) data.selected = subjectId;
+      if (el.cardSearch) el.cardSearch.value = questionCode || "";
+      showView("manage");
+      render();
+    });
     el.startTest.addEventListener("click", startNewTest);
     el.restartTest.addEventListener("click", startNewTest);
+    el.testQuestionAmount?.addEventListener("input", () => updateTestStartState(testableCards().length));
 
     el.testOptions.addEventListener("click", event => {
       const button = event.target.closest("[data-test-option]");
