@@ -8657,39 +8657,33 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       };
     }
 
-    function importCards(cards, fallbackSubject) {
-      const selectedSubject = currentSubject();
-      if (!selectedSubject && !fallbackSubject) {
-        setMessage(el.importMessage, "Crie ou selecione uma coleção antes de importar.", "error");
-        return 0;
-      }
-      const grouped = cards.reduce((groups, card) => {
-        const subjectName = String(card.subject || fallbackSubject || selectedSubject?.name || "").trim();
-        if (!subjectName) return groups;
-        if (!groups[subjectName]) groups[subjectName] = [];
-        groups[subjectName].push(card);
-        delete card.subject;
-        return groups;
-      }, {});
+    function importCards(cards) {
+  const targetId = el.importCollection?.value || data.selected;
+  const targetSubject = data.subjects.find(subject => subject.id === targetId);
 
-      const subjectNames = Object.keys(grouped);
-      if (!subjectNames.length) {
-        setMessage(el.importMessage, "Crie ou selecione uma coleção antes de importar.", "error");
-        return 0;
-      }
+  if (!targetSubject) {
+    setMessage(el.importMessage, "Selecione uma coleção de destino antes de importar.", "error");
+    return 0;
+  }
 
-      let total = 0;
-      subjectNames.forEach(name => {
-        const subject = findOrCreateSubject(name);
-        subject.cards.push(...grouped[name]);
-        total += grouped[name].length;
-      });
-      return total;
-    }
+  const validCards = cards.filter(Boolean).map(card => {
+    delete card.subject;
+    return card;
+  });
+
+  if (!validCards.length) {
+    setMessage(el.importMessage, "Não encontrei questões válidas para importar.", "error");
+    return 0;
+  }
+
+  targetSubject.cards.push(...validCards);
+  data.selected = targetSubject.id;
+  return validCards.length;
+}
 
 
 
-    function imageMimeFromName(name) {
+function imageMimeFromName(name) {
       const lower = String(name || "").toLowerCase();
       if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
       if (lower.endsWith(".webp")) return "image/webp";
@@ -8852,7 +8846,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       }
       imported.forEach(card => normalizeCard(card));
       const recognizedAnswers = imported.filter(card => card.type !== "multiple" || Boolean(card.correctAnswerText)).length;
-      const total = importCards(imported, currentSubject()?.name || "");
+      const total = importCards(imported);
       if (!total) return;
       el.bulkText.value = "";
       pendingImportFile = null;
