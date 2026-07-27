@@ -1,0 +1,592 @@
+name: Implementar categorias de questões
+
+on:
+  push:
+    branches:
+      - feature/categorias-questoes
+    paths:
+      - .github/workflows/add-categories.yml
+
+permissions:
+  contents: write
+
+jobs:
+  implementar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+        with:
+          ref: feature/categorias-questoes
+          fetch-depth: 0
+
+      - name: Aplicar alterações isoladas no index.html
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+
+          def replace_once(old, new, label):
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"Falha em {label}: esperado 1 trecho, encontrado {count}.")
+              text = text.replace(old, new, 1)
+
+          css = r'''
+    .category-filter {
+      flex: 1 1 190px;
+      min-width: 170px;
+    }
+
+    .category-pill {
+      color: #5b45b5;
+      border: 1px solid #ddd6fe;
+      background: #f3f0ff;
+    }
+
+    .category-manager-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .category-manager-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 8px;
+      align-items: center;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #f8faff;
+    }
+
+    .category-manager-row small {
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .category-delete-check {
+      display: inline-flex;
+      grid-template-columns: none;
+      align-items: center;
+      gap: 6px;
+      color: var(--danger);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .category-delete-check input {
+      width: auto;
+      margin: 0;
+    }
+
+    .category-manager-empty {
+      margin: 0;
+      padding: 12px;
+      border-radius: 9px;
+      color: var(--muted);
+      background: #f6f8fc;
+    }
+
+    @media (max-width: 700px) {
+      .category-manager-row {
+        grid-template-columns: 1fr;
+      }
+
+      .category-manager-row small,
+      .category-delete-check {
+        white-space: normal;
+      }
+    }
+'''
+          replace_once("  </style>", css + "  </style>", "inserção do CSS de categorias")
+
+          status_filter = '''              <label class="select-with-icon">
+                <svg class="filter-svg" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 6h16l-6 7v4l-4 2v-6z"></path>
+                </svg>
+                <select id="cardFilter" aria-label="Filtrar questões">
+                  <option value="all">Todos ativos</option>
+                  <option value="new">Não estudados</option>
+                  <option value="learning">Em andamento</option>
+                  <option value="mastered">Dominados</option>
+                  <option value="frozen">Congelados</option>
+                </select>
+              </label>'''
+          category_filter = status_filter + '''
+              <label class="select-with-icon category-filter">
+                <svg class="filter-svg" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 7h10l6 6-7 7-9-9z"></path>
+                  <circle cx="9" cy="10" r="1"></circle>
+                </svg>
+                <select id="cardCategoryFilter" aria-label="Filtrar por categoria">
+                  <option value="all">Todas as categorias</option>
+                </select>
+              </label>'''
+          replace_once(status_filter, category_filter, "filtro de categorias")
+
+          destination_field = '''                <label>
+                  Coleção de destino
+                  <select id="questionCollection"></select>
+                </label>'''
+          category_field = destination_field + '''
+                <label>
+                  Categoria (opcional)
+                  <select id="questionCategory">
+                    <option value="">Sem categoria</option>
+                  </select>
+                </label>'''
+          replace_once(destination_field, category_field, "campo de categoria no editor")
+
+          replace_once(
+              '      questionCollection: document.querySelector("#questionCollection"),',
+              '      questionCollection: document.querySelector("#questionCollection"),\n      questionCategory: document.querySelector("#questionCategory"),',
+              "referência do campo de categoria"
+          )
+          replace_once(
+              '      cardFilter: document.querySelector("#cardFilter"),',
+              '      cardFilter: document.querySelector("#cardFilter"),\n      cardCategoryFilter: document.querySelector("#cardCategoryFilter"),',
+              "referência do filtro de categoria"
+          )
+
+          helpers = r'''
+    function cleanCategoryName(value) {
+      return String(value || "").replace(/\s+/g, " ").trim().slice(0, 80);
+    }
+
+    function categoryKey(value) {
+      return cleanCategoryName(value)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    }
+
+    function ensureSubjectCategory(subject, value) {
+      if (!subject) return "";
+      const name = cleanCategoryName(value);
+      if (!name) return "";
+      subject.categories = Array.isArray(subject.categories) ? subject.categories : [];
+      const existing = subject.categories.find(item => categoryKey(item) === categoryKey(name));
+      if (existing) return existing;
+      subject.categories.push(name);
+      return name;
+    }
+
+    function subjectCategories(subject) {
+      if (!subject) return [];
+      subject.categories = Array.isArray(subject.categories)
+        ? subject.categories.map(cleanCategoryName).filter(Boolean)
+        : [];
+      (subject.cards || []).forEach(card => {
+        if (card.category) card.category = ensureSubjectCategory(subject, card.category);
+      });
+      const unique = [];
+      const seen = new Set();
+      subject.categories.forEach(name => {
+        const key = categoryKey(name);
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        unique.push(name);
+      });
+      subject.categories = unique;
+      return [...unique].sort((a, b) => a.localeCompare(b, "pt-BR"));
+    }
+'''
+          replace_once(
+              '    function normalizeData(value) {',
+              helpers + '\n    function normalizeData(value) {',
+              "funções de categorias"
+          )
+
+          old_subject_normalization = '''      normalized.subjects.forEach(subject => {
+        subject.cards = Array.isArray(subject.cards) ? subject.cards.map(normalizeCard) : [];
+      });'''
+          new_subject_normalization = '''      normalized.subjects.forEach(subject => {
+        subject.categories = Array.isArray(subject.categories)
+          ? subject.categories.map(cleanCategoryName).filter(Boolean)
+          : [];
+        subject.cards = Array.isArray(subject.cards) ? subject.cards.map(normalizeCard) : [];
+        subject.cards.forEach(card => {
+          if (card.category) card.category = ensureSubjectCategory(subject, card.category);
+        });
+        subjectCategories(subject);
+      });'''
+          replace_once(old_subject_normalization, new_subject_normalization, "normalização das coleções")
+
+          replace_once(
+              '      card.listItems = Array.isArray(card.listItems) ? card.listItems : [];',
+              '      card.listItems = Array.isArray(card.listItems) ? card.listItems : [];\n      card.category = cleanCategoryName(card.category || card.categoria || card.categoryName || "");',
+              "normalização da categoria da questão"
+          )
+
+          replace_once(
+              '      const subject = { id: slug(cleanName), name: cleanName, folder, cards: [] };',
+              '      const subject = { id: slug(cleanName), name: cleanName, folder, categories: [], cards: [] };',
+              "categorias em novas coleções"
+          )
+
+          current_subject_block = '''    function currentSubject() {
+      return data.subjects.find(subject => subject.id === data.selected) || data.subjects[0];
+    }
+
+    function folderName(id) {'''
+          category_controls = '''    function currentSubject() {
+      return data.subjects.find(subject => subject.id === data.selected) || data.subjects[0];
+    }
+
+    function renderCategoryControls(subject = currentSubject()) {
+      const categories = subjectCategories(subject);
+
+      if (el.cardCategoryFilter) {
+        const previous = el.cardCategoryFilter.value || "all";
+        const hasUncategorized = Boolean(subject?.cards?.some(card => !cleanCategoryName(card.category)));
+        el.cardCategoryFilter.innerHTML = [
+          '<option value="all">Todas as categorias</option>',
+          ...categories.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`),
+          ...(hasUncategorized ? ['<option value="__uncategorized__">Sem categoria</option>'] : [])
+        ].join("");
+        const validValues = new Set(["all", ...categories, ...(hasUncategorized ? ["__uncategorized__"] : [])]);
+        el.cardCategoryFilter.value = validValues.has(previous) ? previous : "all";
+      }
+
+      if (el.questionCategory) {
+        const previous = cleanCategoryName(el.questionCategory.value);
+        el.questionCategory.innerHTML = [
+          '<option value="">Sem categoria</option>',
+          ...categories.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`)
+        ].join("");
+        const selected = categories.find(name => categoryKey(name) === categoryKey(previous));
+        el.questionCategory.value = selected || "";
+      }
+    }
+
+    function folderName(id) {'''
+          replace_once(current_subject_block, category_controls, "controles visuais de categorias")
+
+          collection_select_tail = '''      [el.questionCollection, el.importCollection].forEach(select => {
+        if (!select) return;
+        select.innerHTML = options;
+        select.disabled = !data.subjects.length;
+        select.value = data.selected || currentSubject()?.id || "";
+      });
+    }'''
+          collection_select_with_categories = '''      [el.questionCollection, el.importCollection].forEach(select => {
+        if (!select) return;
+        select.innerHTML = options;
+        select.disabled = !data.subjects.length;
+        select.value = data.selected || currentSubject()?.id || "";
+      });
+      renderCategoryControls();
+    }'''
+          replace_once(collection_select_tail, collection_select_with_categories, "atualização dos seletores de categoria")
+
+          replace_once(
+              '        card.explanation,\n        ...(card.options || []),',
+              '        card.explanation,\n        card.category,\n        ...(card.options || []),',
+              "categoria na busca"
+          )
+
+          status_filter_logic = '''      if (filter === "all") {
+        cards = cards.filter(item => item.card.status !== "frozen");
+      } else {
+        cards = cards.filter(item => (item.card.status || "new") === filter);
+      }
+      const query = normalizeSearchText(el.cardSearch?.value || "").trim();'''
+          category_filter_logic = '''      if (filter === "all") {
+        cards = cards.filter(item => item.card.status !== "frozen");
+      } else {
+        cards = cards.filter(item => (item.card.status || "new") === filter);
+      }
+      const categoryFilter = el.cardCategoryFilter?.value || "all";
+      if (categoryFilter === "__uncategorized__") {
+        cards = cards.filter(item => !cleanCategoryName(item.card.category));
+      } else if (categoryFilter !== "all") {
+        cards = cards.filter(item => categoryKey(item.card.category) === categoryKey(categoryFilter));
+      }
+      const query = normalizeSearchText(el.cardSearch?.value || "").trim();'''
+          replace_once(status_filter_logic, category_filter_logic, "lógica do filtro de categoria")
+
+          replace_once(
+              '''            <span class="pill question-code-pill">${escapeHtml(card.questionCode || "")}</span>
+            <span class="pill">${labelStatus(card.status)}</span>''',
+              '''            <span class="pill question-code-pill">${escapeHtml(card.questionCode || "")}</span>
+            ${card.category ? `<span class="pill category-pill">${escapeHtml(card.category)}</span>` : ""}
+            <span class="pill">${labelStatus(card.status)}</span>''',
+              "etiqueta da categoria no cartão"
+          )
+
+          replace_once(
+              '      el.questionText.value = "";\n      el.correctAnswer.dataset.correctText = "";',
+              '      el.questionText.value = "";\n      renderCategoryControls(currentSubject());\n      if (el.questionCategory) el.questionCategory.value = "";\n      el.correctAnswer.dataset.correctText = "";',
+              "limpeza da categoria no formulário"
+          )
+
+          replace_once(
+              '      el.questionText.value = card.q || "";\n      el.correctAnswer.dataset.correctText = correctAnswerTextForCard(card);',
+              '      el.questionText.value = card.q || "";\n      renderCategoryControls(currentSubject());\n      if (el.questionCategory) el.questionCategory.value = card.category || "";\n      el.correctAnswer.dataset.correctText = correctAnswerTextForCard(card);',
+              "categoria ao editar questão"
+          )
+
+          replace_once(
+              '      const q = el.questionText.value.trim();\n      const correctAnswerText = selectedCorrectAnswerTextFromEditor();',
+              '      const q = el.questionText.value.trim();\n      const category = cleanCategoryName(el.questionCategory?.value || "");\n      const correctAnswerText = selectedCorrectAnswerTextFromEditor();',
+              "leitura da categoria no formulário"
+          )
+
+          replace_once(
+              '        explanation,\n        type,',
+              '        explanation,\n        category: category ? ensureSubjectCategory(subject, category) : "",\n        type,',
+              "salvamento da categoria"
+          )
+
+          sidebar_subject_menu = '''        <button type="button" data-subject-action="rename">✎ Renomear coleção</button>
+        <button type="button" data-subject-action="move">↪ Mover para outra pasta</button>
+        <button type="button" class="danger-option" data-subject-action="delete">⌫ Excluir coleção</button>'''
+          sidebar_subject_menu_new = '''        <button type="button" data-subject-action="rename">✎ Renomear coleção</button>
+        <button type="button" data-subject-action="categories">⌑ Gerenciar categorias</button>
+        <button type="button" data-subject-action="move">↪ Mover para outra pasta</button>
+        <button type="button" class="danger-option" data-subject-action="delete">⌫ Excluir coleção</button>'''
+          replace_once(sidebar_subject_menu, sidebar_subject_menu_new, "menu de categorias da coleção")
+
+          manage_categories_function = r'''
+    function openManageCategoriesModal(subjectId) {
+      const subject = data.subjects.find(item => item.id === subjectId);
+      if (!subject) return;
+      const categories = subjectCategories(subject);
+      const rows = categories.length
+        ? categories.map(name => {
+            const count = subject.cards.filter(card => categoryKey(card.category) === categoryKey(name)).length;
+            return `<div class="category-manager-row" data-category-row data-category-old="${escapeHtml(name)}">
+              <input data-category-name value="${escapeHtml(name)}" aria-label="Nome da categoria ${escapeHtml(name)}">
+              <small>${count} questão${count === 1 ? "" : "ões"}</small>
+              <label class="category-delete-check"><input type="checkbox" data-category-delete> Excluir</label>
+            </div>`;
+          }).join("")
+        : '<p class="category-manager-empty">Esta coleção ainda não possui categorias.</p>';
+      openModal(
+        `Categorias — ${subject.name}`,
+        `<div class="modal-form">
+          <p>Organize as questões por assunto. Excluir uma categoria não exclui as questões; elas ficam como “Sem categoria”.</p>
+          <div class="category-manager-list">${rows}</div>
+          <label>Nova categoria<input id="newCategoryInput" placeholder="Ex.: Ortografia"></label>
+          <p class="notice" id="categoryManagerError"></p>
+        </div>`,
+        `<button class="secondary" type="button" data-modal-close>Cancelar</button>
+        <button type="button" data-save-categories="${escapeHtml(subject.id)}">Salvar categorias</button>`
+      );
+      requestAnimationFrame(() => document.querySelector("#newCategoryInput")?.focus());
+    }
+'''
+          replace_once(
+              '    function openMoveSubjectModal(subjectId) {',
+              manage_categories_function + '\n    function openMoveSubjectModal(subjectId) {',
+              "modal de gerenciamento de categorias"
+          )
+
+          modal_handler_anchor = '''      const renameFolderButton = event.target.closest("[data-confirm-rename-folder]");'''
+          categories_handler = r'''      const saveCategoriesButton = event.target.closest("[data-save-categories]");
+      if (saveCategoriesButton) {
+        const subject = data.subjects.find(item => item.id === saveCategoriesButton.dataset.saveCategories);
+        if (!subject) return;
+        const rows = [...document.querySelectorAll("[data-category-row]")];
+        const mapping = new Map();
+        const names = [];
+        let invalid = false;
+
+        rows.forEach(row => {
+          const oldName = cleanCategoryName(row.dataset.categoryOld);
+          const shouldDelete = Boolean(row.querySelector("[data-category-delete]")?.checked);
+          const newName = cleanCategoryName(row.querySelector("[data-category-name]")?.value);
+          if (!shouldDelete && !newName) invalid = true;
+          mapping.set(categoryKey(oldName), shouldDelete ? "" : newName);
+          if (!shouldDelete && newName) names.push(newName);
+        });
+
+        const addedName = cleanCategoryName(document.querySelector("#newCategoryInput")?.value);
+        if (addedName) names.push(addedName);
+        const uniqueKeys = names.map(categoryKey);
+        const hasDuplicates = new Set(uniqueKeys).size !== uniqueKeys.length;
+        const errorElement = document.querySelector("#categoryManagerError");
+        if (invalid || hasDuplicates) {
+          if (errorElement) errorElement.textContent = invalid
+            ? "Preencha o nome das categorias mantidas ou marque Excluir."
+            : "Não é possível cadastrar categorias com o mesmo nome.";
+          return;
+        }
+
+        subject.cards.forEach(card => {
+          const key = categoryKey(card.category);
+          if (mapping.has(key)) card.category = mapping.get(key);
+        });
+        subject.categories = [];
+        names.forEach(name => ensureSubjectCategory(subject, name));
+        subject.cards.forEach(card => {
+          if (card.category) card.category = ensureSubjectCategory(subject, card.category);
+        });
+        closeModal();
+        setMessage(el.collectionMessage, "Categorias atualizadas.");
+        render();
+        return;
+      }
+
+      const renameFolderButton = event.target.closest("[data-confirm-rename-folder]");'''
+          replace_once(modal_handler_anchor, categories_handler, "salvamento das categorias")
+
+          replace_once(
+              '        if (action === "rename") openRenameSubjectModal(id);\n        if (action === "move") openMoveSubjectModal(id);',
+              '        if (action === "rename") openRenameSubjectModal(id);\n        if (action === "categories") openManageCategoriesModal(id);\n        if (action === "move") openMoveSubjectModal(id);',
+              "abertura do gerenciador de categorias"
+          )
+
+          replace_once(
+              '      if (card) destination.cards.push(card);',
+              '      if (card) {\n        if (card.category) card.category = ensureSubjectCategory(destination, card.category);\n        destination.cards.push(card);\n      }',
+              "preservação da categoria ao mover cartão"
+          )
+
+          replace_once(
+              '    el.cardFilter.addEventListener("change", () => renderQuestions(currentSubject() || { cards: [] }));',
+              '    el.cardFilter.addEventListener("change", () => renderQuestions(currentSubject() || { cards: [] }));\n    el.cardCategoryFilter?.addEventListener("change", () => renderQuestions(currentSubject() || { cards: [] }));',
+              "evento do filtro de categoria"
+          )
+
+          select_list_subject = '            subject: item.disciplina || item.materia || item.material || item.subject,'
+          replace_once(
+              select_list_subject,
+              select_list_subject + '\n            category: cleanCategoryName(item.categoria || item.category || item.assunto || ""),',
+              "categoria em questão de lista"
+          )
+
+          replace_once(
+              '        if (card) card.subject = item.disciplina || item.materia || item.material || item.subject;',
+              '        if (card) card.subject = item.disciplina || item.materia || item.material || item.subject;\n        if (card) card.category = cleanCategoryName(item.categoria || item.category || item.assunto || "");',
+              "categoria em questão de múltipla escolha"
+          )
+
+          import_pattern = re.compile(r'    function importCards\(cards\) \{.*?\n\s*function imageMimeFromName', re.DOTALL)
+          import_replacement = '''    function importCards(cards) {
+      const targetId = el.importCollection?.value || data.selected;
+      const targetSubject = data.subjects.find(subject => subject.id === targetId);
+
+      if (!targetSubject) {
+        setMessage(el.importMessage, "Selecione uma coleção de destino antes de importar.", "error");
+        return 0;
+      }
+
+      const validCards = cards.filter(Boolean).map(card => {
+        delete card.subject;
+        card.category = card.category ? ensureSubjectCategory(targetSubject, card.category) : "";
+        return card;
+      });
+
+      if (!validCards.length) {
+        setMessage(el.importMessage, "Não encontrei questões válidas para importar.", "error");
+        return 0;
+      }
+
+      targetSubject.cards.push(...validCards);
+      data.selected = targetSubject.id;
+      return validCards.length;
+    }
+
+    function imageMimeFromName'''
+          text, import_count = import_pattern.subn(import_replacement, text, count=1)
+          if import_count != 1:
+              raise SystemExit(f"Falha em importCards: esperado 1 trecho, encontrado {import_count}.")
+
+          replace_once(
+              '      if (imagePath) base.imagem = imagePath;',
+              '      if (card.category) base.categoria = card.category;\n      if (imagePath) base.imagem = imagePath;',
+              "categoria na exportação"
+          )
+
+          preview_answer = '''        const recognizedAnswer = card.type === "multiple" ? correctAnswerTextForCard(card) : card.a;
+        const answerLine = recognizedAnswer ? `Resposta correta: ${recognizedAnswer}` : "Resposta correta não identificada.";
+        return `Questão ${index + 1}: ${card.q}${options}${list}\n${answerLine}`;'''
+          preview_category = '''        const recognizedAnswer = card.type === "multiple" ? correctAnswerTextForCard(card) : card.a;
+        const answerLine = recognizedAnswer ? `Resposta correta: ${recognizedAnswer}` : "Resposta correta não identificada.";
+        const categoryLine = card.category ? `Categoria: ${card.category}\n` : "";
+        return `${categoryLine}Questão ${index + 1}: ${card.q}${options}${list}\n${answerLine}`;'''
+          replace_once(preview_answer, preview_category, "categoria na pré-visualização")
+
+          text = text.replace(
+              '  &quot;tipo&quot;: &quot;multiple&quot;,\n  &quot;pergunta&quot;:',
+              '  &quot;tipo&quot;: &quot;multiple&quot;,\n  &quot;categoria&quot;: &quot;Ortografia&quot;,\n  &quot;pergunta&quot;:'
+          )
+          text = text.replace(
+              '  &quot;tipo&quot;: &quot;select-list&quot;,\n  &quot;pergunta&quot;:',
+              '  &quot;tipo&quot;: &quot;select-list&quot;,\n  &quot;categoria&quot;: &quot;Classificação&quot;,\n  &quot;pergunta&quot;:'
+          )
+          guideline_anchor = 'Todas as questões devem ficar dentro de uma lista JSON:'
+          if guideline_anchor not in text:
+              raise SystemExit("Não foi possível localizar o texto das diretrizes.")
+          text = text.replace(
+              guideline_anchor,
+              'O campo &quot;categoria&quot; é opcional. Quando informado, o Fixa cria ou reutiliza essa categoria dentro da coleção selecionada.\n\n' + guideline_anchor,
+              1
+          )
+
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Validar HTML, JavaScript e alterações
+        shell: bash
+        run: |
+          git diff --check
+          python <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import re
+
+          text = Path("index.html").read_text(encoding="utf-8")
+
+          class IdParser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids = []
+              def handle_starttag(self, tag, attrs):
+                  for key, value in attrs:
+                      if key == "id" and value:
+                          self.ids.append(value)
+
+          parser = IdParser()
+          parser.feed(text)
+          duplicates = sorted({item for item in parser.ids if parser.ids.count(item) > 1})
+          if duplicates:
+              raise SystemExit(f"IDs HTML duplicados: {duplicates}")
+
+          required = [
+              'id="cardCategoryFilter"',
+              'id="questionCategory"',
+              'function openManageCategoriesModal',
+              'card.category = cleanCategoryName',
+              'base.categoria = card.category',
+              'data-subject-action="categories"'
+          ]
+          missing = [item for item in required if item not in text]
+          if missing:
+              raise SystemExit(f"Trechos obrigatórios ausentes: {missing}")
+
+          scripts = re.findall(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>', text, flags=re.S | re.I)
+          if not scripts:
+              raise SystemExit("JavaScript interno não encontrado.")
+          Path("/tmp/fixa-inline.js").write_text("\n".join(scripts), encoding="utf-8")
+          print(f"HTML validado: {len(parser.ids)} IDs únicos.")
+          PY
+          node --check /tmp/fixa-inline.js
+
+      - name: Salvar alterações na branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git rm .github/workflows/add-categories.yml
+          git commit -m "Adiciona categorias às questões"
+          git push origin feature/categorias-questoes
