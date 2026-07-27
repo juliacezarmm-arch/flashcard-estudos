@@ -4915,9 +4915,98 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       normalized.folders = Array.isArray(normalized.folders) ? normalized.folders : [];
       normalized.testHistory = Array.isArray(normalized.testHistory) ? normalized.testHistory.slice(0, 10) : [];
       normalized.subjects = Array.isArray(normalized.subjects) ? normalized.subjects : [];
+      normalized.subjects.forEach(subject => {
+        subject.cards = Array.isArray(subject.cards) ? subject.cards.map(normalizeCard) : [];
+      });
 
       ensureAllQuestionCodes(normalized);
       return normalized;
+    }
+
+    function decodeHtmlEntities(text) {
+      const textarea = document.createElement("textarea");
+      textarea.innerHTML = String(text || "");
+      return textarea.value;
+    }
+
+    function normalizeAnswerText(text) {
+      return decodeHtmlEntities(text)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/\s+/g, " ")
+        .replace(/\s+([,.;:!?])/g, "$1")
+        .trim()
+        .toLowerCase();
+    }
+
+    function answerLetterToIndex(letter) {
+      const value = String(letter || "").trim().toUpperCase();
+      return /^[A-H]$/.test(value) ? value.charCodeAt(0) - 65 : -1;
+    }
+
+    function optionByLetter(options, letter) {
+      const index = answerLetterToIndex(letter);
+      return index >= 0 ? (options || [])[index] || "" : "";
+    }
+
+    function findOptionTextByNormalized(options, text) {
+      const normalized = normalizeAnswerText(text);
+      if (!normalized) return "";
+      return (options || []).find(option => normalizeAnswerText(option) === normalized) || "";
+    }
+
+    function extractAnswerSourceText(source = "") {
+      return String(source || "")
+        .replace(/^(?:resposta\s+correta|gabarito|alternativa\s+correta)\s*:?\s*/i, "")
+        .replace(/^explica[cç][aã]o\s*:?\s*/i, "")
+        .trim();
+    }
+
+    function resolveCorrectAnswerText(card = {}, optionList = card.options || []) {
+      const options = (optionList || []).map(option => String(option || "").trim()).filter(Boolean);
+      if (!options.length) return "";
+      const sources = [
+        card.correctAnswerText,
+        card.resposta,
+        card.answer,
+        card.correctAnswer,
+        card.a
+      ];
+      for (const source of sources) {
+        const raw = String(source || "").trim();
+        if (!raw) continue;
+        const direct = findOptionTextByNormalized(options, raw);
+        if (direct) return direct;
+        const clean = extractAnswerSourceText(raw);
+        const cleanDirect = findOptionTextByNormalized(options, clean);
+        if (cleanDirect) return cleanDirect;
+        const prefixed = raw.match(/(?:resposta\s+correta|gabarito|alternativa\s+correta)\s*:?\s*([A-H])/i);
+        const firstLetter = prefixed?.[1] || raw.match(/^([A-H])(?:\b|\)|\.|\s*[-–—])/i)?.[1];
+        const byLetter = optionByLetter(options, firstLetter);
+        if (byLetter) return byLetter;
+        const afterDash = clean.replace(/^[A-H]\s*(?:\)|\.|[-–—])\s*/i, "").trim();
+        const dashDirect = findOptionTextByNormalized(options, afterDash);
+        if (dashDirect) return dashDirect;
+      }
+      return "";
+    }
+
+    function correctAnswerIndex(card = {}) {
+      const normalized = normalizeAnswerText(card.correctAnswerText || resolveCorrectAnswerText(card));
+      if (!normalized) return -1;
+      return (card.options || []).findIndex(option => normalizeAnswerText(option) === normalized);
+    }
+
+    function correctAnswerTextForCard(card = {}) {
+      return card.correctAnswerText || resolveCorrectAnswerText(card) || "";
+    }
+
+    function renderStoredAnswer(card = {}) {
+      if (card.type === "select-list") return '<div class="answer">' + formatAnswer(card.a) + '</div>';
+      const answerText = correctAnswerTextForCard(card);
+      const explanation = card.explanation || explanationFromAnswer(card.a);
+      return '<div class="answer"><strong>Resposta correta:</strong> ' + (answerText ? escapeHtml(answerText) : 'Resposta correta não definida') + (explanation ? '<br><strong>Explicação:</strong> ' + escapeHtml(explanation) : '') + '</div>';
     }
 
     function normalizeCard(card) {
@@ -4947,10 +5036,17 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
           card.options = extracted.options;
         }
       }
-      card.correctAnswer = answerLetter(card) || card.correctAnswer || "";
       card.explanation = card.explanation || explanationFromAnswer(card.a);
-      if (card.type === "multiple" && card.correctAnswer && card.options.length >= 2) {
-        card.a = buildAnswerText(card.correctAnswer, card.options, card.explanation, "multiple");
+      if (card.type === "multiple") {
+        card.correctAnswerText = resolveCorrectAnswerText(card, card.options);
+        const answerIndex = correctAnswerIndex(card);
+        card.correctAnswer = answerIndex >= 0 ? optionLetter(answerIndex) : "";
+        if (card.correctAnswerText && card.options.length >= 2) {
+          card.a = buildAnswerText(card.correctAnswerText, card.options, card.explanation, "multiple");
+        }
+      } else {
+        card.correctAnswer = "";
+        card.correctAnswerText = "";
       }
       return card;
     }
@@ -5436,7 +5532,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       editingCardIndex = null;
       el.saveQuestion.textContent = "Salvar questão";
       el.questionText.value = "";
-      el.correctAnswer.value = "A";
+      el.correctAnswer.dataset.correctText = "";
+      renderCorrectAnswerOptions("");
       el.answerText.value = "";
       el.questionImage.value = "";
       el.difficulty.value = "normal";
@@ -5452,7 +5549,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       showAddMode("question");
       el.saveQuestion.textContent = "Salvar alterações";
       el.questionText.value = card.q || "";
-      el.correctAnswer.value = answerLetter(card) || card.correctAnswer || "A";
+      el.correctAnswer.dataset.correctText = correctAnswerTextForCard(card);
       el.answerText.value = card.explanation || explanationFromAnswer(card.a) || "";
       el.difficulty.value = card.difficulty || "normal";
       el.questionType.value = card.type || "multiple";
@@ -5471,7 +5568,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         document.querySelectorAll(".option-input").forEach((input, optionIndex) => {
           input.value = card.options?.[optionIndex] || "";
         });
-        renderCorrectAnswerOptions(answerLetter(card) || card.correctAnswer || "A");
+        renderCorrectAnswerOptions(correctAnswerTextForCard(card));
       }
       setMessage(el.questionMessage, "Editando cartão. Faça as alterações e salve.");
       el.questionText.focus();
@@ -5482,7 +5579,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     }
 
     function renderOptionInputs() {
-      const selected = el.correctAnswer?.value || "A";
+      const selected = selectedCorrectAnswerTextFromEditor();
       el.optionsList.innerHTML = Array.from({ length: optionCount }, (_, index) => `
         <div class="option-row">
           <span class="option-letter">${optionLetter(index)}</span>
@@ -5493,18 +5590,40 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       renderCorrectAnswerOptions(selected);
     }
 
-    function renderCorrectAnswerOptions(selected = el.correctAnswer?.value || "A") {
+    function rawOptionValues() {
+      return [...document.querySelectorAll(".option-input")].map(input => input.value.trim());
+    }
+
+    function selectedCorrectAnswerTextFromEditor() {
+      if (!el.correctAnswer) return "";
+      const rawOptions = rawOptionValues();
+      const index = Number(el.correctAnswer.value);
+      if (Number.isInteger(index) && rawOptions[index]) return rawOptions[index].trim();
+      return el.correctAnswer.dataset.correctText || "";
+    }
+
+    function renderCorrectAnswerOptions(selected = selectedCorrectAnswerTextFromEditor()) {
       if (!el.correctAnswer) return;
-      el.correctAnswer.innerHTML = Array.from({ length: optionCount }, (_, index) => {
-        const letter = optionLetter(index);
-        return `<option value="${letter}" ${selected === letter ? "selected" : ""}>${letter}</option>`;
-      }).join("");
+      const rawOptions = rawOptionValues();
+      const filled = rawOptions.map((text, index) => ({ text, index })).filter(item => item.text);
+      if (!filled.length) {
+        el.correctAnswer.innerHTML = `<option value="">Preencha as alternativas primeiro</option>`;
+        el.correctAnswer.value = "";
+        el.correctAnswer.dataset.correctText = "";
+        return;
+      }
+      const selectedText = String(selected || el.correctAnswer.dataset.correctText || "").trim();
+      const selectedItem = filled.find(item => normalizeAnswerText(item.text) === normalizeAnswerText(selectedText));
+      el.correctAnswer.innerHTML = [
+        `<option value="" ${selectedItem ? "" : "selected"}>Selecione a resposta correta</option>`,
+        ...filled.map(item => `<option value="${item.index}" ${selectedItem?.index === item.index ? "selected" : ""}>${escapeHtml(item.text)}</option>`)
+      ].join("");
+      el.correctAnswer.value = selectedItem ? String(selectedItem.index) : "";
+      el.correctAnswer.dataset.correctText = selectedItem ? selectedItem.text : "";
     }
 
     function getOptionValues() {
-      return [...document.querySelectorAll(".option-input")]
-        .map(input => input.value.trim())
-        .filter(Boolean);
+      return rawOptionValues().filter(Boolean);
     }
 
     function listChoiceValues() {
@@ -5562,7 +5681,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       listChoiceCount = 2;
       listItemCount = 2;
       renderOptionInputs();
-      if (el.correctAnswer) el.correctAnswer.value = "A";
+      if (el.correctAnswer) {
+        el.correctAnswer.dataset.correctText = "";
+        renderCorrectAnswerOptions("");
+      }
       renderListChoiceInputs([]);
       renderListItemInputs([]);
     }
@@ -5761,6 +5883,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         card.q,
         card.a,
         card.correctAnswer,
+        card.correctAnswerText,
         card.explanation,
         ...(card.options || []),
         ...(card.listChoices || []),
@@ -5826,7 +5949,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
           <strong>${escapeHtml(card.q)}</strong>
           ${renderQuestionMedia(card)}
           ${card.type === "select-list" ? renderListQuestion(card) : renderCardOptions(card.options)}
-          <div class="answer">${formatAnswer(card.a)}</div>
+          ${renderStoredAnswer(card)}
         </article>
       `).join("");
     }
@@ -5925,7 +6048,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     }
 
     function answerLetter(card) {
-      if (card?.correctAnswer) return String(card.correctAnswer).trim().toUpperCase();
+      const stored = String(card?.correctAnswer || "").trim().toUpperCase();
+      if (/^[A-H]$/.test(stored)) return stored;
       const text = String(card?.a || "").trim();
       const explicit = text.match(/(?:resposta\s+correta|gabarito|alternativa\s+correta)\s*:?\s*([A-H])/i);
       if (explicit) return explicit[1].toUpperCase();
@@ -5942,11 +6066,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         .trim();
     }
 
-    function buildAnswerText(letter, options, explanation, type) {
+    function buildAnswerText(answerText, options, explanation, type) {
       if (type === "select-list") return explanation || "";
-      const index = Math.max(0, letter.charCodeAt(0) - 65);
-      const optionText = options[index] || "";
-      const base = `Resposta correta: ${letter}${optionText ? ` - ${optionText}` : ""}.`;
+      const correctText = resolveCorrectAnswerText({ correctAnswerText: answerText, correctAnswer: answerText, a: answerText, options }, options) || String(answerText || "").trim();
+      const base = correctText ? `Resposta correta: ${correctText}.` : "Resposta correta não definida.";
       return explanation ? `${base} Explicação: ${explanation}` : base;
     }
 
@@ -5962,9 +6085,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     function isMultipleChoiceTestable(card) {
       const options = card.options || [];
       if (options.length < 2) return false;
-      if (answerLetter(card) || card.correctAnswer) return true;
-      const answerText = String(card.a || "").toLowerCase();
-      return options.some(option => answerText.includes(String(option).toLowerCase()));
+      return Boolean(resolveCorrectAnswerText(card, options));
     }
 
     function buildTestQuestion(card) {
@@ -5974,15 +6095,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
           testChoices: shuffleList(card.listChoices || [])
         };
       }
-      const originalLetter = answerLetter(card);
-      let correctIndex = originalLetter ? originalLetter.charCodeAt(0) - 65 : -1;
-      if (correctIndex < 0) {
-        const answerText = String(card.a || "").toLowerCase();
-        correctIndex = (card.options || []).findIndex(option => answerText.includes(String(option).toLowerCase()));
-      }
-      const options = (card.options || []).map((text, index) => ({
+      const correctText = resolveCorrectAnswerText(card, card.options || []);
+      const options = (card.options || []).map(text => ({
         text,
-        isCorrect: index === correctIndex
+        isCorrect: normalizeAnswerText(text) === normalizeAnswerText(correctText)
       }));
       return {
         ...card,
@@ -6771,13 +6887,15 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (question.type === "select-list") {
         return `<strong>Gabarito:</strong>${renderListQuestion(question)}`;
       }
-      const correctOption = (question.testOptions || []).find(option => option.isCorrect);
-      const answerText = correctOption?.text || question.options?.[(answerLetter(question).charCodeAt(0) - 65)] || "";
+      const correctIndex = (question.testOptions || []).findIndex(option => option.isCorrect);
+      const correctOption = correctIndex >= 0 ? question.testOptions[correctIndex] : null;
+      const answerText = correctOption?.text || correctAnswerTextForCard(question) || "";
+      const currentLetter = correctIndex >= 0 ? optionLetter(correctIndex) : "";
       const explanation = question.explanation || explanationFromAnswer(question.a);
       return `
         <div class="answer-block">
           <strong>Resposta correta</strong>
-          <p>${escapeHtml(answerText)}</p>
+          <p>${currentLetter ? `${currentLetter} — ` : ""}${escapeHtml(answerText || "Resposta correta não definida")}</p>
           ${explanation ? `<strong>Explicação</strong><p>${escapeHtml(explanation)}</p>` : ""}
         </div>
       `;
@@ -7171,18 +7289,21 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     }
 
     el.addOption.addEventListener("click", () => {
-      const currentValues = getOptionValues();
+      const currentValues = rawOptionValues();
+      const selectedText = selectedCorrectAnswerTextFromEditor();
       optionCount += 1;
       renderOptionInputs();
       document.querySelectorAll(".option-input").forEach((input, index) => {
         input.value = currentValues[index] || "";
       });
+      renderCorrectAnswerOptions(selectedText);
     });
 
     el.optionsList.addEventListener("click", event => {
       const button = event.target.closest("[data-remove-option]");
       if (!button || optionCount <= 2) return;
       const removeIndex = Number(button.dataset.removeOption);
+      const selectedText = selectedCorrectAnswerTextFromEditor();
       const values = [...document.querySelectorAll(".option-input")].map(input => input.value);
       values.splice(removeIndex, 1);
       optionCount -= 1;
@@ -7190,6 +7311,22 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       document.querySelectorAll(".option-input").forEach((input, index) => {
         input.value = values[index] || "";
       });
+      renderCorrectAnswerOptions(selectedText);
+    });
+
+    el.optionsList.addEventListener("input", event => {
+      if (!event.target.classList.contains("option-input")) return;
+      const row = event.target.closest(".option-row");
+      const index = [...el.optionsList.querySelectorAll(".option-row")].indexOf(row);
+      if (String(index) === el.correctAnswer.value) {
+        el.correctAnswer.dataset.correctText = event.target.value.trim();
+      }
+      renderCorrectAnswerOptions(selectedCorrectAnswerTextFromEditor());
+    });
+
+    el.correctAnswer.addEventListener("change", () => {
+      el.correctAnswer.dataset.correctText = selectedCorrectAnswerTextFromEditor();
+      renderCorrectAnswerOptions(el.correctAnswer.dataset.correctText);
     });
 
     el.addListChoice.addEventListener("click", () => {
@@ -7257,7 +7394,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       event.preventDefault();
       const subject = currentSubject();
       const q = el.questionText.value.trim();
-      const correctAnswer = el.correctAnswer.value || "A";
+      const correctAnswerText = selectedCorrectAnswerTextFromEditor();
       const explanation = el.answerText.value.trim();
       const type = el.questionType.value;
       const options = getOptionValues();
@@ -7271,8 +7408,13 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         setMessage(el.questionMessage, "Preencha a pergunta.", "error");
         return;
       }
-      if (type === "multiple" && !correctAnswer) {
-        setMessage(el.questionMessage, "Escolha a resposta correta.", "error");
+      if (type === "multiple" && !options.length) {
+        setMessage(el.questionMessage, "Preencha as alternativas antes de salvar.", "error");
+        return;
+      }
+      const matchedCorrectAnswer = type === "multiple" ? findOptionTextByNormalized(options, correctAnswerText) : "";
+      if (type === "multiple" && !matchedCorrectAnswer) {
+        setMessage(el.questionMessage, "Selecione a resposta correta antes de salvar.", "error");
         return;
       }
       if (type === "select-list" && (!listChoices.length || !listItems.length)) {
@@ -7292,8 +7434,9 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const cardData = {
         ...(oldCard || {}),
         q,
-        a: buildAnswerText(correctAnswer, options, explanation, type),
-        correctAnswer: type === "multiple" ? correctAnswer : "",
+        a: buildAnswerText(matchedCorrectAnswer, options, explanation, type),
+        correctAnswer: type === "multiple" ? optionLetter(options.findIndex(option => normalizeAnswerText(option) === normalizeAnswerText(matchedCorrectAnswer))) : "",
+        correctAnswerText: type === "multiple" ? matchedCorrectAnswer : "",
         explanation,
         type,
         image,
@@ -7686,7 +7829,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
 
         const card = makeCard(question, item.resposta || item.answer || item.a || item.verso || "");
         if (card) card.subject = item.disciplina || item.materia || item.material || item.subject;
-        if (card) card.options = item.alternativas || item.options || item.opcoes || item.opções || [];
+        if (card) {
+          card.options = item.alternativas || item.options || item.opcoes || item.opções || [];
+          card.correctAnswerText = item.resposta || item.answer || item.correctAnswerText || "";
+        }
         if (card) {
           card.type = "multiple";
           card.image = item.imagem || item.image || "";
@@ -7704,12 +7850,16 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const temporary = { a: rawAnswer };
       const correctAnswer = answerLetter(temporary);
       const explanation = explanationFromAnswer(rawAnswer);
+      const correctAnswerText = extracted.options.length
+        ? resolveCorrectAnswerText({ correctAnswerText: rawAnswer, correctAnswer, a: rawAnswer, options: extracted.options }, extracted.options)
+        : "";
       return {
         q,
-        a: extracted.options.length && correctAnswer
-          ? buildAnswerText(correctAnswer, extracted.options, explanation, "multiple")
+        a: extracted.options.length && correctAnswerText
+          ? buildAnswerText(correctAnswerText, extracted.options, explanation, "multiple")
           : rawAnswer,
-        correctAnswer,
+        correctAnswer: correctAnswerText ? optionLetter(extracted.options.findIndex(option => normalizeAnswerText(option) === normalizeAnswerText(correctAnswerText))) : correctAnswer,
+        correctAnswerText,
         explanation,
         type: "multiple",
         options: extracted.options,
@@ -7802,7 +7952,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         return base;
       }
       base.alternativas = card.options || [];
-      base.resposta = answerLetter(card) || card.correctAnswer || "";
+      base.resposta = correctAnswerTextForCard(card) || "";
       if (card.explanation) base.explicacao = card.explanation;
       return base;
     }
@@ -7918,13 +8068,15 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         return;
       }
       imported.forEach(card => normalizeCard(card));
+      const recognizedAnswers = imported.filter(card => card.type !== "multiple" || Boolean(card.correctAnswerText)).length;
       const total = importCards(imported, currentSubject()?.name || "");
       if (!total) return;
       el.bulkText.value = "";
       pendingImportFile = null;
       el.importFile.value = "";
       el.importFileName.textContent = "Nenhum arquivo escolhido";
-      setMessage(el.importMessage, `${total} questão${total === 1 ? "" : "ões"} importada${total === 1 ? "" : "s"} ${source === "arquivo" ? "do arquivo" : ""}.`);
+      const pendingAnswers = Math.max(0, total - recognizedAnswers);
+      setMessage(el.importMessage, `${total} questão${total === 1 ? "" : "ões"} importada${total === 1 ? "" : "s"} ${source === "arquivo" ? "do arquivo" : ""}. ${recognizedAnswers} resposta${recognizedAnswers === 1 ? "" : "s"} identificada${recognizedAnswers === 1 ? "" : "s"} e ${pendingAnswers} precisam de correção.`);
       showingAnswer = false;
       render();
     });
@@ -7938,7 +8090,9 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         const list = card.type === "select-list" && (card.listItems || []).length
           ? `\n${card.listItems.map(item => `${item.label} = ${item.answer}`).join("\n")}`
           : "";
-        return `Questão ${index + 1}: ${card.q}${options}${list}\nResposta: ${card.a}`;
+        const recognizedAnswer = card.type === "multiple" ? correctAnswerTextForCard(card) : card.a;
+        const answerLine = recognizedAnswer ? `Resposta correta: ${recognizedAnswer}` : "Resposta correta não identificada.";
+        return `Questão ${index + 1}: ${card.q}${options}${list}\n${answerLine}`;
       }).join("\n\n---\n\n");
     }
 
