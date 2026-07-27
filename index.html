@@ -2368,6 +2368,85 @@
       box-shadow: 0 10px 20px rgba(37, 99, 235, 0.16);
     }
 
+    .subjects {
+      gap: 5px;
+    }
+
+    .folder-block {
+      gap: 5px;
+    }
+
+    .folder-title {
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      gap: 6px;
+      padding: 7px 8px;
+      border-radius: 9px;
+      font-size: 11px;
+    }
+
+    .folder-icon {
+      width: 20px;
+      height: 16px;
+    }
+
+    .folder-toggle-mark,
+    .folder-options {
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      font-size: 15px;
+    }
+
+    .folder-block .subject {
+      margin-left: 10px;
+      width: calc(100% - 10px);
+    }
+
+    .subjects .subject {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      align-items: center;
+      min-height: 34px;
+      gap: 6px;
+      padding: 6px 8px 6px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      line-height: 1.15;
+    }
+
+    .subjects .subject.active {
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.16);
+    }
+
+    .subjects .subject span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      word-break: normal;
+      line-height: 1.2;
+    }
+
+    .subjects .subject small {
+      min-width: 18px;
+      text-align: right;
+      font-size: 10px;
+      opacity: 0.78;
+    }
+
+    .subjects .subject .subject-options {
+      width: 20px;
+      height: 22px;
+      margin-left: 0;
+      font-size: 14px;
+    }
+
+    @media (max-width: 760px) {
+      .subjects .subject span {
+        white-space: normal;
+      }
+    }
+
     main {
       width: min(100%, 1100px);
       padding: 24px;
