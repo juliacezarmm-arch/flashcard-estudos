@@ -385,9 +385,9 @@
       margin-top: 4px;
       padding: 9px 10px;
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: auto 1fr auto auto;
       align-items: center;
-      gap: 9px;
+      gap: 8px;
       color: #17233c;
       background: #eef6ff;
       font-size: 12px;
@@ -449,6 +449,107 @@
     .folder-block .subject {
       margin-left: 12px;
       width: calc(100% - 12px);
+    }
+
+    .folder-options,
+    .subject-options {
+      width: 28px;
+      height: 28px;
+      border: 1px solid #d8e4f7;
+      border-radius: 8px;
+      display: inline-grid;
+      place-items: center;
+      color: #53617a;
+      background: rgba(255, 255, 255, 0.88);
+      font-size: 18px;
+      font-weight: 850;
+      line-height: 1;
+      cursor: pointer;
+      opacity: 0.78;
+    }
+
+    .subject-options {
+      margin-left: auto;
+      font-size: 17px;
+      opacity: 0.42;
+      background: transparent;
+      border-color: transparent;
+    }
+
+    .folder-options:hover,
+    .subject-options:hover,
+    .folder-options:focus-visible,
+    .subject-options:focus-visible {
+      opacity: 1;
+      color: var(--brand);
+      border-color: #bcd3ff;
+      background: #fff;
+    }
+
+    .subject:hover .subject-options,
+    .subject.active .subject-options {
+      opacity: 1;
+    }
+
+    @media (hover: none) {
+      .subject-options {
+        opacity: 1;
+      }
+    }
+
+    .sidebar-menu {
+      position: fixed;
+      z-index: 95;
+      min-width: 190px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 6px;
+      display: grid;
+      gap: 3px;
+      background: #fff;
+      box-shadow: 0 18px 45px rgba(23, 32, 51, 0.18);
+    }
+
+    .sidebar-menu button {
+      justify-content: flex-start;
+      min-height: 38px;
+      border: 0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: var(--text);
+      background: transparent;
+      font-size: 13px;
+      font-weight: 750;
+      box-shadow: none;
+    }
+
+    .sidebar-menu button:hover,
+    .sidebar-menu button:focus-visible {
+      background: #f1f6ff;
+    }
+
+    .sidebar-menu button.danger-option {
+      color: #dc2626;
+    }
+
+    .modal-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .modal-warning,
+    .modal-danger-panel {
+      border-radius: 10px;
+      padding: 12px;
+      background: #fff1f2;
+      color: #991b1b;
+      font-weight: 750;
+    }
+
+    .modal-danger-panel {
+      border: 1px solid #fecdd3;
+      display: grid;
+      gap: 10px;
     }
 
     .folder-block.is-collapsed .subject {
@@ -600,6 +701,164 @@
       grid-template-columns: 1fr auto;
       gap: 8px;
       align-items: end;
+    }
+
+    .collection-flow {
+      display: grid;
+      gap: 14px;
+      padding: 8px 2px 2px;
+    }
+
+    .flow-heading {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .flow-heading .folder-icon {
+      width: 32px;
+      height: 25px;
+    }
+
+    .flow-heading h3,
+    .collection-step h4 {
+      margin: 0;
+    }
+
+    .flow-heading p,
+    .collection-step p,
+    .step-help {
+      margin: 4px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .step-indicator {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 0 20%;
+    }
+
+    .step-line {
+      height: 2px;
+      background: #cfe0fb;
+    }
+
+    .step-dot,
+    .step-number,
+    .step-check {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #cfe0fb;
+      border-radius: 999px;
+      display: inline-grid;
+      place-items: center;
+      color: #65728a;
+      background: #f8fbff;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .step-dot.active,
+    .step-number.active,
+    .step-check {
+      color: #fff;
+      border-color: var(--brand);
+      background: var(--brand);
+    }
+
+    .step-check {
+      display: none;
+      background: #22c55e;
+      border-color: #22c55e;
+    }
+
+    .collection-step.is-complete .step-check {
+      display: inline-grid;
+    }
+
+    .step-labels {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 19%;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .collection-step {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+      background: #fff;
+    }
+
+    .collection-step.is-active {
+      border-left: 3px solid var(--brand);
+    }
+
+    .collection-step.is-complete {
+      border-left: 3px solid #22c55e;
+    }
+
+    .collection-step.is-disabled {
+      opacity: 0.62;
+      background: #f8fafc;
+    }
+
+    .step-title {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .step-title small {
+      margin-left: 6px;
+      border-radius: 999px;
+      padding: 3px 8px;
+      color: var(--brand);
+      background: #eaf1ff;
+      font-size: 11px;
+      vertical-align: middle;
+    }
+
+    .folder-choice-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.2fr);
+      gap: 12px;
+      align-items: end;
+    }
+
+    .choice-divider {
+      align-self: center;
+      justify-self: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 8px;
+      color: var(--muted);
+      background: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .selected-folder-note {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 10px;
+      padding: 11px 12px;
+      color: #47536b;
+      background: #f1f6ff;
+      font-weight: 750;
+    }
+
+    .selected-folder-note .folder-icon {
+      width: 22px;
+      height: 18px;
     }
 
     .add-mode {
@@ -2816,8 +3075,19 @@
         border-bottom: 1px solid var(--line);
       }
 
-      .folder-create {
+      .folder-create,
+      .folder-choice-grid {
         grid-template-columns: 1fr;
+      }
+
+      .choice-divider {
+        justify-self: stretch;
+        text-align: center;
+      }
+
+      .step-indicator,
+      .step-labels {
+        padding-inline: 8%;
       }
 
       .test-start-card,
@@ -4220,39 +4490,70 @@
             <p class="add-info" id="addModeInfo">Crie uma coleção primeiro para liberar a adição e a importação de questões.</p>
 
             <div class="add-section active" id="createCollectionSection">
-              <h3>Criar coleção</h3>
-              <div class="form">
-                <label>
-                  Nome da coleção
-                  <input id="collectionName" placeholder="Ex: Arquitetura de Computadores">
-                </label>
-                <label>
-                  Pasta (opcional)
-                  <select id="collectionFolder">
-                    <option value="">Sem pasta</option>
-                  </select>
-                </label>
-                <div class="folder-create">
-                  <label>
-                    Nova pasta
-                    <input id="newFolderName" placeholder="Ex: 2º Bimestre">
-                  </label>
-                  <button class="secondary" id="createFolder" type="button">Criar pasta</button>
-                </div>
-                <button id="createCollection" type="button">
-                  <svg class="button-svg" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H10l2 2h6.5A2.5 2.5 0 0 1 21 9.5v7A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5z"></path>
-                    <path d="M12 11v5M9.5 13.5h5"></path>
-                  </svg>
-                  Criar coleção
-                </button>
-                <details class="danger-zone">
-                  <summary>Opções de exclusão</summary>
-                  <div class="danger-actions">
-                    <button class="tiny-danger" id="deleteFolder" type="button">Excluir pasta selecionada</button>
-                    <button class="tiny-danger" id="deleteCollection" type="button">Excluir coleção atual</button>
+              <div class="collection-flow">
+                <div class="flow-heading">
+                  <span class="flow-icon folder-icon" aria-hidden="true"></span>
+                  <div>
+                    <h3>Organizar conteúdo</h3>
+                    <p>Primeiro crie ou escolha uma pasta. Depois crie a coleção.</p>
                   </div>
-                </details>
+                </div>
+                <div class="step-indicator" aria-label="Etapas para criar coleção">
+                  <span class="step-dot active" id="folderStepDot">1</span>
+                  <span class="step-line"></span>
+                  <span class="step-dot" id="collectionStepDot">2</span>
+                </div>
+                <div class="step-labels" aria-hidden="true">
+                  <span>Pasta</span>
+                  <span>Coleção</span>
+                </div>
+                <div class="collection-step" id="folderStep">
+                  <div class="step-title">
+                    <span class="step-check" id="folderStepCheck">✓</span>
+                    <div>
+                      <h4>1. Criar ou selecionar pasta <small>Obrigatório</small></h4>
+                      <p>Toda coleção precisa estar dentro de uma pasta.</p>
+                    </div>
+                  </div>
+                  <div class="folder-choice-grid">
+                    <label>
+                      Escolher pasta existente
+                      <select id="collectionFolder"></select>
+                    </label>
+                    <span class="choice-divider">ou</span>
+                    <div class="folder-create">
+                      <label>
+                        Nome da nova pasta
+                        <input id="newFolderName" placeholder="Ex.: 2º Bimestre">
+                      </label>
+                      <button class="secondary" id="createFolder" type="button">Criar pasta</button>
+                    </div>
+                  </div>
+                  <p class="step-help" id="folderStepHelp"></p>
+                </div>
+                <div class="collection-step is-disabled" id="collectionStep">
+                  <div class="step-title">
+                    <span class="step-number">2</span>
+                    <div>
+                      <h4>2. Criar coleção</h4>
+                    </div>
+                  </div>
+                  <label>
+                    Nome da coleção
+                    <input id="collectionName" placeholder="Ex.: Arquitetura de Computadores">
+                  </label>
+                  <div class="selected-folder-note" id="selectedFolderNote">
+                    <i class="folder-icon" aria-hidden="true"></i>
+                    <span>Pasta selecionada: selecione uma pasta acima</span>
+                  </div>
+                  <button id="createCollection" type="button" disabled>
+                    <svg class="button-svg" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H10l2 2h6.5A2.5 2.5 0 0 1 21 9.5v7A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5z"></path>
+                      <path d="M12 11v5M9.5 13.5h5"></path>
+                    </svg>
+                    Criar coleção
+                  </button>
+                </div>
                 <p class="notice" id="collectionMessage"></p>
               </div>
             </div>
@@ -4760,9 +5061,14 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       collectionFolder: document.querySelector("#collectionFolder"),
       newFolderName: document.querySelector("#newFolderName"),
       createFolder: document.querySelector("#createFolder"),
-      deleteFolder: document.querySelector("#deleteFolder"),
+      folderStep: document.querySelector("#folderStep"),
+      collectionStep: document.querySelector("#collectionStep"),
+      folderStepDot: document.querySelector("#folderStepDot"),
+      collectionStepDot: document.querySelector("#collectionStepDot"),
+      folderStepCheck: document.querySelector("#folderStepCheck"),
+      folderStepHelp: document.querySelector("#folderStepHelp"),
+      selectedFolderNote: document.querySelector("#selectedFolderNote"),
       createCollection: document.querySelector("#createCollection"),
-      deleteCollection: document.querySelector("#deleteCollection"),
       collectionMessage: document.querySelector("#collectionMessage"),
       showCreateCollection: document.querySelector("#showCreateCollection"),
       showAddQuestion: document.querySelector("#showAddQuestion"),
@@ -4881,6 +5187,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     let listItemCount = 2;
     let editingCardIndex = null;
     let currentAnalysisTab = "priorities";
+    let openSidebarMenu = null;
+    let legacyFolderPromptOpen = false;
 
     let testState = {
       active: false,
@@ -5523,9 +5831,49 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       updateCreateCollectionState();
     }
 
+    function isValidFolderId(folderId) {
+      return Boolean(folderId && data.folders.some(folder => folder.id === folderId));
+    }
+
+    function selectedCreationFolder() {
+      const selectedId = el.collectionFolder?.value || "";
+      return data.folders.find(folder => folder.id === selectedId) || null;
+    }
+
+    function ensureCollectionFolderSelection() {
+      if (!el.collectionFolder) return;
+      const current = currentSubject();
+      if (isValidFolderId(el.collectionFolder.value)) return;
+      if (isValidFolderId(current?.folder)) {
+        el.collectionFolder.value = current.folder;
+      } else if (data.folders.length) {
+        el.collectionFolder.value = data.folders[0].id;
+      }
+    }
+
     function updateCreateCollectionState() {
       if (!el.createCollection || !el.collectionName) return;
-      el.createCollection.disabled = !el.collectionName.value.trim();
+      const folder = selectedCreationFolder();
+      const hasFolder = Boolean(folder);
+      const hasName = Boolean(el.collectionName.value.trim());
+      el.createCollection.disabled = !hasFolder || !hasName;
+      el.collectionName.disabled = !hasFolder;
+      el.collectionStep?.classList.toggle("is-disabled", !hasFolder);
+      el.collectionStep?.classList.toggle("is-active", hasFolder);
+      el.folderStep?.classList.toggle("is-active", !hasFolder);
+      el.folderStep?.classList.toggle("is-complete", hasFolder);
+      el.folderStepDot?.classList.toggle("active", !hasFolder);
+      el.collectionStepDot?.classList.toggle("active", hasFolder);
+      if (el.folderStepHelp) {
+        el.folderStepHelp.textContent = data.folders.length
+          ? "Escolha uma pasta existente ou crie uma nova para usar nesta coleção."
+          : "Crie sua primeira pasta para continuar.";
+      }
+      if (el.selectedFolderNote) {
+        el.selectedFolderNote.querySelector("span").textContent = hasFolder
+          ? `Pasta selecionada: ${folder.name}`
+          : "Pasta selecionada: selecione uma pasta acima";
+      }
     }
 
     function resetQuestionForm() {
@@ -5724,15 +6072,18 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     }
 
     function folderName(id) {
-      return data.folders.find(folder => folder.id === id)?.name || "Sem pasta";
+      return data.folders.find(folder => folder.id === id)?.name || "Pasta não definida";
     }
 
     function renderFolderSelect() {
       if (!el.collectionFolder) return;
-      el.collectionFolder.innerHTML = `
-        <option value="">Sem pasta</option>
-        ${data.folders.map(folder => `<option value="${escapeHtml(folder.id)}">${escapeHtml(folder.name)}</option>`).join("")}
-      `;
+      const previous = el.collectionFolder.value;
+      el.collectionFolder.innerHTML = data.folders.length
+        ? data.folders.map(folder => `<option value="${escapeHtml(folder.id)}">${escapeHtml(folder.name)}</option>`).join("")
+        : `<option value="">Crie sua primeira pasta</option>`;
+      el.collectionFolder.disabled = !data.folders.length;
+      if (isValidFolderId(previous)) el.collectionFolder.value = previous;
+      ensureCollectionFolderSelection();
     }
 
     function renderCollectionSelects() {
@@ -5773,30 +6124,30 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     }
 
     function findOrCreateSubject(name, folder = "") {
-      const cleanName = name.trim();
-      if (!cleanName) return null;
+      const cleanName = String(name || "").trim();
+      if (!cleanName || !isValidFolderId(folder)) return null;
       const existing = data.subjects.find(subject => subject.name.toLowerCase() === cleanName.toLowerCase());
       if (existing) {
-        if (folder) existing.folder = folder;
+        existing.folder = folder;
         data.selected = existing.id;
         return existing;
       }
       const subject = { id: slug(cleanName), name: cleanName, folder, cards: [] };
       data.subjects.push(subject);
       data.selected = subject.id;
+      collapsedFolders.delete(folder);
       return subject;
     }
 
     function groupedSubjects(subjects) {
-      const groups = [];
-      const knownFolders = data.folders.map(folder => ({ id: folder.id, name: folder.name }));
-      const looseSubjects = subjects.filter(subject => !subject.folder);
-      if (looseSubjects.length) groups.push({ id: "", name: "Sem pasta", subjects: looseSubjects });
-      knownFolders.forEach(folder => {
-        const items = subjects.filter(subject => subject.folder === folder.id);
-        if (items.length) groups.push({ ...folder, subjects: items });
-      });
-      return groups;
+      return data.folders.map(folder => ({
+        ...folder,
+        subjects: subjects.filter(subject => subject.folder === folder.id)
+      }));
+    }
+
+    function orphanSubjects() {
+      return data.subjects.filter(subject => !isValidFolderId(subject.folder));
     }
 
     function slug(text) {
@@ -5820,7 +6171,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
             <button type="button" class="empty-create" onclick="document.querySelector('[data-view=&quot;add&quot;]').click()">Criar coleção</button>
           </div>
         `;
-        el.deleteCollection.hidden = true;
+        if (el.deleteCollection) el.deleteCollection.hidden = true;
         el.questionList.innerHTML = `
           <div class="empty empty-questions">
             <div class="empty-cards" aria-hidden="true"></div>
@@ -5840,7 +6191,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       data.selected = subject.id;
       renderCollectionSelects();
       updateAddAvailability();
-      el.deleteCollection.hidden = false;
+      if (el.deleteCollection) el.deleteCollection.hidden = false;
 
       el.subjects.innerHTML = groupedSubjects(data.subjects).map(group => {
         const collapsed = collapsedFolders.has(group.id);
@@ -5849,18 +6200,21 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
           <button class="folder-title" type="button" data-folder-id="${escapeHtml(group.id)}" aria-expanded="${String(!collapsed)}">
             <i class="folder-icon" aria-hidden="true"></i>
             <span class="folder-name">${escapeHtml(group.name)}</span>
+            <span class="folder-options" role="button" tabindex="0" data-folder-menu="${escapeHtml(group.id)}" aria-label="Opções da pasta">⋮</span>
             <small class="folder-toggle-mark" aria-hidden="true">${collapsed ? "+" : "&minus;"}</small>
           </button>
           ${group.subjects.map(item => `
             <div class="subject ${item.id === subject.id ? "active" : ""}" data-id="${item.id}">
               <span>${escapeHtml(item.name)}</span>
               <small>${item.cards.length}</small>
+              <button class="subject-options" type="button" data-subject-menu="${escapeHtml(item.id)}" aria-label="Opções da coleção">⋮</button>
             </div>
           `).join("")}
         </div>
       `;
       }).join("");
 
+      promptLegacyFoldersIfNeeded();
       renderQuestions(subject);
       renderProgress(subject);
       renderStudy();
@@ -6925,6 +7279,21 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     }
 
     el.subjects.addEventListener("click", event => {
+      const folderMenuButton = event.target.closest("[data-folder-menu]");
+      if (folderMenuButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        showSidebarMenu(folderMenuButton, "folder", folderMenuButton.dataset.folderMenu);
+        return;
+      }
+      const subjectMenuButton = event.target.closest("[data-subject-menu]");
+      if (subjectMenuButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        showSidebarMenu(subjectMenuButton, "subject", subjectMenuButton.dataset.subjectMenu);
+        return;
+      }
+      closeSidebarMenu();
       const folderButton = event.target.closest(".folder-title");
       if (folderButton) {
         const folderId = folderButton.dataset.folderId || "";
@@ -6950,6 +7319,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     el.questionCollection.addEventListener("change", event => selectDestinationCollection(event.target.value));
     el.importCollection.addEventListener("change", event => selectDestinationCollection(event.target.value));
     el.collectionName.addEventListener("input", updateCreateCollectionState);
+    el.collectionFolder.addEventListener("change", updateCreateCollectionState);
 
     el.createFolder.addEventListener("click", () => {
       const folder = createFolder(el.newFolderName.value);
@@ -6965,41 +7335,11 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       showView("add");
       showAddMode("collection");
       el.collectionFolder.value = folderId;
+      updateCreateCollectionState();
       el.collectionName.focus();
     });
 
-    el.deleteFolder.addEventListener("click", () => {
-      const folderId = el.collectionFolder.value;
-      if (!folderId) {
-        setMessage(el.collectionMessage, "Selecione uma pasta para excluir.", "error");
-        return;
-      }
-      const folder = data.folders.find(item => item.id === folderId);
-      if (!folder) return;
-      const hasCollections = data.subjects.some(subject => subject.folder === folderId);
-      if (hasCollections) {
-        setMessage(el.collectionMessage, "Essa pasta ainda tem coleção dentro. Exclua ou mova as coleções primeiro.", "error");
-        return;
-      }
-      if (!confirm(`Excluir a pasta "${folder.name}"?`)) return;
-      data.folders = data.folders.filter(item => item.id !== folderId);
-      el.collectionFolder.value = "";
-      setMessage(el.collectionMessage, "Pasta excluída.");
-      render();
-    });
 
-    el.deleteCollection.addEventListener("click", () => {
-      const subject = currentSubject();
-      if (!subject) return;
-      if (!confirm(`Excluir a coleção "${subject.name}" e todas as questões dela?`)) return;
-      data.subjects = data.subjects.filter(item => item.id !== subject.id);
-      data.selected = data.subjects[0]?.id || "";
-      pruneEmptyFolders();
-      studyIndex = 0;
-      showingAnswer = false;
-      resetTestState();
-      render();
-    });
 
     function togglePasswordInput(input) {
       if (!input) return;
@@ -7379,15 +7719,27 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         setMessage(el.collectionMessage, "Digite o nome da coleção.", "error");
         return;
       }
-      const subject = findOrCreateSubject(name, el.collectionFolder.value);
+      const folderId = el.collectionFolder.value;
+      if (!isValidFolderId(folderId)) {
+        setMessage(el.collectionMessage, "Escolha ou crie uma pasta antes de criar a coleção.", "error");
+        updateCreateCollectionState();
+        return;
+      }
+      const subject = findOrCreateSubject(name, folderId);
+      if (!subject) {
+        setMessage(el.collectionMessage, "Não consegui criar a coleção. Confira a pasta selecionada.", "error");
+        return;
+      }
       el.collectionName.value = "";
       studyIndex = 0;
       showingAnswer = false;
       resetTestState();
-      setMessage(el.collectionMessage, `Coleção "${subject.name}" criada e selecionada.`);
+      setMessage(el.collectionMessage, "Coleção criada com sucesso.");
       render();
       showView("add");
-      showAddMode("question");
+      showAddMode("collection");
+      el.collectionFolder.value = subject.folder;
+      updateCreateCollectionState();
     });
 
     el.questionForm.addEventListener("submit", async event => {
@@ -7522,9 +7874,279 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       );
     });
 
+
+    function sidebarMenuHtml(type) {
+      if (type === "folder") {
+        return `
+          <button type="button" data-folder-action="rename">✎ Renomear pasta</button>
+          <button type="button" class="danger-option" data-folder-action="delete">⌫ Excluir pasta</button>
+        `;
+      }
+      return `
+        <button type="button" data-subject-action="rename">✎ Renomear coleção</button>
+        <button type="button" data-subject-action="move">↪ Mover para outra pasta</button>
+        <button type="button" class="danger-option" data-subject-action="delete">⌫ Excluir coleção</button>
+      `;
+    }
+
+    function closeSidebarMenu() {
+      if (openSidebarMenu?.element) openSidebarMenu.element.remove();
+      openSidebarMenu = null;
+    }
+
+    function showSidebarMenu(anchor, type, id) {
+      closeSidebarMenu();
+      const menu = document.createElement("div");
+      menu.className = "sidebar-menu";
+      menu.dataset.menuType = type;
+      menu.dataset.menuId = id;
+      menu.innerHTML = sidebarMenuHtml(type);
+      document.body.appendChild(menu);
+      const rect = anchor.getBoundingClientRect();
+      const menuRect = menu.getBoundingClientRect();
+      const left = Math.min(window.innerWidth - menuRect.width - 10, Math.max(10, rect.right - menuRect.width));
+      const top = Math.min(window.innerHeight - menuRect.height - 10, Math.max(10, rect.bottom + 6));
+      menu.style.left = `${left}px`;
+      menu.style.top = `${top}px`;
+      openSidebarMenu = { element: menu, type, id };
+      menu.querySelector("button")?.focus();
+    }
+
+    function resetCollectionUi() {
+      studyIndex = 0;
+      showingAnswer = false;
+      resetTestState();
+    }
+
+    function openRenameFolderModal(folderId) {
+      const folder = data.folders.find(item => item.id === folderId);
+      if (!folder) return;
+      openModal(
+        "Renomear pasta",
+        `<div class="modal-form"><label>Nome da pasta<input id="renameFolderInput" value="${escapeHtml(folder.name)}"></label></div>`,
+        `<button class="secondary" type="button" data-modal-close>Cancelar</button>
+        <button type="button" data-confirm-rename-folder="${escapeHtml(folder.id)}">Salvar alterações</button>`
+      );
+      requestAnimationFrame(() => document.querySelector("#renameFolderInput")?.focus());
+    }
+
+    function openRenameSubjectModal(subjectId) {
+      const subject = data.subjects.find(item => item.id === subjectId);
+      if (!subject) return;
+      openModal(
+        "Renomear coleção",
+        `<div class="modal-form"><label>Nome da coleção<input id="renameSubjectInput" value="${escapeHtml(subject.name)}"></label></div>`,
+        `<button class="secondary" type="button" data-modal-close>Cancelar</button>
+        <button type="button" data-confirm-rename-subject="${escapeHtml(subject.id)}">Salvar alterações</button>`
+      );
+      requestAnimationFrame(() => document.querySelector("#renameSubjectInput")?.focus());
+    }
+
+    function openMoveSubjectModal(subjectId) {
+      const subject = data.subjects.find(item => item.id === subjectId);
+      if (!subject) return;
+      const destinations = data.folders.filter(folder => folder.id !== subject.folder);
+      if (!destinations.length) {
+        openModal("Mover coleção", `<p>Crie outra pasta antes de mover esta coleção.</p>`, `<button class="secondary" type="button" data-modal-close>Entendi</button>`);
+        return;
+      }
+      openModal(
+        "Mover coleção",
+        `<div class="modal-form"><p><strong>Coleção:</strong> ${escapeHtml(subject.name)}</p><label>Nova pasta<select id="moveSubjectFolder">${destinations.map(folder => `<option value="${escapeHtml(folder.id)}">${escapeHtml(folder.name)}</option>`).join("")}</select></label></div>`,
+        `<button class="secondary" type="button" data-modal-close>Cancelar</button>
+        <button type="button" data-confirm-move-subject="${escapeHtml(subject.id)}">Mover coleção</button>`
+      );
+    }
+
+    function openDeleteSubjectModal(subjectId) {
+      const subject = data.subjects.find(item => item.id === subjectId);
+      if (!subject) return;
+      openModal(
+        "Excluir coleção?",
+        `<p>A coleção '${escapeHtml(subject.name)}' e suas ${subject.cards.length} questões serão excluídas.</p><p class="modal-warning">Esta ação não poderá ser desfeita.</p>`,
+        `<button class="secondary" type="button" data-modal-close>Cancelar</button>
+        <button class="danger" type="button" data-confirm-delete-subject="${escapeHtml(subject.id)}">Excluir coleção</button>`
+      );
+    }
+
+    function openDeleteFolderModal(folderId) {
+      const folder = data.folders.find(item => item.id === folderId);
+      if (!folder) return;
+      const subjects = data.subjects.filter(subject => subject.folder === folderId);
+      const cards = subjects.reduce((sum, subject) => sum + subject.cards.length, 0);
+      const otherFolders = data.folders.filter(item => item.id !== folderId);
+      if (!subjects.length) {
+        openModal(
+          "Excluir pasta?",
+          `<p>A pasta '${escapeHtml(folder.name)}' será excluída.</p><p class="modal-warning">Esta ação não poderá ser desfeita.</p>`,
+          `<button class="secondary" type="button" data-modal-close>Cancelar</button>
+          <button class="danger" type="button" data-confirm-delete-empty-folder="${escapeHtml(folder.id)}">Excluir pasta</button>`
+        );
+        return;
+      }
+      openModal(
+        "Excluir pasta?",
+        `<div class="modal-form">
+          <p>A pasta '${escapeHtml(folder.name)}' possui ${subjects.length} coleções e ${cards} questões.</p>
+          <label>Mover coleções para
+            <select id="deleteFolderMoveTarget" ${otherFolders.length ? "" : "disabled"}>
+              ${otherFolders.length ? otherFolders.map(item => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`).join("") : `<option value="">Nenhuma outra pasta disponível</option>`}
+            </select>
+          </label>
+          <p class="modal-danger-panel">Excluir a pasta, todas as coleções e todas as questões contidas nela.</p>
+        </div>`,
+        `<button class="secondary" type="button" data-modal-close>Cancelar</button>
+        <button type="button" data-confirm-move-delete-folder="${escapeHtml(folder.id)}" ${otherFolders.length ? "" : "disabled"}>Mover coleções e excluir pasta</button>
+        <button class="danger" type="button" data-confirm-delete-folder-content="${escapeHtml(folder.id)}">Excluir pasta e todo o conteúdo</button>`
+      );
+    }
+
+    function promptLegacyFoldersIfNeeded() {
+      if (legacyFolderPromptOpen) return;
+      const orphans = orphanSubjects();
+      if (!orphans.length) return;
+      legacyFolderPromptOpen = true;
+      const folderOptions = data.folders.map(folder => `<option value="${escapeHtml(folder.id)}">${escapeHtml(folder.name)}</option>`).join("");
+      openModal(
+        "Organizar coleções antigas",
+        `<div class="modal-form">
+          <p>Agora todas as coleções precisam estar dentro de uma pasta. Escolha ou crie uma pasta para continuar.</p>
+          <label>Criar nova pasta<input id="legacyNewFolder" placeholder="Ex.: Concurso PMS"></label>
+          ${orphans.map(subject => `<label>${escapeHtml(subject.name)}<select data-legacy-subject="${escapeHtml(subject.id)}">${folderOptions}<option value="__new__">Usar a nova pasta acima</option></select></label>`).join("")}
+        </div>`,
+        `<button class="secondary" type="button" data-modal-close>Depois</button>
+        <button type="button" data-confirm-legacy-folders>Salvar organização</button>`
+      );
+    }
     el.modalActions.addEventListener("click", event => {
       if (event.target.closest("[data-modal-close]")) {
         closeModal();
+        return;
+      }
+
+      const renameFolderButton = event.target.closest("[data-confirm-rename-folder]");
+      if (renameFolderButton) {
+        const folder = data.folders.find(item => item.id === renameFolderButton.dataset.confirmRenameFolder);
+        const name = document.querySelector("#renameFolderInput")?.value.trim();
+        if (!folder || !name) return;
+        const duplicate = data.folders.some(item => item.id !== folder.id && item.name.toLowerCase() === name.toLowerCase());
+        if (duplicate) return;
+        folder.name = name;
+        closeModal();
+        setMessage(el.collectionMessage, "Pasta renomeada.");
+        render();
+        return;
+      }
+
+      const renameSubjectButton = event.target.closest("[data-confirm-rename-subject]");
+      if (renameSubjectButton) {
+        const subject = data.subjects.find(item => item.id === renameSubjectButton.dataset.confirmRenameSubject);
+        const name = document.querySelector("#renameSubjectInput")?.value.trim();
+        if (!subject || !name) return;
+        subject.name = name;
+        closeModal();
+        setMessage(el.collectionMessage, "Coleção renomeada.");
+        render();
+        return;
+      }
+
+      const moveSubjectButton = event.target.closest("[data-confirm-move-subject]");
+      if (moveSubjectButton) {
+        const subject = data.subjects.find(item => item.id === moveSubjectButton.dataset.confirmMoveSubject);
+        const folderId = document.querySelector("#moveSubjectFolder")?.value;
+        if (!subject || !isValidFolderId(folderId) || subject.folder === folderId) return;
+        subject.folder = folderId;
+        collapsedFolders.delete(folderId);
+        data.selected = subject.id;
+        resetCollectionUi();
+        closeModal();
+        setMessage(el.collectionMessage, "Coleção movida com sucesso.");
+        render();
+        return;
+      }
+
+      const deleteSubjectButton = event.target.closest("[data-confirm-delete-subject]");
+      if (deleteSubjectButton) {
+        const subjectId = deleteSubjectButton.dataset.confirmDeleteSubject;
+        data.subjects = data.subjects.filter(item => item.id !== subjectId);
+        data.selected = data.subjects[0]?.id || "";
+        resetCollectionUi();
+        closeModal();
+        setMessage(el.collectionMessage, "Coleção excluída.");
+        render();
+        return;
+      }
+
+      const deleteEmptyFolderButton = event.target.closest("[data-confirm-delete-empty-folder]");
+      if (deleteEmptyFolderButton) {
+        const folderId = deleteEmptyFolderButton.dataset.confirmDeleteEmptyFolder;
+        data.folders = data.folders.filter(item => item.id !== folderId);
+        closeModal();
+        setMessage(el.collectionMessage, "Pasta excluída.");
+        render();
+        return;
+      }
+
+      const moveDeleteFolderButton = event.target.closest("[data-confirm-move-delete-folder]");
+      if (moveDeleteFolderButton) {
+        const folderId = moveDeleteFolderButton.dataset.confirmMoveDeleteFolder;
+        const targetId = document.querySelector("#deleteFolderMoveTarget")?.value;
+        if (!isValidFolderId(targetId) || folderId === targetId) return;
+        data.subjects.forEach(subject => {
+          if (subject.folder === folderId) subject.folder = targetId;
+        });
+        data.folders = data.folders.filter(item => item.id !== folderId);
+        collapsedFolders.delete(targetId);
+        closeModal();
+        setMessage(el.collectionMessage, "Coleções movidas e pasta excluída.");
+        render();
+        return;
+      }
+
+      const deleteFolderContentButton = event.target.closest("[data-confirm-delete-folder-content]");
+      if (deleteFolderContentButton) {
+        const folderId = deleteFolderContentButton.dataset.confirmDeleteFolderContent;
+        openModal(
+          "Confirmar exclusão",
+          `<p class="modal-warning">Tem certeza? A pasta, suas coleções e todas as questões serão excluídas definitivamente.</p>`,
+          `<button class="secondary" type="button" data-modal-close>Cancelar</button>
+          <button class="danger" type="button" data-final-delete-folder-content="${escapeHtml(folderId)}">Sim, excluir tudo</button>`
+        );
+        return;
+      }
+
+      const finalDeleteFolderButton = event.target.closest("[data-final-delete-folder-content]");
+      if (finalDeleteFolderButton) {
+        const folderId = finalDeleteFolderButton.dataset.finalDeleteFolderContent;
+        const removedIds = new Set(data.subjects.filter(subject => subject.folder === folderId).map(subject => subject.id));
+        data.subjects = data.subjects.filter(subject => subject.folder !== folderId);
+        data.folders = data.folders.filter(item => item.id !== folderId);
+        if (removedIds.has(data.selected)) data.selected = data.subjects[0]?.id || "";
+        resetCollectionUi();
+        closeModal();
+        setMessage(el.collectionMessage, "Pasta e conteúdo excluídos.");
+        render();
+        return;
+      }
+
+      const legacyButton = event.target.closest("[data-confirm-legacy-folders]");
+      if (legacyButton) {
+        let createdFolder = null;
+        const newFolderName = document.querySelector("#legacyNewFolder")?.value.trim();
+        document.querySelectorAll("[data-legacy-subject]").forEach(select => {
+          let folderId = select.value;
+          if (folderId === "__new__") {
+            if (!createdFolder) createdFolder = createFolder(newFolderName);
+            folderId = createdFolder?.id || "";
+          }
+          const subject = data.subjects.find(item => item.id === select.dataset.legacySubject);
+          if (subject && isValidFolderId(folderId)) subject.folder = folderId;
+        });
+        if (orphanSubjects().length) return;
+        legacyFolderPromptOpen = false;
+        closeModal();
+        setMessage(el.collectionMessage, "Coleções antigas organizadas.");
+        render();
         return;
       }
 
@@ -7564,6 +8186,47 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
 
     el.actionModal.addEventListener("click", event => {
       if (event.target === el.actionModal) closeModal();
+    });
+
+    document.addEventListener("click", event => {
+      if (openSidebarMenu && !event.target.closest(".sidebar-menu") && !event.target.closest("[data-folder-menu]") && !event.target.closest("[data-subject-menu]")) {
+        closeSidebarMenu();
+      }
+    });
+
+    document.addEventListener("keydown", event => {
+      const menuTrigger = event.target.closest?.("[data-folder-menu], [data-subject-menu]");
+      if (menuTrigger && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (menuTrigger.dataset.folderMenu) showSidebarMenu(menuTrigger, "folder", menuTrigger.dataset.folderMenu);
+        if (menuTrigger.dataset.subjectMenu) showSidebarMenu(menuTrigger, "subject", menuTrigger.dataset.subjectMenu);
+        return;
+      }
+      if (event.key === "Escape") {
+        closeSidebarMenu();
+        if (!el.actionModal.hidden) closeModal();
+      }
+    });
+
+    document.addEventListener("click", event => {
+      const folderAction = event.target.closest("[data-folder-action]");
+      const subjectAction = event.target.closest("[data-subject-action]");
+      if (!folderAction && !subjectAction) return;
+      event.stopPropagation();
+      const menu = event.target.closest(".sidebar-menu");
+      const type = menu?.dataset.menuType;
+      const id = menu?.dataset.menuId;
+      const action = folderAction?.dataset.folderAction || subjectAction?.dataset.subjectAction;
+      closeSidebarMenu();
+      if (type === "folder") {
+        if (action === "rename") openRenameFolderModal(id);
+        if (action === "delete") openDeleteFolderModal(id);
+      } else if (type === "subject") {
+        if (action === "rename") openRenameSubjectModal(id);
+        if (action === "move") openMoveSubjectModal(id);
+        if (action === "delete") openDeleteSubjectModal(id);
+      }
     });
     el.toggleQuestions.addEventListener("click", () => {
       const collapsed = !el.questionsContent.hidden;
