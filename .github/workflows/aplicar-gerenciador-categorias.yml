@@ -1,0 +1,913 @@
+name: Aplicar gerenciador de categorias
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/aplicar-gerenciador-categorias.yml
+
+permissions:
+  contents: write
+
+jobs:
+  aplicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Atualizar gerenciador de categorias
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("categories.js")
+          text = path.read_text(encoding="utf-8")
+
+          if "category-manager-toolbar" in text and "data-category-create" in text:
+              print("O gerenciador visual já está atualizado.")
+          else:
+              text = text.replace(
+                  '  let pendingQuestionCategory = null;\n',
+                  '  let pendingQuestionCategory = null;\n  let activeCategorySubjectId = "";\n  let categorySearchTerm = "";\n  let draggedCategoryName = "";\n'
+              )
+
+              text = text.replace(
+                  '    return [...unique].sort((a, b) => a.localeCompare(b, "pt-BR"));',
+                  '    return [...unique];'
+              )
+
+              add_styles = r'''  function addStyles() {
+    if (document.querySelector("#fixaCategoryStyles")) return;
+    const style = document.createElement("style");
+    style.id = "fixaCategoryStyles";
+    style.textContent = `
+      .category-filter { flex: 1 1 190px; min-width: 170px; }
+      .category-pill { color: #5b45b5; border: 1px solid #ddd6fe; background: #f3f0ff; }
+
+      #actionModal.category-manager-modal {
+        padding: 24px;
+        background: rgba(35, 48, 75, 0.42);
+        backdrop-filter: blur(4px);
+      }
+
+      #actionModal.category-manager-modal .modal-card {
+        width: min(100%, 830px);
+        max-width: 830px;
+        max-height: min(92vh, 900px);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #dce4f1;
+        border-radius: 17px;
+        padding: 0;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        background: #fff;
+        box-shadow: 0 28px 90px rgba(15, 23, 42, 0.22);
+      }
+
+      #actionModal.category-manager-modal #modalTitle {
+        margin: 0;
+        padding: 28px 76px 8px 28px;
+        color: #111a31;
+        font-size: 26px;
+        line-height: 1.18;
+        letter-spacing: -0.02em;
+      }
+
+      #actionModal.category-manager-modal #modalBody {
+        min-height: 0;
+        overflow: hidden;
+        padding: 0 28px 18px;
+      }
+
+      #actionModal.category-manager-modal #modalActions {
+        min-height: 70px;
+        margin: 0;
+        border-top: 1px solid #e3e9f3;
+        padding: 14px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        background: rgba(255, 255, 255, 0.98);
+      }
+
+      .category-modal-close {
+        width: 46px;
+        height: 46px;
+        min-width: 46px;
+        min-height: 46px;
+        position: absolute;
+        top: 20px;
+        right: 22px;
+        z-index: 3;
+        border: 0;
+        border-radius: 999px;
+        padding: 0;
+        color: #25304a;
+        background: #f2f5fa;
+        font-size: 30px;
+        font-weight: 300;
+        line-height: 1;
+      }
+
+      .category-modal-close:hover {
+        color: #111a31;
+        background: #e8edf5;
+      }
+
+      .category-manager-shell {
+        height: 100%;
+        min-height: 0;
+        display: grid;
+        grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+        gap: 16px;
+      }
+
+      .category-manager-copy {
+        margin: 0;
+        max-width: 680px;
+        color: #66718a;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .category-manager-toolbar {
+        display: grid;
+        grid-template-columns: minmax(150px, 0.72fr) minmax(180px, 0.9fr) minmax(230px, 1.35fr);
+        gap: 14px;
+        align-items: stretch;
+      }
+
+      .category-stat-card {
+        min-height: 78px;
+        border: 1px solid #c9d9fb;
+        border-radius: 11px;
+        padding: 12px 14px;
+        display: grid;
+        grid-template-columns: 43px minmax(0, 1fr);
+        align-items: center;
+        gap: 12px;
+        background: #f5f8ff;
+      }
+
+      .category-stat-icon {
+        width: 43px;
+        height: 43px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        color: #2563eb;
+        background: #dfe9ff;
+      }
+
+      .category-stat-icon svg,
+      .category-search-box svg,
+      .category-row-icon svg,
+      .category-row-button svg,
+      .category-drag-handle svg,
+      .category-new-button svg {
+        width: 21px;
+        height: 21px;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+      }
+
+      .category-stat-copy {
+        min-width: 0;
+        display: grid;
+        gap: 2px;
+      }
+
+      .category-stat-copy strong {
+        color: #111a31;
+        font-size: 24px;
+        line-height: 1;
+      }
+
+      .category-stat-copy span {
+        color: #53617d;
+        font-size: 13px;
+      }
+
+      .category-search-box {
+        min-height: 78px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        color: #67728b;
+      }
+
+      .category-search-box svg {
+        position: absolute;
+        left: 17px;
+        pointer-events: none;
+      }
+
+      .category-search-box input {
+        height: 100%;
+        min-height: 78px;
+        border-radius: 11px;
+        padding-left: 52px;
+        font-size: 15px;
+        background: #fff;
+      }
+
+      .category-new-panel {
+        border: 1px solid #c9d9fb;
+        border-radius: 11px;
+        padding: 12px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 9px;
+        align-items: center;
+        background: #f7faff;
+      }
+
+      .category-new-panel[hidden] { display: none !important; }
+
+      .category-manager-list-wrap {
+        min-height: 180px;
+        overflow: auto;
+        border-top: 1px solid #edf1f7;
+        border-bottom: 1px solid #edf1f7;
+        padding: 6px 4px 6px 0;
+        scrollbar-color: #b8c1d1 transparent;
+        scrollbar-width: thin;
+      }
+
+      .category-manager-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .category-manager-row {
+        min-height: 62px;
+        position: relative;
+        border: 1px solid #dce4f1;
+        border-radius: 11px;
+        padding: 9px 11px;
+        display: grid;
+        grid-template-columns: 24px 38px minmax(0, 1fr) auto auto;
+        gap: 10px;
+        align-items: center;
+        background: #fff;
+        transition: border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+      }
+
+      .category-manager-row:hover {
+        border-color: #bfd0ee;
+        background: #fbfdff;
+      }
+
+      .category-manager-row.dragging { opacity: 0.42; }
+      .category-manager-row[hidden] { display: none !important; }
+
+      .category-drag-handle {
+        width: 24px;
+        min-width: 24px;
+        height: 34px;
+        min-height: 34px;
+        border: 0;
+        padding: 0;
+        color: #9aa6bb;
+        background: transparent;
+        cursor: grab;
+      }
+
+      .category-drag-handle:hover { color: #52607a; background: transparent; }
+      .category-drag-handle:active { cursor: grabbing; }
+      .category-drag-handle svg { width: 17px; height: 22px; }
+
+      .category-row-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        color: #4f7cf3;
+        background: #eef3ff;
+      }
+
+      .category-row-name-wrap {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .category-row-name {
+        overflow: hidden;
+        color: #121c34;
+        font-size: 15px;
+        font-weight: 720;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .category-manager-row.editing {
+        grid-template-columns: 24px 38px minmax(0, 1fr);
+      }
+
+      .category-manager-row.editing .category-row-name-wrap {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+      }
+
+      .category-rename-input { min-width: 0; }
+
+      .category-inline-button {
+        min-height: 38px;
+        padding: 7px 11px;
+        font-size: 13px;
+      }
+
+      .category-count-badge {
+        min-width: 92px;
+        border-radius: 8px;
+        padding: 7px 11px;
+        color: #2563eb;
+        background: #f0f5ff;
+        font-size: 13px;
+        font-weight: 650;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .category-row-actions {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .category-row-button {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+        min-height: 40px;
+        border: 1px solid #dce4ef;
+        border-radius: 12px;
+        padding: 0;
+        color: #111827;
+        background: #fff;
+      }
+
+      .category-row-button:hover {
+        border-color: #b9c7dc;
+        color: #111827;
+        background: #f5f7fb;
+      }
+
+      .category-row-button.danger {
+        border-color: transparent;
+        color: #ef2929;
+        background: transparent;
+      }
+
+      .category-row-button.danger:hover {
+        color: #cf1717;
+        background: #fff1f1;
+      }
+
+      .category-row-menu {
+        width: 150px;
+        position: absolute;
+        top: 44px;
+        right: 47px;
+        z-index: 5;
+        border: 1px solid #dce4ef;
+        border-radius: 10px;
+        padding: 5px;
+        background: #fff;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.16);
+      }
+
+      .category-row-menu[hidden] { display: none !important; }
+
+      .category-row-menu button {
+        width: 100%;
+        min-height: 36px;
+        justify-content: flex-start;
+        color: #172033;
+        background: transparent;
+      }
+
+      .category-row-menu button:hover { background: #f1f5fb; }
+
+      .category-manager-empty {
+        margin: 0;
+        padding: 34px 18px;
+        border: 1px dashed #c4cee0;
+        border-radius: 11px;
+        color: #68758d;
+        background: #fafcff;
+        text-align: center;
+      }
+
+      .category-manager-error {
+        min-height: 20px;
+        margin: 0;
+        color: #c33a3a;
+        font-size: 13px;
+      }
+
+      .category-manager-error:empty { min-height: 0; }
+
+      .category-new-button {
+        min-height: 44px;
+        padding-inline: 17px;
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.18);
+      }
+
+      .category-footer-right {
+        display: flex;
+        justify-content: flex-end;
+        gap: 9px;
+      }
+
+      @media (max-width: 760px) {
+        #actionModal.category-manager-modal { padding: 10px; }
+        #actionModal.category-manager-modal .modal-card { max-height: 96vh; border-radius: 14px; }
+        #actionModal.category-manager-modal #modalTitle { padding: 22px 65px 7px 18px; font-size: 21px; }
+        #actionModal.category-manager-modal #modalBody { padding: 0 18px 14px; }
+        #actionModal.category-manager-modal #modalActions { padding: 12px 18px; }
+        .category-modal-close { top: 13px; right: 14px; width: 42px; height: 42px; min-width: 42px; min-height: 42px; }
+        .category-manager-toolbar { grid-template-columns: 1fr 1fr; }
+        .category-search-box { grid-column: 1 / -1; min-height: 54px; }
+        .category-search-box input { min-height: 54px; }
+        .category-manager-row { grid-template-columns: 20px 34px minmax(0, 1fr) auto; gap: 7px; }
+        .category-count-badge { grid-column: 3; justify-self: start; min-width: 0; }
+        .category-row-actions { grid-column: 4; grid-row: 1 / span 2; }
+        .category-new-panel { grid-template-columns: 1fr; }
+      }
+
+      @media (max-width: 520px) {
+        .category-manager-toolbar { grid-template-columns: 1fr; }
+        .category-search-box { grid-column: auto; }
+        .category-stat-card { min-height: 66px; }
+        .category-manager-row { padding: 9px 8px; }
+        .category-row-button { width: 36px; min-width: 36px; height: 36px; min-height: 36px; }
+        .category-row-menu { right: 41px; }
+        #actionModal.category-manager-modal #modalActions { align-items: stretch; flex-direction: column; }
+        .category-new-button, .category-footer-right, .category-footer-right button { width: 100%; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function ensureCategoryFilter'''
+
+              text, n = re.subn(
+                  r'  function addStyles\(\) \{.*?\n  \}\n\n  function ensureCategoryFilter',
+                  add_styles,
+                  text,
+                  count=1,
+                  flags=re.S,
+              )
+              if n != 1:
+                  raise SystemExit(f"Falha ao substituir estilos: {n}")
+
+              manager_code = r'''  function categoryQuestionLabel(count) {
+    return `${count} questão${count === 1 ? "" : "ões"}`;
+  }
+
+  function categoryRowHtml(item) {
+    return `
+      <div class="category-manager-row" draggable="true" data-category-row data-category-name="${escapeHtml(item.name)}">
+        <button class="category-drag-handle" type="button" aria-label="Arraste para reorganizar ${escapeHtml(item.name)}" title="Arraste para reorganizar">
+          <svg viewBox="0 0 18 24" aria-hidden="true"><circle cx="5" cy="5" r="1"></circle><circle cx="13" cy="5" r="1"></circle><circle cx="5" cy="12" r="1"></circle><circle cx="13" cy="12" r="1"></circle><circle cx="5" cy="19" r="1"></circle><circle cx="13" cy="19" r="1"></circle></svg>
+        </button>
+        <span class="category-row-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M7 4h10a2 2 0 0 1 2 2v15l-7-4-7 4V6a2 2 0 0 1 2-2z"></path></svg>
+        </span>
+        <div class="category-row-name-wrap"><span class="category-row-name">${escapeHtml(item.name)}</span></div>
+        <span class="category-count-badge">${categoryQuestionLabel(item.count)}</span>
+        <div class="category-row-actions">
+          <button class="category-row-button" type="button" data-category-more aria-label="Mais opções para ${escapeHtml(item.name)}" aria-expanded="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg>
+          </button>
+          <div class="category-row-menu" hidden><button type="button" data-category-rename>Renomear</button></div>
+          <button class="category-row-button danger" type="button" data-category-delete aria-label="Excluir ${escapeHtml(item.name)}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="m7 7 1 13h8l1-13"></path><path d="M10 11v5M14 11v5"></path></svg>
+          </button>
+        </div>
+      </div>`;
+  }
+
+  function categoryManagerRowsHtml(subject) {
+    const categories = categoriesWithCounts(subject);
+    return categories.length
+      ? categories.map(categoryRowHtml).join("")
+      : '<p class="category-manager-empty" data-category-empty>Esta coleção ainda não possui categorias.</p>';
+  }
+
+  const originalCloseModalForCategories = closeModal;
+  closeModal = function closeModalWithCategoryCleanup() {
+    el.actionModal?.classList.remove("category-manager-modal");
+    activeCategorySubjectId = "";
+    categorySearchTerm = "";
+    draggedCategoryName = "";
+    originalCloseModalForCategories();
+  };
+
+  function openCategoryManager(subjectId, options = {}) {
+    const subject = subjectById(subjectId);
+    if (!subject) return;
+    normalizeSubjectCategories(subject);
+    activeCategorySubjectId = subject.id;
+    if (typeof options.search === "string") categorySearchTerm = options.search;
+
+    const categories = categoriesWithCounts(subject);
+    const totalQuestions = (subject.cards || []).length;
+    openModal(
+      `Categorias — ${subject.name}`,
+      `<button class="category-modal-close" type="button" data-modal-close aria-label="Fechar">×</button>
+       <div class="category-manager-shell" data-category-subject="${escapeHtml(subject.id)}">
+         <p class="category-manager-copy">Organize as questões por assunto. Excluir uma categoria não exclui as questões; elas ficam como “Sem categoria”.</p>
+         <div class="category-manager-toolbar">
+           <div class="category-stat-card">
+             <span class="category-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h6l2 2h8v11H4z"></path><path d="M4 7V5h6l2 2"></path></svg></span>
+             <span class="category-stat-copy"><strong>${categories.length}</strong><span>Categoria${categories.length === 1 ? "" : "s"}</span></span>
+           </div>
+           <div class="category-stat-card">
+             <span class="category-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14v11H9l-4 3z"></path><path d="M9 9h6M9 12h4"></path></svg></span>
+             <span class="category-stat-copy"><strong>${totalQuestions}</strong><span>Questões no total</span></span>
+           </div>
+           <label class="category-search-box">
+             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 4 4"></path></svg>
+             <input id="categoryManagerSearch" type="search" placeholder="Buscar categoria" autocomplete="off" aria-label="Buscar categoria" value="${escapeHtml(categorySearchTerm)}">
+           </label>
+         </div>
+         <div class="category-new-panel" id="categoryNewPanel" hidden>
+           <input id="newCategoryInput" maxlength="80" placeholder="Nome da nova categoria" aria-label="Nome da nova categoria">
+           <button type="button" data-category-create>Adicionar</button>
+           <button class="secondary" type="button" data-category-new-cancel>Cancelar</button>
+         </div>
+         <div class="category-manager-list-wrap">
+           <div class="category-manager-list" id="categoryManagerList">${categoryManagerRowsHtml(subject)}</div>
+           <p class="category-manager-empty" id="categoryManagerNoResults" hidden>Nenhuma categoria encontrada.</p>
+         </div>
+         <p class="category-manager-error" id="categoryManagerError" role="alert"></p>
+       </div>`,
+      `<button class="category-new-button" type="button" data-category-new="${escapeHtml(subject.id)}">
+         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>
+         Nova categoria
+       </button>
+       <div class="category-footer-right"><button class="secondary" type="button" data-modal-close>Fechar</button></div>`
+    );
+    el.actionModal?.classList.add("category-manager-modal");
+    applyCategoryManagerSearch();
+    requestAnimationFrame(() => document.querySelector("#categoryManagerSearch")?.focus());
+  }
+
+  function categoryManagerSubject() {
+    return subjectById(activeCategorySubjectId);
+  }
+
+  function showCategoryManagerError(message = "") {
+    const target = document.querySelector("#categoryManagerError");
+    if (target) target.textContent = message;
+  }
+
+  function applyCategoryManagerSearch() {
+    const input = document.querySelector("#categoryManagerSearch");
+    categorySearchTerm = cleanCategoryName(input?.value || categorySearchTerm).toLowerCase();
+    const rows = [...document.querySelectorAll("#categoryManagerList [data-category-row]")];
+    let visible = 0;
+    rows.forEach(row => {
+      const matches = !categorySearchTerm || categoryKey(row.dataset.categoryName).includes(categoryKey(categorySearchTerm));
+      row.hidden = !matches;
+      if (matches) visible += 1;
+    });
+    const noResults = document.querySelector("#categoryManagerNoResults");
+    if (noResults) noResults.hidden = !rows.length || visible > 0;
+  }
+
+  function categoryNameExists(subject, name, ignoredName = "") {
+    const wanted = categoryKey(name);
+    const ignored = categoryKey(ignoredName);
+    return normalizeSubjectCategories(subject).some(item => {
+      const key = categoryKey(item);
+      return key === wanted && key !== ignored;
+    });
+  }
+
+  function showNewCategoryPanel() {
+    const panel = document.querySelector("#categoryNewPanel");
+    if (!panel) return;
+    panel.hidden = false;
+    showCategoryManagerError("");
+    requestAnimationFrame(() => document.querySelector("#newCategoryInput")?.focus());
+  }
+
+  function hideNewCategoryPanel() {
+    const panel = document.querySelector("#categoryNewPanel");
+    if (panel) panel.hidden = true;
+    const input = document.querySelector("#newCategoryInput");
+    if (input) input.value = "";
+    showCategoryManagerError("");
+  }
+
+  function createCategoryFromManager() {
+    const subject = categoryManagerSubject();
+    const input = document.querySelector("#newCategoryInput");
+    const name = cleanCategoryName(input?.value);
+    if (!subject || !name) {
+      showCategoryManagerError("Digite o nome da nova categoria.");
+      input?.focus();
+      return;
+    }
+    if (categoryNameExists(subject, name)) {
+      showCategoryManagerError("Já existe uma categoria com esse nome.");
+      input?.focus();
+      return;
+    }
+    ensureSubjectCategory(subject, name);
+    save();
+    render();
+    openCategoryManager(subject.id, { search: categorySearchTerm });
+  }
+
+  function closeCategoryRowMenus(exception = null) {
+    document.querySelectorAll(".category-row-menu").forEach(menu => {
+      if (menu === exception) return;
+      menu.hidden = true;
+      menu.previousElementSibling?.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  function startCategoryRename(row) {
+    if (!row) return;
+    closeCategoryRowMenus();
+    const oldName = cleanCategoryName(row.dataset.categoryName);
+    const wrap = row.querySelector(".category-row-name-wrap");
+    if (!wrap) return;
+    row.classList.add("editing");
+    row.draggable = false;
+    row.querySelector(".category-count-badge")?.remove();
+    row.querySelector(".category-row-actions")?.remove();
+    wrap.innerHTML = `
+      <input class="category-rename-input" maxlength="80" value="${escapeHtml(oldName)}" aria-label="Novo nome da categoria">
+      <button class="category-inline-button" type="button" data-category-rename-save>Salvar</button>
+      <button class="secondary category-inline-button" type="button" data-category-rename-cancel>Cancelar</button>`;
+    requestAnimationFrame(() => {
+      const input = wrap.querySelector(".category-rename-input");
+      input?.focus();
+      input?.select();
+    });
+  }
+
+  function saveCategoryRename(row) {
+    const subject = categoryManagerSubject();
+    if (!subject || !row) return;
+    const oldName = cleanCategoryName(row.dataset.categoryName);
+    const input = row.querySelector(".category-rename-input");
+    const newName = cleanCategoryName(input?.value);
+    if (!newName) {
+      showCategoryManagerError("O nome da categoria não pode ficar vazio.");
+      input?.focus();
+      return;
+    }
+    if (categoryNameExists(subject, newName, oldName)) {
+      showCategoryManagerError("Já existe uma categoria com esse nome.");
+      input?.focus();
+      return;
+    }
+    subject.categories = normalizeSubjectCategories(subject).map(name =>
+      categoryKey(name) === categoryKey(oldName) ? newName : name
+    );
+    (subject.cards || []).forEach(card => {
+      if (categoryKey(card.category) === categoryKey(oldName)) card.category = newName;
+    });
+    normalizeSubjectCategories(subject);
+    save();
+    render();
+    openCategoryManager(subject.id, { search: categorySearchTerm });
+  }
+
+  function deleteCategoryFromManager(row) {
+    const subject = categoryManagerSubject();
+    if (!subject || !row) return;
+    const name = cleanCategoryName(row.dataset.categoryName);
+    const count = (subject.cards || []).filter(card => categoryKey(card.category) === categoryKey(name)).length;
+    const confirmed = window.confirm(
+      count
+        ? `Excluir a categoria “${name}”? As ${categoryQuestionLabel(count)} ficarão como “Sem categoria”.`
+        : `Excluir a categoria “${name}”?`
+    );
+    if (!confirmed) return;
+    subject.categories = normalizeSubjectCategories(subject).filter(item => categoryKey(item) !== categoryKey(name));
+    (subject.cards || []).forEach(card => {
+      if (categoryKey(card.category) === categoryKey(name)) card.category = "";
+    });
+    save();
+    render();
+    openCategoryManager(subject.id, { search: categorySearchTerm });
+  }
+
+  function persistCategoryOrder() {
+    const subject = categoryManagerSubject();
+    if (!subject) return;
+    const ordered = [...document.querySelectorAll("#categoryManagerList [data-category-row]")]
+      .map(row => cleanCategoryName(row.dataset.categoryName))
+      .filter(Boolean);
+    const missing = normalizeSubjectCategories(subject).filter(name =>
+      !ordered.some(item => categoryKey(item) === categoryKey(name))
+    );
+    subject.categories = [...ordered, ...missing];
+    save();
+    renderCategoryControls(subject);
+  }
+
+  function categoryDragOver(event) {
+    const list = event.target.closest?.("#categoryManagerList");
+    if (!list || !draggedCategoryName) return;
+    event.preventDefault();
+    const dragging = [...list.querySelectorAll("[data-category-row]")].find(row =>
+      categoryKey(row.dataset.categoryName) === categoryKey(draggedCategoryName)
+    );
+    const target = event.target.closest?.("[data-category-row]");
+    if (!dragging || !target || dragging === target || target.hidden) return;
+    const rect = target.getBoundingClientRect();
+    const after = event.clientY > rect.top + rect.height / 2;
+    list.insertBefore(dragging, after ? target.nextSibling : target);
+  }
+
+  const originalSidebarMenuHtml = sidebarMenuHtml;
+  sidebarMenuHtml = function sidebarMenuHtmlWithCategories(type) {
+    const html = originalSidebarMenuHtml(type);
+    if (type !== "subject" || html.includes('data-subject-action="categories"')) return html;
+    return html.replace(
+      '<button type="button" data-subject-action="rename">✎ Renomear coleção</button>',
+      '<button type="button" data-subject-action="rename">✎ Renomear coleção</button>\n        <button type="button" data-subject-action="categories">⌑ Gerenciar categorias</button>'
+    );
+  };
+
+  function assignPendingCategory'''
+
+              text, n = re.subn(
+                  r'  const originalSidebarMenuHtml = sidebarMenuHtml;.*?\n  function assignPendingCategory',
+                  manager_code,
+                  text,
+                  count=1,
+                  flags=re.S,
+              )
+              if n != 1:
+                  raise SystemExit(f"Falha ao substituir gerenciador: {n}")
+
+              event_code = r'''  document.addEventListener("input", event => {
+    if (event.target.matches?.("#categoryManagerSearch")) applyCategoryManagerSearch();
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.target.matches?.("#newCategoryInput") && event.key === "Enter") {
+      event.preventDefault();
+      createCategoryFromManager();
+    }
+    if (event.target.matches?.(".category-rename-input")) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        saveCategoryRename(event.target.closest("[data-category-row]"));
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        const subject = categoryManagerSubject();
+        if (subject) openCategoryManager(subject.id, { search: categorySearchTerm });
+      }
+    }
+  });
+
+  document.addEventListener("dragstart", event => {
+    const row = event.target.closest?.("[data-category-row]");
+    if (!row || !event.target.closest?.("#categoryManagerList")) return;
+    draggedCategoryName = cleanCategoryName(row.dataset.categoryName);
+    row.classList.add("dragging");
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", draggedCategoryName);
+  });
+
+  document.addEventListener("dragover", categoryDragOver);
+
+  document.addEventListener("drop", event => {
+    if (!event.target.closest?.("#categoryManagerList") || !draggedCategoryName) return;
+    event.preventDefault();
+    persistCategoryOrder();
+  });
+
+  document.addEventListener("dragend", event => {
+    event.target.closest?.("[data-category-row]")?.classList.remove("dragging");
+    if (draggedCategoryName) persistCategoryOrder();
+    draggedCategoryName = "";
+  });
+
+  document.addEventListener("click", event => {
+    const categoryAction = event.target.closest?.('[data-subject-action="categories"]');
+    if (categoryAction) {
+      const menu = categoryAction.closest(".sidebar-menu");
+      const subjectId = menu?.dataset.menuId || openSidebarMenu?.id || "";
+      openCategoryManager(subjectId);
+      return;
+    }
+
+    if (event.target.closest?.("[data-category-new]")) {
+      showNewCategoryPanel();
+      return;
+    }
+
+    if (event.target.closest?.("[data-category-new-cancel]")) {
+      hideNewCategoryPanel();
+      return;
+    }
+
+    if (event.target.closest?.("[data-category-create]")) {
+      createCategoryFromManager();
+      return;
+    }
+
+    const moreButton = event.target.closest?.("[data-category-more]");
+    if (moreButton) {
+      const menu = moreButton.parentElement?.querySelector(".category-row-menu");
+      const willOpen = Boolean(menu?.hidden);
+      closeCategoryRowMenus(menu);
+      if (menu) menu.hidden = !willOpen;
+      moreButton.setAttribute("aria-expanded", String(willOpen));
+      return;
+    }
+
+    const renameButton = event.target.closest?.("[data-category-rename]");
+    if (renameButton) {
+      startCategoryRename(renameButton.closest("[data-category-row]"));
+      return;
+    }
+
+    const renameSave = event.target.closest?.("[data-category-rename-save]");
+    if (renameSave) {
+      saveCategoryRename(renameSave.closest("[data-category-row]"));
+      return;
+    }
+
+    const renameCancel = event.target.closest?.("[data-category-rename-cancel]");
+    if (renameCancel) {
+      const subject = categoryManagerSubject();
+      if (subject) openCategoryManager(subject.id, { search: categorySearchTerm });
+      return;
+    }
+
+    const deleteButton = event.target.closest?.("[data-category-delete]");
+    if (deleteButton) {
+      deleteCategoryFromManager(deleteButton.closest("[data-category-row]"));
+      return;
+    }
+
+    if (!event.target.closest?.(".category-row-actions")) closeCategoryRowMenus();
+  });
+
+  function updateGuidelines'''
+
+              text, n = re.subn(
+                  r'  document\.addEventListener\("click", event => \{.*?\n  \}\);\n\n  function updateGuidelines',
+                  event_code,
+                  text,
+                  count=1,
+                  flags=re.S,
+              )
+              if n != 1:
+                  raise SystemExit(f"Falha ao substituir eventos: {n}")
+
+              path.write_text(text, encoding="utf-8")
+
+          index_path = Path("index.html")
+          index_text = index_path.read_text(encoding="utf-8")
+          index_text = index_text.replace("20260728-categorias-2", "20260728-categorias-3")
+          index_path.write_text(index_text, encoding="utf-8")
+          PY
+
+      - name: Validar JavaScript
+        shell: bash
+        run: |
+          node --check categories.js
+          grep -q "category-manager-toolbar" categories.js
+          grep -q "data-category-create" categories.js
+          grep -q "20260728-categorias-3" index.html
+
+      - name: Salvar atualização
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add categories.js index.html
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração necessária."
+            exit 0
+          fi
+          git commit -m "Atualiza gerenciador visual de categorias"
+          git push
