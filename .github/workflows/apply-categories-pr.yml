@@ -38,10 +38,30 @@ jobs:
           start = src.index(marker) + len(marker)
           end = src.index("\n          PY", start)
           block = src[start:end]
-          lines = []
-          for line in block.splitlines():
-              lines.append(line[10:] if line.startswith('          ') else line)
-          Path('/tmp/apply_categories.py').write_text('\n'.join(lines), encoding='utf-8')
+          lines = [line[10:] if line.startswith('          ') else line for line in block.splitlines()]
+          script = '\n'.join(lines)
+          old = '''    def replace_once(old, new, label):
+        global text
+        count = text.count(old)
+        if count != 1:
+            raise SystemExit(f"Falha em {label}: esperado 1 trecho, encontrado {count}.")
+        text = text.replace(old, new, 1)'''
+          new = '''    def replace_once(old, new, label):
+        global text
+        count = text.count(old)
+        if count == 1:
+            text = text.replace(old, new, 1)
+            return
+        if label == "filtro de categorias":
+            extra = new[len(old):]
+            pattern = re.compile(r'(<label class="select-with-icon">\\s*<svg.*?</svg>\\s*<select id="cardFilter".*?</select>\\s*</label>)', re.DOTALL)
+            text, applied = pattern.subn(lambda match: match.group(1) + extra, text, count=1)
+            if applied == 1:
+                return
+        raise SystemExit(f"Falha em {label}: esperado 1 trecho, encontrado {count}.")'''
+          if old not in script:
+              raise SystemExit('Não foi possível ajustar a função replace_once.')
+          Path('/tmp/apply_categories.py').write_text(script.replace(old, new, 1), encoding='utf-8')
           PY
           python /tmp/apply_categories.py
           git diff --check
