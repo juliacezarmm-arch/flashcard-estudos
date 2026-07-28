@@ -4,10 +4,13 @@
   const state = {
     session: null,
     activeIndex: 0,
-    busy: false
+    busy: false,
+    feedback: ""
   };
 
-  const stopWords = new Set("a as o os de da das do dos e em um uma para por com sem que qual quais como ao aos na nas no nos se sua seu ser sobre esta este essa esse".split(" "));
+  const stopWords = new Set(
+    "a as o os de da das do dos e em um uma para por com sem que qual quais como ao aos na nas no nos se sua seu ser sobre esta este essa esse".split(" ")
+  );
 
   function addStyles() {
     if (document.querySelector("#fixaImportReviewStyles")) return;
@@ -24,6 +27,7 @@
       .fixa-import-stat span{display:block;margin-top:5px;color:var(--muted);font-size:12px}
       .fixa-import-stat.new strong{color:#15803d}.fixa-import-stat.exact strong{color:#c2410c}.fixa-import-stat.possible strong{color:#7c3aed}
       .fixa-import-notice{border:1px solid #cfe0fb;border-radius:9px;padding:11px;background:#f5f9ff;color:#40506d}
+      .fixa-import-notice.success{border-color:#bbf7d0;background:#f0fdf4;color:#166534}
       .fixa-import-grid{display:grid;grid-template-columns:minmax(240px,.8fr) minmax(0,1.7fr);gap:10px;min-height:420px}
       .fixa-import-list-wrap,.fixa-import-compare-wrap{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
       .fixa-import-list-wrap{display:grid;grid-template-rows:auto minmax(0,1fr)}
@@ -33,9 +37,11 @@
       .fixa-import-list{display:grid;align-content:start;gap:6px;padding:8px;max-height:540px;overflow:auto}
       .fixa-import-item{display:grid;grid-template-columns:auto 1fr;gap:6px 8px;width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;color:var(--text);background:#fff;text-align:left;box-shadow:none}
       .fixa-import-item:hover,.fixa-import-item.active{color:var(--text);border-color:#8eb4ff;background:#f5f9ff}
+      .fixa-import-item.decided{border-color:#cbd5e1}
       .fixa-import-tag,.fixa-import-choice{width:max-content;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:800}
       .fixa-import-tag.exact{color:#c2410c;background:#fff1e8}.fixa-import-tag.possible{color:#7c3aed;background:#f3edff}
       .fixa-import-choice{grid-column:2;color:#59657c;background:#eef2f8}
+      .fixa-import-choice.decided{color:#166534;background:#dcfce7}
       .fixa-import-question{font-size:13px;font-weight:750;line-height:1.35;overflow-wrap:anywhere}
       .fixa-import-compare-wrap{display:grid;grid-template-rows:minmax(0,1fr) auto}
       .fixa-import-compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -87,11 +93,11 @@
   }
 
   function findDuplicate(card, cards) {
-    const key = fingerprint(card.q);
+    const cardKey = fingerprint(card.q);
     let best = { score: 0, index: -1 };
     for (let index = 0; index < cards.length; index += 1) {
       const existing = cards[index];
-      if (key && key === fingerprint(existing.q)) return { type: "exact", index, score: 1 };
+      if (cardKey && cardKey === fingerprint(existing.q)) return { type: "exact", index, score: 1 };
       const score = similarity(card.q, existing.q);
       if (score > best.score) best = { score, index };
     }
@@ -171,16 +177,26 @@
           <div class="fixa-import-decisions"><button type="button" data-decision="skip">Não importar</button><button type="button" data-decision="replace">Substituir existente</button><button type="button" data-decision="keep">Manter as duas</button></div>
         </section>
       </div>
-      <div class="fixa-import-footer"><button class="secondary" type="button" data-review-back>Voltar para importar</button><span class="fixa-import-progress" data-review-progress></span><button type="button" data-review-finish>Finalizar importação</button></div>`;
+      <div class="fixa-import-footer"><button class="secondary" type="button" data-review-back>Voltar para importar</button><span class="fixa-import-progress" data-review-progress></span><button type="button" data-review-finish>Aplicar decisões e finalizar</button></div>`;
     section.appendChild(panel);
-    panel.addEventListener("click", handleReviewClick);
     return panel;
+  }
+
+  function nextUndecidedIndex(currentIndex) {
+    const pending = state.session?.pending || [];
+    for (let index = currentIndex + 1; index < pending.length; index += 1) {
+      if (!pending[index].decision) return index;
+    }
+    for (let index = 0; index < currentIndex; index += 1) {
+      if (!pending[index].decision) return index;
+    }
+    return currentIndex;
   }
 
   function renderReview() {
     const session = state.session;
     const panel = ensureReviewPanel();
-    if (!session || !panel) return;
+    if (!session || !panel || !session.pending.length) return;
     const subject = data.subjects.find(item => item.id === session.subjectId);
     state.activeIndex = Math.max(0, Math.min(state.activeIndex, session.pending.length - 1));
     const active = session.pending[state.activeIndex];
@@ -190,12 +206,24 @@
     panel.querySelector('[data-count="exact"]').textContent = session.exactCount;
     panel.querySelector('[data-count="possible"]').textContent = session.possibleCount;
     panel.querySelector("[data-pending-title]").textContent = `Pendentes (${session.pending.length})`;
-    panel.querySelector("[data-review-notice]").textContent = `${session.newCount} questão${session.newCount === 1 ? " nova foi importada" : " novas foram importadas"} automaticamente. Revise ${session.pending.length} pendente${session.pending.length === 1 ? "" : "s"}.`;
-    panel.querySelector("[data-pending-list]").innerHTML = session.pending.map((item, index) => `<button class="fixa-import-item ${index === state.activeIndex ? "active" : ""}" type="button" data-review-index="${index}"><span class="fixa-import-tag ${item.type}">${item.type === "exact" ? "Repetida" : "Possível"}</span><span class="fixa-import-question">${escape(item.incoming.q)}</span><span class="fixa-import-choice">${escape(decisionLabel(item.decision))}</span></button>`).join("");
+    const notice = panel.querySelector("[data-review-notice]");
+    const baseMessage = `${session.newCount} questão${session.newCount === 1 ? " nova foi importada" : " novas foram importadas"} automaticamente. Revise ${session.pending.length} pendente${session.pending.length === 1 ? "" : "s"}. As decisões serão aplicadas ao finalizar.`;
+    notice.textContent = state.feedback || baseMessage;
+    notice.classList.toggle("success", Boolean(state.feedback));
+    panel.querySelector("[data-pending-list]").innerHTML = session.pending.map((item, index) => `
+      <button class="fixa-import-item ${index === state.activeIndex ? "active" : ""} ${item.decision ? "decided" : ""}" type="button" data-review-index="${index}">
+        <span class="fixa-import-tag ${item.type}">${item.type === "exact" ? "Repetida" : "Possível"}</span>
+        <span class="fixa-import-question">${escape(item.incoming.q)}</span>
+        <span class="fixa-import-choice ${item.decision ? "decided" : ""}">${escape(decisionLabel(item.decision))}</span>
+      </button>`).join("");
     panel.querySelector("[data-comparison]").innerHTML = existing
       ? side(existing, "Já existe na coleção", active.incoming) + side(active.incoming, "Nova do arquivo", existing)
       : '<div class="empty">A questão existente não foi encontrada.</div>';
-    panel.querySelectorAll("[data-decision]").forEach(button => button.classList.toggle("active", button.dataset.decision === active.decision));
+    panel.querySelectorAll("[data-decision]").forEach(button => {
+      const selected = button.dataset.decision === active.decision;
+      button.classList.toggle("active", selected);
+      button.setAttribute("aria-pressed", String(selected));
+    });
     const decided = session.pending.filter(item => item.decision).length;
     panel.querySelector("[data-review-progress]").textContent = `${decided} de ${session.pending.length} decisões concluídas`;
     panel.querySelector("[data-review-finish]").disabled = decided !== session.pending.length;
@@ -204,6 +232,7 @@
   function beginReview(result) {
     state.session = result;
     state.activeIndex = 0;
+    state.feedback = "";
     const entry = document.querySelector("#importEntryPanel");
     const panel = ensureReviewPanel();
     if (entry) entry.hidden = true;
@@ -232,12 +261,25 @@
         subject.cards.push(card);
         newCount += 1;
       } else {
-        pending.push({ id: `${Date.now()}-${index}`, type: duplicate.type, existingIndex: duplicate.index, incoming: card, decision: duplicate.type === "exact" ? "skip" : "" });
+        pending.push({
+          id: `${Date.now()}-${index}`,
+          type: duplicate.type,
+          existingIndex: duplicate.index,
+          incoming: card,
+          decision: ""
+        });
       }
     });
     data.selected = subject.id;
     if (typeof ensureAllQuestionCodes === "function") ensureAllQuestionCodes(data);
-    return { subjectId: subject.id, total: cards.length, newCount, exactCount: pending.filter(item => item.type === "exact").length, possibleCount: pending.filter(item => item.type === "possible").length, pending };
+    return {
+      subjectId: subject.id,
+      total: cards.length,
+      newCount,
+      exactCount: pending.filter(item => item.type === "exact").length,
+      possibleCount: pending.filter(item => item.type === "possible").length,
+      pending
+    };
   }
 
   function preserveHistory(existing, incoming) {
@@ -274,12 +316,15 @@
     const added = session.newCount + kept;
     closeReview();
     clearInputs();
-    if (typeof setMessage === "function") setMessage(el.importMessage, `Importação concluída: ${added} adicionada${added === 1 ? "" : "s"}, ${replaced} substituída${replaced === 1 ? "" : "s"} e ${skipped} não importada${skipped === 1 ? "" : "s"}.`);
+    if (typeof setMessage === "function") {
+      setMessage(el.importMessage, `Importação concluída: ${added} adicionada${added === 1 ? "" : "s"}, ${replaced} substituída${replaced === 1 ? "" : "s"} e ${skipped} não importada${skipped === 1 ? "" : "s"}.`);
+    }
     if (typeof render === "function") render();
   }
 
   function closeReview() {
     state.session = null;
+    state.feedback = "";
     const entry = document.querySelector("#importEntryPanel");
     const panel = document.querySelector("#fixaImportReview");
     if (entry) entry.hidden = false;
@@ -290,37 +335,66 @@
     const imported = state.session?.newCount || 0;
     closeReview();
     clearInputs();
-    if (typeof setMessage === "function") setMessage(el.importMessage, `${imported} questão${imported === 1 ? " nova foi mantida" : " novas foram mantidas"}. As repetidas não foram importadas.`);
+    if (typeof setMessage === "function") {
+      setMessage(el.importMessage, `${imported} questão${imported === 1 ? " nova foi mantida" : " novas foram mantidas"}. As repetidas não foram importadas.`);
+    }
     if (typeof render === "function") render();
   }
 
   function handleReviewClick(event) {
+    const panel = event.target.closest?.("#fixaImportReview");
+    if (!panel || !state.session) return;
+
     const indexButton = event.target.closest("[data-review-index]");
-    if (indexButton && state.session) {
-      state.activeIndex = Number(indexButton.dataset.reviewIndex) || 0;
-      renderReview();
-      return;
-    }
     const decisionButton = event.target.closest("[data-decision]");
-    if (decisionButton && state.session) {
-      state.session.pending[state.activeIndex].decision = decisionButton.dataset.decision;
-      const next = state.session.pending.findIndex((item, index) => index > state.activeIndex && !item.decision);
-      if (next >= 0) state.activeIndex = next;
-      renderReview();
-      return;
-    }
     const batchButton = event.target.closest("[data-batch]");
-    if (batchButton && state.session) {
-      state.session.pending.forEach(item => { item.decision = batchButton.dataset.batch; });
+    const finishButton = event.target.closest("[data-review-finish]");
+    const backButton = event.target.closest("[data-review-back]");
+    if (!indexButton && !decisionButton && !batchButton && !finishButton && !backButton) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    if (indexButton) {
+      state.activeIndex = Number(indexButton.dataset.reviewIndex) || 0;
+      state.feedback = "";
       renderReview();
       return;
     }
-    if (event.target.closest("[data-review-finish]")) finishReview();
-    if (event.target.closest("[data-review-back]")) cancelReview();
+
+    if (decisionButton) {
+      const decision = decisionButton.dataset.decision;
+      state.session.pending[state.activeIndex].decision = decision;
+      state.feedback = `Decisão registrada: ${decisionLabel(decision)}. Continue revisando ou finalize quando todas estiverem decididas.`;
+      state.activeIndex = nextUndecidedIndex(state.activeIndex);
+      renderReview();
+      requestAnimationFrame(() => {
+        panel.querySelector(`[data-review-index="${state.activeIndex}"]`)?.scrollIntoView({ block: "nearest" });
+      });
+      return;
+    }
+
+    if (batchButton) {
+      const decision = batchButton.dataset.batch;
+      state.session.pending.forEach(item => { item.decision = decision; });
+      state.feedback = decision === "skip"
+        ? "Todas foram marcadas como Não importar. Clique em Aplicar decisões e finalizar."
+        : "Todas foram marcadas como Manter as duas. Clique em Aplicar decisões e finalizar.";
+      renderReview();
+      return;
+    }
+
+    if (finishButton) {
+      finishReview();
+      return;
+    }
+
+    if (backButton) cancelReview();
   }
 
   async function handleImport(event) {
-    const button = event.target.closest("#bulkImport");
+    const button = event.target.closest?.("#bulkImport");
     if (!button) return;
     event.preventDefault();
     event.stopPropagation();
@@ -355,6 +429,7 @@
   function init() {
     addStyles();
     ensureReviewPanel();
+    document.addEventListener("click", handleReviewClick, true);
     document.addEventListener("click", handleImport, true);
   }
 
