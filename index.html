@@ -15,22 +15,29 @@
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
     Promise.all([
-      fetch("index-base.html?v=20260728-categorias-2", { cache: "no-store" }).then(response => {
+      fetch("index-base.html?v=20260728-categorias-3", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar a aplicação.");
         return response.text();
       }),
-      fetch("categories.js?v=20260728-categorias-2", { cache: "no-store" }).then(response => {
+      fetch("categories.js?v=20260728-categorias-3", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar as categorias.");
+        return response.text();
+      }),
+      fetch("categories-manager-ui.js?v=20260728-categorias-3", { cache: "no-store" }).then(response => {
+        if (!response.ok) throw new Error("Não foi possível carregar o gerenciador de categorias.");
         return response.text();
       })
     ])
-      .then(([html, categoryCode]) => {
+      .then(([html, categoryCode, categoryManagerCode]) => {
         const closingScript = "</scr" + "ipt>";
         const safeCategoryCode = categoryCode.split(closingScript).join("<\\/scr" + "ipt>");
+        const safeCategoryManagerCode = categoryManagerCode.split(closingScript).join("<\\/scr" + "ipt>");
         const categoryScript = "<scr" + "ipt>" + safeCategoryCode + closingScript;
+        const categoryManagerScript = "<scr" + "ipt>" + safeCategoryManagerCode + closingScript;
+        const scripts = categoryScript + categoryManagerScript;
         const completeHtml = html.includes("</body>")
-          ? html.replace("</body>", categoryScript + "</body>")
-          : html + categoryScript;
+          ? html.replace("</body>", scripts + "</body>")
+          : html + scripts;
         document.open();
         document.write(completeHtml);
         document.close();
