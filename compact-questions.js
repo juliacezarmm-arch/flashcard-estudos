@@ -7,6 +7,43 @@
   style.id = "fixaCompactQuestionsStyles";
   style.textContent = `
     @media (min-width: 861px) {
+      #questionsContent > .row {
+        grid-template-columns:
+          minmax(145px, 0.82fr)
+          minmax(190px, 1.25fr)
+          minmax(190px, 1.05fr)
+          minmax(135px, 0.78fr) !important;
+        gap: 8px !important;
+        align-items: center !important;
+      }
+
+      #questionsContent > .row > label {
+        min-width: 0 !important;
+      }
+
+      #questionsContent > .row .category-filter {
+        min-width: 0 !important;
+      }
+
+      #questionsContent > .row .select-with-icon select,
+      #questionsContent > .row .search-with-icon input {
+        min-height: 42px !important;
+        padding-left: 40px !important;
+        padding-right: 28px !important;
+        font-size: 13px !important;
+      }
+
+      #questionsContent > .row .select-with-icon span,
+      #questionsContent > .row .search-with-icon span,
+      #questionsContent > .row .filter-svg {
+        left: 12px !important;
+      }
+
+      #questionsContent > .row .filter-svg {
+        width: 17px !important;
+        height: 17px !important;
+      }
+
       #questionList {
         gap: 6px !important;
       }
