@@ -98,3 +98,5 @@ s=s.replace('Clique em Importar questões para salvar.','Clique em Analisar e im
 one('Fixa <span>•</span> v1.0.3','Fixa <span>•</span> v1.0.4','version')
 p.write_text(s,encoding='utf-8')
 q=Path('index.html'); z=q.read_text(encoding='utf-8'); old='fetch("index-base.html?v=20260728-categorias-4", { cache: "no-store" })'; assert z.count(old)==1; q.write_text(z.replace(old,'fetch("index-base.html?v=20260728-importacao-repetidas-1", { cache: "no-store" })'),encoding='utf-8')
+
+# gatilho da automação
