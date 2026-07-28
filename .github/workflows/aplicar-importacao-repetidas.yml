@@ -1,0 +1,50 @@
+name: Aplicar revisão de importação
+
+on:
+  push:
+    branches:
+      - feature/importacao-repetidas-v1
+    paths:
+      - tools/patch_import_review.py
+      - .github/workflows/aplicar-importacao-repetidas.yml
+
+permissions:
+  contents: write
+
+jobs:
+  aplicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Aplicar alteração
+        run: python tools/patch_import_review.py
+
+      - name: Validar arquivos
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('index-base.html').read_text(encoding='utf-8')
+          assert 'Revisar questões repetidas' in text
+          assert 'Analisar e importar' in text
+          assert 'function renderImportReview()' in text
+          assert 'data-import-decision="replace"' in text
+          assert 'v1.0.4' in text
+          loader = Path('index.html').read_text(encoding='utf-8')
+          assert 'index-base.html?v=20260728-importacao-repetidas-1' in loader
+          print('Validação concluída.')
+          PY
+
+      - name: Salvar resultado
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index-base.html index.html
+          git rm tools/patch_import_review.py .github/workflows/aplicar-importacao-repetidas.yml
+          git commit -m "Adiciona revisão de questões repetidas na importação"
+          git push
