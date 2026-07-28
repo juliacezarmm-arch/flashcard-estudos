@@ -15,26 +15,32 @@
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
     Promise.all([
-      fetch("index-base.html?v=20260728-categorias-3", { cache: "no-store" }).then(response => {
+      fetch("index-base.html?v=20260728-categorias-4", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar a aplicação.");
         return response.text();
       }),
-      fetch("categories.js?v=20260728-categorias-3", { cache: "no-store" }).then(response => {
+      fetch("categories.js?v=20260728-categorias-4", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar as categorias.");
         return response.text();
       }),
-      fetch("categories-manager-ui.js?v=20260728-categorias-3", { cache: "no-store" }).then(response => {
+      fetch("categories-manager-ui.js?v=20260728-categorias-4", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar o gerenciador de categorias.");
+        return response.text();
+      }),
+      fetch("compact-questions.js?v=20260728-categorias-4", { cache: "no-store" }).then(response => {
+        if (!response.ok) throw new Error("Não foi possível carregar o estilo compacto das questões.");
         return response.text();
       })
     ])
-      .then(([html, categoryCode, categoryManagerCode]) => {
+      .then(([html, categoryCode, categoryManagerCode, compactQuestionsCode]) => {
         const closingScript = "</scr" + "ipt>";
         const safeCategoryCode = categoryCode.split(closingScript).join("<\\/scr" + "ipt>");
         const safeCategoryManagerCode = categoryManagerCode.split(closingScript).join("<\\/scr" + "ipt>");
+        const safeCompactQuestionsCode = compactQuestionsCode.split(closingScript).join("<\\/scr" + "ipt>");
         const categoryScript = "<scr" + "ipt>" + safeCategoryCode + closingScript;
         const categoryManagerScript = "<scr" + "ipt>" + safeCategoryManagerCode + closingScript;
-        const scripts = categoryScript + categoryManagerScript;
+        const compactQuestionsScript = "<scr" + "ipt>" + safeCompactQuestionsCode + closingScript;
+        const scripts = categoryScript + categoryManagerScript + compactQuestionsScript;
         const completeHtml = html.includes("</body>")
           ? html.replace("</body>", scripts + "</body>")
           : html + scripts;
