@@ -15,38 +15,44 @@
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
     Promise.all([
-      fetch("index-base.html?v=20260728-importacao-repetidas-1", { cache: "no-store" }).then(response => {
+      fetch("index-base.html?v=20260728-category-close-fix-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar a aplicação.");
         return response.text();
       }),
-      fetch("categories.js?v=20260728-importacao-repetidas-1", { cache: "no-store" }).then(response => {
+      fetch("categories.js?v=20260728-category-close-fix-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar as categorias.");
         return response.text();
       }),
-      fetch("categories-manager-ui.js?v=20260728-importacao-repetidas-1", { cache: "no-store" }).then(response => {
+      fetch("categories-manager-ui.js?v=20260728-category-close-fix-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar o gerenciador de categorias.");
         return response.text();
       }),
-      fetch("compact-questions.js?v=20260728-importacao-repetidas-1", { cache: "no-store" }).then(response => {
+      fetch("compact-questions.js?v=20260728-category-close-fix-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar o estilo compacto das questões.");
         return response.text();
       }),
-      fetch("import-review.js?v=20260728-importacao-repetidas-1", { cache: "no-store" }).then(response => {
+      fetch("import-review.js?v=20260728-category-close-fix-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar a revisão de importação.");
+        return response.text();
+      }),
+      fetch("category-modal-close-fix.js?v=20260728-category-close-fix-1", { cache: "no-store" }).then(response => {
+        if (!response.ok) throw new Error("Não foi possível carregar a correção do gerenciador de categorias.");
         return response.text();
       })
     ])
-      .then(([html, categoryCode, categoryManagerCode, compactQuestionsCode, importReviewCode]) => {
+      .then(([html, categoryCode, categoryManagerCode, compactQuestionsCode, importReviewCode, categoryModalCloseFixCode]) => {
         const closingScript = "</scr" + "ipt>";
         const safeCategoryCode = categoryCode.split(closingScript).join("<\\/scr" + "ipt>");
         const safeCategoryManagerCode = categoryManagerCode.split(closingScript).join("<\\/scr" + "ipt>");
         const safeCompactQuestionsCode = compactQuestionsCode.split(closingScript).join("<\\/scr" + "ipt>");
         const safeImportReviewCode = importReviewCode.split(closingScript).join("<\\/scr" + "ipt>");
+        const safeCategoryModalCloseFixCode = categoryModalCloseFixCode.split(closingScript).join("<\\/scr" + "ipt>");
         const categoryScript = "<scr" + "ipt>" + safeCategoryCode + closingScript;
         const categoryManagerScript = "<scr" + "ipt>" + safeCategoryManagerCode + closingScript;
         const compactQuestionsScript = "<scr" + "ipt>" + safeCompactQuestionsCode + closingScript;
         const importReviewScript = "<scr" + "ipt>" + safeImportReviewCode + closingScript;
-        const scripts = categoryScript + categoryManagerScript + compactQuestionsScript + importReviewScript;
+        const categoryModalCloseFixScript = "<scr" + "ipt>" + safeCategoryModalCloseFixCode + closingScript;
+        const scripts = categoryScript + categoryManagerScript + compactQuestionsScript + importReviewScript + categoryModalCloseFixScript;
         const completeHtml = html.includes("</body>")
           ? html.replace("</body>", scripts + "</body>")
           : html + scripts;
