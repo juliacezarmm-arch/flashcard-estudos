@@ -2,8 +2,7 @@ name: Aplicar categorias na branch de teste
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
     types: [opened, synchronize, reopened]
 
 permissions:
@@ -14,82 +13,71 @@ jobs:
     if: github.head_ref == 'feature/categorias-questoes'
     runs-on: ubuntu-latest
     steps:
-      - name: Baixar a branch de categorias
-        uses: actions/checkout@v4
-        with:
-          ref: feature/categorias-questoes
-          fetch-depth: 0
-          persist-credentials: true
+      - name: Preparar repositório
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git clone --quiet --branch feature/categorias-questoes https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git repo
+          cd repo
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Aplicar alterações
+      - name: Aplicar e validar categorias
         shell: bash
         run: |
+          cd repo
           if grep -q 'id="cardCategoryFilter"' index.html; then
             echo "Categorias já aplicadas."
             exit 0
           fi
-          awk '
-            /python <<'\''PY'\''/ { block += 1; if (block == 1) { capture = 1; next } }
-            capture && /^          PY$/ { exit }
-            capture { sub(/^          /, ""); print }
-          ' .github/workflows/add-categories.yml > /tmp/apply_categories.py
-          test -s /tmp/apply_categories.py
+          python <<'PY'
+          from pathlib import Path
+          src = Path('.github/workflows/add-categories.yml').read_text(encoding='utf-8')
+          marker = "          python <<'PY'\n"
+          start = src.index(marker) + len(marker)
+          end = src.index("\n          PY", start)
+          block = src[start:end]
+          lines = []
+          for line in block.splitlines():
+              lines.append(line[10:] if line.startswith('          ') else line)
+          Path('/tmp/apply_categories.py').write_text('\n'.join(lines), encoding='utf-8')
+          PY
           python /tmp/apply_categories.py
-
-      - name: Validar arquivo
-        shell: bash
-        run: |
           git diff --check
           python <<'PY'
           from html.parser import HTMLParser
           from pathlib import Path
           import re
-
-          text = Path("index.html").read_text(encoding="utf-8")
-
+          text = Path('index.html').read_text(encoding='utf-8')
           class Parser(HTMLParser):
               def __init__(self):
-                  super().__init__()
-                  self.ids = []
+                  super().__init__(); self.ids=[]
               def handle_starttag(self, tag, attrs):
                   for key, value in attrs:
-                      if key == "id" and value:
-                          self.ids.append(value)
-
-          parser = Parser()
-          parser.feed(text)
-          duplicates = sorted({value for value in parser.ids if parser.ids.count(value) > 1})
-          if duplicates:
-              raise SystemExit(f"IDs HTML duplicados: {duplicates}")
-
-          required = [
-              'id="cardCategoryFilter"',
-              'id="questionCategory"',
-              'function openManageCategoriesModal',
-              'data-subject-action="categories"',
-              'base.categoria = card.category'
-          ]
-          missing = [item for item in required if item not in text]
-          if missing:
-              raise SystemExit(f"Trechos obrigatórios ausentes: {missing}")
-
-          scripts = re.findall(r'<script(?![^>]*\\bsrc=)[^>]*>(.*?)</script>', text, flags=re.S | re.I)
-          if not scripts:
-              raise SystemExit("JavaScript interno não encontrado.")
-          Path("/tmp/fixa-inline.js").write_text("\n".join(scripts), encoding="utf-8")
-          print(f"HTML validado: {len(parser.ids)} IDs únicos.")
+                      if key == 'id' and value: self.ids.append(value)
+          parser=Parser(); parser.feed(text)
+          duplicates=sorted({x for x in parser.ids if parser.ids.count(x)>1})
+          if duplicates: raise SystemExit(f'IDs duplicados: {duplicates}')
+          required=['id="cardCategoryFilter"','id="questionCategory"','function openManageCategoriesModal','data-subject-action="categories"','base.categoria = card.category']
+          missing=[x for x in required if x not in text]
+          if missing: raise SystemExit(f'Trechos ausentes: {missing}')
+          scripts=re.findall(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>', text, flags=re.S|re.I)
+          Path('/tmp/fixa-inline.js').write_text('\n'.join(scripts), encoding='utf-8')
+          print(f'HTML validado com {len(parser.ids)} IDs únicos.')
           PY
           node --check /tmp/fixa-inline.js
 
       - name: Salvar na branch de teste
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          cd repo
           if git diff --quiet -- index.html; then
             echo "Nenhuma alteração pendente."
             exit 0
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git commit -m "Adiciona categorias às questões"
           git push origin HEAD:feature/categorias-questoes
