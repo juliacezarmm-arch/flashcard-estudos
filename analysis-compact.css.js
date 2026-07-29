@@ -18,14 +18,6 @@
       display: none !important;
     }
 
-    [data-analysis-tab-panel="priorities"] .analysis-two-column {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    [data-analysis-tab-panel="priorities"] .analysis-subcard:first-child {
-      display: none !important;
-    }
-
     #analysisStudyNow::-webkit-scrollbar,
     #analysisSubjects::-webkit-scrollbar,
     #analysisCritical::-webkit-scrollbar,
@@ -39,6 +31,13 @@
     #analysisNearMastered::-webkit-scrollbar-thumb {
       border-radius: 999px;
       background: #b8c1d1;
+    }
+
+    #analysisStudyNow::-webkit-scrollbar-track,
+    #analysisSubjects::-webkit-scrollbar-track,
+    #analysisCritical::-webkit-scrollbar-track,
+    #analysisNearMastered::-webkit-scrollbar-track {
+      background: transparent;
     }
 
     #testPanelAnalysis .analysis-card {
@@ -115,6 +114,11 @@
       gap: 7px;
     }
 
+    #analysisStudyNow .analysis-list-item {
+      cursor: default;
+      pointer-events: none;
+    }
+
     #testPanelAnalysis .analysis-list-main {
       gap: 2px;
     }
@@ -142,31 +146,12 @@
     }
 
     #analysisSubjects .analysis-topic-row {
-      width: 100%;
-      min-height: 0;
-      border: 1px solid transparent;
-      border-radius: 7px;
-      padding: 6px 8px;
       display: grid;
-      grid-template-columns: minmax(150px, 1.2fr) minmax(160px, 1fr) auto;
-      gap: 10px;
+      grid-template-columns: minmax(82px, 1.05fr) minmax(92px, 1fr) auto;
+      gap: 6px;
       align-items: center;
-      color: inherit;
-      background: transparent;
-      font-size: 11px;
+      font-size: 10px;
       line-height: 1.2;
-      text-align: left;
-      box-shadow: none;
-    }
-
-    #analysisSubjects .analysis-topic-row:hover {
-      border-color: #d7e2f4;
-      background: #f7faff;
-    }
-
-    #analysisSubjects .analysis-topic-row:focus-visible {
-      outline: 2px solid rgba(37, 99, 235, 0.28);
-      outline-offset: 1px;
     }
 
     #analysisSubjects .analysis-topic-name {
@@ -175,12 +160,12 @@
     }
 
     #analysisSubjects .analysis-topic-progress {
-      grid-template-columns: 34px 1fr;
-      gap: 6px;
+      grid-template-columns: 30px 1fr;
+      gap: 5px;
     }
 
     #analysisSubjects .analysis-mini-bar {
-      height: 5px;
+      height: 4px;
     }
 
     @media (max-width: 760px) {
@@ -194,13 +179,6 @@
       #analysisCritical,
       #analysisNearMastered {
         max-height: 178px;
-      }
-
-      #analysisSubjects .analysis-topic-row {
-        grid-template-columns: minmax(90px, 1fr) minmax(100px, 1fr) auto;
-        gap: 6px;
-        padding: 6px;
-        font-size: 10px;
       }
     }
   `;
@@ -216,48 +194,75 @@
         '"': '&quot;'
       })[character]);
 
-  let renderingAllSubjects = false;
+  let renderingAnalysisLists = false;
   let renderScheduled = false;
 
-  function renderAllAnalysisSubjects() {
-    const container = document.querySelector('#analysisSubjects');
-    if (!container || renderingAllSubjects) return;
-    if (typeof analysisScopeSubjects !== 'function' || typeof analysisSubjectMetrics !== 'function' || typeof analysisBarStatus !== 'function') return;
-
-    const metrics = analysisScopeSubjects()
+  function currentMetrics() {
+    if (typeof analysisScopeSubjects !== 'function' || typeof analysisSubjectMetrics !== 'function') return [];
+    return analysisScopeSubjects()
       .map(analysisSubjectMetrics)
       .sort((a, b) => b.score - a.score || a.accuracy - b.accuracy);
+  }
+
+  function renderStudyNow(metrics) {
+    const container = document.querySelector('#analysisStudyNow');
+    if (!container) return;
+
+    const priorities = metrics.filter(metric => metric.score > 0 || metric.total > 0);
+    const html = priorities.length
+      ? priorities.map((metric, index) => {
+          const reason = metric.lost
+            ? `${metric.lost} perda${metric.lost === 1 ? '' : 's'} de domínio`
+            : metric.wrong
+              ? `${metric.wrong} erro${metric.wrong === 1 ? '' : 's'}`
+              : `${metric.hard} avaliação${metric.hard === 1 ? '' : 'ões'} Difícil`;
+          return `<div class="analysis-list-item" role="group" aria-label="Registro de prioridade: ${escape(metric.subject.name)}"><span class="analysis-list-main"><strong><span class="analysis-rank" style="--analysis-item-color:${index === 0 ? '#ef4444' : '#f59e0b'}">${index + 1}</span>${escape(metric.subject.name)}</strong><small>Aproveitamento: ${metric.accuracy}%</small></span><span class="analysis-list-side" style="--analysis-item-color:${index === 0 ? '#ef4444' : '#f59e0b'}">${escape(reason)}</span></div>`;
+        }).join('')
+      : '<p class="hint">Ainda não há prioridades suficientes para registrar.</p>';
+
+    if (container.innerHTML !== html) container.innerHTML = html;
+  }
+
+  function renderAllAnalysisSubjects(metrics) {
+    const container = document.querySelector('#analysisSubjects');
+    if (!container || typeof analysisBarStatus !== 'function') return;
 
     const html = metrics.length
       ? metrics.map(metric => {
           const status = analysisBarStatus(metric.accuracy, metric.total > 0);
-          return `<button class="analysis-topic-row" type="button" data-analysis-subject="${escape(metric.subject.id)}" aria-label="Abrir questões da coleção ${escape(metric.subject.name)}"><span class="analysis-topic-name" title="${escape(metric.subject.name)}">${escape(metric.subject.name)}</span><span class="analysis-topic-progress"><strong>${metric.accuracy}%</strong><span class="analysis-mini-bar" style="--bar-color:${status.color}"><span style="width:${metric.accuracy}%"></span></span></span><span class="analysis-situation" style="--bar-color:${status.color}">${escape(status.label)}</span></button>`;
+          return `<div class="analysis-topic-row"><span class="analysis-topic-name" title="${escape(metric.subject.name)}">${escape(metric.subject.name)}</span><span class="analysis-topic-progress"><strong>${metric.accuracy}%</strong><span class="analysis-mini-bar" style="--bar-color:${status.color}"><span style="width:${metric.accuracy}%"></span></span></span><span class="analysis-situation" style="--bar-color:${status.color}">${escape(status.label)}</span></div>`;
         }).join('')
       : '<p class="hint">Sem assuntos avaliados.</p>';
 
-    if (container.innerHTML === html) return;
-    renderingAllSubjects = true;
-    container.innerHTML = html;
-    renderingAllSubjects = false;
+    if (container.innerHTML !== html) container.innerHTML = html;
   }
 
-  function scheduleAllSubjectsRender() {
+  function renderAnalysisLists() {
+    if (renderingAnalysisLists) return;
+    renderingAnalysisLists = true;
+    const metrics = currentMetrics();
+    renderStudyNow(metrics);
+    renderAllAnalysisSubjects(metrics);
+    renderingAnalysisLists = false;
+  }
+
+  function scheduleAnalysisListsRender() {
     if (renderScheduled) return;
     renderScheduled = true;
     requestAnimationFrame(() => {
       renderScheduled = false;
-      renderAllAnalysisSubjects();
+      renderAnalysisLists();
     });
   }
 
-  const subjectsContainer = document.querySelector('#analysisSubjects');
-  if (subjectsContainer) {
-    new MutationObserver(scheduleAllSubjectsRender).observe(subjectsContainer, { childList: true });
-  }
-
-  document.querySelectorAll('[data-test-panel="analysis"], [data-analysis-tab="priorities"]').forEach(button => {
-    button.addEventListener('click', scheduleAllSubjectsRender);
+  ['#analysisStudyNow', '#analysisSubjects'].forEach(selector => {
+    const container = document.querySelector(selector);
+    if (container) new MutationObserver(scheduleAnalysisListsRender).observe(container, { childList: true });
   });
 
-  scheduleAllSubjectsRender();
+  document.querySelectorAll('[data-test-panel="analysis"], [data-analysis-tab="priorities"]').forEach(button => {
+    button.addEventListener('click', scheduleAnalysisListsRender);
+  });
+
+  scheduleAnalysisListsRender();
 })();
