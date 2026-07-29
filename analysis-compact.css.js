@@ -14,6 +14,10 @@
       padding-bottom: 12px;
     }
 
+    #analysisInsight {
+      display: none !important;
+    }
+
     #analysisStudyNow::-webkit-scrollbar,
     #analysisSubjects::-webkit-scrollbar,
     #analysisCritical::-webkit-scrollbar,
@@ -53,7 +57,6 @@
 
     #testPanelAnalysis .analysis-stat span,
     #testPanelAnalysis .analysis-review-card p,
-    #testPanelAnalysis .analysis-insight,
     #testPanelAnalysis .analysis-note,
     #testPanelAnalysis .analysis-footnote,
     #testPanelAnalysis .analysis-review-tags {
