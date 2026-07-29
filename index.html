@@ -15,44 +15,48 @@
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
     Promise.all([
-      fetch("index-base.html?v=20260728-replace-exact-1", { cache: "no-store" }).then(response => {
+      fetch("index-base.html?v=20260729-analysis-compact-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar a aplicação.");
         return response.text();
       }),
-      fetch("categories.js?v=20260728-replace-exact-1", { cache: "no-store" }).then(response => {
+      fetch("categories.js?v=20260729-analysis-compact-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar as categorias.");
         return response.text();
       }),
-      fetch("categories-manager-ui.js?v=20260728-replace-exact-1", { cache: "no-store" }).then(response => {
+      fetch("categories-manager-ui.js?v=20260729-analysis-compact-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar o gerenciador de categorias.");
         return response.text();
       }),
-      fetch("compact-questions.js?v=20260728-replace-exact-1", { cache: "no-store" }).then(response => {
+      fetch("compact-questions.js?v=20260729-analysis-compact-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar o estilo compacto das questões.");
         return response.text();
       }),
-      fetch("import-review.js?v=20260728-replace-exact-1", { cache: "no-store" }).then(response => {
+      fetch("import-review.js?v=20260729-analysis-compact-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar a revisão de importação.");
         return response.text();
       }),
-      fetch("category-modal-close-fix.js?v=20260728-replace-exact-1", { cache: "no-store" }).then(response => {
+      fetch("category-modal-close-fix.js?v=20260729-analysis-compact-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar a correção do gerenciador de categorias.");
         return response.text();
       }),
-      fetch("import-review-compact.js?v=20260728-replace-exact-1", { cache: "no-store" }).then(response => {
+      fetch("import-review-compact.js?v=20260729-analysis-compact-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar o resumo das pendências.");
         return response.text();
       }),
-      fetch("collection-order-manager.js?v=20260728-replace-exact-1", { cache: "no-store" }).then(response => {
+      fetch("collection-order-manager.js?v=20260729-analysis-compact-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar o gerenciador de ordem das coleções.");
         return response.text();
       }),
-      fetch("import-review-replace-exact.js?v=20260728-replace-exact-1", { cache: "no-store" }).then(response => {
+      fetch("import-review-replace-exact.js?v=20260729-analysis-compact-1", { cache: "no-store" }).then(response => {
         if (!response.ok) throw new Error("Não foi possível carregar a substituição das repetidas exatas.");
+        return response.text();
+      }),
+      fetch("analysis-compact.css.js?v=20260729-analysis-compact-1", { cache: "no-store" }).then(response => {
+        if (!response.ok) throw new Error("Não foi possível carregar os ajustes da análise.");
         return response.text();
       })
     ])
-      .then(([html, categoryCode, categoryManagerCode, compactQuestionsCode, importReviewCode, categoryModalCloseFixCode, importReviewCompactCode, collectionOrderManagerCode, importReviewReplaceExactCode]) => {
+      .then(([html, categoryCode, categoryManagerCode, compactQuestionsCode, importReviewCode, categoryModalCloseFixCode, importReviewCompactCode, collectionOrderManagerCode, importReviewReplaceExactCode, analysisCompactCode]) => {
         const closingScript = "</scr" + "ipt>";
         const safeCategoryCode = categoryCode.split(closingScript).join("<\\/scr" + "ipt>");
         const safeCategoryManagerCode = categoryManagerCode.split(closingScript).join("<\\/scr" + "ipt>");
@@ -62,6 +66,7 @@
         const safeImportReviewCompactCode = importReviewCompactCode.split(closingScript).join("<\\/scr" + "ipt>");
         const safeCollectionOrderManagerCode = collectionOrderManagerCode.split(closingScript).join("<\\/scr" + "ipt>");
         const safeImportReviewReplaceExactCode = importReviewReplaceExactCode.split(closingScript).join("<\\/scr" + "ipt>");
+        const safeAnalysisCompactCode = analysisCompactCode.split(closingScript).join("<\\/scr" + "ipt>");
         const categoryScript = "<scr" + "ipt>" + safeCategoryCode + closingScript;
         const categoryManagerScript = "<scr" + "ipt>" + safeCategoryManagerCode + closingScript;
         const compactQuestionsScript = "<scr" + "ipt>" + safeCompactQuestionsCode + closingScript;
@@ -70,7 +75,8 @@
         const importReviewCompactScript = "<scr" + "ipt>" + safeImportReviewCompactCode + closingScript;
         const collectionOrderManagerScript = "<scr" + "ipt>" + safeCollectionOrderManagerCode + closingScript;
         const importReviewReplaceExactScript = "<scr" + "ipt>" + safeImportReviewReplaceExactCode + closingScript;
-        const scripts = categoryScript + categoryManagerScript + compactQuestionsScript + importReviewScript + categoryModalCloseFixScript + importReviewCompactScript + collectionOrderManagerScript + importReviewReplaceExactScript;
+        const analysisCompactScript = "<scr" + "ipt>" + safeAnalysisCompactCode + closingScript;
+        const scripts = categoryScript + categoryManagerScript + compactQuestionsScript + importReviewScript + categoryModalCloseFixScript + importReviewCompactScript + collectionOrderManagerScript + importReviewReplaceExactScript + analysisCompactScript;
         const completeHtml = html.includes("</body>")
           ? html.replace("</body>", scripts + "</body>")
           : html + scripts;
