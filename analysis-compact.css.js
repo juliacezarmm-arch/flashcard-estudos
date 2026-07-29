@@ -18,6 +18,14 @@
       display: none !important;
     }
 
+    [data-analysis-tab-panel="priorities"] .analysis-two-column {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    [data-analysis-tab-panel="priorities"] .analysis-subcard:first-child {
+      display: none !important;
+    }
+
     #analysisStudyNow::-webkit-scrollbar,
     #analysisSubjects::-webkit-scrollbar,
     #analysisCritical::-webkit-scrollbar,
@@ -134,10 +142,31 @@
     }
 
     #analysisSubjects .analysis-topic-row {
-      grid-template-columns: minmax(82px, 1.05fr) minmax(92px, 1fr) auto;
-      gap: 6px;
-      font-size: 10px;
+      width: 100%;
+      min-height: 0;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      padding: 6px 8px;
+      display: grid;
+      grid-template-columns: minmax(150px, 1.2fr) minmax(160px, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      color: inherit;
+      background: transparent;
+      font-size: 11px;
       line-height: 1.2;
+      text-align: left;
+      box-shadow: none;
+    }
+
+    #analysisSubjects .analysis-topic-row:hover {
+      border-color: #d7e2f4;
+      background: #f7faff;
+    }
+
+    #analysisSubjects .analysis-topic-row:focus-visible {
+      outline: 2px solid rgba(37, 99, 235, 0.28);
+      outline-offset: 1px;
     }
 
     #analysisSubjects .analysis-topic-name {
@@ -146,12 +175,12 @@
     }
 
     #analysisSubjects .analysis-topic-progress {
-      grid-template-columns: 30px 1fr;
-      gap: 5px;
+      grid-template-columns: 34px 1fr;
+      gap: 6px;
     }
 
     #analysisSubjects .analysis-mini-bar {
-      height: 4px;
+      height: 5px;
     }
 
     @media (max-width: 760px) {
@@ -165,6 +194,13 @@
       #analysisCritical,
       #analysisNearMastered {
         max-height: 178px;
+      }
+
+      #analysisSubjects .analysis-topic-row {
+        grid-template-columns: minmax(90px, 1fr) minmax(100px, 1fr) auto;
+        gap: 6px;
+        padding: 6px;
+        font-size: 10px;
       }
     }
   `;
@@ -195,7 +231,7 @@
     const html = metrics.length
       ? metrics.map(metric => {
           const status = analysisBarStatus(metric.accuracy, metric.total > 0);
-          return `<div class="analysis-topic-row"><span class="analysis-topic-name" title="${escape(metric.subject.name)}">${escape(metric.subject.name)}</span><span class="analysis-topic-progress"><strong>${metric.accuracy}%</strong><span class="analysis-mini-bar" style="--bar-color:${status.color}"><span style="width:${metric.accuracy}%"></span></span></span><span class="analysis-situation" style="--bar-color:${status.color}">${escape(status.label)}</span></div>`;
+          return `<button class="analysis-topic-row" type="button" data-analysis-subject="${escape(metric.subject.id)}" aria-label="Abrir questões da coleção ${escape(metric.subject.name)}"><span class="analysis-topic-name" title="${escape(metric.subject.name)}">${escape(metric.subject.name)}</span><span class="analysis-topic-progress"><strong>${metric.accuracy}%</strong><span class="analysis-mini-bar" style="--bar-color:${status.color}"><span style="width:${metric.accuracy}%"></span></span></span><span class="analysis-situation" style="--bar-color:${status.color}">${escape(status.label)}</span></button>`;
         }).join('')
       : '<p class="hint">Sem assuntos avaliados.</p>';
 
