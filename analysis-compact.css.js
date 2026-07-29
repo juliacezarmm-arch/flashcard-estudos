@@ -8,15 +8,12 @@
     }
 
     #analysisContent {
-      max-height: calc(100vh - 190px);
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding-right: 6px;
-      scrollbar-width: thin;
-      scrollbar-color: #b8c1d1 transparent;
+      max-height: none;
+      overflow: visible;
+      padding-right: 0;
+      padding-bottom: 12px;
     }
 
-    #analysisContent::-webkit-scrollbar,
     #analysisStudyNow::-webkit-scrollbar,
     #analysisSubjects::-webkit-scrollbar,
     #analysisCritical::-webkit-scrollbar,
@@ -24,7 +21,6 @@
       width: 7px;
     }
 
-    #analysisContent::-webkit-scrollbar-thumb,
     #analysisStudyNow::-webkit-scrollbar-thumb,
     #analysisSubjects::-webkit-scrollbar-thumb,
     #analysisCritical::-webkit-scrollbar-thumb,
@@ -88,6 +84,7 @@
       overflow-y: auto;
       overflow-x: hidden;
       padding-right: 5px;
+      padding-bottom: 4px;
       scrollbar-width: thin;
       scrollbar-color: #b8c1d1 transparent;
       align-content: start;
@@ -155,12 +152,6 @@
     }
 
     @media (max-width: 760px) {
-      #analysisContent {
-        max-height: none;
-        overflow: visible;
-        padding-right: 0;
-      }
-
       [data-analysis-tab-panel="priorities"] .analysis-subcard,
       [data-analysis-tab-panel="status"] .analysis-subcard {
         height: 230px;
