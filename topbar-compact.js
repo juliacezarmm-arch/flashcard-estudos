@@ -96,4 +96,37 @@
     }
   `;
   document.head.appendChild(style);
+
+  const testStartNote = document.querySelector('#testStartNote');
+  const testQuestionAmount = document.querySelector('#testQuestionAmount');
+
+  function updateCompactTestNote() {
+    if (!testStartNote || typeof currentSubject !== 'function' || typeof testableCards !== 'function') return;
+
+    const subject = currentSubject();
+    const count = testableCards().length;
+    if (!subject || count <= 0) return;
+
+    const rawAmount = Number(testQuestionAmount?.value);
+    const requested = Number.isFinite(rawAmount) && rawAmount > 0 ? Math.floor(rawAmount) : 14;
+    const usable = Math.min(requested, count);
+
+    const availableText = count === 1
+      ? '1 questão disponível.'
+      : `${count} questões disponíveis.`;
+
+    const selectedText = usable === 1
+      ? 'Será selecionada 1 questão para este teste.'
+      : `Serão selecionadas ${usable} questões para este teste.`;
+
+    const nextText = `${availableText} ${selectedText}`;
+    if (testStartNote.textContent !== nextText) testStartNote.textContent = nextText;
+  }
+
+  if (testStartNote) {
+    const noteObserver = new MutationObserver(() => requestAnimationFrame(updateCompactTestNote));
+    noteObserver.observe(testStartNote, { childList: true, characterData: true, subtree: true });
+    testQuestionAmount?.addEventListener('input', () => requestAnimationFrame(updateCompactTestNote));
+    requestAnimationFrame(updateCompactTestNote);
+  }
 })();
