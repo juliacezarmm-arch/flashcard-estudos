@@ -55,4 +55,33 @@
     }
   `;
   document.head.appendChild(style);
+
+  const testStartNote = document.querySelector('#testStartNote');
+
+  function correctTestStartText() {
+    if (!testStartNote) return;
+    const text = String(testStartNote.textContent || '').trim();
+    const match = text.match(/^(\d+) quest(?:ão|ões) compatíve(?:l|is) disponíve(?:l|is)\. Você pediu (\d+); o teste usará (\d+)\.$/i);
+    if (!match) return;
+
+    const available = Number(match[1]);
+    const used = Number(match[3]);
+    const availableText = available === 1
+      ? 'Há 1 questão disponível para o teste.'
+      : `Há ${available} questões disponíveis para o teste.`;
+    const usedText = used === 1
+      ? 'Será utilizada 1 questão.'
+      : `Serão utilizadas ${used} questões.`;
+
+    testStartNote.textContent = `${availableText} ${usedText}`;
+  }
+
+  if (testStartNote) {
+    new MutationObserver(correctTestStartText).observe(testStartNote, {
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+    correctTestStartText();
+  }
 })();
