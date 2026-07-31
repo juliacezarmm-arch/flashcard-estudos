@@ -172,6 +172,17 @@
       height: 4px;
     }
 
+    .question-item.fixa-question-target {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+      animation: fixaQuestionTargetPulse 1.4s ease;
+    }
+
+    @keyframes fixaQuestionTargetPulse {
+      0%, 100% { background: #fff; }
+      35% { background: #eef4ff; }
+    }
+
     @media (max-width: 900px) {
       [data-analysis-tab-panel="priorities"] .analysis-two-column {
         grid-template-columns: minmax(220px, 0.8fr) minmax(330px, 1.2fr);
@@ -273,6 +284,49 @@
       renderAnalysisLists();
     });
   }
+
+  function normalizeCode(value) {
+    return String(value || '').trim().toUpperCase();
+  }
+
+  function revealQuestion(questionCode) {
+    const code = normalizeCode(questionCode);
+    if (!code) return;
+
+    const target = [...document.querySelectorAll('.question-item')].find(item =>
+      normalizeCode(item.querySelector('.question-code-pill')?.textContent) === code
+    );
+
+    if (!target) return;
+    target.classList.add('fixa-question-target');
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.setTimeout(() => target.classList.remove('fixa-question-target'), 2200);
+  }
+
+  if (typeof cardSearchText === 'function' && typeof normalizeSearchText === 'function') {
+    const originalCardSearchText = cardSearchText;
+    cardSearchText = function searchableCardText(card) {
+      return normalizeSearchText(`${card?.questionCode || ''} ${originalCardSearchText(card)}`);
+    };
+  }
+
+  document.addEventListener('click', event => {
+    const button = event.target.closest?.('[data-analysis-open]');
+    if (!button) return;
+
+    const [, questionCode = ''] = String(button.dataset.analysisOpen || '').split('|');
+    if (el.cardFilter) el.cardFilter.value = 'all';
+    if (el.cardCategoryFilter) el.cardCategoryFilter.value = 'all';
+    if (el.questionsContent?.hidden) {
+      el.questionsContent.hidden = false;
+      if (el.toggleQuestions) {
+        el.toggleQuestions.textContent = 'Minimizar';
+        el.toggleQuestions.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    requestAnimationFrame(() => requestAnimationFrame(() => revealQuestion(questionCode)));
+  }, true);
 
   ['#analysisStudyNow', '#analysisSubjects'].forEach(selector => {
     const container = document.querySelector(selector);
