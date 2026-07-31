@@ -39,11 +39,14 @@
         overflow-y: auto !important;
         overflow-x: hidden !important;
         scrollbar-gutter: stable;
+        align-content: start !important;
+        grid-auto-rows: max-content !important;
       }
 
-      #collectionsSidebar .side-footer {
-        flex: 0 0 auto;
-        margin-top: auto;
+      #subjects .folder-block {
+        align-self: start !important;
+        height: auto !important;
+        min-height: 0 !important;
       }
 
       main {
