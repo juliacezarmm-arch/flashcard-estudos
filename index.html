@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fixa</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <style>
     body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:Inter,system-ui,sans-serif;color:#172033;background:#f6f7fb}
     .loading{display:grid;gap:12px;text-align:center}
@@ -77,9 +78,13 @@
         const importReviewReplaceExactScript = "<scr" + "ipt>" + safeImportReviewReplaceExactCode + closingScript;
         const analysisCompactScript = "<scr" + "ipt>" + safeAnalysisCompactCode + closingScript;
         const scripts = categoryScript + categoryManagerScript + compactQuestionsScript + importReviewScript + categoryModalCloseFixScript + importReviewCompactScript + collectionOrderManagerScript + importReviewReplaceExactScript + analysisCompactScript;
-        const completeHtml = html.includes("</body>")
-          ? html.replace("</body>", scripts + "</body>")
-          : html + scripts;
+        const faviconTag = '<link rel="icon" type="image/svg+xml" href="./favicon.svg">';
+        const htmlWithFavicon = html.includes("</head>")
+          ? html.replace("</head>", faviconTag + "</head>")
+          : faviconTag + html;
+        const completeHtml = htmlWithFavicon.includes("</body>")
+          ? htmlWithFavicon.replace("</body>", scripts + "</body>")
+          : htmlWithFavicon + scripts;
         document.open();
         document.write(completeHtml);
         document.close();
