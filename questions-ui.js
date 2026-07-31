@@ -1,3 +1,5 @@
+
+/* ===== compact-questions.js ===== */
 (() => {
   "use strict";
 

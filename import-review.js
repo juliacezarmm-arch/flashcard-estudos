@@ -1,3 +1,5 @@
+
+/* ===== import-review.js ===== */
 (() => {
   "use strict";
 
@@ -435,4 +437,121 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
   else init();
+})();
+
+
+/* ===== import-review-compact.js ===== */
+(() => {
+  "use strict";
+
+  const style = document.createElement("style");
+  style.id = "fixaImportReviewCompactText";
+  style.textContent = `
+    .fixa-import-question {
+      display: -webkit-box;
+      max-height: calc(1.35em * 3);
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      text-overflow: ellipsis;
+    }
+  `;
+  document.head.appendChild(style);
+
+  function addTitles(root = document) {
+    root.querySelectorAll?.(".fixa-import-question").forEach(item => {
+      item.title = item.textContent.trim();
+    });
+  }
+
+  addTitles();
+  new MutationObserver(records => {
+    records.forEach(record => record.addedNodes.forEach(node => {
+      if (node.nodeType !== 1) return;
+      if (node.matches?.(".fixa-import-question")) node.title = node.textContent.trim();
+      addTitles(node);
+    }));
+  }).observe(document.body, { childList: true, subtree: true });
+})();
+
+
+/* ===== import-review-replace-exact.js ===== */
+(() => {
+  "use strict";
+
+  function reviewPanel() {
+    const panel = document.querySelector("#fixaImportReview");
+    return panel && !panel.hidden ? panel : null;
+  }
+
+  function exactUndecidedRows(panel = reviewPanel()) {
+    if (!panel) return [];
+    return [...panel.querySelectorAll("[data-review-index]")].filter(row =>
+      row.querySelector(".fixa-import-tag.exact") &&
+      !row.querySelector(".fixa-import-choice.decided")
+    );
+  }
+
+  function ensureButton() {
+    const panel = document.querySelector("#fixaImportReview");
+    const toolbar = panel?.querySelector(".fixa-import-toolbar .row");
+    if (!toolbar) return;
+
+    let button = toolbar.querySelector("[data-batch-replace-exact]");
+    if (!button) {
+      button = document.createElement("button");
+      button.type = "button";
+      button.className = "secondary";
+      button.dataset.batchReplaceExact = "";
+      button.textContent = "Substituir repetidas exatas";
+      toolbar.prepend(button);
+    }
+
+    button.disabled = exactUndecidedRows(panel).length === 0;
+  }
+
+  function markAllExactForReplacement() {
+    const panel = reviewPanel();
+    if (!panel) return;
+
+    let marked = 0;
+    let guard = 0;
+
+    while (guard < 1000) {
+      guard += 1;
+      const row = exactUndecidedRows(panel)[0];
+      if (!row) break;
+
+      row.click();
+      const replaceButton = panel.querySelector('[data-decision="replace"]');
+      if (!replaceButton) break;
+      replaceButton.click();
+      marked += 1;
+    }
+
+    const notice = panel.querySelector("[data-review-notice]");
+    if (notice && marked > 0) {
+      notice.textContent = `${marked} questão${marked === 1 ? " repetida exata foi marcada" : " questões repetidas exatas foram marcadas"} para substituir. As possivelmente repetidas continuam aguardando análise individual.`;
+      notice.classList.add("success");
+    }
+
+    ensureButton();
+  }
+
+  document.addEventListener("click", event => {
+    const button = event.target.closest?.("[data-batch-replace-exact]");
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    markAllExactForReplacement();
+  }, true);
+
+  new MutationObserver(() => ensureButton()).observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+  ensureButton();
 })();
