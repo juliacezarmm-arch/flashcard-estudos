@@ -3,6 +3,57 @@
   style.id = 'topbarCompactStyle';
   style.textContent = `
     @media (min-width: 761px) {
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        min-height: 0;
+      }
+
+      .app {
+        width: 100%;
+        height: 100dvh;
+        min-height: 0 !important;
+        align-items: stretch;
+        overflow: hidden;
+      }
+
+      #collectionsSidebar {
+        position: sticky;
+        top: 0;
+        height: 100dvh;
+        max-height: 100dvh;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #subjects {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: none !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        scrollbar-gutter: stable;
+      }
+
+      #collectionsSidebar .side-footer {
+        flex: 0 0 auto;
+        margin-top: auto;
+      }
+
+      main {
+        min-width: 0;
+        height: 100dvh;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
       .topbar-title {
         display: none !important;
       }
