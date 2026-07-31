@@ -49,6 +49,39 @@
         min-height: 0 !important;
       }
 
+      #collectionsSidebar .side-footer {
+        flex: 0 0 auto;
+        margin-top: 10px !important;
+        padding: 10px 0 2px !important;
+        border-top: 1px solid #e3e9f3 !important;
+        border-bottom: 0 !important;
+        background: transparent !important;
+      }
+
+      #collectionsSidebar .side-footer::before,
+      #collectionsSidebar .side-footer::after {
+        display: none !important;
+        content: none !important;
+      }
+
+      #collectionsSidebar .app-version {
+        width: max-content;
+        margin: 0 auto;
+        padding: 5px 10px;
+        border: 1px solid #e5ebf5;
+        border-radius: 999px;
+        color: #8490a6;
+        background: #f8faff;
+        font-size: 10px;
+        line-height: 1;
+        letter-spacing: 0.01em;
+      }
+
+      #collectionsSidebar .app-version span {
+        margin: 0 4px;
+        color: #b0bacb;
+      }
+
       main {
         min-width: 0;
         height: 100dvh;
