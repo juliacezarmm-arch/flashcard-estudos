@@ -89,4 +89,16 @@
   [testView, analysisPanel, quickPanel, historyPanel].forEach(element => {
     if (element) observer.observe(element, { attributes: true, attributeFilter: ['class', 'hidden'] });
   });
+
+  fetch('home-dashboard.js?v=20260731-home-1', { cache: 'no-store' })
+    .then(response => {
+      if (!response.ok) throw new Error('Não foi possível carregar a página inicial.');
+      return response.text();
+    })
+    .then(code => {
+      const script = document.createElement('script');
+      script.textContent = code;
+      document.body.appendChild(script);
+    })
+    .catch(error => console.error('[Fixa] Página inicial:', error));
 })();
