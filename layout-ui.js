@@ -121,10 +121,16 @@
         gap: 10px;
       }
 
-      .topbar-right .auth-panel {
+      body.home-active .topbar-right #homeTopTools {
         order: 2 !important;
+        margin-left: auto !important;
+        flex: 0 0 auto;
+      }
+
+      .topbar-right .auth-panel {
+        order: 3 !important;
         width: auto !important;
-        margin-left: auto;
+        margin-left: 0;
         justify-self: auto !important;
         flex: 0 0 auto;
       }
