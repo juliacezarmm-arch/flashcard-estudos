@@ -4214,6 +4214,65 @@
       line-height: 1;
       transform: translateY(-1px);
     }
+
+    /* Keep the Questions view anchored while only its question list scrolls. */
+    @media (min-width: 861px) {
+      body:has(#manage.view.active) {
+        overflow: hidden;
+      }
+
+      .app:has(#manage.view.active) {
+        height: 100vh;
+        min-height: 0;
+      }
+
+      .app:has(#manage.view.active) main {
+        height: 100vh;
+        min-height: 0;
+        overflow: hidden;
+        grid-template-rows: auto minmax(0, 1fr);
+        align-content: stretch;
+      }
+
+      #manage.view.active {
+        min-height: 0;
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+
+      #manage.view.active > .card {
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #manage.view.active #questionsContent {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #manage.view.active #questionsContent > .row {
+        flex: 0 0 auto;
+        position: relative;
+        z-index: 1;
+        background: rgba(255, 255, 255, 0.96);
+      }
+
+      #manage.view.active #questionList {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: none;
+        overflow-y: auto;
+        overflow-x: hidden;
+        margin-top: 0;
+        padding-right: 8px;
+        scrollbar-gutter: stable;
+        align-content: start;
+      }
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
