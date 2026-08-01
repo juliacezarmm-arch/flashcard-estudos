@@ -489,7 +489,8 @@
     .home-priority-panel .home-panel-head > div { min-width: 0; }
     .home-priority-panel .home-panel-head h3 { margin-bottom: 2px; }
     .home-priority-panel .home-panel-head p { margin: 0; }
-    .home-priority-panel .home-panel-head::before { content: ''; display: inline-block; width: 22px; height: 22px; margin-right: 7px; vertical-align: -6px; background: url("referencias/ChatGPT%20Image%201%20de%20ago.%20de%202026,%2012_11_38%20(2).png") center/contain no-repeat; }
+    .home-priority-head-icon { width: 28px; height: 28px; display: grid; place-items: center; flex: 0 0 auto; border: 1px solid #dce7ff; border-radius: 8px; background: #eef4ff; color: #2563eb; }
+    .home-priority-head-icon .home-svg { width: 17px; height: 17px; }
     .home-priority-scroll { position: relative; z-index: 1; overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; }
     .home-priority-list { display: flex; gap: 10px; min-width: max-content; }
     .home-priority-item { flex: 0 0 31%; min-width: 220px; padding: 11px 12px; border: 1px solid #e5eaf1; border-radius: 10px; background: #fff; }
@@ -497,7 +498,13 @@
     .home-priority-head span { color: #2563eb; font-size: 11px; font-weight: 600; white-space: nowrap; }
     .home-priority-sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 0 7px; color: #64748b; font-size: 11px; }
     .home-priority-sub b { color: #475569; font-weight: 600; }
-    .home-priority-art { position: absolute; z-index: 0; right: -4px; bottom: -48px; width: 145px; height: 145px; object-fit: contain; object-position: center; pointer-events: none; opacity: .92; }
+    .home-priority-art { position: absolute; z-index: 0; top: -28px; right: 6px; width: 165px; height: 165px; object-fit: contain; object-position: center; pointer-events: none; opacity: .95; }
+    .home-priority-panel .home-panel-head, .home-priority-panel .home-priority-scroll { position: relative; z-index: 1; }
+    .home-focus-box { position: relative; display: grid; gap: 3px; min-height: 76px; margin-top: 12px; padding: 14px 42px 14px 14px; border: 1px solid #dce7ff; border-radius: 11px; background: #f8fbff; cursor: pointer; transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
+    .home-focus-box:hover { border-color: #c9d9f8; box-shadow: 0 7px 18px rgba(15,23,42,.07); transform: translateY(-1px); }
+    .home-focus-box strong { color: #172033; font-size: 16px; line-height: 20px; font-weight: 600; }
+    .home-focus-box small { color: #64748b; font-size: 11px; line-height: 16px; }
+    .home-focus-arrow { position: absolute; top: 50%; right: 14px; color: #334155; font-size: 22px; line-height: 1; transform: translateY(-50%); }
     .home-progress-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
     .home-progress-grid .home-panel { min-height: 240px; }
     .home-simple-list, .home-goal-list { display: grid; gap: 0; margin: 0; padding: 0; }
@@ -611,16 +618,21 @@
   }
   homeView.querySelector('.home-title p')?.remove();
   homeView.querySelector('.home-last-label')?.setAttribute('hidden', '');
-  homeView.querySelector('.home-focus-box')?.setAttribute('hidden', '');
-  const studyCard = homeView.querySelector('.home-study-card');
-  if (studyCard && !studyCard.querySelector('#homeRecommendationsToday')) {
-    const recommendations = document.createElement('div');
-    recommendations.className = 'home-recommendation-list';
-    recommendations.id = 'homeRecommendationsToday';
-    recommendations.innerHTML = '<p class="home-muted">Nenhuma recomenda&ccedil;&atilde;o dispon&iacute;vel ainda.</p>';
-    studyCard.append(recommendations);
+  const focusBox = homeView.querySelector('.home-focus-box');
+  if (focusBox) {
+    focusBox.id = 'homeFocusBox';
+    focusBox.setAttribute('tabindex', '0');
+    focusBox.innerHTML = '<span class="home-muted">Continue estudando</span><strong id="homeFocusCollection">Nenhuma ainda</strong><small id="homeFocusMeta">As recomenda&ccedil;&otilde;es aparecer&atilde;o depois do primeiro teste.</small><span class="home-focus-arrow" aria-hidden="true">&rsaquo;</span>';
   }
   const priorityPanel = homeView.querySelector('.home-priority-panel');
+  const priorityHead = priorityPanel?.querySelector('.home-panel-head');
+  if (priorityHead && !priorityHead.querySelector('.home-priority-head-icon')) {
+    const icon = document.createElement('span');
+    icon.className = 'home-priority-head-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = svgIcon('calendar');
+    priorityHead.prepend(icon);
+  }
   if (priorityPanel && !priorityPanel.querySelector('.home-priority-art')) {
     const image = document.createElement('img');
     image.className = 'home-priority-art';
@@ -682,7 +694,7 @@
     document.querySelector('#homeRecommendations').innerHTML = sortedSubjects().filter(item => item.stats.review > 0).slice(0,5).map(({subject,stats}) => `<div class="home-recent-row"><span>${esc(subject.name)}</span><small>${stats.review} para revisar</small></div>`).join('') || '<p class="home-muted">Nenhuma revis&atilde;o recomendada agora.</p>';
     document.querySelector('#homeTests').innerHTML = recent.slice(0,5).map(item => `<div class="home-recent-row"><span>${esc(item.subject || 'Cole&ccedil;&atilde;o')}</span><small>${Number(item.score || 0)}/${Number(item.total || 0)}</small></div>`).join('') || '<p class="home-muted">Nenhum teste realizado ainda.</p>';
     document.querySelector('#homeFooterStats').innerHTML = [['&#128293;','Sequ&ecirc;ncia atual',`${streak} dia${streak === 1 ? '' : 's'}`],[svgIcon('clock'),'Tempo estudado hoje',duration(todayTime)],[svgIcon('calendar'),'Meta semanal',`${clamp(percent(tests.slice(0,7).length,7),0,100)}%`]].map(([icon,label,value]) => `<article class="home-panel home-footer-card"><span class="home-icon">${icon}</span><span><strong>${value}</strong><small class="home-muted">${label}</small></span></article>`).join('');
-    setHomePanel(homePanel);
+       setHomePanel(homePanel);
   }
 
    function renderHome() {
@@ -707,7 +719,8 @@
      document.querySelector('#homeLastCollection').textContent = last?.name || 'Nenhuma ainda';
      document.querySelector('#homeStudyText').textContent = focus ? `${focus.stats.review} quest${focus.stats.review === 1 ? '\u00e3o' : '\u00f5es'} para revisar nesta cole\u00e7\u00e3o.` : 'Comece um teste para criar sua primeira recomenda\u00e7\u00e3o.';
      document.querySelector('#homeFocusCollection').textContent = focus?.subject.name || 'Nenhuma ainda';
-     document.querySelector('#homeFocusMeta').textContent = focus ? `${focus.stats.review} quest${focus.stats.review === 1 ? '\u00e3o' : '\u00f5es'} para revisar.` : 'As recomenda\u00e7\u00f5es aparecer\u00e3o depois do primeiro teste.';
+      document.querySelector('#homeFocusMeta').textContent = focus ? `${focus.stats.review} quest${focus.stats.review === 1 ? '\u00e3o' : '\u00f5es'} para revisar.` : 'As recomenda\u00e7\u00f5es aparecer\u00e3o depois do primeiro teste.';
+      if (focusBox) focusBox.dataset.homeSubject = focus?.subject.id || '';
 
      const streakElement = document.querySelector('#homeTopStreak');
      if (streakElement) { streakElement.querySelector('b').textContent = streak; streakElement.title = `Voc\u00ea estuda h\u00e1 ${streak} dias consecutivos.`; streakElement.setAttribute('aria-label', `Sequ\u00eancia de ${streak} dias`); }
@@ -738,11 +751,8 @@
       const dailyTarget = item => Math.min(10, Math.max(0, item.stats.review));
       const todayTestRecords = tests.filter(item => String(item.date || '').slice(0, 10) === todayKey());
       const completedToday = subject => testRecordsFor(subject, todayTestRecords).reduce((sum, item) => sum + Number(item.score || 0), 0);
-      const recommendationReason = (item, index) => index === 0 ? 'Maior atraso nas revis&otilde;es' : item.stats.wrong ? 'Mais erros recentes' : item.stats.hard ? 'Maior dificuldade registrada' : 'Menor aproveitamento nos testes';
-      const recommendations = testedItems.filter(item => item.stats.review > 0).slice(0, 2);
       document.querySelector('#homeSummaryCards').innerHTML = [['books','Cole&ccedil;&otilde;es',subjects().length,'Total de cole&ccedil;&otilde;es'],['questions','Quest&otilde;es',cards.length,'Total de quest&otilde;es'],['trophy','Dominadas',masteredTotal,`${percent(masteredTotal,cards.length)}% do total`],['chart','Aproveitamento',`${accuracy}%`,'M&eacute;dia dos testes']].map(([,label,value,caption]) => `<article class="home-card"><span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span></article>`).join('');
-      document.querySelector('#homeStudyText').textContent = recommendations.length ? `${recommendations.reduce((sum, item) => sum + dailyTarget(item), 0)} quest\u00f5es selecionadas para hoje.` : 'As recomenda\u00e7\u00f5es aparecer\u00e3o depois do primeiro teste.';
-      document.querySelector('#homeRecommendationsToday').innerHTML = recommendations.length ? recommendations.map((item, index) => `<article class="home-recommendation" data-home-subject="${esc(item.subject.id)}" tabindex="0"><span class="home-recommendation-icon" aria-hidden="true"><img src="${homeAsset(index === 0 ? HOME_ASSETS.booksOnly : HOME_ASSETS.chart)}" alt=""></span><span class="home-recommendation-copy"><strong>${esc(item.subject.name)}</strong><small>${recommendationReason(item, index)}</small></span><span class="home-recommendation-meta">Hoje: ${dailyTarget(item)} quest&otilde;es</span><span class="home-recommendation-arrow" aria-hidden="true">&rsaquo;</span></article>`).join('') : '<p class="home-muted">As recomenda&ccedil;&otilde;es aparecer&atilde;o depois do primeiro teste.</p>';
+       document.querySelector('#homeStudyText').textContent = focus ? `${focus.stats.review} quest${focus.stats.review === 1 ? '\u00e3o' : '\u00f5es'} para revisar nesta cole\u00e7\u00e3o.` : 'Comece um teste para criar sua primeira recomenda\u00e7\u00e3o.';
       const plans = testedItems.filter(item => item.stats.review > 0).slice(0, 3);
       document.querySelector('#homePriorities').innerHTML = plans.length ? plans.map(item => { const target = dailyTarget(item); const done = Math.min(target, completedToday(item.subject)); const progress = target ? Math.min(100, Math.round(done / target * 100)) : 0; return `<article class="home-priority-item" data-home-subject="${esc(item.subject.id)}" tabindex="0"><div class="home-priority-head"><strong>${esc(item.subject.name)}</strong><span>Hoje: ${target} quest&otilde;es</span></div><div class="home-priority-sub"><span>${done} de ${target} conclu&iacute;das</span><b>${progress}%</b></div><div class="home-progress"><span style="width:${progress}%"></span></div></article>`; }).join('') : '<p class="home-muted">As revis&otilde;es recomendadas aparecer&atilde;o depois do primeiro teste.</p>';
       setHomePanel(homePanel);
