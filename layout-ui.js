@@ -511,41 +511,53 @@
     .home-focus-box strong { color: #172033; font-size: 16px; line-height: 20px; font-weight: 600; }
     .home-focus-box small { color: #64748b; font-size: 11px; line-height: 16px; }
     .home-focus-arrow { position: absolute; top: 50%; right: 14px; color: #334155; font-size: 22px; line-height: 1; transform: translateY(-50%); }
-    .home-progress-overview { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 16px; }
-    .home-progress-card { min-height: 164px; padding: 20px; overflow: hidden; }
-    .home-progress-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .home-progress-card-head h3 { margin: 0; color: #172033; font-size: 16px; line-height: 22px; font-weight: 600; }
-    .home-progress-symbol { width: 36px; height: 36px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; background: #eef4ff; color: #2563eb; }
-    .home-progress-symbol img { width: 27px; height: 27px; object-fit: contain; }
+    .home-progress-overview { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; align-items: stretch; }
+    .home-progress-card { min-height: 206px; padding: 24px; overflow: hidden; }
+    .home-progress-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+    .home-progress-card-head h3 { margin: 0; color: #172033; font-size: 17px; line-height: 23px; font-weight: 650; }
+    .home-progress-symbol { width: 38px; height: 38px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 12px; background: #eef4ff; color: #2563eb; }
+    .home-progress-symbol img { width: 28px; height: 28px; object-fit: contain; }
     .home-progress-symbol .home-svg { width: 23px; height: 23px; }
-    .home-progress-value { display: flex; align-items: baseline; gap: 9px; margin-bottom: 3px; }
-    .home-progress-value strong { color: #172033; font-size: 36px; line-height: 40px; font-weight: 700; }
-    .home-progress-value span { color: #334155; font-size: 16px; }
-    .home-progress-card > p { margin: 0 0 12px; color: #64748b; font-size: 13px; line-height: 18px; }
-    .home-progress-card .home-progress { height: 8px; }
+    .home-progress-symbol.home-symbol-fire { background: #fff4e8; }
+    .home-progress-symbol.home-symbol-clock { background: #eef4ff; }
+    .home-progress-symbol.home-symbol-flag { background: #eef4ff; }
+    .home-progress-value { display: flex; align-items: baseline; gap: 10px; margin-bottom: 3px; }
+    .home-progress-value strong { color: #172033; font-size: 38px; line-height: 44px; font-weight: 700; letter-spacing: -.02em; }
+    .home-progress-value span { color: #334155; font-size: 17px; }
+    .home-progress-card > p { margin: 0 0 15px; color: #64748b; font-size: 14px; line-height: 20px; }
+    .home-progress-card .home-progress { height: 9px; margin-top: 18px; }
     .home-progress-card .home-progress span { background: #2563eb; }
-    .home-sequence-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 7px; margin-top: 12px; padding: 9px 8px 7px; border: 1px solid #e5eaf1; border-radius: 10px; }
-    .home-sequence-day { display: grid; justify-items: center; gap: 5px; color: #64748b; font-size: 11px; font-weight: 600; }
-    .home-sequence-day i { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid #e5eaf1; border-radius: 50%; color: transparent; font-style: normal; }
+    .home-sequence-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 8px; margin-top: 15px; padding: 11px 10px 9px; border: 1px solid #e5eaf1; border-radius: 12px; }
+    .home-sequence-day { display: grid; justify-items: center; gap: 7px; color: #64748b; font-size: 12px; font-weight: 600; }
+    .home-sequence-day i { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid #e5eaf1; border-radius: 50%; color: transparent; font-style: normal; }
     .home-sequence-day.is-study i { border-color: #b8e2ff; background: #eef9ff; color: #2563eb; }
     .home-sequence-day.is-current i { border-color: #f59e0b; background: #fbbf24; color: #172033; }
     .home-sequence-day.is-current { color: #172033; }
     .home-progress-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
-    .home-progress-grid .home-panel { min-height: 240px; }
+    .home-progress-grid .home-panel { min-height: 248px; padding: 24px; }
     .home-simple-list, .home-goal-list { display: grid; gap: 0; margin: 0; padding: 0; }
-    .home-stat-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #eef1f5; color: #64748b; font-size: 13px; }
+    .home-stat-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #eef1f5; color: #64748b; font-size: 14px; }
     .home-stat-row:last-child { border-bottom: 0; }
-    .home-stat-row b { color: #172033; font-size: 18px; font-weight: 700; }
-    .home-chart svg { width: 100%; height: 170px; display: block; }
-    .home-chart-caption { margin: 4px 0 0; color: #94a3b8; font-size: 12px; }
+    .home-stat-row b { color: #172033; font-size: 18px; font-weight: 700; white-space: nowrap; }
+    .home-stat-label { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
+    .home-stat-icon, .home-goal-icon, .home-period-icon { width: 36px; height: 36px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 10px; background: #f2f6ff; color: #2563eb; }
+    .home-stat-icon .home-svg, .home-goal-icon .home-svg, .home-period-icon .home-svg { width: 20px; height: 20px; }
+    .home-stat-icon.home-stat-icon-green { background: #effaf1; color: #16a34a; }
+    .home-stat-icon.home-stat-icon-amber { background: #fff8e8; color: #f59e0b; }
     .home-goal-list { gap: 10px; }
-    .home-goal-item { padding: 10px 12px; border: 1px solid #e5eaf1; border-radius: 10px; background: #f8fafc; display: grid; gap: 8px; }
-    .home-goal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #172033; font-size: 13px; font-weight: 600; }
-    .home-goal-head span { color: #64748b; font-size: 12px; font-weight: 500; }
-    .home-period-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
-    .home-period-item { padding: 12px; border: 1px solid #dce7ff; border-radius: 10px; background: #eef4ff; }
-    .home-period-item b { display: block; color: #172033; font-size: 21px; line-height: 26px; font-weight: 700; }
-    .home-period-item span { color: #64748b; font-size: 12px; }
+    .home-goal-item { padding: 13px 14px; border: 1px solid #e5eaf1; border-radius: 12px; background: #fff; display: grid; gap: 10px; }
+    .home-goal-head { display: flex; align-items: center; gap: 12px; color: #172033; font-size: 14px; font-weight: 600; }
+    .home-goal-copy { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; width: 100%; }
+    .home-goal-head span { color: #334155; font-size: 14px; font-weight: 600; white-space: nowrap; }
+    .home-period-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    .home-period-item { min-height: 100px; padding: 16px; display: grid; grid-template-columns: 36px minmax(0,1fr); gap: 12px; align-items: start; border: 1px solid #dce7ff; border-radius: 12px; background: #f5f8ff; }
+    .home-period-item b { display: block; color: #172033; font-size: 26px; line-height: 30px; font-weight: 700; }
+     .home-period-copy { min-width: 0; }
+     .home-period-copy b { display: block; color: #172033; font-size: 26px; line-height: 30px; font-weight: 700; }
+     .home-period-copy span { display: block; margin-top: 4px; color: #64748b; font-size: 12px; line-height: 17px; }
+    .home-chart { min-width: 0; }
+    .home-chart svg { width: 100%; height: 208px; display: block; overflow: visible; }
+    .home-chart-note { display: flex; align-items: center; gap: 8px; margin-top: 2px; padding: 10px 12px; border-radius: 10px; background: #f3f7ff; color: #2563eb; font-size: 12px; line-height: 17px; }
     .home-footer-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
     .home-footer-card { min-height: 90px; padding: 16px; display: flex; align-items: center; gap: 10px; }
     .home-footer-card strong { display: block; color: #172033; font-size: 24px; line-height: 28px; font-weight: 700; }
@@ -707,7 +719,22 @@
   function openAppView(view, panel) { document.body.classList.remove('home-active'); homeView.classList.remove('active'); homeTab.classList.remove('active'); homeTab.removeAttribute('aria-current'); if (typeof showView === 'function') showView(view); if (view === 'test' && typeof showTestPanel === 'function') showTestPanel(panel || 'quick'); if (view === 'test' && typeof renderTest === 'function') renderTest(); }
   function openHome() { document.body.classList.add('home-active'); document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view === homeView)); tabs.querySelectorAll('.tab').forEach(button => { const active = button === homeTab; button.classList.toggle('active', active); active ? button.setAttribute('aria-current', 'page') : button.removeAttribute('aria-current'); }); setHomePanel('today'); renderHome(); if (typeof closeMobileNav === 'function') closeMobileNav(); }
    function renderCollectionCards(items) { if (!items.length) return '<div class="home-muted">As cole&ccedil;&otilde;es aparecer&atilde;o aqui depois do primeiro teste.</div>'; return items.map(({ subject, stats }) => `<article class="home-collection-card" data-home-subject="${esc(subject.id)}" tabindex="0"><div class="home-collection-head"><div class="home-collection-name"><span class="home-folder-icon">${svgIcon('folder')}</span><span>${esc(subject.name)}</span></div><span class="home-collection-total">${stats.total} quest&otilde;es</span></div><div class="home-collection-metrics"><span><b>${stats.mastered}</b><small>Dominadas</small></span><span><b>${stats.learning}</b><small>Em andamento</small></span><span><b>${stats.review}</b><small>Revisar</small></span></div><div class="home-progress"><span style="width:${clamp(stats.progress,3,100)}%"></span></div><div class="home-collection-foot"><span>Aproveitamento</span><b>${stats.progress}%</b></div></article>`).join(''); }
-  function renderChart(points) { const list = points.length ? points : [0,0,0,0]; const xy = list.map((value,index) => `${28 + index * (244 / Math.max(1, list.length - 1))},${145 - (clamp(value,0,100) / 100) * 104}`).join(' '); document.querySelector('#homeChart').innerHTML = `<svg viewBox="0 0 300 185" role="img" aria-label="Evolu&ccedil;&atilde;o de aproveitamento"><path d="M28 36v109h244" fill="none" stroke="#e8edf5" stroke-width="1"></path><path d="M28 92h244M28 64h244" fill="none" stroke="#f1f5f9" stroke-width="1"></path><polyline points="${xy}" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>${list.map((value,index) => `<circle cx="${28 + index * (244 / Math.max(1, list.length - 1))}" cy="${145 - (clamp(value,0,100) / 100) * 104}" r="3" fill="#2563eb"></circle>`).join('')}</svg><p class="home-chart-caption">Aproveitamento dos &uacute;ltimos testes.</p>`; }
+  function renderChart(points, records = []) {
+    const values = points.length ? points.slice(-7) : [0];
+    const list = Array.from({ length: 7 }, (_, index) => values[Math.max(0, index - (7 - values.length))] ?? 0);
+    const labels = Array.from({ length: 7 }, (_, index) => {
+      const record = records.slice(-7)[index];
+      if (!record?.date) return ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][index];
+      return new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'short' }).format(new Date(record.date)).replace('.', '');
+    });
+    const plot = { left: 48, right: 602, top: 22, bottom: 176 };
+    const x = index => plot.left + index * ((plot.right - plot.left) / 6);
+    const y = value => plot.bottom - (clamp(value, 0, 100) / 100) * (plot.bottom - plot.top);
+    const xy = list.map((value, index) => `${x(index)},${y(value)}`).join(' ');
+    const grid = [100, 75, 50, 25, 0].map(value => `<line x1="${plot.left}" y1="${y(value)}" x2="${plot.right}" y2="${y(value)}" stroke="${value === 0 ? '#dbe3ef' : '#edf1f7'}" stroke-width="1" stroke-dasharray="${value === 0 ? '0' : '4 4'}"></line><text x="0" y="${y(value) + 4}" fill="#64748b" font-size="12">${value}%</text>`).join('');
+    const axisLabels = labels.map((label, index) => `<text x="${x(index)}" y="204" text-anchor="middle" fill="#64748b" font-size="12">${label}</text>`).join('');
+    document.querySelector('#homeChart').innerHTML = `<svg viewBox="0 0 640 224" role="img" aria-label="Evolu&ccedil;&atilde;o de aproveitamento">${grid}<polyline points="${xy}" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>${list.map((value, index) => `<circle cx="${x(index)}" cy="${y(value)}" r="4" fill="#2563eb"></circle>`).join('')}${axisLabels}</svg><div class="home-chart-note"><span aria-hidden="true">✦</span><span>Acompanhe seus acertos ao longo dos &uacute;ltimos testes.</span></div>`;
+  }
 
    function renderHomeLegacy() {
     const cards = allCards(); const tests = history(); const recent = tests.slice(0, 7); const totalAttempts = tests.reduce((sum,item) => sum + Number(item.total || 0), 0); const totalScore = tests.reduce((sum,item) => sum + Number(item.score || 0), 0); const current = typeof currentSubject === 'function' ? currentSubject() : subjects()[0]; const last = subjects().find(subject => subject.id === tests[0]?.subjectId) || current || subjects()[0]; const reviewTotal = cards.filter(item => needsReview(item.card)).length; const overdueTotal = cards.filter(item => item.card?.dueAt && new Date(item.card.dueAt).getTime() < Date.now()).length; const masteredTotal = cards.filter(item => isMastered(item.card)).length; const accuracy = percent(totalScore, totalAttempts); const streak = studyStreak(); const dateText = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).format(new Date());
@@ -769,12 +796,12 @@
      const recentScore = recent.reduce((sum, item) => sum + Number(item.score || 0), 0);
      const recentDuration = recent.reduce((sum, item) => sum + Number(item.durationMs || 0), 0);
      const lastTest = recent[0] ? `${Number(recent[0].score || 0)} de ${Number(recent[0].total || 0)}` : 'Sem testes';
-     document.querySelector('#homePerformance').innerHTML = [['M&eacute;dia dos &uacute;ltimos testes',`${percent(recentScore,recentTotal)}%`],['Tempo m&eacute;dio por quest&atilde;o',recentTotal ? duration(recentDuration / recentTotal) : '0s'],['Melhor sequ&ecirc;ncia',`${recent.reduce((max,item) => Math.max(max,Number(item.score || 0)),0)} acertos`],['Acertos recentes',lastTest]].map(([label,value]) => `<li class="home-stat-row"><span>${label}</span><b>${value}</b></li>`).join('');
-     renderChart(recent.slice(0, 6).reverse().map(item => clamp(percent(Number(item.score || 0), Number(item.total || 0)), 0, 100)));
+      document.querySelector('#homePerformance').innerHTML = [['chart','M&eacute;dia dos &uacute;ltimos testes',`${percent(recentScore,recentTotal)}%`,''],['clock','Tempo m&eacute;dio por quest&atilde;o',recentTotal ? duration(recentDuration / recentTotal) : '0s',''],['target','Melhor sequ&ecirc;ncia',`${recent.reduce((max,item) => Math.max(max,Number(item.score || 0)),0)} acertos`,'home-stat-icon-amber'],['target','Acertos recentes',lastTest,'home-stat-icon-green']].map(([icon,label,value,variant]) => `<li class="home-stat-row"><span class="home-stat-label"><i class="home-stat-icon ${variant}">${svgIcon(icon)}</i><span>${label}</span></span><b>${value}</b></li>`).join('');
+      renderChart(recent.slice(0, 7).reverse().map(item => clamp(percent(Number(item.score || 0), Number(item.total || 0)), 0, 100)), recent.slice(0, 7).reverse());
      const todayTests = tests.filter(item => String(item.date || '').slice(0, 10) === todayKey()).length;
-     document.querySelector('#homeGoals').innerHTML = [['Revisar 30 quest&otilde;es hoje',Math.min(reviewTotal,30),30],['Fazer dois testes',Math.min(todayTests,2),2],['Dominar mais 20 quest&otilde;es',Math.min(masteredTotal,20),20]].map(([label,done,total]) => `<li class="home-goal-item"><div class="home-goal-head"><strong>${label}</strong><span>${done}/${total}</span></div><div class="home-progress"><span style="width:${clamp(percent(done,total),4,100)}%"></span></div></li>`).join('');
+      document.querySelector('#homeGoals').innerHTML = [['calendar','Revisar 30 quest&otilde;es hoje',Math.min(reviewTotal,30),30],['flag','Fazer dois testes',Math.min(todayTests,2),2],['target','Dominar mais 20 quest&otilde;es',Math.min(masteredTotal,20),20]].map(([icon,label,done,total]) => `<li class="home-goal-item"><div class="home-goal-head"><i class="home-goal-icon">${svgIcon(icon)}</i><span class="home-goal-copy"><strong>${label}</strong><span>${done}/${total}</span></span></div><div class="home-progress"><span style="width:${clamp(percent(done,total),4,100)}%"></span></div></li>`).join('');
      const todayTime = tests.filter(item => String(item.date || '').slice(0,10) === todayKey()).reduce((sum,item) => sum + Number(item.durationMs || 0), 0);
-     document.querySelector('#homePeriodSummary').innerHTML = [[tests.length,'testes realizados'],[cards.length,'quest&otilde;es cadastradas'],[masteredTotal,'quest&otilde;es dominadas'],[duration(todayTime),'estudado hoje']].map(([value,label]) => `<div class="home-period-item"><b>${value}</b><span>${label}</span></div>`).join('');
+       document.querySelector('#homePeriodSummary').innerHTML = [['target',tests.length,'testes realizados'],['questions',cards.length,'quest&otilde;es cadastradas'],['target',masteredTotal,'quest&otilde;es dominadas'],['clock',totalAttempts,'revis&otilde;es conclu&iacute;das']].map(([icon,value,label]) => `<div class="home-period-item"><i class="home-period-icon">${svgIcon(icon)}</i><div class="home-period-copy"><b>${value}</b><span>${label}</span></div></div>`).join('');
 
      const priorities = testedItems.filter(item => item.stats.review > 0).slice(0, 12);
      document.querySelector('#homePriorities').innerHTML = priorities.length ? priorities.map(({subject,stats}) => `<article class="home-priority-item" data-home-subject="${esc(subject.id)}" tabindex="0"><div class="home-priority-head"><strong>${esc(subject.name)}</strong><span>Revisar ${stats.review}</span></div><div class="home-progress"><span style="width:${clamp(percent(stats.review,stats.total || 1),8,100)}%"></span></div></article>`).join('') : '<p class="home-muted">As revis&otilde;es recomendadas aparecer&atilde;o depois do primeiro teste.</p>';
@@ -789,7 +816,7 @@
        const weeklyPercent = Math.round((weeklyDone / 4) * 100);
        const sequenceLabels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
        const sequenceDays = sequenceLabels.map((label, index) => { const active = streak > 0 && index >= Math.max(0, 7 - Math.min(7, streak)); const current = index === 6 && streak > 0; return `<span class="home-sequence-day${active ? ' is-study' : ''}${current ? ' is-current' : ''}"><b>${label}</b><i>${current ? '&#10003;' : active ? '&bull;' : ''}</i></span>`; }).join('');
-       document.querySelector('#homeFooterStats').innerHTML = `<article class="home-panel home-progress-card home-sequence-card"><div class="home-progress-card-head"><span class="home-progress-symbol"><img src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true"></span><h3>Sequ&ecirc;ncia</h3></div><div class="home-progress-value"><strong>${streak}</strong><span>dias seguidos</span></div><div class="home-sequence-days">${sequenceDays}</div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol">${svgIcon('clock')}</span><h3>Tempo estudado hoje</h3></div><div class="home-progress-value"><strong>${duration(todayTime)}</strong></div><p>Meta di&aacute;ria: 2h</p><div class="home-progress"><span style="width:${Math.min(100, Math.round(todayTime / (2 * 60 * 60 * 1000) * 100))}%"></span></div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol">${svgIcon('flag')}</span><h3>Metas da semana</h3></div><div class="home-progress-value"><strong>${weeklyPercent}%</strong></div><p>${weeklyDone} de 4 metas conclu&iacute;das</p><div class="home-progress"><span style="width:${weeklyPercent}%"></span></div></article>`;
+        document.querySelector('#homeFooterStats').innerHTML = `<article class="home-panel home-progress-card home-sequence-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-fire"><img src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true"></span><h3>Sequ&ecirc;ncia</h3></div><div class="home-progress-value"><strong>${streak}</strong><span>dias seguidos</span></div><div class="home-sequence-days">${sequenceDays}</div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-clock">${svgIcon('clock')}</span><h3>Tempo estudado hoje</h3></div><div class="home-progress-value"><strong>${duration(todayTime)}</strong></div><p>Meta di&aacute;ria: 2h</p><div class="home-progress"><span style="width:${Math.min(100, Math.round(todayTime / (2 * 60 * 60 * 1000) * 100))}%"></span></div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-flag">${svgIcon('flag')}</span><h3>Metas da semana</h3></div><div class="home-progress-value"><strong>${weeklyPercent}%</strong></div><p>${weeklyDone} de 4 metas conclu&iacute;das</p><div class="home-progress"><span style="width:${weeklyPercent}%"></span></div></article>`;
 
       const dailyTarget = item => Math.min(10, Math.max(0, item.stats.review));
       const todayTestRecords = tests.filter(item => String(item.date || '').slice(0, 10) === todayKey());
