@@ -399,7 +399,8 @@
     .home-streak-day.is-study.is-today { outline-color: #c76a05; }
     .home-shell { display: grid; gap: 16px; }
     .home-hero-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 0 2px; }
-    .home-title h2 { margin: 0; color: #172033; font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: -.015em; }
+    .home-title h2 { margin: 0; color: #172033; font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: -.015em; display: flex; align-items: center; gap: 6px; }
+    .home-greeting-wave { width: 25px; height: 25px; object-fit: contain; flex: 0 0 auto; }
     .home-title p, .home-muted { margin: 0; color: #64748b; font-size: 13px; line-height: 19px; font-weight: 400; }
     .home-hero-actions { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
     .home-date-pill { color: #64748b; font-size: 12px; white-space: nowrap; }
@@ -421,7 +422,7 @@
     .home-card:nth-child(3) { background: linear-gradient(180deg,rgba(245,158,11,.08),rgba(255,255,255,.95)); border-color: #f8e5bd; }
     .home-card:nth-child(4) { background: linear-gradient(180deg,rgba(139,92,246,.07),rgba(255,255,255,.95)); border-color: #e8deff; }
     .home-icon { width: 36px; height: 36px; border-radius: 10px; display: inline-grid; place-items: center; background: #eef4ff; color: #2563eb; flex: 0 0 auto; }
-    .home-card-art { display: none; }
+    .home-card-art { display: block; width: 44px; height: 44px; object-fit: contain; flex: 0 0 44px; margin-right: 11px; }
     .home-card:nth-child(1) .home-icon { background: #effaf3; color: #16a34a; }
     .home-card:nth-child(3) .home-icon { background: #fff8ea; color: #d97706; }
     .home-card:nth-child(4) .home-icon { background: #f7f2ff; color: #7c3aed; }
@@ -430,12 +431,12 @@
     .home-card strong { display: block; margin-bottom: 2px; color: #475569; font-size: 13px; line-height: 18px; font-weight: 500; }
     .home-card small { display: block; font-size: 11px; }
     .home-today-grid { display: grid; grid-template-columns: minmax(280px,.36fr) minmax(0,.64fr); gap: 16px; }
-    .home-study-card { min-height: 300px; }
+    .home-study-card { min-height: 0; }
     .home-study-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
     .home-study-head h3 { margin: 0 0 3px; color: #172033; font-size: 16px; line-height: 22px; font-weight: 600; }
-    .home-study-head { position: relative; min-height: 84px; }
+    .home-study-head { position: relative; min-height: 68px; }
     .home-study-head .home-icon { background: #eef4ff; color: #2563eb; }
-    .home-study-art { position: absolute; top: -6px; right: 0; width: 90px; height: 90px; object-fit: contain; object-position: center; pointer-events: none; }
+    .home-study-art { position: absolute; top: -4px; right: 0; width: 72px; height: 72px; object-fit: contain; object-position: center; pointer-events: none; }
     .home-recommendation-list { display: grid; gap: 10px; margin-top: 18px; }
     .home-recommendation { min-height: 72px; padding: 10px 12px; border: 1px solid #e5eaf1; border-radius: 11px; background: #fff; color: #172033; display: grid; grid-template-columns: 40px minmax(0,1fr) auto 14px; align-items: center; gap: 9px; text-align: left; cursor: pointer; transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
     .home-recommendation:hover { border-color: #c9d9f8; box-shadow: 0 7px 18px rgba(15,23,42,.07); transform: translateY(-1px); }
@@ -579,8 +580,8 @@
   homeView.id = 'home';
   homeView.innerHTML = `
     <div class="home-shell">
-      <header class="home-hero-head">
-        <div class="home-title"><h2 id="homeGreeting">Boa noite, Julia!</h2><p>Pronta para mais um passo rumo aos seus objetivos?</p><span class="home-last-label">&Uacute;ltima cole&ccedil;&atilde;o: <b id="homeLastCollection">Nenhuma ainda</b></span></div>
+       <header class="home-hero-head">
+         <div class="home-title"><h2 id="homeGreeting"><span id="homeGreetingText">Boa noite, Julia!</span><img id="homeGreetingWave" class="home-greeting-wave" alt="" aria-hidden="true"></h2><p>Pronta para mais um passo rumo aos seus objetivos?</p><span class="home-last-label">&Uacute;ltima cole&ccedil;&atilde;o: <b id="homeLastCollection">Nenhuma ainda</b></span></div>
         <div class="home-hero-actions"><span class="home-date-pill" id="homeDatePill">Hoje</span></div>
       </header>
       <nav class="home-subtabs" aria-label="Resumo inicial" role="tablist"><button class="home-subtab active" type="button" role="tab" aria-selected="true" data-home-tab="today">Hoje</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="progress">Progresso</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="activity">Atividade</button></nav>
@@ -600,23 +601,27 @@
 
   const homeAsset = file => encodeURI(`referencias/${file}`);
   const HOME_ASSETS = Object.freeze({
-    books: 'ChatGPT Image 1 de ago. de 2026, 12_11_38 (1).png',
-    clipboard: 'ChatGPT Image 1 de ago. de 2026, 12_11_38 (2).png',
+     books: 'icone_livros_colecoes.png',
+     clipboard: 'icone_prancheta_revisao.png',
     chart: 'ChatGPT Image 1 de ago. de 2026, 12_31_23.png',
     questions: 'ChatGPT Image 31 de jul. de 2026, 23_14_35 (2).png',
-    trophy: 'ChatGPT Image 31 de jul. de 2026, 23_14_35 (3).png',
-    booksOnly: 'ChatGPT Image 31 de jul. de 2026, 23_14_34 (1).png',
-    fire: 'ChatGPT Image 31 de jul. de 2026, 23_34_39.png'
+     trophy: 'icone_trofeu_dominadas.png',
+     target: 'icone_trofeu_dominadas.png',
+     booksOnly: 'icone_livros_colecoes.png',
+     fire: 'icone_fogo_sequencia.png',
+     wave: 'icone_maozinha_acenando.png'
   });
   const svgIcon = name => { const paths = { books: '<path d="M5 4h3v16H5zM10 4h3v16h-3zM15 6h4v14h-4z"></path><path d="M4 20h16"></path>', questions: '<rect x="6" y="4" width="12" height="16" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path>', target: '<circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3"></circle><path d="m17 7 3-3"></path>', chart: '<path d="M4 19V5M4 19h16"></path><path d="m7 15 4-4 3 2 5-7"></path>', folder: '<path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>', clock: '<circle cx="12" cy="12" r="8"></circle><path d="M12 8v5l3 2"></path>', calendar: '<rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 9h16"></path>' }; return `<svg class="home-svg" viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.chart}</svg>`; };
   const studyArt = homeView.querySelector('.home-study-head .home-icon');
-  if (studyArt) {
+   if (studyArt) {
     const image = document.createElement('img');
     image.className = 'home-study-art';
     image.src = homeAsset(HOME_ASSETS.clipboard);
     image.alt = 'Prancheta com tarefas de estudo';
-    studyArt.replaceWith(image);
-  }
+     studyArt.replaceWith(image);
+   }
+   const greetingWave = homeView.querySelector('#homeGreetingWave');
+   if (greetingWave) greetingWave.src = homeAsset(HOME_ASSETS.wave);
   homeView.querySelector('.home-title p')?.remove();
   homeView.querySelector('.home-last-label')?.setAttribute('hidden', '');
   const focusBox = homeView.querySelector('.home-focus-box');
@@ -684,7 +689,7 @@
     const cards = allCards(); const tests = history(); const recent = tests.slice(0, 7); const totalAttempts = tests.reduce((sum,item) => sum + Number(item.total || 0), 0); const totalScore = tests.reduce((sum,item) => sum + Number(item.score || 0), 0); const current = typeof currentSubject === 'function' ? currentSubject() : subjects()[0]; const last = subjects().find(subject => subject.id === tests[0]?.subjectId) || current || subjects()[0]; const reviewTotal = cards.filter(item => needsReview(item.card)).length; const overdueTotal = cards.filter(item => item.card?.dueAt && new Date(item.card.dueAt).getTime() < Date.now()).length; const masteredTotal = cards.filter(item => isMastered(item.card)).length; const accuracy = percent(totalScore, totalAttempts); const streak = studyStreak(); const dateText = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).format(new Date());
     document.querySelector('#homeGreeting').textContent = `${greeting()}, ${userName()}!`; document.querySelector('#homeDatePill').textContent = dateText.charAt(0).toUpperCase() + dateText.slice(1); document.querySelector('#homeLastCollection').textContent = last?.name || 'Nenhuma ainda'; document.querySelector('#homeTodayCount').textContent = reviewTotal; document.querySelector('#homeLateCount').textContent = overdueTotal; document.querySelector('#homeStudyText').textContent = `Voc\u00ea possui ${reviewTotal} revis\u00f5es para fazer hoje.`;
     const streakElement = document.querySelector('#homeTopStreak'); if (streakElement) { streakElement.querySelector('b').textContent = streak; streakElement.title = `Voc\u00ea estuda h\u00e1 ${streak} dias consecutivos.`; }
-    document.querySelector('#homeSummaryCards').innerHTML = [['books','Cole&ccedil;&otilde;es',subjects().length,'Total de cole&ccedil;&otilde;es'],['questions','Quest&otilde;es',cards.length,'Total de quest&otilde;es'],['target','Dominadas',masteredTotal,`${percent(masteredTotal,cards.length)}% do total`],['chart','Aproveitamento',`${accuracy}%`,'M&eacute;dia dos testes']].map(([icon,label,value,caption]) => `<article class="home-card"><span class="home-icon">${svgIcon(icon)}</span><span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span></article>`).join('');
+     document.querySelector('#homeSummaryCards').innerHTML = [['books','Cole&ccedil;&otilde;es',subjects().length,'Total de cole&ccedil;&otilde;es'],['questions','Quest&otilde;es',cards.length,'Total de quest&otilde;es'],['target','Dominadas',masteredTotal,`${percent(masteredTotal,cards.length)}% do total`],['chart','Aproveitamento',`${accuracy}%`,'M&eacute;dia dos testes']].map(([icon,label,value,caption]) => `<article class="home-card"><img class="home-card-art" src="${homeAsset(HOME_ASSETS[icon] || HOME_ASSETS.chart)}" alt="" aria-hidden="true"><span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span></article>`).join('');
     document.querySelector('#homeCollectionSummary').innerHTML = renderCollectionCards(sortedSubjects().slice(0,14));
     const recentTotal = recent.reduce((sum,item) => sum + Number(item.total || 0), 0); const recentScore = recent.reduce((sum,item) => sum + Number(item.score || 0), 0); const recentDuration = recent.reduce((sum,item) => sum + Number(item.durationMs || 0), 0); const lastTest = recent[0] ? `${Number(recent[0].score || 0)} de ${Number(recent[0].total || 0)}` : 'Sem testes';
     document.querySelector('#homePerformance').innerHTML = [['M&eacute;dia dos &uacute;ltimos testes',`${percent(recentScore,recentTotal)}%`],['Tempo m&eacute;dio por quest&atilde;o',recentTotal ? duration(recentDuration / recentTotal) : '0s'],['Melhor sequ&ecirc;ncia',`${recent.reduce((max,item) => Math.max(max,Number(item.score || 0)),0)} acertos`],['Acertos recentes',lastTest]].map(([label,value]) => `<li class="home-stat-row"><span>${label}</span><b>${value}</b></li>`).join('');
@@ -717,7 +722,7 @@
      const dateText = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).format(new Date());
      const testSubjectName = item => item.subject || subjects().find(subject => subject.id === item.subjectId)?.name || 'Cole&ccedil;&atilde;o';
 
-     document.querySelector('#homeGreeting').textContent = `${greeting()}, ${userName()}!`;
+     document.querySelector('#homeGreetingText').textContent = `${greeting()}, ${userName()}!`;
      document.querySelector('#homeDatePill').textContent = dateText.charAt(0).toUpperCase() + dateText.slice(1);
      document.querySelector('#homeLastCollection').textContent = last?.name || 'Nenhuma ainda';
      document.querySelector('#homeStudyText').textContent = focus ? `${focus.stats.review} quest${focus.stats.review === 1 ? '\u00e3o' : '\u00f5es'} para revisar nesta cole\u00e7\u00e3o.` : 'Comece um teste para criar sua primeira recomenda\u00e7\u00e3o.';
@@ -754,7 +759,7 @@
       const dailyTarget = item => Math.min(10, Math.max(0, item.stats.review));
       const todayTestRecords = tests.filter(item => String(item.date || '').slice(0, 10) === todayKey());
       const completedToday = subject => testRecordsFor(subject, todayTestRecords).reduce((sum, item) => sum + Number(item.score || 0), 0);
-      document.querySelector('#homeSummaryCards').innerHTML = [['books','Cole&ccedil;&otilde;es',subjects().length,'Total de cole&ccedil;&otilde;es'],['questions','Quest&otilde;es',cards.length,'Total de quest&otilde;es'],['trophy','Dominadas',masteredTotal,`${percent(masteredTotal,cards.length)}% do total`],['chart','Aproveitamento',`${accuracy}%`,'M&eacute;dia dos testes']].map(([,label,value,caption]) => `<article class="home-card"><span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span></article>`).join('');
+      document.querySelector('#homeSummaryCards').innerHTML = [['books','Cole&ccedil;&otilde;es',subjects().length,'Total de cole&ccedil;&otilde;es'],['questions','Quest&otilde;es',cards.length,'Total de quest&otilde;es'],['trophy','Dominadas',masteredTotal,`${percent(masteredTotal,cards.length)}% do total`],['chart','Aproveitamento',`${accuracy}%`,'M&eacute;dia dos testes']].map(([icon,label,value,caption]) => `<article class="home-card"><img class="home-card-art" src="${homeAsset(HOME_ASSETS[icon] || HOME_ASSETS.chart)}" alt="" aria-hidden="true"><span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span></article>`).join('');
        document.querySelector('#homeStudyText').textContent = focus ? `${focus.stats.review} quest${focus.stats.review === 1 ? '\u00e3o' : '\u00f5es'} para revisar nesta cole\u00e7\u00e3o.` : 'Comece um teste para criar sua primeira recomenda\u00e7\u00e3o.';
       const plans = testedItems.filter(item => item.stats.review > 0).slice(0, 3);
       document.querySelector('#homePriorities').innerHTML = plans.length ? plans.map(item => { const target = dailyTarget(item); const done = Math.min(target, completedToday(item.subject)); const progress = target ? Math.min(100, Math.round(done / target * 100)) : 0; return `<article class="home-priority-item" data-home-subject="${esc(item.subject.id)}" tabindex="0"><div class="home-priority-head"><strong>${esc(item.subject.name)}</strong><span>Hoje: ${target} quest&otilde;es</span></div><div class="home-priority-sub"><span>${done} de ${target} conclu&iacute;das</span><b>${progress}%</b></div><div class="home-progress"><span style="width:${progress}%"></span></div></article>`; }).join('') : '<p class="home-muted">As revis&otilde;es recomendadas aparecer&atilde;o depois do primeiro teste.</p>';
