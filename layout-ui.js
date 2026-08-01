@@ -121,7 +121,7 @@
         gap: 10px;
       }
 
-      body.home-active .topbar-right #homeTopTools {
+      .topbar-right #homeTopTools {
         order: 2 !important;
         margin-left: auto !important;
         flex: 0 0 auto;
