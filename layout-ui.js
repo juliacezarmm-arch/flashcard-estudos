@@ -562,18 +562,65 @@
     .home-footer-card { min-height: 90px; padding: 16px; display: flex; align-items: center; gap: 10px; }
     .home-footer-card strong { display: block; color: #172033; font-size: 24px; line-height: 28px; font-weight: 700; }
     .home-footer-card small { display: block; font-size: 12px; }
-    .home-activity-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
-    .home-activity-panel { min-height: 300px; }
-    .home-activity-scroll { height: 226px; max-height: 226px; overflow-y: scroll; overflow-x: hidden; padding-right: 8px; }
-    .home-activity-item { display: grid; grid-template-columns: 20px minmax(0,1fr); gap: 8px; padding: 10px 0; border-bottom: 1px solid #eef1f5; color: #172033; font-size: 13px; line-height: 19px; }
+    .home-activity-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; max-width: 1180px; margin: 0 auto; padding: 4px 0 24px; box-sizing: border-box; }
+    .home-activity-panel { height: 300px; min-height: 300px; max-height: 300px; min-width: 0; overflow: hidden; border: 1px solid #e5eaf1; border-radius: 16px; background: #fff; box-shadow: 0 5px 18px rgba(31, 48, 78, .06); }
+    .home-activity-panel .home-panel-head { height: 58px; min-height: 58px; padding: 0 20px; border-bottom: 1px solid #f0f3f7; display: flex; align-items: center; }
+    .home-activity-panel .home-panel-head h3 { display: flex; align-items: center; gap: 10px; margin: 0; color: #172033; font-size: 16px; line-height: 22px; font-weight: 700; }
+    .home-activity-title-icon { display: inline-grid; place-items: center; width: 22px; height: 22px; color: #1672f4; flex: 0 0 22px; }
+    .home-activity-title-icon .home-svg { width: 20px; height: 20px; }
+    .home-activity-scroll { height: 242px; max-height: 242px; overflow-y: auto; overflow-x: hidden; padding: 0 20px 12px; scrollbar-width: thin; scrollbar-color: #b9c7d9 transparent; }
+    .home-activity-scroll::-webkit-scrollbar { width: 6px; }
+    .home-activity-scroll::-webkit-scrollbar-track { background: transparent; }
+    .home-activity-scroll::-webkit-scrollbar-thumb { background: #b9c7d9; border-radius: 999px; }
+    .home-activity-list, .home-recent-list, .home-recommendation-list, .home-test-list { margin: 0; padding: 0; list-style: none; }
+    .home-activity-item { position: relative; display: grid; grid-template-columns: 54px 30px minmax(0,1fr); gap: 0; min-height: 58px; padding: 10px 0; border-bottom: 1px solid #eef1f5; color: #172033; font-size: 13px; line-height: 18px; }
     .home-activity-item:last-child { border-bottom: 0; }
-    .home-check { color: #16a34a; font-weight: 700; }
-    .home-activity-item small { display: block; color: #94a3b8; font-size: 11px; line-height: 17px; }
-    .home-recent-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eef1f5; color: #172033; font-size: 13px; }
-    .home-recent-row:last-child { border-bottom: 0; }
-    .home-recent-row small { color: #64748b; font-size: 11px; white-space: nowrap; }
+    .home-activity-item::before { content: ''; position: absolute; top: 0; bottom: 0; left: 69px; width: 1px; background: #dce5ef; }
+    .home-activity-item:first-child::before { top: 22px; }
+    .home-activity-item:last-child::before { bottom: 22px; }
+    .home-activity-time { align-self: start; padding-top: 3px; color: #7b8aa0; font-size: 11px; line-height: 17px; white-space: nowrap; }
+    .home-activity-timeline { position: relative; z-index: 1; display: flex; justify-content: center; align-items: flex-start; }
+    .home-activity-status { display: grid; place-items: center; width: 24px; height: 24px; border: 2px solid #43b45b; border-radius: 50%; background: #fff; color: #2ea648; box-sizing: border-box; }
+    .home-activity-status::before { content: '\\2713'; font-size: 13px; line-height: 1; font-weight: 800; }
+    .home-activity-body { min-width: 0; padding-left: 2px; }
+    .home-activity-title { display: block; overflow: hidden; color: #172033; font-size: 13px; line-height: 18px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+    .home-activity-body small { display: block; margin-top: 2px; color: #7b8aa0; font-size: 11px; line-height: 17px; }
+    .home-activity-clickable { cursor: pointer; }
+    .home-activity-clickable:hover .home-activity-title { color: #1264db; }
+    .home-recent-content-row { display: grid; grid-template-columns: 36px minmax(0,1fr) minmax(28px,1fr) auto; gap: 10px; align-items: center; min-height: 52px; padding: 8px 0; border-bottom: 1px solid #eef1f5; color: #172033; }
+    .home-recent-content-row:last-child { border-bottom: 0; }
+    .home-activity-avatar { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; color: #166534; font-size: 12px; line-height: 1; font-weight: 700; }
+    .home-activity-avatar.tone-green { background: #d9f4e8; color: #178653; }
+    .home-activity-avatar.tone-purple { background: #ece2ff; color: #7148cd; }
+    .home-activity-avatar.tone-amber { background: #fff0c8; color: #b77900; }
+    .home-activity-avatar.tone-blue { background: #dceaff; color: #2365cf; }
+    .home-activity-avatar.tone-pink { background: #ffe1ed; color: #c43c72; }
+    .home-activity-content-name { overflow: hidden; font-size: 13px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+    .home-activity-leader { position: relative; height: 1px; border-top: 1px dotted #d9e2ec; }
+    .home-activity-leader::after { content: ''; position: absolute; top: -4px; right: 32%; width: 7px; height: 7px; border-radius: 50%; background: #4aa75a; }
+    .home-activity-result { padding: 8px 10px; border-radius: 10px; background: #f2f6fc; color: #344b69; font-size: 11px; line-height: 16px; white-space: nowrap; }
+    .home-recommendation-list, .home-test-list { padding-top: 8px; }
+    .home-recommendation-row { display: grid; grid-template-columns: 36px minmax(0,1fr) 18px; gap: 10px; align-items: center; min-height: 68px; padding: 8px 0; border-bottom: 1px solid #eef1f5; color: #172033; cursor: pointer; }
+    .home-recommendation-row:last-child { border-bottom: 0; }
+    .home-recommendation-copy { min-width: 0; }
+    .home-recommendation-name { display: block; overflow: hidden; font-size: 13px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+    .home-recommendation-reason { display: inline-block; margin-top: 4px; padding: 2px 7px; border-radius: 999px; background: #eef4ff; color: #2863be; font-size: 10px; line-height: 15px; white-space: nowrap; }
+    .home-recommendation-reason.reason-amber { background: #fff2d2; color: #a96c00; }
+    .home-recommendation-reason.reason-red { background: #ffe5e4; color: #d0443e; }
+    .home-recommendation-meta { display: grid; grid-template-columns: 1fr auto; gap: 5px; align-items: center; margin-top: 6px; }
+    .home-recommendation-meta .home-progress { min-width: 0; height: 6px; }
+    .home-recommendation-meta small, .home-recommendation-percent { color: #64748b; font-size: 10px; line-height: 14px; white-space: nowrap; }
+    .home-recommendation-chevron { color: #71839b; font-size: 20px; line-height: 1; }
+    .home-test-row { display: grid; grid-template-columns: 36px minmax(0,1fr) auto; gap: 10px; align-items: center; min-height: 52px; padding: 8px 0; border-bottom: 1px solid #eef1f5; color: #172033; }
+    .home-test-row:last-child { border-bottom: 0; }
+    .home-test-copy { min-width: 0; }
+    .home-test-name { display: block; overflow: hidden; font-size: 13px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+    .home-test-meta { display: block; margin-top: 2px; color: #7b8aa0; font-size: 11px; line-height: 17px; }
+    .home-test-score { padding: 7px 10px; border-radius: 10px; background: #eaf6e8; color: #238b3a; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .home-test-score.is-warn { background: #fff5d8; color: #a66b00; }
+    .home-test-score.is-bad { background: #ffe9e6; color: #c84138; }
     @media (max-width: 1200px) { .home-summary-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
-    @media (max-width: 980px) { .home-today-grid, .home-progress-overview, .home-progress-grid, .home-activity-grid { grid-template-columns: 1fr; } .home-priority-list { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+    @media (max-width: 980px) { .home-today-grid, .home-progress-overview, .home-progress-grid { grid-template-columns: 1fr; } .home-priority-list { grid-template-columns: repeat(2,minmax(0,1fr)); } }
     @media (max-width: 760px) {
       body.home-active main { padding: 16px 14px 24px; }
       .home-hero-head { align-items: flex-start; flex-direction: column; gap: 8px; }
@@ -589,6 +636,7 @@
       .home-card strong { font-size: 12px; }
       .home-collection-grid, .home-priority-list, .home-period-list { grid-template-columns: 1fr; }
       .home-collection-scroll { max-height: 330px; }
+      .home-activity-grid { grid-template-columns: 1fr; gap: 12px; padding: 4px 0 20px; }
        .home-priority-item { flex-basis: 235px; }
        .home-priority-art { right: 8px; width: 110px; height: 110px; }
     }
@@ -630,7 +678,7 @@
         <section class="home-panel home-priority-panel"><div class="home-panel-head"><div><h3>Revis&otilde;es recomendadas para hoje</h3><p class="home-muted">Mantenha o ritmo! Revise e fixe ainda mais o conte&uacute;do.</p></div></div><div class="home-priority-scroll"><div class="home-priority-list" id="homePriorities"></div></div></section>
       </div></section>
       <section data-home-panel="progress" hidden><div class="home-shell"><section class="home-progress-overview" id="homeFooterStats"></section><div class="home-progress-grid"><article class="home-panel"><div class="home-panel-head"><h3>Desempenho recente</h3></div><ul class="home-simple-list" id="homePerformance"></ul></article><article class="home-panel"><div class="home-panel-head"><h3>Evolu&ccedil;&atilde;o</h3></div><div class="home-chart" id="homeChart"></div></article><article class="home-panel"><div class="home-panel-head"><h3>Objetivos</h3></div><ul class="home-goal-list" id="homeGoals"></ul></article><article class="home-panel"><div class="home-panel-head"><h3>Resumo do per&iacute;odo</h3></div><div class="home-period-list" id="homePeriodSummary"></div></article></div></div></section>
-      <section data-home-panel="activity" hidden><div class="home-shell"><div class="home-activity-grid"><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3>Atividade recente</h3></div><div class="home-activity-scroll"><ul class="home-simple-list" id="homeActivity"></ul></div></article><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3>Conte&uacute;dos estudados recentemente</h3></div><div class="home-activity-scroll"><div id="homeRecentContent"></div></div></article><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3>Revis&otilde;es recomendadas</h3></div><div class="home-activity-scroll"><div id="homeRecommendations"></div></div></article><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3>&Uacute;ltimos testes realizados</h3></div><div class="home-activity-scroll"><div id="homeTests"></div></div></article></div></div></section>
+      <section data-home-panel="activity" hidden><div class="home-shell"><div class="home-activity-grid"><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3><span class="home-activity-title-icon" data-home-activity-icon="clock" aria-hidden="true"></span>Atividade recente</h3></div><div class="home-activity-scroll"><ul class="home-activity-list" id="homeActivity"></ul></div></article><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3><span class="home-activity-title-icon" data-home-activity-icon="books" aria-hidden="true"></span>Conte&uacute;dos estudados recentemente</h3></div><div class="home-activity-scroll"><div class="home-recent-list" id="homeRecentContent"></div></div></article><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3><span class="home-activity-title-icon" data-home-activity-icon="target" aria-hidden="true"></span>Revis&otilde;es recomendadas</h3></div><div class="home-activity-scroll"><div class="home-recommendation-list" id="homeRecommendations"></div></div></article><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3><span class="home-activity-title-icon" data-home-activity-icon="chart" aria-hidden="true"></span>&Uacute;ltimos testes realizados</h3></div><div class="home-activity-scroll"><div class="home-test-list" id="homeTests"></div></div></article></div></div></section>
     </div>
   `;
   manageView.insertAdjacentElement('beforebegin', homeView);
@@ -805,12 +853,20 @@
 
      const priorities = testedItems.filter(item => item.stats.review > 0).slice(0, 12);
      document.querySelector('#homePriorities').innerHTML = priorities.length ? priorities.map(({subject,stats}) => `<article class="home-priority-item" data-home-subject="${esc(subject.id)}" tabindex="0"><div class="home-priority-head"><strong>${esc(subject.name)}</strong><span>Revisar ${stats.review}</span></div><div class="home-progress"><span style="width:${clamp(percent(stats.review,stats.total || 1),8,100)}%"></span></div></article>`).join('') : '<p class="home-muted">As revis&otilde;es recomendadas aparecer&atilde;o depois do primeiro teste.</p>';
-     const activities = recent.slice(0, 5).map(item => `<li class="home-activity-item"><span class="home-check">&#10003;</span><span>Finalizou teste em ${esc(testSubjectName(item))}<small>${Number(item.score || 0)} de ${Number(item.total || 0)} acertos</small></span></li>`);
-     if (subjects().length) activities.push('<li class="home-activity-item"><span class="home-check">&#10003;</span><span>Organizou suas cole&ccedil;&otilde;es<small>Dados atualizados no Fixa</small></span></li>');
-     document.querySelector('#homeActivity').innerHTML = activities.length ? activities.join('') : '<li class="home-activity-item"><span class="home-check">&#10003;</span><span>Sua atividade aparecer&aacute; aqui.</span></li>';
-      document.querySelector('#homeRecentContent').innerHTML = recent.length ? recent.slice(0, 5).map(item => `<div class="home-recent-row"><span>${esc(testSubjectName(item))}</span><small>${Number(item.score || 0)} acertos</small></div>`).join('') : '<p class="home-muted">Nenhum conte&uacute;do estudado recentemente.</p>';
-      document.querySelector('#homeRecommendations').innerHTML = testedItems.filter(item => item.stats.review > 0).slice(0, 5).map(({subject,stats}) => `<div class="home-recent-row"><span>${esc(subject.name)}</span><small>${stats.review} para revisar</small></div>`).join('') || '<p class="home-muted">Nenhuma revis&atilde;o recomendada agora.</p>';
-      document.querySelector('#homeTests').innerHTML = recent.slice(0, 5).map(item => `<div class="home-recent-row"><span>${esc(testSubjectName(item))}</span><small>${Number(item.score || 0)}/${Number(item.total || 0)}</small></div>`).join('') || '<p class="home-muted">Nenhum teste realizado ainda.</p>';
+     const activityRelativeTime = value => { const timestamp = Number(new Date(value || 0)); if (!timestamp) return 'agora'; const minutes = Math.max(1, Math.floor((Date.now() - timestamp) / 60000)); if (minutes < 60) return `h&aacute; ${minutes} min`; const hours = Math.floor(minutes / 60); if (hours < 24) return `h&aacute; ${hours} h`; const days = Math.floor(hours / 24); return days === 1 ? 'ontem' : `h&aacute; ${days} dias`; };
+     const activityInitials = name => { const parts = String(name || '').trim().split(/\s+/).filter(Boolean); if (!parts.length) return '??'; if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase(); return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase(); };
+     const activityTone = name => { const tones = ['green', 'purple', 'amber', 'blue', 'pink']; const hash = Array.from(String(name || '')).reduce((sum, char) => sum + char.charCodeAt(0), 0); return tones[hash % tones.length]; };
+     const activitySubject = item => subjects().find(subject => subject.id === item.subjectId || subject.name === item.subject);
+     const activitySubjectId = item => activitySubject(item)?.id || item.subjectId || '';
+     const activitySubjectAttr = item => activitySubjectId(item) ? ` data-home-subject="${esc(activitySubjectId(item))}" tabindex="0"` : '';
+     const activityRecords = recent.slice().sort((a, b) => Number(new Date(b.date || 0)) - Number(new Date(a.date || 0)));
+     document.querySelectorAll('[data-home-activity-icon]').forEach(icon => { icon.innerHTML = svgIcon(icon.dataset.homeActivityIcon); });
+     document.querySelector('#homeActivity').innerHTML = activityRecords.length ? activityRecords.slice(0, 12).map(item => `<li class="home-activity-item home-activity-clickable"${activitySubjectAttr(item)}><span class="home-activity-time">${activityRelativeTime(item.date)}</span><span class="home-activity-timeline"><span class="home-activity-status" aria-hidden="true"></span></span><span class="home-activity-body"><span class="home-activity-title">Finalizou teste em ${esc(testSubjectName(item))}</span><small>${Number(item.score || 0)} de ${Number(item.total || 0)} acertos</small></span></li>`).join('') : '<li class="home-activity-item"><span></span><span class="home-activity-timeline"><span class="home-activity-status" aria-hidden="true"></span></span><span class="home-activity-body"><span class="home-activity-title">Sua atividade aparecer&aacute; aqui.</span></span></li>';
+     document.querySelector('#homeRecentContent').innerHTML = activityRecords.length ? activityRecords.slice(0, 12).map(item => { const name = testSubjectName(item); return `<div class="home-recent-content-row"${activitySubjectAttr(item)}><span class="home-activity-avatar tone-${activityTone(name)}">${activityInitials(name)}</span><span class="home-activity-content-name">${esc(name)}</span><span class="home-activity-leader" aria-hidden="true"></span><span class="home-activity-result">${Number(item.score || 0)} acertos</span></div>`; }).join('') : '<p class="home-muted">Nenhum conte&uacute;do estudado recentemente.</p>';
+     const activityTodayRecords = tests.filter(item => String(item.date || '').slice(0, 10) === todayKey());
+     const activityRecommendations = testedItems.filter(item => item.stats.review > 0).slice(0, 12);
+     document.querySelector('#homeRecommendations').innerHTML = activityRecommendations.length ? activityRecommendations.map(({subject, stats}) => { const target = Math.min(10, Math.max(1, stats.review)); const done = Math.min(target, testRecordsFor(subject, activityTodayRecords).reduce((sum, item) => sum + Number(item.total || 0), 0)); const progress = target ? Math.round(done / target * 100) : 0; const reason = stats.wrong >= stats.hard && stats.wrong > 0 ? ['Mais erros recentes', 'reason-red'] : stats.review >= Math.max(5, Math.ceil(stats.total * .5)) ? ['Maior atraso', 'reason-amber'] : ['Menor aproveitamento', '']; return `<div class="home-recommendation-row" data-home-subject="${esc(subject.id)}" tabindex="0"><span class="home-activity-avatar tone-${activityTone(subject.name)}">${activityInitials(subject.name)}</span><span class="home-recommendation-copy"><span class="home-recommendation-name">${esc(subject.name)}</span><span class="home-recommendation-reason ${reason[1]}">${reason[0]}</span><span class="home-recommendation-meta"><span class="home-progress"><span style="width:${progress}%"></span></span><small>${done} de ${target} conclu&iacute;das</small></span></span><span class="home-recommendation-chevron" aria-hidden="true">&rsaquo;</span></div>`; }).join('') : '<p class="home-muted">Nenhuma revis&atilde;o recomendada agora.</p>';
+     document.querySelector('#homeTests').innerHTML = activityRecords.length ? activityRecords.slice(0, 12).map(item => { const name = testSubjectName(item); const score = Number(item.score || 0); const total = Number(item.total || 0); const percentage = total ? score / total * 100 : 0; const resultClass = percentage >= 80 ? '' : percentage >= 60 ? ' is-warn' : ' is-bad'; return `<div class="home-test-row"${activitySubjectAttr(item)}><span class="home-activity-avatar tone-${activityTone(name)}">${activityInitials(name)}</span><span class="home-test-copy"><span class="home-test-name">${esc(name)}</span><span class="home-test-meta">${activityRelativeTime(item.date)}</span></span><span class="home-test-score${resultClass}">${score}/${total}</span></div>`; }).join('') : '<p class="home-muted">Nenhum teste realizado ainda.</p>';
        const weeklyTests = tests.filter(item => Number(new Date(item.date || 0)) >= Date.now() - (7 * 24 * 60 * 60 * 1000)).length;
        const weeklyDone = Math.min(4, weeklyTests);
        const weeklyPercent = Math.round((weeklyDone / 4) * 100);
