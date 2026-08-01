@@ -377,14 +377,27 @@
     .home-view.active { display: block; }
     .home-view *, .home-view *::before, .home-view *::after { box-sizing: border-box; }
     .home-view [hidden] { display: none !important; }
-    .home-top-tools { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
-    .home-top-streak { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 6px 9px; border: 1px solid #f8e5bd; border-radius: 9px; background: #fff8ea; color: #c76a05; font-size: 13px; font-weight: 700; line-height: 1; }
+    .home-top-tools { position: relative; display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
+    .home-top-streak { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 6px 9px; border: 1px solid #f8e5bd; border-radius: 9px; background: #fff8ea; color: #c76a05; font: inherit; font-size: 13px; font-weight: 700; line-height: 1; cursor: pointer; }
     .home-top-streak .fire { font-size: 15px; line-height: 1; }
     .home-top-streak small { font-size: 10px; font-weight: 500; }
     .home-top-bell { width: 36px; height: 36px; padding: 0; border: 0; border-radius: 9px; background: transparent; color: #334155; display: inline-grid; place-items: center; cursor: pointer; transition: background 160ms ease; }
     .home-top-bell:hover { background: #f1f5f9; }
+    .home-streak-popover { position: absolute; top: calc(100% + 10px); right: 0; z-index: 30; width: 286px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 14px; background: #fff; box-shadow: 0 14px 32px rgba(15,23,42,.14); }
+    .home-streak-popover[hidden] { display: none !important; }
+    .home-streak-popover-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .home-streak-popover h4 { margin: 0 0 3px; color: #172033; font-size: 14px; line-height: 19px; }
+    .home-streak-popover p { margin: 0; color: #64748b; font-size: 11px; line-height: 16px; }
+    .home-streak-month { color: #2563eb; font-size: 12px; font-weight: 700; text-transform: capitalize; white-space: nowrap; }
+    .home-streak-week, .home-streak-days { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 4px; text-align: center; }
+    .home-streak-week { margin-bottom: 5px; color: #94a3b8; font-size: 10px; font-weight: 700; }
+    .home-streak-day { min-height: 26px; padding: 5px 0; border-radius: 7px; color: #64748b; font-size: 11px; }
+    .home-streak-day.is-empty { visibility: hidden; }
+    .home-streak-day.is-today { outline: 1px solid #2563eb; outline-offset: -1px; color: #2563eb; font-weight: 700; }
+    .home-streak-day.is-study { background: #fff0d8; color: #c76a05; font-weight: 700; }
+    .home-streak-day.is-study.is-today { outline-color: #c76a05; }
     .home-shell { display: grid; gap: 16px; }
-    .home-hero-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding: 0 2px; }
+    .home-hero-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 0 2px; }
     .home-title h2 { margin: 0 0 4px; color: #172033; font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: -.015em; }
     .home-title p, .home-muted { margin: 0; color: #64748b; font-size: 13px; line-height: 19px; font-weight: 400; }
     .home-last-label { display: inline-block; margin-top: 7px; color: #94a3b8; font-size: 12px; }
@@ -417,10 +430,13 @@
     .home-card strong { color: #172033; font-size: 13px; line-height: 19px; font-weight: 600; }
     .home-card small { display: block; font-size: 11px; }
     .home-today-grid { display: grid; grid-template-columns: minmax(280px,.38fr) minmax(0,.62fr); gap: 16px; }
-    .home-study-card { min-height: 300px; }
+    .home-study-card { min-height: 248px; }
     .home-study-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
     .home-study-head h3 { margin: 0 0 3px; color: #172033; font-size: 16px; line-height: 22px; font-weight: 600; }
     .home-study-head .home-icon { background: #eef4ff; color: #2563eb; }
+    .home-focus-box { display: grid; gap: 5px; margin-top: 22px; padding: 16px; border: 1px solid #dce7ff; border-radius: 12px; background: #f7faff; }
+    .home-focus-box strong { color: #172033; font-size: 20px; line-height: 25px; font-weight: 700; }
+    .home-focus-box small { color: #64748b; font-size: 11px; line-height: 16px; }
     .home-study-counts { display: flex; gap: 10px; margin-bottom: 14px; }
     .home-count-box { flex: 1; padding: 10px 12px; border: 1px solid #e5eaf1; border-radius: 10px; background: #f8fafc; }
     .home-count-box b { display: block; margin-bottom: 2px; color: #172033; font-size: 22px; line-height: 27px; font-weight: 700; }
@@ -458,10 +474,10 @@
     .home-progress span { display: block; height: 100%; border-radius: inherit; background: #22c55e; }
     .home-collection-foot { margin-top: 7px; color: #94a3b8; font-size: 11px; }
     .home-collection-foot b { color: #e5484d; font-weight: 600; }
-    .home-priority-panel { min-height: 110px; max-height: 145px; padding: 14px 16px; background: linear-gradient(180deg,#fff9f9,#fff); border-color: #fadcdc; }
-    .home-priority-scroll { max-height: 82px; padding-right: 4px; }
-    .home-priority-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
-    .home-priority-item { padding: 11px 12px; border: 1px solid #f2e2e2; border-radius: 10px; background: #fff; }
+    .home-priority-panel { min-height: 132px; padding: 14px 16px; background: linear-gradient(180deg,#fff9f9,#fff); border-color: #fadcdc; }
+    .home-priority-scroll { overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; }
+    .home-priority-list { display: flex; gap: 10px; min-width: max-content; }
+    .home-priority-item { flex: 0 0 255px; padding: 11px 12px; border: 1px solid #f2e2e2; border-radius: 10px; background: #fff; }
     .home-priority-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; color: #172033; font-size: 12px; font-weight: 600; }
     .home-priority-head span { color: #e5484d; font-size: 11px; font-weight: 600; white-space: nowrap; }
     .home-progress-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
@@ -511,8 +527,7 @@
       .home-card strong { font-size: 12px; }
       .home-collection-grid, .home-priority-list, .home-period-list { grid-template-columns: 1fr; }
       .home-collection-scroll { max-height: 330px; }
-      .home-priority-panel { max-height: 260px; }
-      .home-priority-scroll { max-height: 190px; }
+       .home-priority-item { flex-basis: 235px; }
     }
     @media (max-width: 420px) { .home-summary-grid { grid-template-columns: 1fr; } .home-top-tools { gap: 4px; } .home-top-streak { padding: 6px 7px; } }
   `;
@@ -529,7 +544,7 @@
     const tools = document.createElement('div');
     tools.className = 'home-top-tools';
     tools.id = 'homeTopTools';
-    tools.innerHTML = '<span class="home-top-streak" id="homeTopStreak" title="Voc&ecirc; estuda h&aacute; 0 dias consecutivos."><span class="fire" aria-hidden="true">&#128293;</span><b>0</b><small>dias</small></span><button class="home-top-bell" type="button" aria-label="Notifica&ccedil;&otilde;es" title="Notifica&ccedil;&otilde;es"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>';
+    tools.innerHTML = '<button class="home-top-streak" id="homeTopStreak" type="button" aria-expanded="false" title="Voc&ecirc; estuda h&aacute; 0 dias consecutivos."><span class="fire" aria-hidden="true">&#128293;</span><b>0</b><small>dias</small></button><button class="home-top-bell" type="button" aria-label="Notifica&ccedil;&otilde;es" title="Notifica&ccedil;&otilde;es"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button><div class="home-streak-popover" id="homeStreakPopover" hidden></div>';
     authPanel.insertAdjacentElement('beforebegin', tools);
   }
 
@@ -540,16 +555,16 @@
     <div class="home-shell">
       <header class="home-hero-head">
         <div class="home-title"><h2 id="homeGreeting">Boa noite, Julia!</h2><p>Pronta para mais um passo rumo aos seus objetivos?</p><span class="home-last-label">&Uacute;ltima cole&ccedil;&atilde;o: <b id="homeLastCollection">Nenhuma ainda</b></span></div>
-        <div class="home-hero-actions"><span class="home-date-pill" id="homeDatePill">Hoje</span><button class="home-primary" type="button" data-home-action="continue">&#9658; Continuar estudando</button></div>
+        <div class="home-hero-actions"><span class="home-date-pill" id="homeDatePill">Hoje</span></div>
       </header>
       <nav class="home-subtabs" aria-label="Resumo inicial" role="tablist"><button class="home-subtab active" type="button" role="tab" aria-selected="true" data-home-tab="today">Hoje</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="progress">Progresso</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="activity">Atividade</button></nav>
       <section data-home-panel="today"><div class="home-shell">
         <section class="home-summary-grid" id="homeSummaryCards"></section>
         <div class="home-today-grid">
-          <article class="home-panel home-study-card"><div class="home-study-head"><div><div class="home-kicker">Estude agora</div><h3>O que revisar primeiro</h3><p class="home-muted" id="homeStudyText">Voc&ecirc; possui revis&otilde;es para fazer hoje.</p></div><span class="home-icon" aria-hidden="true"><svg class="home-svg" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 9-12h-7z"></path></svg></span></div><div class="home-study-counts"><div class="home-count-box"><b id="homeTodayCount">0</b><span class="home-muted">revis&otilde;es hoje</span></div><div class="home-count-box"><b id="homeLateCount">0</b><span class="home-muted">atrasadas</span></div></div><div class="home-actions-row"><button class="home-action primary" type="button" data-home-action="recommended"><span>Revis&atilde;o recomendada</span><b>&rsaquo;</b></button><button class="home-action" type="button" data-home-action="quick-test"><span>Teste r&aacute;pido</span><b>&rsaquo;</b></button><button class="home-action" type="button" data-home-action="overdue"><span>Revis&otilde;es atrasadas</span><b>&rsaquo;</b></button></div></article>
+          <article class="home-panel home-study-card"><div class="home-study-head"><div><div class="home-kicker">Estude agora</div><h3>O que revisar primeiro</h3><p class="home-muted" id="homeStudyText">Comece um teste para criar sua primeira recomendação.</p></div><span class="home-icon" aria-hidden="true"><svg class="home-svg" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 9-12h-7z"></path></svg></span></div><div class="home-focus-box"><span class="home-muted">Cole&ccedil;&atilde;o recomendada</span><strong id="homeFocusCollection">Nenhuma ainda</strong><small id="homeFocusMeta">As recomenda&ccedil;&otilde;es aparecer&atilde;o depois do primeiro teste.</small></div></article>
           <article class="home-panel"><div class="home-panel-head"><h3>Resumo das cole&ccedil;&otilde;es</h3></div><div class="home-collection-scroll"><div class="home-collection-grid" id="homeCollectionSummary"></div></div></article>
         </div>
-        <section class="home-panel home-priority-panel"><div class="home-panel-head"><h3>Prioridades</h3></div><div class="home-priority-scroll"><div class="home-priority-list" id="homePriorities"></div></div></section>
+        <section class="home-panel home-priority-panel"><div class="home-panel-head"><h3>Revis&otilde;es recomendadas para hoje</h3></div><div class="home-priority-scroll"><div class="home-priority-list" id="homePriorities"></div></div></section>
       </div></section>
       <section data-home-panel="progress" hidden><div class="home-shell"><div class="home-progress-grid"><article class="home-panel"><div class="home-panel-head"><h3>Desempenho recente</h3></div><ul class="home-simple-list" id="homePerformance"></ul></article><article class="home-panel"><div class="home-panel-head"><h3>Evolu&ccedil;&atilde;o</h3></div><div class="home-chart" id="homeChart"></div></article><article class="home-panel"><div class="home-panel-head"><h3>Objetivos</h3></div><ul class="home-goal-list" id="homeGoals"></ul></article><article class="home-panel"><div class="home-panel-head"><h3>Resumo do per&iacute;odo</h3></div><div class="home-period-list" id="homePeriodSummary"></div></article></div><section class="home-footer-grid" id="homeFooterStats"></section></div></section>
       <section data-home-panel="activity" hidden><div class="home-shell"><div class="home-activity-grid"><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3>Atividade recente</h3></div><div class="home-activity-scroll"><ul class="home-simple-list" id="homeActivity"></ul></div></article><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3>Conte&uacute;dos estudados recentemente</h3></div><div class="home-activity-scroll"><div id="homeRecentContent"></div></div></article><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3>Revis&otilde;es recomendadas</h3></div><div class="home-activity-scroll"><div id="homeRecommendations"></div></div></article><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3>&Uacute;ltimos testes realizados</h3></div><div class="home-activity-scroll"><div id="homeTests"></div></div></article></div></div></section>
@@ -576,16 +591,21 @@
 
   const svgIcon = name => { const paths = { books: '<path d="M5 4h3v16H5zM10 4h3v16h-3zM15 6h4v14h-4z"></path><path d="M4 20h16"></path>', questions: '<rect x="6" y="4" width="12" height="16" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path>', target: '<circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3"></circle><path d="m17 7 3-3"></path>', chart: '<path d="M4 19V5M4 19h16"></path><path d="m7 15 4-4 3 2 5-7"></path>', folder: '<path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>', clock: '<circle cx="12" cy="12" r="8"></circle><path d="M12 8v5l3 2"></path>', calendar: '<rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 9h16"></path>' }; return `<svg class="home-svg" viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.chart}</svg>`; };
 
-  function studyStreak() { const set = new Set(history().map(item => String(item.date || '').slice(0, 10)).filter(Boolean)); const day = new Date(); day.setHours(0, 0, 0, 0); let count = 0; for (let i = 0; i < 365; i++) { const key = day.toISOString().slice(0, 10); if (!set.has(key)) { if (i === 0) { day.setDate(day.getDate() - 1); continue; } break; } count += 1; day.setDate(day.getDate() - 1); } return count; }
-  function subjectStats(subject) { const cards = cardsOf(subject); const total = cards.length; const frozen = cards.filter(isFrozen).length; const mastered = cards.filter(isMastered).length; const learning = cards.filter(card => !isFrozen(card) && isLearning(card)).length; const review = cards.filter(needsReview).length; return { total, frozen, mastered, learning, review, progress: percent(mastered, Math.max(1, total - frozen)) }; }
+   function studyStreak() { const set = new Set(history().map(item => String(item.date || '').slice(0, 10)).filter(Boolean)); const day = new Date(); day.setHours(0, 0, 0, 0); let count = 0; for (let i = 0; i < 365; i++) { const key = day.toISOString().slice(0, 10); if (!set.has(key)) { if (i === 0) { day.setDate(day.getDate() - 1); continue; } break; } count += 1; day.setDate(day.getDate() - 1); } return count; }
+   function renderStreakPopover() { const popover = document.querySelector('#homeStreakPopover'); if (!popover) return; const now = new Date(); const year = now.getFullYear(); const month = now.getMonth(); const first = new Date(year, month, 1); const daysInMonth = new Date(year, month + 1, 0).getDate(); const pad = first.getDay(); const studied = new Set(history().map(item => String(item.date || '').slice(0, 10)).filter(Boolean)); const monthLabel = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(now); const weekdays = ['D','S','T','Q','Q','S','S']; const cells = []; for (let i = 0; i < pad; i++) cells.push('<span class="home-streak-day is-empty"></span>'); for (let day = 1; day <= daysInMonth; day++) { const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; const classes = ['home-streak-day']; if (studied.has(key)) classes.push('is-study'); if (day === now.getDate()) classes.push('is-today'); cells.push(`<span class="${classes.join(' ')}">${day}</span>`); } popover.innerHTML = `<div class="home-streak-popover-head"><div><h4>Sequ&ecirc;ncia de estudos</h4><p>Dias em que voc&ecirc; concluiu um teste.</p></div><span class="home-streak-month">${monthLabel}</span></div><div class="home-streak-week">${weekdays.map(day => `<span>${day}</span>`).join('')}</div><div class="home-streak-days">${cells.join('')}</div>`; }
+  function subjectStats(subject) { const cards = cardsOf(subject); const total = cards.length; const frozen = cards.filter(isFrozen).length; const mastered = cards.filter(isMastered).length; const learning = cards.filter(card => !isFrozen(card) && isLearning(card)).length; const review = cards.filter(needsReview).length; const wrong = cards.reduce((sum, card) => sum + (Number(card.totalWrong) || 0), 0); const hard = cards.reduce((sum, card) => sum + (Number(card.ratingCounts?.hard) || 0), 0); const again = cards.reduce((sum, card) => sum + (Number(card.ratingCounts?.again) || 0), 0); return { total, frozen, mastered, learning, review, wrong, hard, again, priority: (review * 2) + (wrong * 5) + (hard * 3) + (again * 4), progress: percent(mastered, Math.max(1, total - frozen)) }; }
   function sortedSubjects() { return subjects().map(subject => ({ subject, stats: subjectStats(subject) })).sort((a, b) => (b.stats.review - a.stats.review) || (b.stats.total - a.stats.total)); }
+  function testRecordsFor(subject, tests = history()) { return tests.filter(item => item.subjectId === subject.id || (Array.isArray(item.subjectIds) && item.subjectIds.includes(subject.id)) || item.subject === subject.name); }
+  function testedSubjectItems(tests = history()) { return sortedSubjects().filter(({ subject }) => testRecordsFor(subject, tests).length); }
+  function priorityForSubject(item, tests = history()) { const records = testRecordsFor(item.subject, tests); const errors = records.reduce((sum, record) => sum + Math.max(0, Number(record.total || 0) - Number(record.score || 0)), 0); const durationMinutes = records.reduce((sum, record) => sum + (Number(record.durationMs || 0) / 60000), 0); return item.stats.priority + (errors * 6) + (records.length * 2) + Math.round(durationMinutes); }
+  function sortedTestedSubjects(tests = history()) { return testedSubjectItems(tests).sort((a, b) => priorityForSubject(b, tests) - priorityForSubject(a, tests)); }
   function setHomePanel(panel) { homePanel = panel; homeView.querySelectorAll('[data-home-tab]').forEach(button => { const active = button.dataset.homeTab === panel; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); }); homeView.querySelectorAll('[data-home-panel]').forEach(view => { view.hidden = view.dataset.homePanel !== panel; }); }
   function openAppView(view, panel) { document.body.classList.remove('home-active'); homeView.classList.remove('active'); homeTab.classList.remove('active'); homeTab.removeAttribute('aria-current'); if (typeof showView === 'function') showView(view); if (view === 'test' && typeof showTestPanel === 'function') showTestPanel(panel || 'quick'); if (view === 'test' && typeof renderTest === 'function') renderTest(); }
   function openHome() { document.body.classList.add('home-active'); document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view === homeView)); tabs.querySelectorAll('.tab').forEach(button => { const active = button === homeTab; button.classList.toggle('active', active); active ? button.setAttribute('aria-current', 'page') : button.removeAttribute('aria-current'); }); setHomePanel('today'); renderHome(); if (typeof closeMobileNav === 'function') closeMobileNav(); }
-  function renderCollectionCards(items) { if (!items.length) return '<div class="home-muted">Crie uma cole&ccedil;&atilde;o na aba Adicionar para come&ccedil;ar.</div>'; return items.map(({ subject, stats }) => `<article class="home-collection-card" data-home-subject="${esc(subject.id)}" tabindex="0"><div class="home-collection-head"><div class="home-collection-name"><span class="home-folder-icon">${svgIcon('folder')}</span><span>${esc(subject.name)}</span></div><span class="home-collection-total">${stats.total} quest&otilde;es</span></div><div class="home-collection-metrics"><span><b>${stats.mastered}</b><small>Dominadas</small></span><span><b>${stats.learning}</b><small>Em andamento</small></span><span><b>${stats.review}</b><small>Revisar</small></span></div><div class="home-progress"><span style="width:${clamp(stats.progress,3,100)}%"></span></div><div class="home-collection-foot"><span>Aproveitamento</span><b>${stats.progress}%</b></div></article>`).join(''); }
+   function renderCollectionCards(items) { if (!items.length) return '<div class="home-muted">As cole&ccedil;&otilde;es aparecer&atilde;o aqui depois do primeiro teste.</div>'; return items.map(({ subject, stats }) => `<article class="home-collection-card" data-home-subject="${esc(subject.id)}" tabindex="0"><div class="home-collection-head"><div class="home-collection-name"><span class="home-folder-icon">${svgIcon('folder')}</span><span>${esc(subject.name)}</span></div><span class="home-collection-total">${stats.total} quest&otilde;es</span></div><div class="home-collection-metrics"><span><b>${stats.mastered}</b><small>Dominadas</small></span><span><b>${stats.learning}</b><small>Em andamento</small></span><span><b>${stats.review}</b><small>Revisar</small></span></div><div class="home-progress"><span style="width:${clamp(stats.progress,3,100)}%"></span></div><div class="home-collection-foot"><span>Aproveitamento</span><b>${stats.progress}%</b></div></article>`).join(''); }
   function renderChart(points) { const list = points.length ? points : [0,0,0,0]; const xy = list.map((value,index) => `${28 + index * (244 / Math.max(1, list.length - 1))},${145 - (clamp(value,0,100) / 100) * 104}`).join(' '); document.querySelector('#homeChart').innerHTML = `<svg viewBox="0 0 300 185" role="img" aria-label="Evolu&ccedil;&atilde;o de aproveitamento"><path d="M28 36v109h244" fill="none" stroke="#e8edf5" stroke-width="1"></path><path d="M28 92h244M28 64h244" fill="none" stroke="#f1f5f9" stroke-width="1"></path><polyline points="${xy}" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>${list.map((value,index) => `<circle cx="${28 + index * (244 / Math.max(1, list.length - 1))}" cy="${145 - (clamp(value,0,100) / 100) * 104}" r="3" fill="#2563eb"></circle>`).join('')}</svg><p class="home-chart-caption">Aproveitamento dos &uacute;ltimos testes.</p>`; }
 
-  function renderHome() {
+   function renderHomeLegacy() {
     const cards = allCards(); const tests = history(); const recent = tests.slice(0, 7); const totalAttempts = tests.reduce((sum,item) => sum + Number(item.total || 0), 0); const totalScore = tests.reduce((sum,item) => sum + Number(item.score || 0), 0); const current = typeof currentSubject === 'function' ? currentSubject() : subjects()[0]; const last = subjects().find(subject => subject.id === tests[0]?.subjectId) || current || subjects()[0]; const reviewTotal = cards.filter(item => needsReview(item.card)).length; const overdueTotal = cards.filter(item => item.card?.dueAt && new Date(item.card.dueAt).getTime() < Date.now()).length; const masteredTotal = cards.filter(item => isMastered(item.card)).length; const accuracy = percent(totalScore, totalAttempts); const streak = studyStreak(); const dateText = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).format(new Date());
     document.querySelector('#homeGreeting').textContent = `${greeting()}, ${userName()}!`; document.querySelector('#homeDatePill').textContent = dateText.charAt(0).toUpperCase() + dateText.slice(1); document.querySelector('#homeLastCollection').textContent = last?.name || 'Nenhuma ainda'; document.querySelector('#homeTodayCount').textContent = reviewTotal; document.querySelector('#homeLateCount').textContent = overdueTotal; document.querySelector('#homeStudyText').textContent = `Voc\u00ea possui ${reviewTotal} revis\u00f5es para fazer hoje.`;
     const streakElement = document.querySelector('#homeTopStreak'); if (streakElement) { streakElement.querySelector('b').textContent = streak; streakElement.title = `Voc\u00ea estuda h\u00e1 ${streak} dias consecutivos.`; }
@@ -605,12 +625,69 @@
     setHomePanel(homePanel);
   }
 
-  homeTab.addEventListener('click', openHome);
-  homeView.querySelectorAll('[data-home-tab]').forEach(button => button.addEventListener('click', () => setHomePanel(button.dataset.homeTab)));
-  tabs.addEventListener('click', event => { const button = event.target.closest('.tab[data-view]'); if (!button || button === homeTab) return; document.body.classList.remove('home-active'); homeView.classList.remove('active'); homeTab.classList.remove('active'); homeTab.removeAttribute('aria-current'); });
-  homeView.addEventListener('click', event => { const action = event.target.closest('[data-home-action]'); if (action) { openAppView('test','quick'); return; } const collection = event.target.closest('[data-home-subject]'); if (collection) { if (typeof selectDestinationCollection === 'function') selectDestinationCollection(collection.dataset.homeSubject); document.body.classList.remove('home-active'); homeView.classList.remove('active'); homeTab.classList.remove('active'); if (typeof showView === 'function') showView('manage'); } });
-  homeView.addEventListener('keydown', event => { if (event.key !== 'Enter' && event.key !== ' ') return; const collection = event.target.closest('[data-home-subject]'); if (!collection) return; event.preventDefault(); collection.click(); });
-  const observer = new MutationObserver(() => { if (homeView.classList.contains('active')) requestAnimationFrame(renderHome); });
+   function renderHome() {
+     const cards = allCards();
+     const tests = history();
+     const recent = tests.slice(0, 7);
+     const totalAttempts = tests.reduce((sum, item) => sum + Number(item.total || 0), 0);
+     const totalScore = tests.reduce((sum, item) => sum + Number(item.score || 0), 0);
+     const current = typeof currentSubject === 'function' ? currentSubject() : subjects()[0];
+     const last = subjects().find(subject => subject.id === tests[0]?.subjectId || subject.name === tests[0]?.subject) || current || subjects()[0];
+     const testedItems = sortedTestedSubjects(tests);
+     const focus = testedItems.find(item => item.stats.review > 0) || testedItems[0];
+     const reviewTotal = testedItems.reduce((sum, item) => sum + item.stats.review, 0);
+     const masteredTotal = cards.filter(item => isMastered(item.card)).length;
+     const accuracy = percent(totalScore, totalAttempts);
+     const streak = studyStreak();
+     const dateText = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).format(new Date());
+     const testSubjectName = item => item.subject || subjects().find(subject => subject.id === item.subjectId)?.name || 'Cole&ccedil;&atilde;o';
+
+     document.querySelector('#homeGreeting').textContent = `${greeting()}, ${userName()}!`;
+     document.querySelector('#homeDatePill').textContent = dateText.charAt(0).toUpperCase() + dateText.slice(1);
+     document.querySelector('#homeLastCollection').textContent = last?.name || 'Nenhuma ainda';
+     document.querySelector('#homeStudyText').textContent = focus ? `${focus.stats.review} quest${focus.stats.review === 1 ? '\u00e3o' : '\u00f5es'} para revisar nesta cole\u00e7\u00e3o.` : 'Comece um teste para criar sua primeira recomenda\u00e7\u00e3o.';
+     document.querySelector('#homeFocusCollection').textContent = focus?.subject.name || 'Nenhuma ainda';
+     document.querySelector('#homeFocusMeta').textContent = focus ? `${focus.stats.review} quest${focus.stats.review === 1 ? '\u00e3o' : '\u00f5es'} para revisar.` : 'As recomenda\u00e7\u00f5es aparecer\u00e3o depois do primeiro teste.';
+
+     const streakElement = document.querySelector('#homeTopStreak');
+     if (streakElement) { streakElement.querySelector('b').textContent = streak; streakElement.title = `Voc\u00ea estuda h\u00e1 ${streak} dias consecutivos.`; streakElement.setAttribute('aria-label', `Sequ\u00eancia de ${streak} dias`); }
+     document.querySelector('#homeSummaryCards').innerHTML = [['books','Cole&ccedil;&otilde;es',subjects().length,'Total de cole&ccedil;&otilde;es'],['questions','Quest&otilde;es',cards.length,'Total de quest&otilde;es'],['target','Dominadas',masteredTotal,`${percent(masteredTotal,cards.length)}% do total`],['chart','Aproveitamento',`${accuracy}%`,'M&eacute;dia dos testes']].map(([icon,label,value,caption]) => `<article class="home-card"><span class="home-icon">${svgIcon(icon)}</span><span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span></article>`).join('');
+     document.querySelector('#homeCollectionSummary').innerHTML = renderCollectionCards(testedItems.slice(0, 14));
+
+     const recentTotal = recent.reduce((sum, item) => sum + Number(item.total || 0), 0);
+     const recentScore = recent.reduce((sum, item) => sum + Number(item.score || 0), 0);
+     const recentDuration = recent.reduce((sum, item) => sum + Number(item.durationMs || 0), 0);
+     const lastTest = recent[0] ? `${Number(recent[0].score || 0)} de ${Number(recent[0].total || 0)}` : 'Sem testes';
+     document.querySelector('#homePerformance').innerHTML = [['M&eacute;dia dos &uacute;ltimos testes',`${percent(recentScore,recentTotal)}%`],['Tempo m&eacute;dio por quest&atilde;o',recentTotal ? duration(recentDuration / recentTotal) : '0s'],['Melhor sequ&ecirc;ncia',`${recent.reduce((max,item) => Math.max(max,Number(item.score || 0)),0)} acertos`],['Acertos recentes',lastTest]].map(([label,value]) => `<li class="home-stat-row"><span>${label}</span><b>${value}</b></li>`).join('');
+     renderChart(recent.slice(0, 6).reverse().map(item => clamp(percent(Number(item.score || 0), Number(item.total || 0)), 0, 100)));
+     const todayTests = tests.filter(item => String(item.date || '').slice(0, 10) === todayKey()).length;
+     document.querySelector('#homeGoals').innerHTML = [['Revisar 30 quest&otilde;es hoje',Math.min(reviewTotal,30),30],['Fazer dois testes',Math.min(todayTests,2),2],['Dominar mais 20 quest&otilde;es',Math.min(masteredTotal,20),20]].map(([label,done,total]) => `<li class="home-goal-item"><div class="home-goal-head"><strong>${label}</strong><span>${done}/${total}</span></div><div class="home-progress"><span style="width:${clamp(percent(done,total),4,100)}%"></span></div></li>`).join('');
+     const todayTime = tests.filter(item => String(item.date || '').slice(0,10) === todayKey()).reduce((sum,item) => sum + Number(item.durationMs || 0), 0);
+     document.querySelector('#homePeriodSummary').innerHTML = [[tests.length,'testes realizados'],[cards.length,'quest&otilde;es cadastradas'],[masteredTotal,'quest&otilde;es dominadas'],[duration(todayTime),'estudado hoje']].map(([value,label]) => `<div class="home-period-item"><b>${value}</b><span>${label}</span></div>`).join('');
+
+     const priorities = testedItems.filter(item => item.stats.review > 0).slice(0, 12);
+     document.querySelector('#homePriorities').innerHTML = priorities.length ? priorities.map(({subject,stats}) => `<article class="home-priority-item" data-home-subject="${esc(subject.id)}" tabindex="0"><div class="home-priority-head"><strong>${esc(subject.name)}</strong><span>Revisar ${stats.review}</span></div><div class="home-progress"><span style="width:${clamp(percent(stats.review,stats.total || 1),8,100)}%"></span></div></article>`).join('') : '<p class="home-muted">As revis&otilde;es recomendadas aparecer&atilde;o depois do primeiro teste.</p>';
+     const activities = recent.slice(0, 5).map(item => `<li class="home-activity-item"><span class="home-check">&#10003;</span><span>Finalizou teste em ${esc(testSubjectName(item))}<small>${Number(item.score || 0)} de ${Number(item.total || 0)} acertos</small></span></li>`);
+     if (subjects().length) activities.push('<li class="home-activity-item"><span class="home-check">&#10003;</span><span>Organizou suas cole&ccedil;&otilde;es<small>Dados atualizados no Fixa</small></span></li>');
+     document.querySelector('#homeActivity').innerHTML = activities.length ? activities.join('') : '<li class="home-activity-item"><span class="home-check">&#10003;</span><span>Sua atividade aparecer&aacute; aqui.</span></li>';
+     document.querySelector('#homeRecentContent').innerHTML = recent.length ? recent.slice(0, 5).map(item => `<div class="home-recent-row"><span>${esc(testSubjectName(item))}</span><small>${Number(item.score || 0)} acertos</small></div>`).join('') : '<p class="home-muted">Nenhum conte&uacute;do estudado recentemente.</p>';
+     document.querySelector('#homeRecommendations').innerHTML = testedItems.filter(item => item.stats.review > 0).slice(0, 5).map(({subject,stats}) => `<div class="home-recent-row"><span>${esc(subject.name)}</span><small>${stats.review} para revisar</small></div>`).join('') || '<p class="home-muted">Nenhuma revis&atilde;o recomendada agora.</p>';
+     document.querySelector('#homeTests').innerHTML = recent.slice(0, 5).map(item => `<div class="home-recent-row"><span>${esc(testSubjectName(item))}</span><small>${Number(item.score || 0)}/${Number(item.total || 0)}</small></div>`).join('') || '<p class="home-muted">Nenhum teste realizado ainda.</p>';
+     document.querySelector('#homeFooterStats').innerHTML = [['&#128293;','Sequ&ecirc;ncia atual',`${streak} dia${streak === 1 ? '' : 's'}`],[svgIcon('clock'),'Tempo estudado hoje',duration(todayTime)],[svgIcon('calendar'),'Meta semanal',`${clamp(percent(tests.slice(0, 7).length, 7), 0, 100)}%`]].map(([icon,label,value]) => `<article class="home-panel home-footer-card"><span class="home-icon">${icon}</span><span><strong>${value}</strong><small class="home-muted">${label}</small></span></article>`).join('');
+     setHomePanel(homePanel);
+   }
+
+   homeTab.addEventListener('click', openHome);
+   homeView.querySelectorAll('[data-home-tab]').forEach(button => button.addEventListener('click', () => setHomePanel(button.dataset.homeTab)));
+   tabs.addEventListener('click', event => { const button = event.target.closest('.tab[data-view]'); if (!button || button === homeTab) return; document.body.classList.remove('home-active'); homeView.classList.remove('active'); homeTab.classList.remove('active'); homeTab.removeAttribute('aria-current'); });
+   homeView.addEventListener('click', event => { const action = event.target.closest('[data-home-action]'); if (action) { openAppView('test','quick'); return; } const collection = event.target.closest('[data-home-subject]'); if (collection) { if (typeof selectDestinationCollection === 'function') selectDestinationCollection(collection.dataset.homeSubject); document.body.classList.remove('home-active'); homeView.classList.remove('active'); homeTab.classList.remove('active'); if (typeof showView === 'function') showView('manage'); } });
+   homeView.addEventListener('keydown', event => { if (event.key !== 'Enter' && event.key !== ' ') return; const collection = event.target.closest('[data-home-subject]'); if (!collection) return; event.preventDefault(); collection.click(); });
+   const streakButton = document.querySelector('#homeTopStreak');
+   const streakPopover = document.querySelector('#homeStreakPopover');
+   const closeStreakPopover = () => { if (!streakPopover) return; streakPopover.hidden = true; streakButton?.setAttribute('aria-expanded', 'false'); };
+   streakButton?.addEventListener('click', event => { event.stopPropagation(); if (!streakPopover) return; renderStreakPopover(); streakPopover.hidden = !streakPopover.hidden; streakButton.setAttribute('aria-expanded', String(!streakPopover.hidden)); });
+   document.addEventListener('click', event => { if (!event.target.closest('#homeTopTools')) closeStreakPopover(); });
+   const observer = new MutationObserver(() => { if (homeView.classList.contains('active')) requestAnimationFrame(renderHome); });
   observer.observe(document.querySelector('#subjects') || document.body, { childList: true, subtree: true });
   requestAnimationFrame(openHome);
 })();
