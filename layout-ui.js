@@ -373,7 +373,7 @@
   style.textContent = `
     body.home-active main { width: min(100%, 1180px); padding: 24px 24px 32px; overflow-x: hidden; }
     body.home-active .topbar-title { display: none; }
-    .home-view { display: none; width: 100%; max-width: 1180px; margin: 0 auto; padding: 0; color: #172033; background: #f6f8fc; overflow-x: hidden; }
+    .home-view { display: none; width: 100%; max-width: 1180px; margin: 0 auto; padding: 0; color: #172033; background: var(--bg); overflow-x: hidden; }
     .home-view.active { display: block; }
     .home-view *, .home-view *::before, .home-view *::after { box-sizing: border-box; }
     .home-view [hidden] { display: none !important; }
@@ -431,7 +431,8 @@
     .home-card strong { display: block; margin-bottom: 2px; color: #475569; font-size: 13px; line-height: 18px; font-weight: 500; }
     .home-card small { display: block; font-size: 11px; }
     .home-today-grid { display: grid; grid-template-columns: minmax(280px,.36fr) minmax(0,.64fr); gap: 16px; align-items: start; }
-    .home-study-card { min-height: 0; align-self: start; }
+    .home-today-grid > .home-panel { align-self: start; margin-top: 0; }
+    .home-study-card { min-height: 0; }
     .home-study-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
     .home-study-head h3 { margin: 0 0 3px; color: #172033; font-size: 16px; line-height: 22px; font-weight: 600; }
     .home-study-head { position: relative; min-height: 68px; }
@@ -546,8 +547,8 @@
     .home-footer-card strong { display: block; color: #172033; font-size: 24px; line-height: 28px; font-weight: 700; }
     .home-footer-card small { display: block; font-size: 12px; }
     .home-activity-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
-    .home-activity-panel { min-height: 240px; }
-    .home-activity-scroll { max-height: 230px; padding-right: 4px; }
+    .home-activity-panel { min-height: 300px; }
+    .home-activity-scroll { height: 226px; max-height: 226px; overflow-y: scroll; overflow-x: hidden; padding-right: 8px; }
     .home-activity-item { display: grid; grid-template-columns: 20px minmax(0,1fr); gap: 8px; padding: 10px 0; border-bottom: 1px solid #eef1f5; color: #172033; font-size: 13px; line-height: 19px; }
     .home-activity-item:last-child { border-bottom: 0; }
     .home-check { color: #16a34a; font-weight: 700; }
@@ -733,7 +734,7 @@
      const current = typeof currentSubject === 'function' ? currentSubject() : subjects()[0];
      const last = subjects().find(subject => subject.id === tests[0]?.subjectId || subject.name === tests[0]?.subject) || current || subjects()[0];
      const testedItems = sortedTestedSubjects(tests);
-      const studyPlans = testedItems.filter(item => item.stats.review > 0).slice(0, 2);
+      const studyPlans = testedItems.filter(item => item.stats.review > 0).slice(0, 3);
       const studyTotal = studyPlans.reduce((sum, item) => sum + Math.min(10, Math.max(0, item.stats.review)), 0);
      const reviewTotal = testedItems.reduce((sum, item) => sum + item.stats.review, 0);
      const masteredTotal = cards.filter(item => isMastered(item.card)).length;
