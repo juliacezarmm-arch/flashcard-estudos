@@ -430,9 +430,9 @@
     .home-card-number { color: #172033; font-size: 24px; line-height: 28px; font-weight: 700; }
     .home-card strong { display: block; margin-bottom: 2px; color: #475569; font-size: 13px; line-height: 18px; font-weight: 500; }
     .home-card small { display: block; font-size: 11px; }
-    .home-today-grid { display: grid; grid-template-columns: minmax(280px,.36fr) minmax(0,.64fr); gap: 16px; align-items: start; }
-    .home-today-grid > .home-panel { align-self: start; margin-top: 0; }
-    .home-study-card { min-height: 0; }
+    .home-today-grid { display: grid; grid-template-columns: minmax(280px,.36fr) minmax(0,.64fr); gap: 16px; align-items: stretch; }
+    .home-today-grid > .home-panel { align-self: stretch; margin-top: 0; }
+    .home-study-card { min-height: 0; height: 100%; }
     .home-study-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
     .home-study-head h3 { margin: 0 0 3px; color: #172033; font-size: 16px; line-height: 22px; font-weight: 600; }
     .home-study-head { position: relative; min-height: 68px; }
