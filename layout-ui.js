@@ -506,6 +506,25 @@
     .home-focus-box strong { color: #172033; font-size: 16px; line-height: 20px; font-weight: 600; }
     .home-focus-box small { color: #64748b; font-size: 11px; line-height: 16px; }
     .home-focus-arrow { position: absolute; top: 50%; right: 14px; color: #334155; font-size: 22px; line-height: 1; transform: translateY(-50%); }
+    .home-progress-overview { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 16px; }
+    .home-progress-card { min-height: 164px; padding: 20px; overflow: hidden; }
+    .home-progress-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .home-progress-card-head h3 { margin: 0; color: #172033; font-size: 16px; line-height: 22px; font-weight: 600; }
+    .home-progress-symbol { width: 36px; height: 36px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; background: #eef4ff; color: #2563eb; }
+    .home-progress-symbol img { width: 27px; height: 27px; object-fit: contain; }
+    .home-progress-symbol .home-svg { width: 23px; height: 23px; }
+    .home-progress-value { display: flex; align-items: baseline; gap: 9px; margin-bottom: 3px; }
+    .home-progress-value strong { color: #172033; font-size: 36px; line-height: 40px; font-weight: 700; }
+    .home-progress-value span { color: #334155; font-size: 16px; }
+    .home-progress-card > p { margin: 0 0 12px; color: #64748b; font-size: 13px; line-height: 18px; }
+    .home-progress-card .home-progress { height: 8px; }
+    .home-progress-card .home-progress span { background: #2563eb; }
+    .home-sequence-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 7px; margin-top: 12px; padding: 9px 8px 7px; border: 1px solid #e5eaf1; border-radius: 10px; }
+    .home-sequence-day { display: grid; justify-items: center; gap: 5px; color: #64748b; font-size: 11px; font-weight: 600; }
+    .home-sequence-day i { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid #e5eaf1; border-radius: 50%; color: transparent; font-style: normal; }
+    .home-sequence-day.is-study i { border-color: #b8e2ff; background: #eef9ff; color: #2563eb; }
+    .home-sequence-day.is-current i { border-color: #f59e0b; background: #fbbf24; color: #172033; }
+    .home-sequence-day.is-current { color: #172033; }
     .home-progress-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
     .home-progress-grid .home-panel { min-height: 240px; }
     .home-simple-list, .home-goal-list { display: grid; gap: 0; margin: 0; padding: 0; }
@@ -537,7 +556,7 @@
     .home-recent-row:last-child { border-bottom: 0; }
     .home-recent-row small { color: #64748b; font-size: 11px; white-space: nowrap; }
     @media (max-width: 1200px) { .home-summary-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
-    @media (max-width: 980px) { .home-today-grid, .home-progress-grid, .home-activity-grid { grid-template-columns: 1fr; } .home-priority-list { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+    @media (max-width: 980px) { .home-today-grid, .home-progress-overview, .home-progress-grid, .home-activity-grid { grid-template-columns: 1fr; } .home-priority-list { grid-template-columns: repeat(2,minmax(0,1fr)); } }
     @media (max-width: 760px) {
       body.home-active main { padding: 16px 14px 24px; }
       .home-hero-head { align-items: flex-start; flex-direction: column; gap: 8px; }
@@ -593,7 +612,7 @@
         </div>
         <section class="home-panel home-priority-panel"><div class="home-panel-head"><div><h3>Revis&otilde;es recomendadas para hoje</h3><p class="home-muted">Mantenha o ritmo! Revise e fixe ainda mais o conte&uacute;do.</p></div></div><div class="home-priority-scroll"><div class="home-priority-list" id="homePriorities"></div></div></section>
       </div></section>
-      <section data-home-panel="progress" hidden><div class="home-shell"><div class="home-progress-grid"><article class="home-panel"><div class="home-panel-head"><h3>Desempenho recente</h3></div><ul class="home-simple-list" id="homePerformance"></ul></article><article class="home-panel"><div class="home-panel-head"><h3>Evolu&ccedil;&atilde;o</h3></div><div class="home-chart" id="homeChart"></div></article><article class="home-panel"><div class="home-panel-head"><h3>Objetivos</h3></div><ul class="home-goal-list" id="homeGoals"></ul></article><article class="home-panel"><div class="home-panel-head"><h3>Resumo do per&iacute;odo</h3></div><div class="home-period-list" id="homePeriodSummary"></div></article></div><section class="home-footer-grid" id="homeFooterStats"></section></div></section>
+      <section data-home-panel="progress" hidden><div class="home-shell"><section class="home-progress-overview" id="homeFooterStats"></section><div class="home-progress-grid"><article class="home-panel"><div class="home-panel-head"><h3>Desempenho recente</h3></div><ul class="home-simple-list" id="homePerformance"></ul></article><article class="home-panel"><div class="home-panel-head"><h3>Evolu&ccedil;&atilde;o</h3></div><div class="home-chart" id="homeChart"></div></article><article class="home-panel"><div class="home-panel-head"><h3>Objetivos</h3></div><ul class="home-goal-list" id="homeGoals"></ul></article><article class="home-panel"><div class="home-panel-head"><h3>Resumo do per&iacute;odo</h3></div><div class="home-period-list" id="homePeriodSummary"></div></article></div></div></section>
       <section data-home-panel="activity" hidden><div class="home-shell"><div class="home-activity-grid"><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3>Atividade recente</h3></div><div class="home-activity-scroll"><ul class="home-simple-list" id="homeActivity"></ul></div></article><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3>Conte&uacute;dos estudados recentemente</h3></div><div class="home-activity-scroll"><div id="homeRecentContent"></div></div></article><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3>Revis&otilde;es recomendadas</h3></div><div class="home-activity-scroll"><div id="homeRecommendations"></div></div></article><article class="home-panel home-activity-panel"><div class="home-panel-head"><h3>&Uacute;ltimos testes realizados</h3></div><div class="home-activity-scroll"><div id="homeTests"></div></div></article></div></div></section>
     </div>
   `;
@@ -611,7 +630,7 @@
      fire: 'icone_fogo_sequencia.png',
      wave: 'icone_maozinha_acenando.png'
   });
-  const svgIcon = name => { const paths = { books: '<path d="M5 4h3v16H5zM10 4h3v16h-3zM15 6h4v14h-4z"></path><path d="M4 20h16"></path>', questions: '<rect x="6" y="4" width="12" height="16" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path>', target: '<circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3"></circle><path d="m17 7 3-3"></path>', chart: '<path d="M4 19V5M4 19h16"></path><path d="m7 15 4-4 3 2 5-7"></path>', folder: '<path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>', clock: '<circle cx="12" cy="12" r="8"></circle><path d="M12 8v5l3 2"></path>', calendar: '<rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 9h16"></path>' }; return `<svg class="home-svg" viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.chart}</svg>`; };
+  const svgIcon = name => { const paths = { books: '<path d="M5 4h3v16H5zM10 4h3v16h-3zM15 6h4v14h-4z"></path><path d="M4 20h16"></path>', questions: '<rect x="6" y="4" width="12" height="16" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path>', target: '<circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3"></circle><path d="m17 7 3-3"></path>', chart: '<path d="M4 19V5M4 19h16"></path><path d="m7 15 4-4 3 2 5-7"></path>', folder: '<path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>', clock: '<circle cx="12" cy="12" r="8"></circle><path d="M12 8v5l3 2"></path>', calendar: '<rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 9h16"></path>', flag: '<path d="M5 21V4"></path><path d="M5 5c5-3 8 3 14 0v9c-6 3-9-3-14 0"></path>' }; return `<svg class="home-svg" viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.chart}</svg>`; };
   const studyArt = homeView.querySelector('.home-study-head .home-icon');
    if (studyArt) {
     const image = document.createElement('img');
@@ -760,7 +779,12 @@
       document.querySelector('#homeRecentContent').innerHTML = recent.length ? recent.slice(0, 5).map(item => `<div class="home-recent-row"><span>${esc(testSubjectName(item))}</span><small>${Number(item.score || 0)} acertos</small></div>`).join('') : '<p class="home-muted">Nenhum conte&uacute;do estudado recentemente.</p>';
       document.querySelector('#homeRecommendations').innerHTML = testedItems.filter(item => item.stats.review > 0).slice(0, 5).map(({subject,stats}) => `<div class="home-recent-row"><span>${esc(subject.name)}</span><small>${stats.review} para revisar</small></div>`).join('') || '<p class="home-muted">Nenhuma revis&atilde;o recomendada agora.</p>';
       document.querySelector('#homeTests').innerHTML = recent.slice(0, 5).map(item => `<div class="home-recent-row"><span>${esc(testSubjectName(item))}</span><small>${Number(item.score || 0)}/${Number(item.total || 0)}</small></div>`).join('') || '<p class="home-muted">Nenhum teste realizado ainda.</p>';
-      document.querySelector('#homeFooterStats').innerHTML = [['&#128293;','Sequ&ecirc;ncia atual',`${streak} dia${streak === 1 ? '' : 's'}`],[svgIcon('clock'),'Tempo estudado hoje',duration(todayTime)],[svgIcon('calendar'),'Meta semanal',`${clamp(percent(tests.slice(0, 7).length, 7), 0, 100)}%`]].map(([icon,label,value]) => `<article class="home-panel home-footer-card"><span class="home-icon">${icon}</span><span><strong>${value}</strong><small class="home-muted">${label}</small></span></article>`).join('');
+       const weeklyTests = tests.filter(item => Number(new Date(item.date || 0)) >= Date.now() - (7 * 24 * 60 * 60 * 1000)).length;
+       const weeklyDone = Math.min(4, weeklyTests);
+       const weeklyPercent = Math.round((weeklyDone / 4) * 100);
+       const sequenceLabels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+       const sequenceDays = sequenceLabels.map((label, index) => { const active = streak > 0 && index >= Math.max(0, 7 - Math.min(7, streak)); const current = index === 6 && streak > 0; return `<span class="home-sequence-day${active ? ' is-study' : ''}${current ? ' is-current' : ''}"><b>${label}</b><i>${current ? '&#10003;' : active ? '&bull;' : ''}</i></span>`; }).join('');
+       document.querySelector('#homeFooterStats').innerHTML = `<article class="home-panel home-progress-card home-sequence-card"><div class="home-progress-card-head"><span class="home-progress-symbol"><img src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true"></span><h3>Sequ&ecirc;ncia</h3></div><div class="home-progress-value"><strong>${streak}</strong><span>dias seguidos</span></div><div class="home-sequence-days">${sequenceDays}</div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol">${svgIcon('clock')}</span><h3>Tempo estudado hoje</h3></div><div class="home-progress-value"><strong>${duration(todayTime)}</strong></div><p>Meta di&aacute;ria: 2h</p><div class="home-progress"><span style="width:${Math.min(100, Math.round(todayTime / (2 * 60 * 60 * 1000) * 100))}%"></span></div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol">${svgIcon('flag')}</span><h3>Metas da semana</h3></div><div class="home-progress-value"><strong>${weeklyPercent}%</strong></div><p>${weeklyDone} de 4 metas conclu&iacute;das</p><div class="home-progress"><span style="width:${weeklyPercent}%"></span></div></article>`;
 
       const dailyTarget = item => Math.min(10, Math.max(0, item.stats.review));
       const todayTestRecords = tests.filter(item => String(item.date || '').slice(0, 10) === todayKey());
