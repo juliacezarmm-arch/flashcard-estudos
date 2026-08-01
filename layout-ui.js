@@ -430,15 +430,15 @@
     .home-card-number { color: #172033; font-size: 24px; line-height: 28px; font-weight: 700; }
     .home-card strong { display: block; margin-bottom: 2px; color: #475569; font-size: 13px; line-height: 18px; font-weight: 500; }
     .home-card small { display: block; font-size: 11px; }
-    .home-today-grid { display: grid; grid-template-columns: minmax(280px,.36fr) minmax(0,.64fr); gap: 16px; }
-    .home-study-card { min-height: 0; }
+    .home-today-grid { display: grid; grid-template-columns: minmax(280px,.36fr) minmax(0,.64fr); gap: 16px; align-items: start; }
+    .home-study-card { min-height: 0; align-self: start; }
     .home-study-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
     .home-study-head h3 { margin: 0 0 3px; color: #172033; font-size: 16px; line-height: 22px; font-weight: 600; }
     .home-study-head { position: relative; min-height: 68px; }
     .home-study-head .home-icon { background: #eef4ff; color: #2563eb; }
     .home-study-art { position: absolute; top: -4px; right: 0; width: 72px; height: 72px; object-fit: contain; object-position: center; pointer-events: none; }
     .home-recommendation-list { display: grid; gap: 10px; margin-top: 18px; }
-    .home-recommendation { min-height: 72px; padding: 10px 12px; border: 1px solid #e5eaf1; border-radius: 11px; background: #fff; color: #172033; display: grid; grid-template-columns: 40px minmax(0,1fr) auto 14px; align-items: center; gap: 9px; text-align: left; cursor: pointer; transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
+    .home-recommendation { min-height: 62px; padding: 10px 12px; border: 1px solid #e5eaf1; border-radius: 11px; background: #fff; color: #172033; display: grid; grid-template-columns: minmax(0,1fr) auto 14px; align-items: center; gap: 9px; text-align: left; cursor: pointer; transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
     .home-recommendation:hover { border-color: #c9d9f8; box-shadow: 0 7px 18px rgba(15,23,42,.07); transform: translateY(-1px); }
     .home-recommendation-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 10px; background: #eef4ff; border: 1px solid #dce7ff; }
     .home-recommendation-icon img { width: 34px; height: 34px; object-fit: contain; }
@@ -501,8 +501,8 @@
     .home-priority-sub b { color: #475569; font-weight: 600; }
     .home-priority-art { position: absolute; z-index: 0; top: -28px; right: 6px; width: 165px; height: 165px; object-fit: contain; object-position: center; pointer-events: none; opacity: .95; }
     .home-priority-panel .home-panel-head, .home-priority-panel .home-priority-scroll { position: relative; z-index: 1; }
-    .home-focus-box { position: relative; display: grid; gap: 3px; min-height: 76px; margin-top: 12px; padding: 14px 42px 14px 14px; border: 1px solid #dce7ff; border-radius: 11px; background: #f8fbff; cursor: pointer; transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
-    .home-focus-box:hover { border-color: #c9d9f8; box-shadow: 0 7px 18px rgba(15,23,42,.07); transform: translateY(-1px); }
+    .home-focus-box { position: relative; min-height: 0; margin-top: 12px; padding: 0; border: 0; background: transparent; }
+    .home-focus-box:hover { border-color: transparent; box-shadow: none; transform: none; }
     .home-focus-box strong { color: #172033; font-size: 16px; line-height: 20px; font-weight: 600; }
     .home-focus-box small { color: #64748b; font-size: 11px; line-height: 16px; }
     .home-focus-arrow { position: absolute; top: 50%; right: 14px; color: #334155; font-size: 22px; line-height: 1; transform: translateY(-50%); }
@@ -588,7 +588,7 @@
       <section data-home-panel="today"><div class="home-shell">
         <section class="home-summary-grid" id="homeSummaryCards"></section>
         <div class="home-today-grid">
-          <article class="home-panel home-study-card"><div class="home-study-head"><div><div class="home-kicker">Estude agora</div><h3>O que revisar primeiro</h3><p class="home-muted" id="homeStudyText">Comece um teste para criar sua primeira recomendação.</p></div><span class="home-icon" aria-hidden="true"><svg class="home-svg" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 9-12h-7z"></path></svg></span></div><div class="home-focus-box"><span class="home-muted">Cole&ccedil;&atilde;o recomendada</span><strong id="homeFocusCollection">Nenhuma ainda</strong><small id="homeFocusMeta">As recomenda&ccedil;&otilde;es aparecer&atilde;o depois do primeiro teste.</small></div></article>
+          <article class="home-panel home-study-card"><div class="home-study-head"><div><div class="home-kicker">Estude agora</div><h3>O que revisar primeiro</h3><p class="home-muted" id="homeStudyText">Comece um teste para criar sua primeira recomenda&ccedil;&atilde;o.</p></div><span class="home-icon" aria-hidden="true"><svg class="home-svg" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 9-12h-7z"></path></svg></span></div><div class="home-focus-box"><div class="home-recommendation-list" id="homeStudyRecommendations"><p class="home-muted">As recomenda&ccedil;&otilde;es aparecer&atilde;o depois do primeiro teste.</p></div></div></article>
           <article class="home-panel"><div class="home-panel-head"><h3>Resumo das cole&ccedil;&otilde;es</h3></div><div class="home-collection-scroll"><div class="home-collection-grid" id="homeCollectionSummary"></div></div></article>
         </div>
         <section class="home-panel home-priority-panel"><div class="home-panel-head"><div><h3>Revis&otilde;es recomendadas para hoje</h3><p class="home-muted">Mantenha o ritmo! Revise e fixe ainda mais o conte&uacute;do.</p></div></div><div class="home-priority-scroll"><div class="home-priority-list" id="homePriorities"></div></div></section>
@@ -628,7 +628,7 @@
   if (focusBox) {
     focusBox.id = 'homeFocusBox';
     focusBox.setAttribute('tabindex', '0');
-    focusBox.innerHTML = '<span class="home-muted">Continue estudando</span><strong id="homeFocusCollection">Nenhuma ainda</strong><small id="homeFocusMeta">As recomenda&ccedil;&otilde;es aparecer&atilde;o depois do primeiro teste.</small><span class="home-focus-arrow" aria-hidden="true">&rsaquo;</span>';
+    focusBox.innerHTML = '<div class="home-recommendation-list" id="homeStudyRecommendations"><p class="home-muted">As recomenda&ccedil;&otilde;es aparecer&atilde;o depois do primeiro teste.</p></div>';
   }
   const priorityPanel = homeView.querySelector('.home-priority-panel');
   const priorityHead = priorityPanel?.querySelector('.home-panel-head');
@@ -714,7 +714,8 @@
      const current = typeof currentSubject === 'function' ? currentSubject() : subjects()[0];
      const last = subjects().find(subject => subject.id === tests[0]?.subjectId || subject.name === tests[0]?.subject) || current || subjects()[0];
      const testedItems = sortedTestedSubjects(tests);
-     const focus = testedItems.find(item => item.stats.review > 0) || testedItems[0];
+      const studyPlans = testedItems.filter(item => item.stats.review > 0).slice(0, 2);
+      const studyTotal = studyPlans.reduce((sum, item) => sum + Math.min(10, Math.max(0, item.stats.review)), 0);
      const reviewTotal = testedItems.reduce((sum, item) => sum + item.stats.review, 0);
      const masteredTotal = cards.filter(item => isMastered(item.card)).length;
      const accuracy = percent(totalScore, totalAttempts);
@@ -725,10 +726,15 @@
      document.querySelector('#homeGreetingText').textContent = `${greeting()}, ${userName()}!`;
      document.querySelector('#homeDatePill').textContent = dateText.charAt(0).toUpperCase() + dateText.slice(1);
      document.querySelector('#homeLastCollection').textContent = last?.name || 'Nenhuma ainda';
-     document.querySelector('#homeStudyText').textContent = focus ? `${focus.stats.review} quest${focus.stats.review === 1 ? '\u00e3o' : '\u00f5es'} para revisar nesta cole\u00e7\u00e3o.` : 'Comece um teste para criar sua primeira recomenda\u00e7\u00e3o.';
-     document.querySelector('#homeFocusCollection').textContent = focus?.subject.name || 'Nenhuma ainda';
-      document.querySelector('#homeFocusMeta').textContent = focus ? `${focus.stats.review} quest${focus.stats.review === 1 ? '\u00e3o' : '\u00f5es'} para revisar.` : 'As recomenda\u00e7\u00f5es aparecer\u00e3o depois do primeiro teste.';
-      if (focusBox) focusBox.dataset.homeSubject = focus?.subject.id || '';
+     document.querySelector('#homeStudyText').textContent = studyPlans.length ? `${studyTotal} quest${studyTotal === 1 ? '\u00e3o selecionada' : '\u00f5es selecionadas'} para hoje.` : 'Comece um teste para criar sua primeira recomenda\u00e7\u00e3o.';
+     const studyRecommendations = document.querySelector('#homeStudyRecommendations');
+     if (studyRecommendations) {
+       studyRecommendations.innerHTML = studyPlans.length ? studyPlans.map(({ subject, stats }) => {
+         const reason = stats.review >= stats.total * .75 ? 'Maior atraso nas revis\u00f5es' : stats.wrong > 0 ? 'Mais erros recentes' : 'Mais precisa de pr\u00e1tica';
+         const target = Math.min(10, Math.max(0, stats.review));
+         return `<article class="home-recommendation" data-home-subject="${esc(subject.id)}" tabindex="0"><div class="home-recommendation-copy"><strong>${esc(subject.name)}</strong><small>${reason}</small></div><span class="home-recommendation-meta">Hoje: ${target} quest\u00f5es</span><span class="home-recommendation-arrow" aria-hidden="true">&rsaquo;</span></article>`;
+       }).join('') : '<p class="home-muted">As recomenda\u00e7\u00f5es aparecer\u00e3o depois do primeiro teste.</p>';
+     }
 
      const streakElement = document.querySelector('#homeTopStreak');
      if (streakElement) { streakElement.querySelector('b').textContent = streak; streakElement.title = `Voc\u00ea estuda h\u00e1 ${streak} dias consecutivos.`; streakElement.setAttribute('aria-label', `Sequ\u00eancia de ${streak} dias`); }
@@ -760,7 +766,6 @@
       const todayTestRecords = tests.filter(item => String(item.date || '').slice(0, 10) === todayKey());
       const completedToday = subject => testRecordsFor(subject, todayTestRecords).reduce((sum, item) => sum + Number(item.score || 0), 0);
       document.querySelector('#homeSummaryCards').innerHTML = [['books','Cole&ccedil;&otilde;es',subjects().length,'Total de cole&ccedil;&otilde;es'],['questions','Quest&otilde;es',cards.length,'Total de quest&otilde;es'],['trophy','Dominadas',masteredTotal,`${percent(masteredTotal,cards.length)}% do total`],['chart','Aproveitamento',`${accuracy}%`,'M&eacute;dia dos testes']].map(([icon,label,value,caption]) => `<article class="home-card"><img class="home-card-art" src="${homeAsset(HOME_ASSETS[icon] || HOME_ASSETS.chart)}" alt="" aria-hidden="true"><span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span></article>`).join('');
-       document.querySelector('#homeStudyText').textContent = focus ? `${focus.stats.review} quest${focus.stats.review === 1 ? '\u00e3o' : '\u00f5es'} para revisar nesta cole\u00e7\u00e3o.` : 'Comece um teste para criar sua primeira recomenda\u00e7\u00e3o.';
       const plans = testedItems.filter(item => item.stats.review > 0).slice(0, 3);
       document.querySelector('#homePriorities').innerHTML = plans.length ? plans.map(item => { const target = dailyTarget(item); const done = Math.min(target, completedToday(item.subject)); const progress = target ? Math.min(100, Math.round(done / target * 100)) : 0; return `<article class="home-priority-item" data-home-subject="${esc(item.subject.id)}" tabindex="0"><div class="home-priority-head"><strong>${esc(item.subject.name)}</strong><span>Hoje: ${target} quest&otilde;es</span></div><div class="home-priority-sub"><span>${done} de ${target} conclu&iacute;das</span><b>${progress}%</b></div><div class="home-progress"><span style="width:${progress}%"></span></div></article>`; }).join('') : '<p class="home-muted">As revis&otilde;es recomendadas aparecer&atilde;o depois do primeiro teste.</p>';
       setHomePanel(homePanel);
