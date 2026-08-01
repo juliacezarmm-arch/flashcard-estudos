@@ -601,7 +601,7 @@
 
   const homeAsset = file => encodeURI(`referencias/${file}`);
   const HOME_ASSETS = Object.freeze({
-     books: 'icone_livros_colecoes.png',
+  books: 'ChatGPT Image 1 de ago. de 2026, 12_11_38 (1).png',
      clipboard: 'icone_prancheta_revisao.png',
     chart: 'ChatGPT Image 1 de ago. de 2026, 12_31_23.png',
     questions: 'ChatGPT Image 31 de jul. de 2026, 23_14_35 (2).png',
