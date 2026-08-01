@@ -415,18 +415,18 @@
     .home-panel h3 { margin: 0; color: #172033; font-size: 16px; line-height: 22px; font-weight: 600; }
     .home-kicker { margin-bottom: 4px; color: #2563eb; font-size: 11px; line-height: 17px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
     .home-summary-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; }
-    .home-card { min-height: 96px; padding: 14px 16px; display: grid; grid-template-columns: 48px minmax(0,1fr); align-items: center; column-gap: 12px; }
+    .home-card { min-height: 82px; padding: 12px 16px; display: flex; align-items: center; }
     .home-card:nth-child(1) { background: linear-gradient(180deg,rgba(34,197,94,.07),rgba(255,255,255,.95)); border-color: #d8f1e0; }
     .home-card:nth-child(2) { background: linear-gradient(180deg,rgba(59,130,246,.07),rgba(255,255,255,.95)); border-color: #dce7ff; }
     .home-card:nth-child(3) { background: linear-gradient(180deg,rgba(245,158,11,.08),rgba(255,255,255,.95)); border-color: #f8e5bd; }
     .home-card:nth-child(4) { background: linear-gradient(180deg,rgba(139,92,246,.07),rgba(255,255,255,.95)); border-color: #e8deff; }
     .home-icon { width: 36px; height: 36px; border-radius: 10px; display: inline-grid; place-items: center; background: #eef4ff; color: #2563eb; flex: 0 0 auto; }
-    .home-card-art { width: 48px; height: 48px; object-fit: contain; object-position: center; }
+    .home-card-art { display: none; }
     .home-card:nth-child(1) .home-icon { background: #effaf3; color: #16a34a; }
     .home-card:nth-child(3) .home-icon { background: #fff8ea; color: #d97706; }
     .home-card:nth-child(4) .home-icon { background: #f7f2ff; color: #7c3aed; }
     .home-svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-    .home-card-number { color: #172033; font-size: 26px; line-height: 32px; font-weight: 700; }
+    .home-card-number { color: #172033; font-size: 24px; line-height: 28px; font-weight: 700; }
     .home-card strong { display: block; margin-bottom: 2px; color: #475569; font-size: 13px; line-height: 18px; font-weight: 500; }
     .home-card small { display: block; font-size: 11px; }
     .home-today-grid { display: grid; grid-template-columns: minmax(280px,.36fr) minmax(0,.64fr); gap: 16px; }
@@ -490,14 +490,14 @@
     .home-priority-panel .home-panel-head h3 { margin-bottom: 2px; }
     .home-priority-panel .home-panel-head p { margin: 0; }
     .home-priority-panel .home-panel-head::before { content: ''; display: inline-block; width: 22px; height: 22px; margin-right: 7px; vertical-align: -6px; background: url("referencias/ChatGPT%20Image%201%20de%20ago.%20de%202026,%2012_11_38%20(2).png") center/contain no-repeat; }
-    .home-priority-scroll { overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; }
+    .home-priority-scroll { position: relative; z-index: 1; overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; }
     .home-priority-list { display: flex; gap: 10px; min-width: max-content; }
     .home-priority-item { flex: 0 0 31%; min-width: 220px; padding: 11px 12px; border: 1px solid #e5eaf1; border-radius: 10px; background: #fff; }
     .home-priority-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; color: #172033; font-size: 12px; font-weight: 600; }
     .home-priority-head span { color: #2563eb; font-size: 11px; font-weight: 600; white-space: nowrap; }
     .home-priority-sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 0 7px; color: #64748b; font-size: 11px; }
     .home-priority-sub b { color: #475569; font-weight: 600; }
-    .home-priority-art { position: absolute; right: 18px; bottom: -22px; width: 150px; height: 150px; object-fit: contain; object-position: center; pointer-events: none; opacity: .95; }
+    .home-priority-art { position: absolute; z-index: 0; right: -4px; bottom: -48px; width: 145px; height: 145px; object-fit: contain; object-position: center; pointer-events: none; opacity: .92; }
     .home-progress-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
     .home-progress-grid .home-panel { min-height: 240px; }
     .home-simple-list, .home-goal-list { display: grid; gap: 0; margin: 0; padding: 0; }
@@ -540,7 +540,7 @@
       .home-subtabs { max-width: 100%; overflow-x: auto; }
       .home-subtab { flex: 0 0 auto; }
       .home-summary-grid, .home-footer-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-      .home-card { min-height: 96px; padding: 12px; }
+      .home-card { min-height: 82px; padding: 11px 12px; }
       .home-card-number { font-size: 23px; line-height: 28px; }
       .home-card strong { font-size: 12px; }
       .home-collection-grid, .home-priority-list, .home-period-list { grid-template-columns: 1fr; }
@@ -711,7 +711,7 @@
 
      const streakElement = document.querySelector('#homeTopStreak');
      if (streakElement) { streakElement.querySelector('b').textContent = streak; streakElement.title = `Voc\u00ea estuda h\u00e1 ${streak} dias consecutivos.`; streakElement.setAttribute('aria-label', `Sequ\u00eancia de ${streak} dias`); }
-     document.querySelector('#homeSummaryCards').innerHTML = [['books','Cole&ccedil;&otilde;es',subjects().length,'Total de cole&ccedil;&otilde;es'],['questions','Quest&otilde;es',cards.length,'Total de quest&otilde;es'],['target','Dominadas',masteredTotal,`${percent(masteredTotal,cards.length)}% do total`],['chart','Aproveitamento',`${accuracy}%`,'M&eacute;dia dos testes']].map(([icon,label,value,caption]) => `<article class="home-card"><span class="home-icon">${svgIcon(icon)}</span><span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span></article>`).join('');
+     document.querySelector('#homeSummaryCards').innerHTML = [['books','Cole&ccedil;&otilde;es',subjects().length,'Total de cole&ccedil;&otilde;es'],['questions','Quest&otilde;es',cards.length,'Total de quest&otilde;es'],['target','Dominadas',masteredTotal,`${percent(masteredTotal,cards.length)}% do total`],['chart','Aproveitamento',`${accuracy}%`,'M&eacute;dia dos testes']].map(([,label,value,caption]) => `<article class="home-card"><span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span></article>`).join('');
      document.querySelector('#homeCollectionSummary').innerHTML = renderCollectionCards(testedItems.slice(0, 14));
 
      const recentTotal = recent.reduce((sum, item) => sum + Number(item.total || 0), 0);
@@ -740,7 +740,7 @@
       const completedToday = subject => testRecordsFor(subject, todayTestRecords).reduce((sum, item) => sum + Number(item.score || 0), 0);
       const recommendationReason = (item, index) => index === 0 ? 'Maior atraso nas revis&otilde;es' : item.stats.wrong ? 'Mais erros recentes' : item.stats.hard ? 'Maior dificuldade registrada' : 'Menor aproveitamento nos testes';
       const recommendations = testedItems.filter(item => item.stats.review > 0).slice(0, 2);
-      document.querySelector('#homeSummaryCards').innerHTML = [['books','Cole&ccedil;&otilde;es',subjects().length,'Total de cole&ccedil;&otilde;es'],['questions','Quest&otilde;es',cards.length,'Total de quest&otilde;es'],['trophy','Dominadas',masteredTotal,`${percent(masteredTotal,cards.length)}% do total`],['chart','Aproveitamento',`${accuracy}%`,'M&eacute;dia dos testes']].map(([icon,label,value,caption]) => `<article class="home-card"><img class="home-card-art" src="${homeAsset(HOME_ASSETS[icon])}" alt=""><span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span></article>`).join('');
+      document.querySelector('#homeSummaryCards').innerHTML = [['books','Cole&ccedil;&otilde;es',subjects().length,'Total de cole&ccedil;&otilde;es'],['questions','Quest&otilde;es',cards.length,'Total de quest&otilde;es'],['trophy','Dominadas',masteredTotal,`${percent(masteredTotal,cards.length)}% do total`],['chart','Aproveitamento',`${accuracy}%`,'M&eacute;dia dos testes']].map(([,label,value,caption]) => `<article class="home-card"><span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span></article>`).join('');
       document.querySelector('#homeStudyText').textContent = recommendations.length ? `${recommendations.reduce((sum, item) => sum + dailyTarget(item), 0)} quest\u00f5es selecionadas para hoje.` : 'As recomenda\u00e7\u00f5es aparecer\u00e3o depois do primeiro teste.';
       document.querySelector('#homeRecommendationsToday').innerHTML = recommendations.length ? recommendations.map((item, index) => `<article class="home-recommendation" data-home-subject="${esc(item.subject.id)}" tabindex="0"><span class="home-recommendation-icon" aria-hidden="true"><img src="${homeAsset(index === 0 ? HOME_ASSETS.booksOnly : HOME_ASSETS.chart)}" alt=""></span><span class="home-recommendation-copy"><strong>${esc(item.subject.name)}</strong><small>${recommendationReason(item, index)}</small></span><span class="home-recommendation-meta">Hoje: ${dailyTarget(item)} quest&otilde;es</span><span class="home-recommendation-arrow" aria-hidden="true">&rsaquo;</span></article>`).join('') : '<p class="home-muted">As recomenda&ccedil;&otilde;es aparecer&atilde;o depois do primeiro teste.</p>';
       const plans = testedItems.filter(item => item.stats.review > 0).slice(0, 3);
