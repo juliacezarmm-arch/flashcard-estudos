@@ -371,7 +371,7 @@
   const style = document.createElement('style');
   style.id = 'homeDashboardStyle';
   style.textContent = `
-    body.home-active main { width: min(100%, 1180px); padding: 20px 24px 32px; overflow-x: hidden; }
+    body.home-active main { width: min(100%, 1180px); padding: 24px 24px 32px; overflow-x: hidden; }
     body.home-active .topbar-title { display: none; }
     .home-view { display: none; width: 100%; max-width: 1180px; margin: 0 auto; padding: 0; color: #172033; background: #f6f8fc; overflow-x: hidden; }
     .home-view.active { display: block; }
