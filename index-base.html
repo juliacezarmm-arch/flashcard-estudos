@@ -1007,6 +1007,8 @@
 
     .remove-option {
       padding: 9px 10px;
+      margin-left: 4px;
+      white-space: nowrap;
     }
 
     .card-options {
@@ -4273,6 +4275,91 @@
         align-content: start;
       }
     }
+    @media (min-width: 861px) {
+      body:has(#add.view.active),
+      body:has(#test.view.active) {
+        overflow: hidden;
+      }
+
+      .app:has(#add.view.active) main,
+      .app:has(#test.view.active) main {
+        height: 100vh;
+        min-height: 0;
+        overflow: hidden;
+        grid-template-rows: auto minmax(0, 1fr);
+        align-content: stretch;
+      }
+
+      .app:has(#add.view.active),
+      .app:has(#test.view.active) {
+        height: 100vh;
+        min-height: 0;
+      }
+
+      #add.view.active {
+        min-height: 0;
+        grid-template-rows: minmax(0, 1fr);
+      }
+
+      #test.view.active {
+        min-height: 0;
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+
+      #add.view.active .add-workspace,
+      #test.view.active .test-layout {
+        height: 100%;
+        min-height: 0;
+      }
+
+      #add.view.active .unified-add-panel {
+        height: 100%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #add.view.active .add-mode,
+      #add.view.active .add-info {
+        flex: 0 0 auto;
+      }
+
+      #add.view.active .add-section.active {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 8px;
+        scrollbar-gutter: stable;
+      }
+
+      #test.view.active .test-tabs {
+        flex: 0 0 auto;
+      }
+
+      #test.view.active .test-layout {
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 8px;
+        scrollbar-gutter: stable;
+      }
+
+      #test.view.active .history-list {
+        max-height: none;
+        overflow: visible;
+      }
+
+      #test.view.active .analysis-inner-tabs {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+
+      #add.view.active .remove-option,
+      #test.view.active .remove-option {
+        margin-left: 6px;
+      }
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -4598,7 +4685,6 @@
             <h3>Questões da coleção</h3>
             <div class="row">
               <button class="secondary collapse-toggle" id="exportCollection" type="button"><span aria-hidden="true">⇩</span> Exportar</button>
-              <button class="secondary collapse-toggle" id="toggleQuestions" type="button" aria-expanded="true"><span aria-hidden="true">−</span> Minimizar</button>
             </div>
           </div>
           <div class="collapsible-content" id="questionsContent">
@@ -8407,7 +8493,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         if (action === "delete") openDeleteSubjectModal(id);
       }
     });
-    el.toggleQuestions.addEventListener("click", () => {
+    el.toggleQuestions?.addEventListener("click", () => {
       const collapsed = !el.questionsContent.hidden;
       el.questionsContent.hidden = collapsed;
       el.toggleQuestions.textContent = collapsed ? "Maximizar" : "Minimizar";
