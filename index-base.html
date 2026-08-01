@@ -1218,6 +1218,21 @@
       max-height: 330px;
       overflow-y: auto;
       padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+    }
+
+    .history-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .history-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .history-list::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
     }
 
     .history-item {
@@ -4411,8 +4426,9 @@
       }
 
       #test.view.active .history-list {
-        max-height: none;
-        overflow: visible;
+        max-height: 330px;
+        overflow-y: auto;
+        overflow-x: hidden;
       }
 
       #test.view.active .analysis-inner-tabs {
