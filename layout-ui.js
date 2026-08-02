@@ -135,6 +135,212 @@
         flex: 0 0 auto;
       }
     }
+
+    /* Fixa mobile shell override: evita que celulares exibam o desktop espremido. */
+    @media (max-width: 860px), (max-device-width: 860px), (hover: none) and (pointer: coarse) and (orientation: portrait) {
+      html,
+      body {
+        width: 100%;
+        min-width: 0;
+        height: auto;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+
+      body {
+        min-height: 100dvh;
+      }
+
+      .app {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        min-height: 100dvh !important;
+        height: auto !important;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+        margin: 0 !important;
+      }
+
+      #collectionsSidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: min(86vw, 340px) !important;
+        max-width: 340px !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        padding: 16px !important;
+        z-index: 90 !important;
+        background: var(--panel, #fff) !important;
+        border-right: 1px solid var(--line, #dde2ee) !important;
+        box-shadow: 0 24px 70px rgba(17, 26, 49, 0.22) !important;
+        transform: translateX(calc(-100% - 20px)) !important;
+        transition: transform 0.22s ease !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      .app.mobile-nav-open #collectionsSidebar {
+        transform: translateX(0) !important;
+      }
+
+      #subjects {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        scrollbar-gutter: stable;
+      }
+
+      #collectionsSidebar .side-footer {
+        flex: 0 0 auto;
+      }
+
+      main {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        height: auto !important;
+        min-height: 100dvh !important;
+        overflow: visible !important;
+        padding: 12px 12px 20px !important;
+      }
+
+      .mobile-topline {
+        display: flex !important;
+      }
+
+      .mobile-menu-toggle {
+        display: grid !important;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding: 0 0 8px !important;
+        background: var(--bg, #f6f7fb);
+      }
+
+      .topbar-title {
+        display: none !important;
+      }
+
+      .topbar-right {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: 1fr auto !important;
+        align-items: center !important;
+        gap: 10px !important;
+      }
+
+      .topbar-right .tabs {
+        order: 2 !important;
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
+        display: flex !important;
+        grid-template-columns: none !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        gap: 8px !important;
+        padding-bottom: 2px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+
+      .topbar-right .tabs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .topbar-right .tabs .tab,
+      .tab {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: max-content !important;
+        min-height: 40px !important;
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+        white-space: nowrap !important;
+      }
+
+      .topbar-right #homeTopTools {
+        order: 1 !important;
+        margin-left: 0 !important;
+        justify-self: start !important;
+        display: flex !important;
+        gap: 8px !important;
+      }
+
+      .topbar-right .auth-panel {
+        order: 1 !important;
+        width: auto !important;
+        justify-self: end !important;
+        margin-left: 0 !important;
+      }
+
+      .auth-panel .user-menu-button,
+      .user-menu-button {
+        max-width: 44px;
+        padding: 0;
+      }
+
+      .auth-panel .user-menu-text {
+        display: none !important;
+      }
+
+      .view,
+      .home-view,
+      .home-panel,
+      .home-summary-card,
+      .home-now-panel,
+      .home-collections-panel,
+      .home-recommended-panel,
+      .home-progress-panel,
+      .home-activity-panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+      }
+
+      body.home-active main {
+        width: 100% !important;
+        padding: 12px 12px 20px !important;
+      }
+
+      .home-summary-grid,
+      .home-footer-grid,
+      .home-today-grid,
+      .home-progress-top-row,
+      .home-progress-middle-row,
+      .home-progress-bottom-row,
+      .home-activity-grid,
+      .questions-grid,
+      .collection-list-grid,
+      .add-grid,
+      .test-analysis-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .questions-scroll,
+      .home-activity-list,
+      .home-progress-list {
+        max-height: none;
+      }
+
+      .question-card,
+      .collection-summary-card {
+        break-inside: avoid;
+      }
+    }
   `;
   document.head.appendChild(style);
 
@@ -153,12 +359,12 @@
     const usable = Math.min(requested, count);
 
     const availableText = count === 1
-      ? '1 questão disponível.'
-      : `${count} questões disponíveis.`;
+      ? '1 questÃƒÂ£o disponÃƒÂ­vel.'
+      : `${count} questÃƒÂµes disponÃƒÂ­veis.`;
 
     const selectedText = usable === 1
-      ? 'Será selecionada 1 questão para este teste.'
-      : `Serão selecionadas ${usable} questões para este teste.`;
+      ? 'SerÃƒÂ¡ selecionada 1 questÃƒÂ£o para este teste.'
+      : `SerÃƒÂ£o selecionadas ${usable} questÃƒÂµes para este teste.`;
 
     const nextText = `${availableText} ${selectedText}`;
     if (testStartNote.textContent !== nextText) testStartNote.textContent = nextText;
@@ -215,7 +421,7 @@
       <path d="M12 16V5"></path>
       <path d="M17 16v-4"></path>
     </svg>
-    Análise
+    AnÃƒÂ¡lise
   `;
   testButton.insertAdjacentElement('afterend', analysisButton);
 
@@ -342,17 +548,17 @@
   function correctTestStartText() {
     if (!testStartNote) return;
     const text = String(testStartNote.textContent || '').trim();
-    const match = text.match(/^(\d+) quest(?:ão|ões) compatíve(?:l|is) disponíve(?:l|is)\. Você pediu (\d+); o teste usará (\d+)\.$/i);
+    const match = text.match(/^(\d+) quest(?:ÃƒÂ£o|ÃƒÂµes) compatÃƒÂ­ve(?:l|is) disponÃƒÂ­ve(?:l|is)\. VocÃƒÂª pediu (\d+); o teste usarÃƒÂ¡ (\d+)\.$/i);
     if (!match) return;
 
     const available = Number(match[1]);
     const used = Number(match[3]);
     const availableText = available === 1
-      ? 'Há 1 questão disponível para o teste.'
-      : `Há ${available} questões disponíveis para o teste.`;
+      ? 'HÃƒÂ¡ 1 questÃƒÂ£o disponÃƒÂ­vel para o teste.'
+      : `HÃƒÂ¡ ${available} questÃƒÂµes disponÃƒÂ­veis para o teste.`;
     const usedText = used === 1
-      ? 'Será utilizada 1 questão.'
-      : `Serão utilizadas ${used} questões.`;
+      ? 'SerÃƒÂ¡ utilizada 1 questÃƒÂ£o.'
+      : `SerÃƒÂ£o utilizadas ${used} questÃƒÂµes.`;
 
     testStartNote.textContent = `${availableText} ${usedText}`;
   }
@@ -717,7 +923,7 @@
          <div class="home-title"><h2 id="homeGreeting"><span id="homeGreetingText">Boa noite, Julia!</span><img id="homeGreetingWave" class="home-greeting-wave" alt="" aria-hidden="true"></h2><p>Pronta para mais um passo rumo aos seus objetivos?</p><span class="home-last-label">&Uacute;ltima cole&ccedil;&atilde;o: <b id="homeLastCollection">Nenhuma ainda</b></span></div>
         <div class="home-hero-actions"><span class="home-date-pill" id="homeDatePill">Hoje</span></div>
       </header>
-      <nav class="home-subtabs" aria-label="Resumo inicial" role="tablist"><button class="home-subtab active" type="button" role="tab" aria-selected="true" data-home-tab="today">Hoje</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="progress">Progresso</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="activity">Atividade</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="analysis">Análise</button></nav>
+      <nav class="home-subtabs" aria-label="Resumo inicial" role="tablist"><button class="home-subtab active" type="button" role="tab" aria-selected="true" data-home-tab="today">Hoje</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="progress">Progresso</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="activity">Atividade</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="analysis">AnÃƒÂ¡lise</button></nav>
       <section data-home-panel="today"><div class="home-shell">
         <section class="home-summary-grid" id="homeSummaryCards"></section>
         <div class="home-today-grid">
@@ -865,7 +1071,7 @@
     const list = Array.from({ length: 7 }, (_, index) => values[Math.max(0, index - (7 - values.length))] ?? 0);
     const labels = Array.from({ length: 7 }, (_, index) => {
       const record = records.slice(-7)[index];
-      if (!record?.date) return ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][index];
+      if (!record?.date) return ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'SÃƒÂ¡b', 'Dom'][index];
       return new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'short' }).format(new Date(record.date)).replace('.', '');
     });
     const plot = { left: 48, right: 602, top: 22, bottom: 176 };
@@ -874,7 +1080,7 @@
     const xy = list.map((value, index) => `${x(index)},${y(value)}`).join(' ');
     const grid = [100, 75, 50, 25, 0].map(value => `<line x1="${plot.left}" y1="${y(value)}" x2="${plot.right}" y2="${y(value)}" stroke="${value === 0 ? '#dbe3ef' : '#edf1f7'}" stroke-width="1" stroke-dasharray="${value === 0 ? '0' : '4 4'}"></line><text x="0" y="${y(value) + 4}" fill="#64748b" font-size="12">${value}%</text>`).join('');
     const axisLabels = labels.map((label, index) => `<text x="${x(index)}" y="204" text-anchor="middle" fill="#64748b" font-size="12">${label}</text>`).join('');
-    document.querySelector('#homeChart').innerHTML = `<svg viewBox="0 0 640 224" role="img" aria-label="Evolu&ccedil;&atilde;o de aproveitamento">${grid}<polyline points="${xy}" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>${list.map((value, index) => `<circle cx="${x(index)}" cy="${y(value)}" r="4" fill="#2563eb"></circle>`).join('')}${axisLabels}</svg><div class="home-chart-note"><span aria-hidden="true">✦</span><span>Acompanhe seus acertos ao longo dos &uacute;ltimos testes.</span></div>`;
+    document.querySelector('#homeChart').innerHTML = `<svg viewBox="0 0 640 224" role="img" aria-label="Evolu&ccedil;&atilde;o de aproveitamento">${grid}<polyline points="${xy}" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>${list.map((value, index) => `<circle cx="${x(index)}" cy="${y(value)}" r="4" fill="#2563eb"></circle>`).join('')}${axisLabels}</svg><div class="home-chart-note"><span aria-hidden="true">Ã¢Å“Â¦</span><span>Acompanhe seus acertos ao longo dos &uacute;ltimos testes.</span></div>`;
   }
 
    function renderHomeLegacy() {
