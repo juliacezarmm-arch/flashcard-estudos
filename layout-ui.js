@@ -359,12 +359,12 @@
     const usable = Math.min(requested, count);
 
     const availableText = count === 1
-      ? '1 questÃƒÂ£o disponÃƒÂ­vel.'
-      : `${count} questÃƒÂµes disponÃƒÂ­veis.`;
+      ? '1 questão disponível.'
+      : `${count} questões disponíveis.`;
 
     const selectedText = usable === 1
-      ? 'SerÃƒÂ¡ selecionada 1 questÃƒÂ£o para este teste.'
-      : `SerÃƒÂ£o selecionadas ${usable} questÃƒÂµes para este teste.`;
+      ? 'Será selecionada 1 questão para este teste.'
+      : `Serão selecionadas ${usable} questões para este teste.`;
 
     const nextText = `${availableText} ${selectedText}`;
     if (testStartNote.textContent !== nextText) testStartNote.textContent = nextText;
@@ -421,7 +421,7 @@
       <path d="M12 16V5"></path>
       <path d="M17 16v-4"></path>
     </svg>
-    AnÃƒÂ¡lise
+    Análise
   `;
   testButton.insertAdjacentElement('afterend', analysisButton);
 
@@ -548,17 +548,19 @@
   function correctTestStartText() {
     if (!testStartNote) return;
     const text = String(testStartNote.textContent || '').trim();
-    const match = text.match(/^(\d+) quest(?:ÃƒÂ£o|ÃƒÂµes) compatÃƒÂ­ve(?:l|is) disponÃƒÂ­ve(?:l|is)\. VocÃƒÂª pediu (\d+); o teste usarÃƒÂ¡ (\d+)\.$/i);
-    if (!match) return;
+    const numbers = text.match(/\d+/g);
+    if (!numbers || numbers.length < 2) return;
 
-    const available = Number(match[1]);
-    const used = Number(match[3]);
+    const available = Number(numbers[0]);
+    const used = Number(numbers[numbers.length - 1]);
+    if (!Number.isFinite(available) || !Number.isFinite(used)) return;
+
     const availableText = available === 1
-      ? 'HÃƒÂ¡ 1 questÃƒÂ£o disponÃƒÂ­vel para o teste.'
-      : `HÃƒÂ¡ ${available} questÃƒÂµes disponÃƒÂ­veis para o teste.`;
+      ? 'Há 1 questão disponível para o teste.'
+      : `Há ${available} questões disponíveis para o teste.`;
     const usedText = used === 1
-      ? 'SerÃƒÂ¡ utilizada 1 questÃƒÂ£o.'
-      : `SerÃƒÂ£o utilizadas ${used} questÃƒÂµes.`;
+      ? 'Será utilizada 1 questão.'
+      : `Serão utilizadas ${used} questões.`;
 
     testStartNote.textContent = `${availableText} ${usedText}`;
   }
@@ -635,8 +637,8 @@
     .home-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
     .home-subtabs { display: inline-flex; align-items: center; gap: 4px; min-height: 38px; padding: 4px; border-radius: 10px; background: #f1f5f9; width: fit-content; }
     .home-subtab { min-height: 30px; padding: 0 14px; border: 0; border-radius: 8px; background: transparent; color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; transition: color 160ms ease, background 160ms ease, box-shadow 160ms ease; }
-    .home-subtab:hover { color: #2563eb; }
-    .home-subtab.active { background: #fff; color: #2563eb; box-shadow: 0 1px 4px rgba(15,23,42,.08); }
+    .home-subtab:hover { background: #fff; color: #2563eb; box-shadow: 0 1px 4px rgba(15,23,42,.08); }
+    .home-subtab.active, .home-subtab.active:hover { background: #2563eb; color: #fff; box-shadow: 0 8px 18px rgba(37,99,235,.18); }
     .home-panel, .home-card { min-width: 0; background: #fff; border: 1px solid #e5eaf1; border-radius: 14px; box-shadow: 0 4px 16px rgba(15,23,42,.04); }
     .home-panel { padding: 16px; }
     .home-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
@@ -923,7 +925,7 @@
          <div class="home-title"><h2 id="homeGreeting"><span id="homeGreetingText">Boa noite, Julia!</span><img id="homeGreetingWave" class="home-greeting-wave" alt="" aria-hidden="true"></h2><p>Pronta para mais um passo rumo aos seus objetivos?</p><span class="home-last-label">&Uacute;ltima cole&ccedil;&atilde;o: <b id="homeLastCollection">Nenhuma ainda</b></span></div>
         <div class="home-hero-actions"><span class="home-date-pill" id="homeDatePill">Hoje</span></div>
       </header>
-      <nav class="home-subtabs" aria-label="Resumo inicial" role="tablist"><button class="home-subtab active" type="button" role="tab" aria-selected="true" data-home-tab="today">Hoje</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="progress">Progresso</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="activity">Atividade</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="analysis">AnÃƒÂ¡lise</button></nav>
+      <nav class="home-subtabs" aria-label="Resumo inicial" role="tablist"><button class="home-subtab active" type="button" role="tab" aria-selected="true" data-home-tab="today">Hoje</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="progress">Progresso</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="activity">Atividade</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="analysis">Análise</button></nav>
       <section data-home-panel="today"><div class="home-shell">
         <section class="home-summary-grid" id="homeSummaryCards"></section>
         <div class="home-today-grid">
@@ -1027,9 +1029,10 @@
   function testedSubjectItems(tests = history()) { return sortedSubjects().filter(({ subject }) => testRecordsFor(subject, tests).length); }
   function priorityForSubject(item, tests = history()) { const records = testRecordsFor(item.subject, tests); const errors = records.reduce((sum, record) => sum + Math.max(0, Number(record.total || 0) - Number(record.score || 0)), 0); const durationMinutes = records.reduce((sum, record) => sum + (Number(record.durationMs || 0) / 60000), 0); return item.stats.priority + (errors * 6) + (records.length * 2) + Math.round(durationMinutes); }
   function sortedTestedSubjects(tests = history()) { return testedSubjectItems(tests).sort((a, b) => priorityForSubject(b, tests) - priorityForSubject(a, tests)); }
-  function setHomePanel(panel) { homePanel = panel; document.body.classList.toggle('home-activity-active', panel === 'activity'); homeView.querySelectorAll('[data-home-tab]').forEach(button => { const active = button.dataset.homeTab === panel; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); }); homeView.querySelectorAll('[data-home-panel]').forEach(view => { view.hidden = view.dataset.homePanel !== panel; }); }
-  function openAppView(view, panel) { if (view === 'analysis') { openHome('analysis'); return; } document.body.classList.remove('home-active', 'home-activity-active'); homeView.classList.remove('active'); homeTab.classList.remove('active'); homeTab.removeAttribute('aria-current'); if (typeof showView === 'function') showView(view); if (view === 'test' && typeof showTestPanel === 'function') showTestPanel(panel || 'quick'); if (view === 'test' && typeof renderTest === 'function') renderTest(); }
-  function openHome(panel = 'today') { document.body.classList.add('home-active'); document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view === homeView)); tabs.querySelectorAll('.tab').forEach(button => { const active = button === homeTab; button.classList.toggle('active', active); active ? button.setAttribute('aria-current', 'page') : button.removeAttribute('aria-current'); }); setHomePanel(panel); renderHome(); if (panel === 'analysis' && typeof renderAnalysis === 'function') renderAnalysis(); if (typeof closeMobileNav === 'function') closeMobileNav(); }
+  function normalizeHomePanel(panel) { return ['today', 'progress', 'activity', 'analysis'].includes(panel) ? panel : 'today'; }
+function setHomePanel(panel) { homePanel = normalizeHomePanel(panel); document.body.classList.toggle('home-activity-active', homePanel === 'activity'); homeView.querySelectorAll('[data-home-tab]').forEach(button => { const active = button.dataset.homeTab === homePanel; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); }); homeView.querySelectorAll('[data-home-panel]').forEach(view => { view.hidden = view.dataset.homePanel !== homePanel; }); if (homePanel === 'analysis' && typeof renderAnalysis === 'function') renderAnalysis(); }
+function openAppView(view, panel) { if (view === 'analysis') { openHome('analysis'); return; } document.body.classList.remove('home-active', 'home-activity-active'); homeView.classList.remove('active'); homeTab.classList.remove('active'); homeTab.removeAttribute('aria-current'); if (typeof showView === 'function') showView(view); if (view === 'test' && typeof showTestPanel === 'function') showTestPanel(panel || 'quick'); if (view === 'test' && typeof renderTest === 'function') renderTest(); }
+function openHome(panel = 'today') { const nextPanel = normalizeHomePanel(panel); document.body.classList.add('home-active'); document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view === homeView)); tabs.querySelectorAll('.tab').forEach(button => { const active = button === homeTab; button.classList.toggle('active', active); active ? button.setAttribute('aria-current', 'page') : button.removeAttribute('aria-current'); }); renderHome(); setHomePanel(nextPanel); if (typeof closeMobileNav === 'function') closeMobileNav(); }
    function renderCollectionCards(items) { if (!items.length) return '<div class="home-muted">As cole&ccedil;&otilde;es aparecer&atilde;o aqui depois do primeiro teste.</div>'; return items.map(({ subject, stats }) => `<article class="home-collection-card" data-home-subject="${esc(subject.id)}" tabindex="0"><div class="home-collection-head"><div class="home-collection-name"><span class="home-folder-icon">${svgIcon('folder')}</span><span>${esc(subject.name)}</span></div><span class="home-collection-total">${stats.total} quest&otilde;es</span></div><div class="home-collection-metrics"><span><b>${stats.mastered}</b><small>Dominadas</small></span><span><b>${stats.learning}</b><small>Em andamento</small></span><span><b>${stats.review}</b><small>Revisar</small></span></div><div class="home-progress"><span style="width:${clamp(stats.progress,3,100)}%"></span></div><div class="home-collection-foot"><span>Aproveitamento</span><b>${stats.progress}%</b></div></article>`).join(''); }
    const PROGRESS_DAILY_GOAL_MS = 2 * 60 * 60 * 1000;
    const PROGRESS_MIN_RESPONSE_MS = 1000;
@@ -1071,7 +1074,7 @@
     const list = Array.from({ length: 7 }, (_, index) => values[Math.max(0, index - (7 - values.length))] ?? 0);
     const labels = Array.from({ length: 7 }, (_, index) => {
       const record = records.slice(-7)[index];
-      if (!record?.date) return ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'SÃƒÂ¡b', 'Dom'][index];
+      if (!record?.date) return ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][index];
       return new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'short' }).format(new Date(record.date)).replace('.', '');
     });
     const plot = { left: 48, right: 602, top: 22, bottom: 176 };
@@ -1080,7 +1083,7 @@
     const xy = list.map((value, index) => `${x(index)},${y(value)}`).join(' ');
     const grid = [100, 75, 50, 25, 0].map(value => `<line x1="${plot.left}" y1="${y(value)}" x2="${plot.right}" y2="${y(value)}" stroke="${value === 0 ? '#dbe3ef' : '#edf1f7'}" stroke-width="1" stroke-dasharray="${value === 0 ? '0' : '4 4'}"></line><text x="0" y="${y(value) + 4}" fill="#64748b" font-size="12">${value}%</text>`).join('');
     const axisLabels = labels.map((label, index) => `<text x="${x(index)}" y="204" text-anchor="middle" fill="#64748b" font-size="12">${label}</text>`).join('');
-    document.querySelector('#homeChart').innerHTML = `<svg viewBox="0 0 640 224" role="img" aria-label="Evolu&ccedil;&atilde;o de aproveitamento">${grid}<polyline points="${xy}" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>${list.map((value, index) => `<circle cx="${x(index)}" cy="${y(value)}" r="4" fill="#2563eb"></circle>`).join('')}${axisLabels}</svg><div class="home-chart-note"><span aria-hidden="true">Ã¢Å“Â¦</span><span>Acompanhe seus acertos ao longo dos &uacute;ltimos testes.</span></div>`;
+    document.querySelector('#homeChart').innerHTML = `<svg viewBox="0 0 640 224" role="img" aria-label="Evolu&ccedil;&atilde;o de aproveitamento">${grid}<polyline points="${xy}" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>${list.map((value, index) => `<circle cx="${x(index)}" cy="${y(value)}" r="4" fill="#2563eb"></circle>`).join('')}${axisLabels}</svg><div class="home-chart-note"><span aria-hidden="true">✦</span><span>Acompanhe seus acertos ao longo dos &uacute;ltimos testes.</span></div>`;
   }
 
    function renderHomeLegacy() {

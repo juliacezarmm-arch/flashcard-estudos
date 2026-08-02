@@ -4249,7 +4249,7 @@
 
     /* Keep the Questions view anchored while only its question list scrolls. */
     @media (min-width: 861px) {
-      /* Cabeçalho compartilhado: a navegação não muda de posição entre as abas. */
+      /* CabeÃ§alho compartilhado: a navegaÃ§Ã£o não muda de posiÃ§Ã£o entre as abas. */
       body:has(.app:not(.locked)) {
         overflow: hidden;
       }
@@ -4540,7 +4540,7 @@
               <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
             </svg>
             <input id="authPasswordConfirm" type="password" placeholder="Confirme sua senha" minlength="8" autocomplete="new-password">
-            <button class="auth-eye" id="toggleAuthPasswordConfirm" type="button" aria-label="Mostrar ou ocultar confirmação de senha">
+            <button class="auth-eye" id="toggleAuthPasswordConfirm" type="button" aria-label="Mostrar ou ocultar confirmaÃ§Ã£o de senha">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
@@ -4551,16 +4551,16 @@
 
         <div class="auth-rules" id="authRules" hidden>
           <span class="auth-rule" data-password-rule="length">Pelo menos 8 caracteres</span>
-          <span class="auth-rule" data-password-rule="upper">1 letra maiúscula</span>
-          <span class="auth-rule" data-password-rule="lower">1 letra minúscula</span>
-          <span class="auth-rule" data-password-rule="number">1 número</span>
+          <span class="auth-rule" data-password-rule="upper">1 letra maiÃºscula</span>
+          <span class="auth-rule" data-password-rule="lower">1 letra minÃºscula</span>
+          <span class="auth-rule" data-password-rule="number">1 nÃºmero</span>
           <span class="auth-rule" data-password-rule="special">1 caractere especial</span>
         </div>
 
         <button class="auth-link" id="showReset" type="button">Esqueci minha senha</button>
         <button id="signIn" type="button">Entrar</button>
         <button id="signUp" type="button" hidden>Criar cadastro</button>
-        <button id="sendReset" type="button" hidden>Enviar e-mail de recuperação</button>
+        <button id="sendReset" type="button" hidden>Enviar e-mail de recuperaÃ§Ã£o</button>
         <button id="updatePassword" type="button" hidden>Salvar nova senha</button>
         <div class="auth-divider" id="authDivider">ou</div>
         <button class="auth-google" id="googleAuth" type="button"><span class="google-mark">G</span><span id="googleAuthText">Continuar com Google</span></button>
@@ -4602,7 +4602,7 @@
       <header class="topbar">
         <div class="mobile-topline">
           <div class="mobile-topline-left">
-            <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="Abrir coleções" title="Coleções">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="Abrir coleções" title="ColeÃ§Ãµes">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M4 7h16"></path>
                 <path d="M4 12h16"></path>
@@ -4617,7 +4617,7 @@
         </div>
         <div class="topbar-title">
           <h2 id="subjectTitle">Coleção</h2>
-          <p id="subjectSummary">Selecione ou crie uma disciplina, curso ou material para começar.</p>
+          <p id="subjectSummary">Selecione ou crie uma disciplina, curso ou material para comeÃ§ar.</p>
         </div>
         <div class="topbar-right">
           <div class="tabs">
@@ -4644,14 +4644,14 @@
             </button>
           </div>
           <section class="auth-panel signed-in" id="authPanel">
-            <button class="user-trigger" id="userMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Abrir menu do usuário" title="Menu do usuário">
+            <button class="user-trigger" id="userMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Abrir menu do usuÃ¡rio" title="Menu do usuÃ¡rio">
               <span class="user-avatar" aria-hidden="true"></span>
             </button>
             <div class="user-menu" id="userMenu" role="menu" hidden>
               <div class="user-menu-header">
                 <span class="user-avatar user-menu-avatar" aria-hidden="true"></span>
                 <div class="user-menu-header-copy">
-                  <strong id="userDisplayName">Usuário</strong>
+                  <strong id="userDisplayName">UsuÃ¡rio</strong>
                   <span class="auth-status" id="authStatus">Conectado</span>
                 </div>
               </div>
@@ -4678,7 +4678,7 @@
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.04.04a2.1 2.1 0 0 1-2.98 2.98l-.04-.04A1.8 1.8 0 0 0 14.8 19.6a1.8 1.8 0 0 0-1.08 1.65V21a2.1 2.1 0 0 1-4.2 0v-.06A1.8 1.8 0 0 0 8.4 19.3a1.8 1.8 0 0 0-1.98.36l-.04.04a2.1 2.1 0 0 1-2.98-2.98l.04-.04A1.8 1.8 0 0 0 3.8 14.7a1.8 1.8 0 0 0-1.65-1.08H2a2.1 2.1 0 0 1 0-4.2h.06A1.8 1.8 0 0 0 3.7 8.3a1.8 1.8 0 0 0-.36-1.98l-.04-.04A2.1 2.1 0 0 1 6.28 3.3l.04.04A1.8 1.8 0 0 0 8.3 3.7a1.8 1.8 0 0 0 1.08-1.65V2a2.1 2.1 0 0 1 4.2 0v.06A1.8 1.8 0 0 0 14.7 3.7a1.8 1.8 0 0 0 1.98-.36l.04-.04a2.1 2.1 0 0 1 2.98 2.98l-.04.04A1.8 1.8 0 0 0 19.3 8.3a1.8 1.8 0 0 0 1.65 1.08H21a2.1 2.1 0 0 1 0 4.2h-.06A1.8 1.8 0 0 0 19.4 15z"></path>
                   </svg>
-                  <span>Configurações</span>
+                  <span>ConfiguraÃ§Ãµes</span>
                 </button>
                 <button class="user-menu-item" type="button" data-user-action="help" role="menuitem">
                   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -4774,14 +4774,14 @@
             <span class="bar-frozen"></span>
           </div>
           <div class="legend" id="progressLegend" hidden></div>
-          <button class="start-study" id="studyFromProgress" type="button" hidden><span aria-hidden="true">▶</span> Começar teste</button>
+          <button class="start-study" id="studyFromProgress" type="button" hidden><span aria-hidden="true">â–¶</span> ComeÃ§ar teste</button>
         </div>
 
         <div class="card">
           <div class="section-heading">
             <h3>Questões da coleção</h3>
             <div class="row">
-              <button class="secondary collapse-toggle" id="exportCollection" type="button"><span aria-hidden="true">⇩</span> Exportar</button>
+              <button class="secondary collapse-toggle" id="exportCollection" type="button"><span aria-hidden="true">â‡©</span> Exportar</button>
             </div>
           </div>
           <div class="collapsible-content" id="questionsContent">
@@ -4849,7 +4849,7 @@
               </button>
             </div>
 
-            <p class="add-info" id="addModeInfo">Crie uma coleção primeiro para liberar a adição e a importação de questões.</p>
+            <p class="add-info" id="addModeInfo">Crie uma coleção primeiro para liberar a adiÃ§Ã£o e a importaÃ§Ã£o de questões.</p>
 
             <div class="add-section active" id="createCollectionSection">
               <div class="collection-flow">
@@ -4873,7 +4873,7 @@
                   <div class="step-title">
                     <span class="step-check" id="folderStepCheck">✓</span>
                     <div>
-                      <h4>1. Criar ou selecionar pasta <small>Obrigatório</small></h4>
+                      <h4>1. Criar ou selecionar pasta <small>ObrigatÃ³rio</small></h4>
                       <p>Toda coleção precisa estar dentro de uma pasta.</p>
                     </div>
                   </div>
@@ -4948,9 +4948,9 @@
                   <button class="secondary" id="addOption" type="button">+ alternativa</button>
                 </div>
                 <div class="options-box" id="listBox" hidden>
-                  <label>Opções da lista suspensa</label>
+                  <label>OpÃ§Ãµes da lista suspensa</label>
                   <div id="listChoices"></div>
-                  <button class="secondary" id="addListChoice" type="button">+ opção</button>
+                  <button class="secondary" id="addListChoice" type="button">+ opÃ§Ã£o</button>
                   <label>Itens da pergunta</label>
                   <div id="listItems"></div>
                   <button class="secondary" id="addListItem" type="button">+ item</button>
@@ -4960,8 +4960,8 @@
                   <select id="correctAnswer"></select>
                 </label>
                 <label>
-                  Explicação (opcional)
-                  <textarea id="answerText" placeholder="Escreva a explicação da resposta, se tiver"></textarea>
+                  ExplicaÃ§Ã£o (opcional)
+                  <textarea id="answerText" placeholder="Escreva a explicaÃ§Ã£o da resposta, se tiver"></textarea>
                 </label>
                 <input id="difficulty" type="hidden" value="normal">
                 <button id="saveQuestion" type="submit">Salvar questão</button>
@@ -4970,13 +4970,13 @@
             </div>
 
             <div class="add-section" id="importQuestionSection">
-              <h3>Importar questionários</h3>
+              <h3>Importar questionÃ¡rios</h3>
               <div class="import-box">
                 <label>
                   Coleção de destino
                   <select id="importCollection"></select>
                 </label>
-                <p class="hint">Importe para a coleção selecionada. Você pode escolher um arquivo .zip, .json, .csv ou .txt, ou colar o questionário no campo abaixo.</p>
+                <p class="hint">Importe para a coleção selecionada. Você pode escolher um arquivo .zip, .json, .csv ou .txt, ou colar o questionÃ¡rio no campo abaixo.</p>
                 <div class="file-picker">
                   <label class="file-picker-label" for="importFile">Escolher arquivo</label>
                   <span class="file-name" id="importFileName">Nenhum arquivo escolhido</span>
@@ -5012,23 +5012,27 @@
           </div>
           <div class="study-actions" id="studyActions">
             <button class="danger" data-rate="again">De novo<br><small>2 min</small></button>
-            <button class="warning" data-rate="hard">Difícil<br><small>hoje</small></button>
+            <button class="warning" data-rate="hard">DifÃ­cil<br><small>hoje</small></button>
             <button class="success" data-rate="good">Bom<br><small>próximo teste</small></button>
-            <button class="secondary" data-rate="easy">Fácil<br><small>mais tarde</small></button>
+            <button class="secondary" data-rate="easy">FÃ¡cil<br><small>mais tarde</small></button>
           </div>
           <p class="hint" id="studyHint">Clique no cartão para ver a resposta.</p>
         </div>
       </section>
 
       <section class="view" id="test">
-        <div class="test-tabs" role="tablist" aria-label="Áreas do teste">
+        <div class="test-tabs" role="tablist" aria-label="Ãreas do teste">
           <button class="active" type="button" data-test-panel="quick" role="tab" aria-selected="true">
             <svg class="button-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"></path></svg>
-            Teste
+            Teste coleção
+          </button>
+          <button type="button" data-test-panel="folder" role="tab" aria-selected="false">
+            <svg class="button-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h6l2 2h8v9.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6.5Z"></path></svg>
+            Teste pasta
           </button>
           <button type="button" data-test-panel="history" role="tab" aria-selected="false">
             <svg class="button-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v5l3 2"></path></svg>
-            Histórico
+            HistÃ³rico
           </button>
           <button type="button" data-test-panel="analysis" role="tab" aria-selected="false">
             <svg class="button-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-4"></path></svg>
@@ -5051,10 +5055,10 @@
                   </div>
                   <div class="test-start-copy">
                   <h3>Teste</h3>
-                    <p class="hint" id="testIntro">Comece um teste com a quantidade escolhida, sem repetição. As alternativas são embaralhadas a cada novo teste.</p>
+                    <p class="hint" id="testIntro">Comece um teste com a quantidade escolhida, sem repetiÃ§Ã£o. As alternativas sÃ£o embaralhadas a cada novo teste.</p>
                     <div class="test-badges" aria-label="Regras do teste">
-                      <span class="test-count-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path></svg>Até <input id="testQuestionAmount" class="test-count-input" type="number" min="1" max="80" value="14" inputmode="numeric" aria-label="Quantidade de questões por teste"> questões</span>
-                      <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>Sem repetição</span>
+                      <span class="test-count-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path></svg>AtÃ© <input id="testQuestionAmount" class="test-count-input" type="number" min="1" max="80" value="14" inputmode="numeric" aria-label="Quantidade de questões por teste"> questões</span>
+                      <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>Sem repetiÃ§Ã£o</span>
                       <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h.01M10 7h.01M16 7h.01M4 12h.01M10 12h.01M16 12h.01M4 17h.01M10 17h.01M16 17h.01"></path></svg>Alternativas embaralhadas</span>
                     </div>
                     <p class="hint test-start-note" id="testStartNote"></p>
@@ -5064,7 +5068,7 @@
                       <svg class="button-svg" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M9 7.5v9l7-4.5z"></path>
                       </svg>
-                      Começar teste
+                      ComeÃ§ar teste
                     </button>
                     <button class="secondary" id="restartTest" type="button" hidden>Novo teste</button>
                   </div>
@@ -5080,15 +5084,15 @@
                     </div>
                   </div>
                   <div class="test-progress-line" id="testProgressLine"><span></span></div>
-                  <div class="test-question" id="testQuestion">Clique em Começar teste para sortear as questões.</div>
+                  <div class="test-question" id="testQuestion">Clique em ComeÃ§ar teste para sortear as questões.</div>
                   <div class="test-options" id="testOptions"></div>
                   <div class="test-answer" id="testAnswer"></div>
                   <p class="hint test-rating-hint" id="testRatingHint" hidden>Revise a resposta e informe como foi o seu desempenho.</p>
                   <div class="study-actions" id="testRateActions">
                     <button class="danger" data-test-rate="again">De novo</button>
-                    <button class="warning" data-test-rate="hard">Difícil</button>
+                    <button class="warning" data-test-rate="hard">DifÃ­cil</button>
                     <button class="success" data-test-rate="good">Bom</button>
-                    <button class="secondary" data-test-rate="easy">Fácil</button>
+                    <button class="secondary" data-test-rate="easy">FÃ¡cil</button>
                   </div>
                   <div class="row test-manual-actions" hidden>
                     <button id="confirmTestAnswer" type="button">Confirmar resposta</button>
@@ -5099,11 +5103,17 @@
               </div>
             </div>
           </div>
+          <div class="test-panel" id="testPanelFolder" data-test-panel-view="folder" hidden>
+            <article class="panel">
+              <h3>Teste pasta</h3>
+              <p class="hint">Em breve você poderá montar um teste usando várias coleções da pasta selecionada.</p>
+            </article>
+          </div>
 
           <div class="test-panel" id="testPanelHistory" data-test-panel-view="history" hidden>
             <div class="card test-history-card">
               <div class="section-heading">
-                <h3>Histórico de testes</h3>
+                <h3>HistÃ³rico de testes</h3>
               </div>
               <div class="history-list" id="testHistory"></div>
             </div>
@@ -5115,7 +5125,7 @@
                 <div class="test-empty-illustration" aria-hidden="true"><span>!</span></div>
                 <strong>Análise de desempenho</strong>
                 <p>Conclua alguns testes para que o Fixa identifique seus pontos fortes e os conteúdos que precisam de revisão.</p>
-                <button type="button" id="analysisStartTest">Começar teste</button>
+                <button type="button" id="analysisStartTest">ComeÃ§ar teste</button>
               </div>
 
               <div class="analysis-dashboard" id="analysisContent" hidden>
@@ -5144,10 +5154,10 @@
                 </section>
 
                 <section class="analysis-card analysis-tabs-card">
-                  <div class="analysis-inner-tabs" role="tablist" aria-label="Seções da análise">
-                    <button class="analysis-inner-tab active" type="button" data-analysis-tab="priorities" aria-selected="true">☆ Prioridades</button>
-                    <button class="analysis-inner-tab" type="button" data-analysis-tab="status" aria-selected="false">☷ Status das questões</button>
-                    <button class="analysis-inner-tab" type="button" data-analysis-tab="charts" aria-selected="false">▥ Gráficos</button>
+                  <div class="analysis-inner-tabs" role="tablist" aria-label="SeÃ§Ãµes da análise">
+                    <button class="analysis-inner-tab active" type="button" data-analysis-tab="priorities" aria-selected="true">â˜† Prioridades</button>
+                    <button class="analysis-inner-tab" type="button" data-analysis-tab="status" aria-selected="false">â˜· Status das questões</button>
+                    <button class="analysis-inner-tab" type="button" data-analysis-tab="charts" aria-selected="false">â–¥ GrÃ¡ficos</button>
                   </div>
 
                   <div class="analysis-inner-panel" data-analysis-tab-panel="priorities">
@@ -5174,13 +5184,13 @@
                         <div class="analysis-list" id="analysisNearMastered"></div>
                       </section>
                     </div>
-                    <p class="analysis-footnote">Crítica = erros repetidos, perda de domínio ou avaliações difíceis recorrentes.</p>
+                    <p class="analysis-footnote">Crítica = erros repetidos, perda de domínio ou avaliações difÃ­ceis recorrentes.</p>
                   </div>
 
                   <div class="analysis-inner-panel" data-analysis-tab-panel="charts" hidden>
                     <div class="analysis-two-column">
                       <section class="analysis-subcard">
-                        <div class="analysis-card-head"><h4>Evolução do desempenho</h4></div>
+                        <div class="analysis-card-head"><h4>EvoluÃ§Ã£o do desempenho</h4></div>
                         <div class="analysis-chart-wrap" id="analysisEvolution"></div>
                         <p class="analysis-note" id="analysisEvolutionNote"></p>
                       </section>
@@ -5203,7 +5213,7 @@
 
   <div class="modal-backdrop" id="actionModal" hidden>
     <div class="modal-card">
-      <h3 id="modalTitle">Confirmar ação</h3>
+      <h3 id="modalTitle">Confirmar aÃ§Ã£o</h3>
       <div id="modalBody"></div>
       <div class="modal-actions" id="modalActions"></div>
     </div>
@@ -5212,23 +5222,23 @@
   <div class="modal-backdrop" id="guidelinesModal" hidden>
     <div class="modal-card guidelines-modal-card" role="dialog" aria-modal="true" aria-labelledby="guidelinesTitle">
       <h3 id="guidelinesTitle">Diretrizes para criar o arquivo</h3>
-      <p class="guidelines-modal-copy">Copie o texto abaixo e envie ao ChatGPT para gerar um arquivo compatível com o Fixa.</p>
+      <p class="guidelines-modal-copy">Copie o texto abaixo e envie ao ChatGPT para gerar um arquivo compatÃ­vel com o Fixa.</p>
       <textarea class="guidelines-text" id="guidelinesText" readonly spellcheck="false">O arquivo deve ser gerado em formato JSON e pode conter os seguintes tipos de flashcard:
 
-## 1. Múltipla escolha
+## 1. MÃºltipla escolha
 
 ```json
 {
   &quot;tipo&quot;: &quot;multiple&quot;,
-  &quot;pergunta&quot;: &quot;O que é um Byte?&quot;,
+  &quot;pergunta&quot;: &quot;O que Ã© um Byte?&quot;,
   &quot;alternativas&quot;: [
     &quot;Um conjunto de oito bits.&quot;,
-    &quot;Uma unidade de entrada e saída.&quot;,
-    &quot;A menor unidade de informação em um computador.&quot;,
+    &quot;Uma unidade de entrada e saÃ­da.&quot;,
+    &quot;A menor unidade de informaÃ§Ã£o em um computador.&quot;,
     &quot;Uma unidade de armazenamento.&quot;
   ],
   &quot;resposta&quot;: &quot;Um conjunto de oito bits.&quot;,
-  &quot;explicacao&quot;: &quot;Um Byte é formado por oito bits.&quot;
+  &quot;explicacao&quot;: &quot;Um Byte Ã© formado por oito bits.&quot;
 }
 ```
 
@@ -5252,12 +5262,12 @@ A resposta deve ser o texto completo da alternativa correta, nunca apenas A, B, 
       &quot;answer&quot;: &quot;Direto&quot;
     },
     {
-      &quot;label&quot;: &quot;Manutenção predial&quot;,
+      &quot;label&quot;: &quot;ManutenÃ§Ã£o predial&quot;,
       &quot;answer&quot;: &quot;Indireto&quot;
     }
   ],
-  &quot;resposta&quot;: &quot;Hardware e Software = Direto; Manutenção predial = Indireto&quot;,
-  &quot;explicacao&quot;: &quot;Custos diretos estão ligados diretamente à atividade principal.&quot;
+  &quot;resposta&quot;: &quot;Hardware e Software = Direto; ManutenÃ§Ã£o predial = Indireto&quot;,
+  &quot;explicacao&quot;: &quot;Custos diretos estÃ£o ligados diretamente Ã  atividade principal.&quot;
 }
 ```
 
@@ -5268,13 +5278,13 @@ A resposta deve ser o texto completo da alternativa correta, nunca apenas A, B, 
 ```json
 {
   &quot;tipo&quot;: &quot;select-list&quot;,
-  &quot;pergunta&quot;: &quot;Associe os números da figura aos elementos.&quot;,
+  &quot;pergunta&quot;: &quot;Associe os nÃºmeros da figura aos elementos.&quot;,
   &quot;imagem&quot;: &quot;elementos_do_sistema.png&quot;,
   &quot;opcoesLista&quot;: [
     &quot;Entrada&quot;,
     &quot;Processamento&quot;,
-    &quot;Saída&quot;,
-    &quot;Retroalimentação&quot;
+    &quot;SaÃ­da&quot;,
+    &quot;RetroalimentaÃ§Ã£o&quot;
   ],
   &quot;itens&quot;: [
     {
@@ -5287,21 +5297,21 @@ A resposta deve ser o texto completo da alternativa correta, nunca apenas A, B, 
     },
     {
       &quot;label&quot;: &quot;3&quot;,
-      &quot;answer&quot;: &quot;Saída&quot;
+      &quot;answer&quot;: &quot;SaÃ­da&quot;
     },
     {
       &quot;label&quot;: &quot;4&quot;,
-      &quot;answer&quot;: &quot;Retroalimentação&quot;
+      &quot;answer&quot;: &quot;RetroalimentaÃ§Ã£o&quot;
     }
   ],
-  &quot;resposta&quot;: &quot;1 = Entrada; 2 = Processamento; 3 = Saída; 4 = Retroalimentação&quot;,
-  &quot;explicacao&quot;: &quot;A figura representa o fluxo básico de um sistema.&quot;
+  &quot;resposta&quot;: &quot;1 = Entrada; 2 = Processamento; 3 = SaÃ­da; 4 = RetroalimentaÃ§Ã£o&quot;,
+  &quot;explicacao&quot;: &quot;A figura representa o fluxo bÃ¡sico de um sistema.&quot;
 }
 ```
 
 ---
 
-## 4. Múltipla escolha com imagem
+## 4. MÃºltipla escolha com imagem
 
 ```json
 {
@@ -5631,7 +5641,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     function extractAnswerSourceText(source = "") {
       return String(source || "")
         .replace(/^(?:resposta\s+correta|gabarito|alternativa\s+correta)\s*:?\s*/i, "")
-        .replace(/^explica[cç][aã]o\s*:?\s*/i, "")
+        .replace(/^explica[cÃ§][aÃ£]o\s*:?\s*/i, "")
         .trim();
     }
 
@@ -5678,7 +5688,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (card.type === "select-list") return '<div class="answer">' + formatAnswer(card.a) + '</div>';
       const answerText = correctAnswerTextForCard(card);
       const explanation = card.explanation || explanationFromAnswer(card.a);
-      return '<div class="answer"><strong>Resposta correta:</strong> ' + (answerText ? escapeHtml(answerText) : 'Resposta correta não definida') + (explanation ? '<br><strong>Explicação:</strong> ' + escapeHtml(explanation) : '') + '</div>';
+      return '<div class="answer"><strong>Resposta correta:</strong> ' + (answerText ? escapeHtml(answerText) : 'Resposta correta não definida') + (explanation ? '<br><strong>ExplicaÃ§Ã£o:</strong> ' + escapeHtml(explanation) : '') + '</div>';
     }
 
     function normalizeCard(card) {
@@ -5947,7 +5957,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     }
 
     function passwordRulesMessage() {
-      return "A senha precisa ter pelo menos 8 caracteres, 1 letra maiúscula, 1 letra minúscula, 1 número e 1 caractere especial.";
+      return "A senha precisa ter pelo menos 8 caracteres, 1 letra maiÃºscula, 1 letra minÃºscula, 1 nÃºmero e 1 caractere especial.";
     }
 
     function updatePasswordRequirementState() {
@@ -5983,7 +5993,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
             ? "Criar conta"
             : "Entrar";
       el.authSubtitle.textContent = isUpdatePassword
-        ? "Digite uma nova senha para finalizar a recuperação da sua conta."
+        ? "Digite uma nova senha para finalizar a recuperaÃ§Ã£o da sua conta."
         : isReset
           ? "Informe seu e-mail. Você receberá um link para redefinir a senha."
           : isSignUp
@@ -6006,7 +6016,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       el.authSwitchText.hidden = isReset || isUpdatePassword;
       el.authPassword.autocomplete = isSignUp || isUpdatePassword ? "new-password" : "current-password";
       el.googleAuthText.textContent = isSignUp ? "Cadastrar com Google" : "Continuar com Google";
-      el.authSwitchText.firstChild.textContent = isSignUp ? "Já tem conta? " : "Não tem conta? ";
+      el.authSwitchText.firstChild.textContent = isSignUp ? "JÃ¡ tem conta? " : "Não tem conta? ";
       el.authSwitchAction.textContent = isSignUp ? "Fazer login" : "Criar cadastro";
       setAuthNotice("");
       updateAuthButtonState();
@@ -6023,7 +6033,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       el.signOut.hidden = !signedIn;
       el.signOutFooter.hidden = true;
       if (signedIn) {
-        const userName = currentUser.user_metadata?.name || currentUser.email || "Usuário";
+        const userName = currentUser.user_metadata?.name || currentUser.email || "UsuÃ¡rio";
         el.userDisplayName.textContent = userName;
         updateUserAvatars(currentUser);
         setAuthStatus("Conectado");
@@ -6260,7 +6270,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       editingCardIndex = index;
       showView("add");
       showAddMode("question");
-      el.saveQuestion.textContent = "Salvar alterações";
+      el.saveQuestion.textContent = "Salvar alteraÃ§Ãµes";
       el.questionText.value = card.q || "";
       el.correctAnswer.dataset.correctText = correctAnswerTextForCard(card);
       el.answerText.value = card.explanation || explanationFromAnswer(card.a) || "";
@@ -6283,7 +6293,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         });
         renderCorrectAnswerOptions(correctAnswerTextForCard(card));
       }
-      setMessage(el.questionMessage, "Editando cartão. Faça as alterações e salve.");
+      setMessage(el.questionMessage, "Editando cartão. FaÃ§a as alteraÃ§Ãµes e salve.");
       el.questionText.focus();
     }
 
@@ -6356,7 +6366,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       el.listChoices.innerHTML = Array.from({ length: listChoiceCount }, (_, index) => `
         <div class="list-choice-row">
           <span class="option-letter">Item ${index + 1}</span>
-          <input class="list-choice-input" placeholder="Opção ${index + 1}" value="${escapeHtml(values[index] || "")}">
+          <input class="list-choice-input" placeholder="OpÃ§Ã£o ${index + 1}" value="${escapeHtml(values[index] || "")}">
           <button class="ghost remove-option" type="button" data-remove-list-choice="${index}" ${listChoiceCount <= 2 ? "disabled" : ""}>Remover</button>
         </div>
       `).join("");
@@ -6532,7 +6542,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
           <div class="empty empty-collection">
             <div class="empty-folder" aria-hidden="true"><span>+</span></div>
             <strong>Nenhuma coleção ainda</strong>
-            <p>Crie uma coleção na aba Adicionar para começar.</p>
+            <p>Crie uma coleção na aba Adicionar para comeÃ§ar.</p>
             <button type="button" class="empty-create" onclick="document.querySelector('[data-view=&quot;add&quot;]').click()">Criar coleção</button>
           </div>
         `;
@@ -6565,14 +6575,14 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
           <button class="folder-title" type="button" data-folder-id="${escapeHtml(group.id)}" aria-expanded="${String(!collapsed)}">
             <i class="folder-icon" aria-hidden="true"></i>
             <span class="folder-name">${escapeHtml(group.name)}</span>
-            <span class="folder-options" role="button" tabindex="0" data-folder-menu="${escapeHtml(group.id)}" aria-label="Opções da pasta">⋮</span>
+            <span class="folder-options" role="button" tabindex="0" data-folder-menu="${escapeHtml(group.id)}" aria-label="OpÃ§Ãµes da pasta">â‹®</span>
             <small class="folder-toggle-mark" aria-hidden="true">${collapsed ? "+" : "&minus;"}</small>
           </button>
           ${group.subjects.map(item => `
             <div class="subject ${item.id === subject.id ? "active" : ""}" data-id="${item.id}">
               <span>${escapeHtml(item.name)}</span>
               <small>${item.cards.length}</small>
-              <button class="subject-options" type="button" data-subject-menu="${escapeHtml(item.id)}" aria-label="Opções da coleção">⋮</button>
+              <button class="subject-options" type="button" data-subject-menu="${escapeHtml(item.id)}" aria-label="OpÃ§Ãµes da coleção">â‹®</button>
             </div>
           `).join("")}
         </div>
@@ -6653,9 +6663,9 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
             <span class="pill question-code-pill">${escapeHtml(card.questionCode || "")}</span>
             <span class="pill">${labelStatus(card.status)}</span>
             <div class="row">
-              <button class="quick-delete" type="button" title="Excluir cartão" data-delete="${index}">×</button>
+              <button class="quick-delete" type="button" title="Excluir cartão" data-delete="${index}">Ã—</button>
               <details class="card-menu">
-                <summary aria-label="Opções do cartão">⋮</summary>
+                <summary aria-label="OpÃ§Ãµes do cartão">â‹®</summary>
                 <div class="card-menu-panel">
                   <button type="button" data-edit="${index}">Editar cartão</button>
                   <button type="button" data-move="${index}">Mover cartão</button>
@@ -6712,20 +6722,20 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const subject = currentSubject();
       if (!subject) {
         el.cardLabel.textContent = "Sem coleção";
-        el.cardContent.textContent = "Crie uma coleção para começar a adicionar flashcards.";
+        el.cardContent.textContent = "Crie uma coleção para comeÃ§ar a adicionar flashcards.";
         el.progressBar.style.width = "0%";
         el.flipCard.textContent = "Conferir resposta";
-        el.studyHint.textContent = "Depois de criar uma coleção, seus cartões aparecerão aqui.";
+        el.studyHint.textContent = "Depois de criar uma coleção, seus cartões aparecerÃ£o aqui.";
         el.studyActions.classList.remove("show");
         return;
       }
       const cards = subject.cards.filter(card => card.status !== "frozen");
       if (!cards.length) {
         el.cardLabel.textContent = "Sem questões";
-        el.cardContent.textContent = "Adicione ou importe questões para começar a estudar.";
+        el.cardContent.textContent = "Adicione ou importe questões para comeÃ§ar a estudar.";
         el.progressBar.style.width = "0%";
         el.flipCard.textContent = "Conferir resposta";
-        el.studyHint.textContent = "Quando houver questões, elas aparecerão aqui.";
+        el.studyHint.textContent = "Quando houver questões, elas aparecerÃ£o aqui.";
         el.studyActions.classList.remove("show");
         return;
       }
@@ -6781,7 +6791,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (!text) return "";
       return text
         .replace(/^(?:resposta\s+correta|gabarito|alternativa\s+correta)\s*:?\s*[A-H](?:\s*-\s*[^.\n]+)?\.?\s*/i, "")
-        .replace(/^explica[cç][aã]o\s*:?\s*/i, "")
+        .replace(/^explica[cÃ§][aÃ£]o\s*:?\s*/i, "")
         .trim();
     }
 
@@ -6789,7 +6799,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (type === "select-list") return explanation || "";
       const correctText = resolveCorrectAnswerText({ correctAnswerText: answerText, correctAnswer: answerText, a: answerText, options }, options) || String(answerText || "").trim();
       const base = correctText ? `Resposta correta: ${correctText}.` : "Resposta correta não definida.";
-      return explanation ? `${base} Explicação: ${explanation}` : base;
+      return explanation ? `${base} ExplicaÃ§Ã£o: ${explanation}` : base;
     }
 
     function testableCards() {
@@ -7053,7 +7063,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
           <div class="test-empty">
             <div class="test-empty-illustration" aria-hidden="true"><span>!</span></div>
             <strong>Nenhum teste finalizado ainda.</strong>
-            <p>Seus resultados aparecerão aqui após concluir um teste.</p>
+            <p>Seus resultados aparecerÃ£o aqui apÃ³s concluir um teste.</p>
           </div>
         `;
         return;
@@ -7068,7 +7078,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
               <strong>${escapeHtml(item.subject)}</strong>
               <span class="history-date">${date}</span>
             </div>
-            <span class="history-result">${item.score} acertos · ${errors} erros · ${percent}% de aproveitamento${item.durationMs ? ` · ${formatDuration(item.durationMs)}` : ""}</span>
+            <span class="history-result">${item.score} acertos Â· ${errors} erros Â· ${percent}% de aproveitamento${item.durationMs ? ` Â· ${formatDuration(item.durationMs)}` : ""}</span>
           </div>
         `;
       }).join("");
@@ -7208,8 +7218,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
 
     function shortQuestionText(card, max = 58) {
       const topic = card.subtopic || card.topic;
-      const source = topic || card.q || "Questão sem título";
-      return source.length > max ? `${source.slice(0, max).trim()}…` : source;
+      const source = topic || card.q || "Questão sem tÃ­tulo";
+      return source.length > max ? `${source.slice(0, max).trim()}â€¦` : source;
     }
 
     function analysisSubjectMetrics(subject) {
@@ -7247,8 +7257,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (!el.analysisEvolution) return;
       const points = [...history].reverse().slice(-10);
       if (!points.length) {
-        el.analysisEvolution.innerHTML = `<div class="hint">Conclua testes para visualizar sua evolução.</div>`;
-        el.analysisEvolutionNote.textContent = "A comparação aparecerá após os primeiros resultados.";
+        el.analysisEvolution.innerHTML = `<div class="hint">Conclua testes para visualizar sua evoluÃ§Ã£o.</div>`;
+        el.analysisEvolutionNote.textContent = "A comparaÃ§Ã£o aparecerÃ¡ apÃ³s os primeiros resultados.";
         return;
       }
       const width = 360;
@@ -7274,7 +7284,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         const date = new Date(points[index].date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
         return `<g><circle cx="${point.x}" cy="${point.y}" r="4" fill="#2563eb"/><text x="${point.x}" y="${point.y - 9}" text-anchor="middle" fill="#26324d" font-size="9" font-weight="700">${point.value}%</text><text x="${point.x}" y="${height - 10}" text-anchor="middle" fill="#7b879f" font-size="8">${date}</text></g>`;
       }).join("");
-      el.analysisEvolution.innerHTML = `<svg class="analysis-line-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Evolução do aproveitamento nos testes">${grid}<polyline points="${polyline}" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}</svg>`;
+      el.analysisEvolution.innerHTML = `<svg class="analysis-line-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="EvoluÃ§Ã£o do aproveitamento nos testes">${grid}<polyline points="${polyline}" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}</svg>`;
       const first = values[0];
       const last = values[values.length - 1];
       const delta = last - first;
@@ -7284,7 +7294,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
           ? `Seu aproveitamento aumentou ${delta} pontos percentuais no período.`
           : delta < -2
             ? `Seu aproveitamento caiu ${Math.abs(delta)} pontos percentuais no período.`
-            : "Seu desempenho permaneceu estável no período.";
+            : "Seu desempenho permaneceu estÃ¡vel no período.";
     }
 
     function renderAnalysisRatings(cards, history) {
@@ -7301,9 +7311,9 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const total = Object.values(ratings).reduce((sum, value) => sum + value, 0);
       const config = [
         ["again", "De novo", "#ef4444"],
-        ["hard", "Difícil", "#f59e0b"],
+        ["hard", "DifÃ­cil", "#f59e0b"],
         ["good", "Bom", "#22c55e"],
-        ["easy", "Fácil", "#3b82f6"]
+        ["easy", "FÃ¡cil", "#3b82f6"]
       ];
       let current = 0;
       const segments = config.map(([key, label, color]) => {
@@ -7318,13 +7328,13 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       }).join("");
       el.analysisRatings.innerHTML = `<div class="analysis-donut" style="--donut-bg:${total ? `conic-gradient(${segments})` : "#e5eaf3"}"><div class="analysis-donut-center"><strong>${total}</strong><span>avaliações<br>registradas</span></div></div><div class="analysis-rating-legend">${legend}</div>`;
       if (!total) {
-        el.analysisRatingNote.textContent = "As avaliações De novo, Difícil, Bom e Fácil aparecerão aqui.";
+        el.analysisRatingNote.textContent = "As avaliações De novo, DifÃ­cil, Bom e FÃ¡cil aparecerÃ£o aqui.";
       } else if (ratings.again > ratings.good + ratings.easy) {
-        el.analysisRatingNote.textContent = "Há muitos registros De novo. Priorize as questões críticas no próximo teste.";
+        el.analysisRatingNote.textContent = "HÃ¡ muitos registros De novo. Priorize as questões críticas no próximo teste.";
       } else if (ratings.hard > ratings.easy) {
-        el.analysisRatingNote.textContent = "Você acerta várias questões, mas ainda marca Difícil com frequência.";
+        el.analysisRatingNote.textContent = "Você acerta várias questões, mas ainda marca DifÃ­cil com frequÃªncia.";
       } else {
-        el.analysisRatingNote.textContent = "A maior parte das suas avaliações está entre Bom e Fácil.";
+        el.analysisRatingNote.textContent = "A maior parte das suas avaliações estÃ¡ entre Bom e FÃ¡cil.";
       }
       return ratings;
     }
@@ -7369,10 +7379,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const attentionCards = cards.filter(item => cardNeedsAttention(item.card));
 
       el.analysisSummaryStats.innerHTML = `
-        <div class="analysis-stat"><span class="analysis-stat-icon">◔</span><strong>${accuracy}%</strong><span>Aproveitamento geral</span><small>Média de acertos</small></div>
+        <div class="analysis-stat"><span class="analysis-stat-icon">â—”</span><strong>${accuracy}%</strong><span>Aproveitamento geral</span><small>MÃ©dia de acertos</small></div>
         <div class="analysis-stat is-green"><span class="analysis-stat-icon">✓</span><strong>${practiced}</strong><span>Questões praticadas</span><small>${cards.length} cadastradas</small></div>
-        <div class="analysis-stat is-orange"><span class="analysis-stat-icon">◎</span><strong>${mastered}</strong><span>Dominadas</span><small>${cards.length ? Math.round((mastered / cards.length) * 100) : 0}% do total</small></div>
-        <div class="analysis-stat is-purple"><span class="analysis-stat-icon">⌛</span><strong>${learning}</strong><span>Em andamento</span><small>${cards.length ? Math.round((learning / cards.length) * 100) : 0}% do total</small></div>
+        <div class="analysis-stat is-orange"><span class="analysis-stat-icon">â—Ž</span><strong>${mastered}</strong><span>Dominadas</span><small>${cards.length ? Math.round((mastered / cards.length) * 100) : 0}% do total</small></div>
+        <div class="analysis-stat is-purple"><span class="analysis-stat-icon">âŒ›</span><strong>${learning}</strong><span>Em andamento</span><small>${cards.length ? Math.round((learning / cards.length) * 100) : 0}% do total</small></div>
         <div class="analysis-stat is-red"><span class="analysis-stat-icon">!</span><strong>${attentionCards.length}</strong><span>Precisam de atenção</span><small>${cards.length ? Math.round((attentionCards.length / cards.length) * 100) : 0}% do total</small></div>
       `;
 
@@ -7383,9 +7393,9 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const trend = latestValues.length > 1 ? latestValues.at(-1) - latestValues[0] : 0;
       if (weakest.length) {
         const weakNames = weakest.map(metric => metric.subject.name).join(", ");
-        el.analysisInsight.innerHTML = `${trend > 4 ? "Seu desempenho está evoluindo, mas" : "Sua análise indica que"} você ainda precisa dedicar mais atenção a <strong>${escapeHtml(weakNames)}</strong>${best ? `. Seu melhor desempenho atual está em <strong>${escapeHtml(best.subject.name)}</strong>.` : "."}`;
+        el.analysisInsight.innerHTML = `${trend > 4 ? "Seu desempenho estÃ¡ evoluindo, mas" : "Sua análise indica que"} você ainda precisa dedicar mais atenção a <strong>${escapeHtml(weakNames)}</strong>${best ? `. Seu melhor desempenho atual estÃ¡ em <strong>${escapeHtml(best.subject.name)}</strong>.` : "."}`;
       } else {
-        el.analysisInsight.textContent = "Continue realizando testes para que o Fixa identifique padrões mais precisos.";
+        el.analysisInsight.textContent = "Continue realizando testes para que o Fixa identifique padrÃµes mais precisos.";
       }
 
       const studyNow = metrics.filter(metric => metric.score > 0 || metric.total > 0).slice(0, 3);
@@ -7394,9 +7404,9 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
           ? `${metric.lost} perda${metric.lost === 1 ? "" : "s"} de domínio`
           : metric.wrong
             ? `${metric.wrong} erro${metric.wrong === 1 ? "" : "s"}`
-            : `${metric.hard} avaliação${metric.hard === 1 ? "" : "ões"} Difícil`;
+            : `${metric.hard} avaliação${metric.hard === 1 ? "" : "Ãµes"} DifÃ­cil`;
         return `<button class="analysis-list-item" type="button" data-analysis-subject="${escapeHtml(metric.subject.id)}"><span class="analysis-list-main"><strong><span class="analysis-rank" style="--analysis-item-color:${index === 0 ? "#ef4444" : "#f59e0b"}">${index + 1}</span>${escapeHtml(metric.subject.name)}</strong><small>Aproveitamento: ${metric.accuracy}%</small></span><span class="analysis-list-side" style="--analysis-item-color:${index === 0 ? "#ef4444" : "#f59e0b"}">${reason}</span></button>`;
-      }).join("") : `<p class="hint">Ainda não há prioridades suficientes para recomendar.</p>`;
+      }).join("") : `<p class="hint">Ainda não hÃ¡ prioridades suficientes para recomendar.</p>`;
 
       el.analysisSubjects.innerHTML = metrics.length ? metrics.slice(0, 6).map(metric => {
         const status = analysisBarStatus(metric.accuracy, metric.total > 0);
@@ -7416,16 +7426,16 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
           : errorTests >= 2
             ? `${errorTests} testes com erro`
             : hard >= 2
-              ? `${hard} avaliações difíceis`
+              ? `${hard} avaliações difÃ­ceis`
               : `${card.totalWrong || 0} erros registrados`;
-        return `<button class="analysis-list-item" type="button" data-analysis-open="${escapeHtml(item.subject.id)}|${escapeHtml(card.questionCode)}"><span class="analysis-list-main"><span class="analysis-code">${escapeHtml(card.questionCode)}</span><strong>${escapeHtml(shortQuestionText(card))}</strong><small>${escapeHtml(reason)} · sequência ${card.masteryCount || 0} de ${MASTERY_TARGET}</small></span><span class="analysis-list-side">${card.totalWrong || 0} erro${card.totalWrong === 1 ? "" : "s"}<br>em ${errorTests || 1} teste${(errorTests || 1) === 1 ? "" : "s"}</span></button>`;
+        return `<button class="analysis-list-item" type="button" data-analysis-open="${escapeHtml(item.subject.id)}|${escapeHtml(card.questionCode)}"><span class="analysis-list-main"><span class="analysis-code">${escapeHtml(card.questionCode)}</span><strong>${escapeHtml(shortQuestionText(card))}</strong><small>${escapeHtml(reason)} Â· sequÃªncia ${card.masteryCount || 0} de ${MASTERY_TARGET}</small></span><span class="analysis-list-side">${card.totalWrong || 0} erro${card.totalWrong === 1 ? "" : "s"}<br>em ${errorTests || 1} teste${(errorTests || 1) === 1 ? "" : "s"}</span></button>`;
       }).join("") : `<p class="hint">Nenhuma questão crítica identificada.</p>`;
 
       const near = [...cards]
         .filter(item => item.card.status !== "mastered" && (item.card.masteryCount || 0) >= 2)
         .sort((a, b) => (b.card.masteryCount || 0) - (a.card.masteryCount || 0) || cardAttentionScore(a.card) - cardAttentionScore(b.card))
         .slice(0, 5);
-      el.analysisNearMastered.innerHTML = near.length ? near.map(item => `<button class="analysis-list-item" type="button" data-analysis-open="${escapeHtml(item.subject.id)}|${escapeHtml(item.card.questionCode)}"><span class="analysis-list-main"><span class="analysis-code" style="--analysis-item-color:#16a34a">${escapeHtml(item.card.questionCode)}</span><strong>${escapeHtml(shortQuestionText(item.card))}</strong><small>${escapeHtml(item.subject.name)}</small></span><span class="analysis-list-side" style="--analysis-item-color:#16a34a">${item.card.masteryCount} de ${MASTERY_TARGET}</span></button>`).join("") : `<p class="hint">Nenhuma questão está próxima de dominar neste momento.</p>`;
+      el.analysisNearMastered.innerHTML = near.length ? near.map(item => `<button class="analysis-list-item" type="button" data-analysis-open="${escapeHtml(item.subject.id)}|${escapeHtml(item.card.questionCode)}"><span class="analysis-list-main"><span class="analysis-code" style="--analysis-item-color:#16a34a">${escapeHtml(item.card.questionCode)}</span><strong>${escapeHtml(shortQuestionText(item.card))}</strong><small>${escapeHtml(item.subject.name)}</small></span><span class="analysis-list-side" style="--analysis-item-color:#16a34a">${item.card.masteryCount} de ${MASTERY_TARGET}</span></button>`).join("") : `<p class="hint">Nenhuma questão estÃ¡ prÃ³xima de dominar neste momento.</p>`;
 
       renderAnalysisEvolution(history);
       const ratings = renderAnalysisRatings(cards, history);
@@ -7433,7 +7443,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const recentErrors = critical.reduce((sum, item) => sum + (item.card.totalWrong || 0), 0);
       const hardCount = cards.reduce((sum, item) => sum + (item.card.ratingCounts?.hard || 0), 0);
       const nearCount = near.length;
-      el.analysisReviewTags.innerHTML = `<span class="analysis-review-tag">${recentErrors} erro${recentErrors === 1 ? "" : "s"} recente${recentErrors === 1 ? "" : "s"}</span><span class="analysis-review-tag is-orange">${hardCount} avaliação${hardCount === 1 ? "" : "ões"} difícil${hardCount === 1 ? "" : "eis"}</span><span class="analysis-review-tag is-green">${nearCount} próxima${nearCount === 1 ? "" : "s"} de dominar</span>`;
+      el.analysisReviewTags.innerHTML = `<span class="analysis-review-tag">${recentErrors} erro${recentErrors === 1 ? "" : "s"} recente${recentErrors === 1 ? "" : "s"}</span><span class="analysis-review-tag is-orange">${hardCount} avaliação${hardCount === 1 ? "" : "Ãµes"} difÃ­cil${hardCount === 1 ? "" : "eis"}</span><span class="analysis-review-tag is-green">${nearCount} prÃ³xima${nearCount === 1 ? "" : "s"} de dominar</span>`;
       el.analysisReviewButton.disabled = !cards.some(item => isMultipleChoiceTestable(item.card) || (item.card.type === "select-list" && item.card.listItems?.length));
       setAnalysisTab(currentAnalysisTab);
     }
@@ -7478,11 +7488,11 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (el.testQuestionAmount && !el.testQuestionAmount.value) el.testQuestionAmount.value = "14";
       el.startTest.disabled = disabled;
       if (!hasCollection) {
-        el.testStartNote.textContent = "Crie uma coleção e adicione questões com alternativas para começar.";
+        el.testStartNote.textContent = "Crie uma coleção e adicione questões com alternativas para comeÃ§ar.";
       } else if (!count) {
         el.testStartNote.textContent = "O teste utiliza somente questões que possuem alternativas e resposta correta cadastrada.";
       } else {
-        el.testStartNote.textContent = `${count} questão${count === 1 ? "" : "ões"} compatível${count === 1 ? "" : "is"} disponível${count === 1 ? "" : "is"}. Você pediu ${requested}; o teste usará ${usable}.`;
+        el.testStartNote.textContent = `${count} questão${count === 1 ? "" : "Ãµes"} compatÃ­vel${count === 1 ? "" : "is"} disponível${count === 1 ? "" : "is"}. Você pediu ${requested}; o teste usarÃ¡ ${usable}.`;
       }
     }
 
@@ -7498,10 +7508,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         if (el.skipTestQuestion) el.skipTestQuestion.disabled = true;
         el.testProgressLine.querySelector("span").style.width = "0%";
         el.testQuestion.innerHTML = count
-          ? "Há questões prontas. Clique em <strong>Começar teste</strong> para sortear e embaralhar."
+          ? "HÃ¡ questões prontas. Clique em <strong>ComeÃ§ar teste</strong> para sortear e embaralhar."
           : currentSubject()
-            ? "Cadastre questões com alternativas para começar um teste."
-            : "Crie uma coleção e adicione questões com alternativas para começar.";
+            ? "Cadastre questões com alternativas para comeÃ§ar um teste."
+            : "Crie uma coleção e adicione questões com alternativas para comeÃ§ar.";
         el.testOptions.innerHTML = "";
         if (!count && currentSubject()) {
           el.testOptions.innerHTML = `<button type="button" class="secondary empty-add" onclick="document.querySelector('[data-view=&quot;add&quot;]').click(); if (window.showAddMode) window.showAddMode('question');">Adicionar questão</button>`;
@@ -7513,7 +7523,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         el.confirmTestAnswer.disabled = true;
         el.nextTestQuestion.disabled = true;
         el.testHint.textContent = count
-          ? `${count} questão${count === 1 ? "" : "ões"} disponível${count === 1 ? "" : "is"} para teste.`
+          ? `${count} questão${count === 1 ? "" : "Ãµes"} disponível${count === 1 ? "" : "is"} para teste.`
           : "O teste usa somente questões com alternativas cadastradas.";
         return;
       }
@@ -7539,20 +7549,20 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         `;
         el.testOptions.innerHTML = "";
         el.testAnswer.classList.add("show");
-        el.testAnswer.textContent = `Coleção: ${testState.subjectName || "Coleção"}. Tempo total: ${formatDuration(testDurationMs())}. Clique em Começar teste para sortear outras questões e embaralhar as alternativas novamente.`;
+        el.testAnswer.textContent = `Coleção: ${testState.subjectName || "Coleção"}. Tempo total: ${formatDuration(testDurationMs())}. Clique em ComeÃ§ar teste para sortear outras questões e embaralhar as alternativas novamente.`;
         el.testRateActions.classList.remove("show");
         el.testRatingHint.hidden = true;
         el.confirmTestAnswer.disabled = true;
         if (el.skipTestQuestion) el.skipTestQuestion.disabled = true;
         el.nextTestQuestion.disabled = true;
-        el.testHint.textContent = "Teste concluído.";
+        el.testHint.textContent = "Teste concluÃ­do.";
         return;
       }
 
       const question = testState.questions[testState.index];
       const questionCodeLabel = question.questionCode ? ` <span class="test-question-code">${escapeHtml(question.questionCode)}</span>` : "";
       el.testCounter.innerHTML = `Questão ${testState.index + 1} de ${testState.questions.length}${questionCodeLabel}`;
-      el.testScore.textContent = `${testState.score} acerto${testState.score === 1 ? "" : "s"} · ${formatDuration(testDurationMs())}`;
+      el.testScore.textContent = `${testState.score} acerto${testState.score === 1 ? "" : "s"} Â· ${formatDuration(testDurationMs())}`;
       el.testProgressLine.querySelector("span").style.width = `${Math.round((testState.index / testState.questions.length) * 100)}%`;
       el.testQuestion.innerHTML = `<div class="test-question-text">${escapeHtml(question.q)}</div>${renderQuestionMedia(question)}`;
       if (question.type === "select-list") {
@@ -7640,12 +7650,12 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         <div class="answer-block">
           <strong>Resposta correta</strong>
           <p>${currentLetter ? `${currentLetter} — ` : ""}${escapeHtml(answerText || "Resposta correta não definida")}</p>
-          ${explanation ? `<strong>Explicação</strong><p>${escapeHtml(explanation)}</p>` : ""}
+          ${explanation ? `<strong>ExplicaÃ§Ã£o</strong><p>${escapeHtml(explanation)}</p>` : ""}
         </div>
       `;
     }
     function labelDifficulty(value) {
-      return { facil: "Fácil", normal: "Normal", dificil: "Difícil" }[value] || "Normal";
+      return { facil: "FÃ¡cil", normal: "Normal", dificil: "DifÃ­cil" }[value] || "Normal";
     }
 
     function labelStatus(value) {
@@ -7738,7 +7748,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
 
     el.signIn.addEventListener("click", async () => {
       if (!supabaseClient) {
-        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
+        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexÃ£o com a internet.", "error");
         return;
       }
       const email = el.authEmail.value.trim();
@@ -7755,15 +7765,15 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
 
     el.signUp.addEventListener("click", async () => {
       if (!supabaseClient) {
-        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
+        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexÃ£o com a internet.", "error");
         return;
       }
-      const name = el.authName.value.trim() || "Usuário";
+      const name = el.authName.value.trim() || "UsuÃ¡rio";
       const email = el.authEmail.value.trim();
       const password = el.authPassword.value;
       const confirmPassword = el.authPasswordConfirm.value;
       if (!name || !email || !password || !confirmPassword) {
-        setAuthNotice("Preencha nome, e-mail, senha e confirmação.", "error");
+        setAuthNotice("Preencha nome, e-mail, senha e confirmaÃ§Ã£o.", "error");
         return;
       }
       if (password !== confirmPassword) {
@@ -7789,7 +7799,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (authData.session) {
         setAuthNotice("Conta criada e conectada.", "success");
       } else {
-        setAuthNotice("Enviamos um e-mail de confirmação. Abra o e-mail, confirme a conta e depois volte para entrar.", "success");
+        setAuthNotice("Enviamos um e-mail de confirmaÃ§Ã£o. Abra o e-mail, confirme a conta e depois volte para entrar.", "success");
         setAuthMode("signin");
       }
     });
@@ -7839,7 +7849,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     });
     el.googleAuth.addEventListener("click", async () => {
       if (!supabaseClient) {
-        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
+        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexÃ£o com a internet.", "error");
         return;
       }
       const { error } = await supabaseClient.auth.signInWithOAuth({
@@ -7853,27 +7863,27 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
 
     el.sendReset.addEventListener("click", async () => {
       if (!supabaseClient) {
-        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
+        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexÃ£o com a internet.", "error");
         return;
       }
       const email = el.authEmail.value.trim();
       if (!email) {
-        setAuthNotice("Digite seu e-mail para receber o link de recuperação.", "error");
+        setAuthNotice("Digite seu e-mail para receber o link de recuperaÃ§Ã£o.", "error");
         return;
       }
       const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
         redirectTo: authRedirectUrl()
       });
       if (error) {
-        setAuthNotice(authErrorMessage(error, "E-mail não cadastrado ou inválido."), "error");
+        setAuthNotice(authErrorMessage(error, "E-mail não cadastrado ou invÃ¡lido."), "error");
         return;
       }
-      setAuthNotice("Enviamos um link de recuperação para seu e-mail. Abra o link e cadastre uma nova senha.", "success");
+      setAuthNotice("Enviamos um link de recuperaÃ§Ã£o para seu e-mail. Abra o link e cadastre uma nova senha.", "success");
     });
 
     el.updatePassword.addEventListener("click", async () => {
       if (!supabaseClient) {
-        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexão com a internet.", "error");
+        setAuthNotice("A biblioteca do Supabase não carregou. Verifique a conexÃ£o com a internet.", "error");
         return;
       }
       const password = el.authPassword.value;
@@ -7895,7 +7905,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         setAuthNotice(authErrorMessage(error, "Não foi possível atualizar a senha. Verifique os requisitos e tente novamente."), "error");
         return;
       }
-      setAuthNotice("Senha atualizada. Você já pode entrar com a nova senha.");
+      setAuthNotice("Senha atualizada. Você jÃ¡ pode entrar com a nova senha.");
       await supabaseClient.auth.signOut();
       setAuthMode("signin");
     });
@@ -7959,11 +7969,11 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     async function initAuth() {
       if (!supabaseClient) {
         renderAuth();
-        setAuthNotice("Supabase não carregou. Verifique sua internet e atualize a página.", "error");
+        setAuthNotice("Supabase não carregou. Verifique sua internet e atualize a pÃ¡gina.", "error");
         return;
       }
 
-      setAuthStatus("Verificando sessão...");
+      setAuthStatus("Verificando sessÃ£o...");
       const hasCallback = hasAuthCallbackInUrl();
       if (hasCallback) {
         setAuthNotice("Finalizando acesso pelo Google...", "success");
@@ -7985,8 +7995,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         setTimeout(() => {
           handleAuthStateChange(event, session).catch(error => {
             logAuthDebug(`${event}_HANDLER_ERROR`, session, error);
-            console.error("[Fixa Auth] Falha ao aplicar sessão:", error);
-            setAuthNotice("Seu acesso pelo Google foi autorizado, mas o Fixa não conseguiu criar a sessão local. Atualize a página e tente novamente.", "error");
+            console.error("[Fixa Auth] Falha ao aplicar sessÃ£o:", error);
+            setAuthNotice("Seu acesso pelo Google foi autorizado, mas o Fixa não conseguiu criar a sessÃ£o local. Atualize a pÃ¡gina e tente novamente.", "error");
           });
         }, 0);
       });
@@ -7997,7 +8007,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         logAuthDebug("GET_SESSION_ERROR", null, error);
         const message = callbackError
           ? `Não foi possível finalizar o login com Google: ${callbackError}`
-          : "Seu acesso pelo Google foi autorizado, mas o Fixa não conseguiu criar a sessão local. Atualize a página e tente novamente.";
+          : "Seu acesso pelo Google foi autorizado, mas o Fixa não conseguiu criar a sessÃ£o local. Atualize a pÃ¡gina e tente novamente.";
         setAuthNotice(message, "error");
         renderAuth();
         return;
@@ -8011,7 +8021,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (!initialSession && hasAuthCallbackInUrl()) {
         const message = callbackError
           ? `Não foi possível finalizar o login com Google: ${callbackError}`
-          : "Seu acesso pelo Google foi autorizado, mas o Fixa não encontrou uma sessão local. Atualize a página e tente novamente.";
+          : "Seu acesso pelo Google foi autorizado, mas o Fixa não encontrou uma sessÃ£o local. Atualize a pÃ¡gina e tente novamente.";
         setAuthNotice(message, "error");
       }
       await applyAuthSession(initialSession);
@@ -8099,8 +8109,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       el.listBox.hidden = !isList;
       el.correctAnswerWrap.hidden = isList;
       el.answerText.placeholder = isList
-        ? "Explicação geral da lista, se tiver"
-        : "Escreva a explicação da resposta, se tiver";
+        ? "ExplicaÃ§Ã£o geral da lista, se tiver"
+        : "Escreva a explicaÃ§Ã£o da resposta, se tiver";
     });
 
     el.createCollection.addEventListener("click", () => {
@@ -8160,7 +8170,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         return;
       }
       if (type === "select-list" && (!listChoices.length || !listItems.length)) {
-        setMessage(el.questionMessage, "Preencha as opções da lista suspensa e os itens com suas respostas.", "error");
+        setMessage(el.questionMessage, "Preencha as opÃ§Ãµes da lista suspensa e os itens com suas respostas.", "error");
         return;
       }
 
@@ -8195,10 +8205,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
 
       if (editingCardIndex !== null) {
         subject.cards[editingCardIndex] = cardData;
-        setMessage(el.questionMessage, "Cartão atualizado.");
+        setMessage(el.questionMessage, "CartÃ£o atualizado.");
       } else {
         subject.cards.push(cardData);
-        setMessage(el.questionMessage, "Questão salva. Toque em Começar teste para revisar os cartões.");
+        setMessage(el.questionMessage, "Questão salva. Toque em ComeÃ§ar teste para revisar os cartões.");
       }
 
       resetQuestionForm();
@@ -8258,7 +8268,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const cardIndex = Number(button.dataset.delete);
       openModal(
         "Excluir cartão",
-        `<p>Tem certeza que deseja excluir este cartão? Essa ação não tem volta.</p>`,
+        `<p>Tem certeza que deseja excluir este cartão? Essa aÃ§Ã£o não tem volta.</p>`,
         `<button class="secondary" type="button" data-modal-close>Cancelar</button>
         <button class="danger" type="button" data-confirm-delete-card="${cardIndex}">Excluir cartão</button>`
       );
@@ -8268,14 +8278,14 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     function sidebarMenuHtml(type) {
       if (type === "folder") {
         return `
-          <button type="button" data-folder-action="rename">✎ Renomear pasta</button>
-          <button type="button" class="danger-option" data-folder-action="delete">⌫ Excluir pasta</button>
+          <button type="button" data-folder-action="rename">âœŽ Renomear pasta</button>
+          <button type="button" class="danger-option" data-folder-action="delete">âŒ« Excluir pasta</button>
         `;
       }
       return `
-        <button type="button" data-subject-action="rename">✎ Renomear coleção</button>
-        <button type="button" data-subject-action="move">↪ Mover para outra pasta</button>
-        <button type="button" class="danger-option" data-subject-action="delete">⌫ Excluir coleção</button>
+        <button type="button" data-subject-action="rename">âœŽ Renomear coleção</button>
+        <button type="button" data-subject-action="move">â†ª Mover para outra pasta</button>
+        <button type="button" class="danger-option" data-subject-action="delete">âŒ« Excluir coleção</button>
       `;
     }
 
@@ -8315,7 +8325,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         "Renomear pasta",
         `<div class="modal-form"><label>Nome da pasta<input id="renameFolderInput" value="${escapeHtml(folder.name)}"></label></div>`,
         `<button class="secondary" type="button" data-modal-close>Cancelar</button>
-        <button type="button" data-confirm-rename-folder="${escapeHtml(folder.id)}">Salvar alterações</button>`
+        <button type="button" data-confirm-rename-folder="${escapeHtml(folder.id)}">Salvar alteraÃ§Ãµes</button>`
       );
       requestAnimationFrame(() => document.querySelector("#renameFolderInput")?.focus());
     }
@@ -8327,7 +8337,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         "Renomear coleção",
         `<div class="modal-form"><label>Nome da coleção<input id="renameSubjectInput" value="${escapeHtml(subject.name)}"></label></div>`,
         `<button class="secondary" type="button" data-modal-close>Cancelar</button>
-        <button type="button" data-confirm-rename-subject="${escapeHtml(subject.id)}">Salvar alterações</button>`
+        <button type="button" data-confirm-rename-subject="${escapeHtml(subject.id)}">Salvar alteraÃ§Ãµes</button>`
       );
       requestAnimationFrame(() => document.querySelector("#renameSubjectInput")?.focus());
     }
@@ -8353,7 +8363,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (!subject) return;
       openModal(
         "Excluir coleção?",
-        `<p>A coleção '${escapeHtml(subject.name)}' e suas ${subject.cards.length} questões serão excluídas.</p><p class="modal-warning">Esta ação não poderá ser desfeita.</p>`,
+        `<p>A coleção '${escapeHtml(subject.name)}' e suas ${subject.cards.length} questões serÃ£o excluÃ­das.</p><p class="modal-warning">Esta aÃ§Ã£o não poderá ser desfeita.</p>`,
         `<button class="secondary" type="button" data-modal-close>Cancelar</button>
         <button class="danger" type="button" data-confirm-delete-subject="${escapeHtml(subject.id)}">Excluir coleção</button>`
       );
@@ -8368,7 +8378,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (!subjects.length) {
         openModal(
           "Excluir pasta?",
-          `<p>A pasta '${escapeHtml(folder.name)}' será excluída.</p><p class="modal-warning">Esta ação não poderá ser desfeita.</p>`,
+          `<p>A pasta '${escapeHtml(folder.name)}' serÃ¡ excluÃ­da.</p><p class="modal-warning">Esta aÃ§Ã£o não poderá ser desfeita.</p>`,
           `<button class="secondary" type="button" data-modal-close>Cancelar</button>
           <button class="danger" type="button" data-confirm-delete-empty-folder="${escapeHtml(folder.id)}">Excluir pasta</button>`
         );
@@ -8405,7 +8415,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
           ${orphans.map(subject => `<label>${escapeHtml(subject.name)}<select data-legacy-subject="${escapeHtml(subject.id)}">${folderOptions}<option value="__new__">Usar a nova pasta acima</option></select></label>`).join("")}
         </div>`,
         `<button class="secondary" type="button" data-modal-close>Depois</button>
-        <button type="button" data-confirm-legacy-folders>Salvar organização</button>`
+        <button type="button" data-confirm-legacy-folders>Salvar organizaÃ§Ã£o</button>`
       );
     }
     el.modalActions.addEventListener("click", event => {
@@ -8462,7 +8472,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         data.selected = data.subjects[0]?.id || "";
         resetCollectionUi();
         closeModal();
-        setMessage(el.collectionMessage, "Coleção excluída.");
+        setMessage(el.collectionMessage, "Coleção excluÃ­da.");
         render();
         return;
       }
@@ -8472,7 +8482,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         const folderId = deleteEmptyFolderButton.dataset.confirmDeleteEmptyFolder;
         data.folders = data.folders.filter(item => item.id !== folderId);
         closeModal();
-        setMessage(el.collectionMessage, "Pasta excluída.");
+        setMessage(el.collectionMessage, "Pasta excluÃ­da.");
         render();
         return;
       }
@@ -8488,7 +8498,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         data.folders = data.folders.filter(item => item.id !== folderId);
         collapsedFolders.delete(targetId);
         closeModal();
-        setMessage(el.collectionMessage, "Coleções movidas e pasta excluída.");
+        setMessage(el.collectionMessage, "ColeÃ§Ãµes movidas e pasta excluÃ­da.");
         render();
         return;
       }
@@ -8497,8 +8507,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (deleteFolderContentButton) {
         const folderId = deleteFolderContentButton.dataset.confirmDeleteFolderContent;
         openModal(
-          "Confirmar exclusão",
-          `<p class="modal-warning">Tem certeza? A pasta, suas coleções e todas as questões serão excluídas definitivamente.</p>`,
+          "Confirmar exclusÃ£o",
+          `<p class="modal-warning">Tem certeza? A pasta, suas coleções e todas as questões serÃ£o excluÃ­das definitivamente.</p>`,
           `<button class="secondary" type="button" data-modal-close>Cancelar</button>
           <button class="danger" type="button" data-final-delete-folder-content="${escapeHtml(folderId)}">Sim, excluir tudo</button>`
         );
@@ -8514,7 +8524,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         if (removedIds.has(data.selected)) data.selected = data.subjects[0]?.id || "";
         resetCollectionUi();
         closeModal();
-        setMessage(el.collectionMessage, "Pasta e conteúdo excluídos.");
+        setMessage(el.collectionMessage, "Pasta e conteúdo excluÃ­dos.");
         render();
         return;
       }
@@ -8535,7 +8545,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         if (orphanSubjects().length) return;
         legacyFolderPromptOpen = false;
         closeModal();
-        setMessage(el.collectionMessage, "Coleções antigas organizadas.");
+        setMessage(el.collectionMessage, "ColeÃ§Ãµes antigas organizadas.");
         render();
         return;
       }
@@ -8842,7 +8852,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         if (card) {
           card.options = headers
             .map((header, index) => ({ header, value: cells[index] }))
-            .filter(item => /^alternativa|^opcao|^opção|^[a-z]$/.test(item.header) && item.value)
+            .filter(item => /^alternativa|^opcao|^opÃ§Ã£o|^[a-z]$/.test(item.header) && item.value)
             .map(item => item.value);
         }
         return card;
@@ -8856,7 +8866,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         const type = item.tipo || item.type || (item.itens || item.listItems ? "select-list" : "multiple");
         const question = item.pergunta || item.question || item.q || item.frente || "";
         const listItems = item.itens || item.listItems || [];
-        const listChoices = item.opcoesLista || item.opçõesLista || item.listChoices || item.choices || item.opcoes || item.opções || [];
+        const listChoices = item.opcoesLista || item.opÃ§ÃµesLista || item.listChoices || item.choices || item.opcoes || item.opÃ§Ãµes || [];
         if (type === "select-list") {
           const normalizedItems = listItems
             .map(entry => ({
@@ -8869,7 +8879,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
             q: question,
             a: item.resposta || item.answer || item.a || "",
             correctAnswer: "",
-            explanation: item.explicacao || item.explicação || item.explanation || "",
+            explanation: item.explicacao || item.explicaÃ§Ã£o || item.explanation || "",
             subject: item.disciplina || item.materia || item.material || item.subject,
             type: "select-list",
             options: [],
@@ -8887,13 +8897,13 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         const card = makeCard(question, item.resposta || item.answer || item.a || item.verso || "");
         if (card) card.subject = item.disciplina || item.materia || item.material || item.subject;
         if (card) {
-          card.options = item.alternativas || item.options || item.opcoes || item.opções || [];
+          card.options = item.alternativas || item.options || item.opcoes || item.opÃ§Ãµes || [];
           card.correctAnswerText = item.resposta || item.answer || item.correctAnswerText || "";
         }
         if (card) {
           card.type = "multiple";
           card.image = item.imagem || item.image || "";
-          card.explanation = item.explicacao || item.explicação || item.explanation || card.explanation || "";
+          card.explanation = item.explicacao || item.explicaÃ§Ã£o || item.explanation || card.explanation || "";
         }
         return card;
       }).filter(Boolean);
@@ -8946,7 +8956,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
   });
 
   if (!validCards.length) {
-    setMessage(el.importMessage, "Não encontrei questões válidas para importar.", "error");
+    setMessage(el.importMessage, "Não encontrei questões vÃ¡lidas para importar.", "error");
     return 0;
   }
 
@@ -9011,7 +9021,7 @@ function imageMimeFromName(name) {
     async function exportCurrentCollection() {
       const subject = currentSubject();
       if (!subject || !subject.cards?.length) {
-        setMessage(el.importMessage, "Não há questões nesta coleção para exportar.", "error");
+        setMessage(el.importMessage, "Não hÃ¡ questões nesta coleção para exportar.", "error");
         return;
       }
       if (!window.JSZip) {
@@ -9115,7 +9125,7 @@ function imageMimeFromName(name) {
         return;
       }
       if (!imported.length) {
-        setMessage(el.importMessage, pendingImportFile ? "Não encontrei questões válidas nesse arquivo." : "Cole questões no formato pergunta, linha ---, resposta.", "error");
+        setMessage(el.importMessage, pendingImportFile ? "Não encontrei questões vÃ¡lidas nesse arquivo." : "Cole questões no formato pergunta, linha ---, resposta.", "error");
         return;
       }
       imported.forEach(card => normalizeCard(card));
@@ -9127,13 +9137,13 @@ function imageMimeFromName(name) {
       el.importFile.value = "";
       el.importFileName.textContent = "Nenhum arquivo escolhido";
       const pendingAnswers = Math.max(0, total - recognizedAnswers);
-      setMessage(el.importMessage, `${total} questão${total === 1 ? "" : "ões"} importada${total === 1 ? "" : "s"} ${source === "arquivo" ? "do arquivo" : ""}. ${recognizedAnswers} resposta${recognizedAnswers === 1 ? "" : "s"} identificada${recognizedAnswers === 1 ? "" : "s"} e ${pendingAnswers} precisam de correção.`);
+      setMessage(el.importMessage, `${total} questão${total === 1 ? "" : "Ãµes"} importada${total === 1 ? "" : "s"} ${source === "arquivo" ? "do arquivo" : ""}. ${recognizedAnswers} resposta${recognizedAnswers === 1 ? "" : "s"} identificada${recognizedAnswers === 1 ? "" : "s"} e ${pendingAnswers} precisam de correÃ§Ã£o.`);
       showingAnswer = false;
       render();
     });
 
     function formatImportPreview(cards) {
-      if (!cards.length) return "Não encontrei questões válidas para pré-visualizar.";
+      if (!cards.length) return "Não encontrei questões vÃ¡lidas para pré-visualizar.";
       return cards.slice(0, 10).map((card, index) => {
         const options = (card.options || []).length
           ? `\n${card.options.map((option, optionIndex) => `${optionLetter(optionIndex)}) ${option}`).join("\n")}`
@@ -9159,7 +9169,7 @@ function imageMimeFromName(name) {
         if (file.name.toLowerCase().endsWith(".zip")) {
           const cards = await parseZipFile(file);
           el.bulkText.value = formatImportPreview(cards);
-          setMessage(el.importMessage, `ZIP selecionado. Pré-visualizei ${cards.length} questão${cards.length === 1 ? "" : "ões"}. Clique em Importar questões para salvar.`);
+          setMessage(el.importMessage, `ZIP selecionado. Pré-visualizei ${cards.length} questão${cards.length === 1 ? "" : "Ãµes"}. Clique em Importar questões para salvar.`);
           return;
         }
         el.bulkText.value = await file.text();
@@ -9173,9 +9183,9 @@ function imageMimeFromName(name) {
       try {
         const cards = pendingImportFile ? await parseImportFile(pendingImportFile) : parseImportText(el.bulkText.value);
         el.bulkText.value = formatImportPreview(cards);
-        setMessage(el.importMessage, `${cards.length} questão${cards.length === 1 ? "" : "ões"} encontrada${cards.length === 1 ? "" : "s"} na pré-visualização. Isso ainda não importou nada.`);
+        setMessage(el.importMessage, `${cards.length} questão${cards.length === 1 ? "" : "Ãµes"} encontrada${cards.length === 1 ? "" : "s"} na pré-visualizaÃ§Ã£o. Isso ainda não importou nada.`);
       } catch (error) {
-        setMessage(el.importMessage, "Não consegui montar a pré-visualização desse conteúdo.", "error");
+        setMessage(el.importMessage, "Não consegui montar a pré-visualizaÃ§Ã£o desse conteúdo.", "error");
       }
     });
 
