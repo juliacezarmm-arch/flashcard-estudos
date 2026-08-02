@@ -1414,3 +1414,234 @@
   document.head.appendChild(style);
 })();
 /* ===== end fixa-mobile-topbar-repair.js ===== */
+
+/* ===== fixa-progress-desktop-compact.js ===== */
+(() => {
+  const oldStyle = document.getElementById('fixaProgressDesktopCompact');
+  if (oldStyle) oldStyle.remove();
+
+  const style = document.createElement('style');
+  style.id = 'fixaProgressDesktopCompact';
+  style.textContent = `
+    @media (min-width: 1024px) {
+      [data-home-panel="progress"] .home-progress-dashboard {
+        grid-template-rows: 142px 258px 238px;
+        gap: 12px;
+        padding: 4px 0 10px;
+      }
+
+      [data-home-panel="progress"] .home-progress-top-row,
+      [data-home-panel="progress"] .home-progress-middle-row,
+      [data-home-panel="progress"] .home-progress-bottom-row {
+        gap: 12px;
+      }
+
+      [data-home-panel="progress"] .home-progress-card {
+        height: 142px;
+        padding: 14px 18px;
+        border-radius: 12px;
+      }
+
+      [data-home-panel="progress"] .home-progress-card-head {
+        height: 30px;
+        gap: 9px;
+        margin-bottom: 5px;
+      }
+
+      [data-home-panel="progress"] .home-progress-card-head h3 {
+        font-size: 15px;
+        line-height: 20px;
+      }
+
+      [data-home-panel="progress"] .home-progress-symbol {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+      }
+
+      [data-home-panel="progress"] .home-progress-symbol .home-svg {
+        width: 17px;
+        height: 17px;
+      }
+
+      [data-home-panel="progress"] .home-progress-symbol img {
+        width: 15px;
+        height: 15px;
+      }
+
+      [data-home-panel="progress"] .home-progress-symbol.home-symbol-fire img {
+        width: 12px;
+        height: 12px;
+      }
+
+      [data-home-panel="progress"] .home-progress-value {
+        margin-bottom: 2px;
+      }
+
+      [data-home-panel="progress"] .home-progress-value strong {
+        font-size: 28px;
+        line-height: 32px;
+      }
+
+      [data-home-panel="progress"] .home-progress-value span {
+        font-size: 12px;
+        line-height: 16px;
+      }
+
+      [data-home-panel="progress"] .home-progress-card > p {
+        font-size: 12px;
+        line-height: 16px;
+      }
+
+      [data-home-panel="progress"] .home-progress-card .home-progress {
+        height: 6px;
+        margin-top: 9px;
+      }
+
+      [data-home-panel="progress"] .home-sequence-card .home-progress-card-head {
+        margin-bottom: 7px;
+      }
+
+      [data-home-panel="progress"] .home-sequence-summary {
+        margin-left: auto;
+        font-size: 12px;
+      }
+
+      [data-home-panel="progress"] .home-sequence-summary strong {
+        font-size: 16px;
+      }
+
+      [data-home-panel="progress"] .home-sequence-days {
+        padding: 7px 10px;
+        gap: 8px;
+      }
+
+      [data-home-panel="progress"] .home-sequence-day {
+        width: 28px;
+      }
+
+      [data-home-panel="progress"] .home-sequence-day span {
+        width: 27px;
+        height: 27px;
+        font-size: 13px;
+      }
+
+      [data-home-panel="progress"] .home-sequence-day small {
+        font-size: 10px;
+        line-height: 13px;
+      }
+
+      [data-home-panel="progress"] .home-progress-middle-row > .home-panel,
+      [data-home-panel="progress"] .home-progress-bottom-row > .home-panel {
+        padding: 16px 20px;
+        border-radius: 12px;
+      }
+
+      [data-home-panel="progress"] .home-progress-dashboard .home-panel-head {
+        min-height: 30px;
+        margin-bottom: 8px;
+      }
+
+      [data-home-panel="progress"] .home-progress-dashboard .home-panel-head h3 {
+        font-size: 15px;
+        line-height: 20px;
+      }
+
+      [data-home-panel="progress"] .home-progress-title-icon {
+        width: 20px;
+        height: 20px;
+        flex-basis: 20px;
+      }
+
+      [data-home-panel="progress"] .home-progress-title-icon .home-svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      [data-home-panel="progress"] .home-progress-dashboard .home-stat-row {
+        min-height: 46px;
+        padding: 6px 0;
+      }
+
+      [data-home-panel="progress"] .home-stat-icon,
+      [data-home-panel="progress"] .home-goal-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+      }
+
+      [data-home-panel="progress"] .home-stat-row > b {
+        font-size: 18px;
+        line-height: 22px;
+      }
+
+      [data-home-panel="progress"] .home-goal-list {
+        gap: 8px;
+      }
+
+      [data-home-panel="progress"] .home-goal-item {
+        padding: 10px 12px;
+      }
+
+      [data-home-panel="progress"] .home-period-list {
+        gap: 10px;
+      }
+
+      [data-home-panel="progress"] .home-period-item {
+        min-height: 74px;
+        padding: 12px 14px;
+      }
+
+      [data-home-panel="progress"] .home-period-item b {
+        font-size: 24px;
+        line-height: 28px;
+      }
+
+      [data-home-panel="progress"] .home-chart {
+        height: 196px;
+      }
+
+      [data-home-panel="progress"] .home-chart svg {
+        height: 158px;
+      }
+
+      [data-home-panel="progress"] .home-chart-note {
+        min-height: 30px;
+        padding: 7px 10px;
+      }
+    }
+
+    @media (min-width: 1024px) and (max-height: 760px) {
+      [data-home-panel="progress"] .home-progress-dashboard {
+        grid-template-rows: 126px 232px 212px;
+        gap: 10px;
+        padding-bottom: 6px;
+      }
+
+      [data-home-panel="progress"] .home-progress-card {
+        height: 126px;
+        padding: 12px 16px;
+      }
+
+      [data-home-panel="progress"] .home-progress-value strong {
+        font-size: 25px;
+        line-height: 29px;
+      }
+
+      [data-home-panel="progress"] .home-progress-middle-row > .home-panel,
+      [data-home-panel="progress"] .home-progress-bottom-row > .home-panel {
+        padding: 14px 18px;
+      }
+
+      [data-home-panel="progress"] .home-chart {
+        height: 176px;
+      }
+
+      [data-home-panel="progress"] .home-chart svg {
+        height: 142px;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+})();
+/* ===== end fixa-progress-desktop-compact.js ===== */
