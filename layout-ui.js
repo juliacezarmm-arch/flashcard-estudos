@@ -1217,3 +1217,176 @@
   observer.observe(document.querySelector('#subjects') || document.body, { childList: true, subtree: true });
    requestAnimationFrame(() => openHome('today'));
 })();
+/* ===== fixa-mobile-topbar-repair.js ===== */
+(() => {
+  const style = document.createElement('style');
+  style.id = 'fixaMobileTopbarRepair';
+  style.textContent = `
+    @media (max-width: 860px), (max-device-width: 860px), (hover: none) and (pointer: coarse) and (orientation: portrait) {
+      .topbar {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 80 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        width: 100% !important;
+        padding: 0 0 10px !important;
+        margin: 0 0 8px !important;
+        background: var(--bg, #f6f7fb) !important;
+        box-shadow: 0 1px 0 rgba(203, 213, 225, .7) !important;
+      }
+
+      .mobile-topline {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        min-height: 38px !important;
+        width: 100% !important;
+        flex: 0 0 auto !important;
+      }
+
+      .mobile-topline-left {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        min-width: 0 !important;
+      }
+
+      .mobile-brand {
+        min-width: 0 !important;
+      }
+
+      .topbar-title {
+        display: none !important;
+      }
+
+      .topbar-right {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        grid-template-areas:
+          "tools auth"
+          "tabs tabs" !important;
+        align-items: center !important;
+        gap: 8px !important;
+        min-height: 0 !important;
+      }
+
+      .topbar-right #homeTopTools {
+        grid-area: tools !important;
+        order: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+        min-width: 0 !important;
+        min-height: 34px !important;
+        margin: 0 !important;
+      }
+
+      .topbar-right .auth-panel {
+        grid-area: auth !important;
+        order: 0 !important;
+        justify-self: end !important;
+        align-self: center !important;
+        width: auto !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+      }
+
+      .auth-panel .user-menu-button,
+      .user-menu-button {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        max-width: 36px !important;
+        padding: 0 !important;
+        border-radius: 999px !important;
+      }
+
+      .auth-panel .user-avatar,
+      .user-avatar {
+        width: 34px !important;
+        height: 34px !important;
+      }
+
+      .topbar-right .tabs {
+        grid-area: tabs !important;
+        order: 0 !important;
+        grid-column: auto !important;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        gap: 7px !important;
+        padding: 0 0 2px !important;
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+
+      .topbar-right .tabs::-webkit-scrollbar {
+        display: none !important;
+      }
+
+      .topbar-right .tabs .tab {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: max-content !important;
+        min-height: 36px !important;
+        padding: 8px 10px !important;
+        border-radius: 9px !important;
+        font-size: 12px !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+      }
+
+      .topbar-right .tabs .tab svg {
+        width: 14px !important;
+        height: 14px !important;
+        flex: 0 0 auto !important;
+      }
+
+      .home-top-streak {
+        min-height: 30px !important;
+        padding: 5px 7px !important;
+        border-radius: 8px !important;
+        font-size: 12px !important;
+        white-space: nowrap !important;
+      }
+
+      .home-top-streak .fire {
+        font-size: 14px !important;
+      }
+
+      .home-top-streak small {
+        font-size: 9px !important;
+      }
+
+      .home-top-bell {
+        width: 30px !important;
+        height: 30px !important;
+        border-radius: 8px !important;
+      }
+
+      .home-streak-popover {
+        left: 0 !important;
+        right: auto !important;
+        max-width: calc(100vw - 24px) !important;
+      }
+
+      .home-hero-head,
+      .home-page-head {
+        margin-top: 0 !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+})();
+/* ===== end fixa-mobile-topbar-repair.js ===== */
