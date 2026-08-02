@@ -572,12 +572,12 @@
     .home-footer-card strong { display: block; color: #172033; font-size: 24px; line-height: 28px; font-weight: 700; }
     .home-footer-card small { display: block; font-size: 12px; }
      .home-activity-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; width: 100%; max-width: none; margin: 0; padding: 4px 0 24px; box-sizing: border-box; }
-     .home-activity-panel { height: 360px; min-height: 360px; max-height: 360px; min-width: 0; overflow: hidden; border: 1px solid #e5eaf1; border-radius: 16px; background: #fff; box-shadow: 0 5px 18px rgba(31, 48, 78, .06); }
+     .home-activity-panel { height: auto; min-height: 0; max-height: none; min-width: 0; overflow: visible; border: 1px solid #e5eaf1; border-radius: 16px; background: #fff; box-shadow: 0 5px 18px rgba(31, 48, 78, .06); }
     .home-activity-panel .home-panel-head { height: 58px; min-height: 58px; padding: 0 20px; border-bottom: 1px solid #f0f3f7; display: flex; align-items: center; }
     .home-activity-panel .home-panel-head h3 { display: flex; align-items: center; gap: 10px; margin: 0; color: #172033; font-size: 16px; line-height: 22px; font-weight: 700; }
     .home-activity-title-icon { display: inline-grid; place-items: center; width: 22px; height: 22px; color: #1672f4; flex: 0 0 22px; }
     .home-activity-title-icon .home-svg { width: 20px; height: 20px; }
-     .home-activity-scroll { height: calc(100% - 58px); max-height: none; box-sizing: border-box; overflow-y: auto; overflow-x: hidden; padding: 0 20px 20px; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: #b9c7d9 transparent; }
+     .home-activity-scroll { height: auto; max-height: none; box-sizing: border-box; overflow: visible; padding: 0 20px 12px; }
     .home-activity-scroll::-webkit-scrollbar { width: 6px; }
     .home-activity-scroll::-webkit-scrollbar-track { background: transparent; }
     .home-activity-scroll::-webkit-scrollbar-thumb { background: #b9c7d9; border-radius: 999px; }
@@ -649,7 +649,6 @@
       .home-collection-grid, .home-priority-list, .home-period-list { grid-template-columns: 1fr; }
       .home-collection-scroll { max-height: 330px; }
        .home-activity-grid { grid-template-columns: 1fr; gap: 12px; padding: 4px 0 20px; }
-       .home-activity-panel { height: 340px; min-height: 340px; max-height: 340px; }
        .home-priority-item { flex-basis: 235px; }
        .home-priority-art { right: 8px; width: 110px; height: 110px; }
     }
