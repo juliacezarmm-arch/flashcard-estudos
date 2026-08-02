@@ -1171,22 +1171,26 @@
          sequenceToday.setHours(0, 0, 0, 0);
          const weekStart = new Date(sequenceToday);
          weekStart.setDate(sequenceToday.getDate() - ((sequenceToday.getDay() + 6) % 7));
-         const sequenceDays = Array.from({ length: 7 }, (_, index) => {
-           const date = new Date(weekStart);
-           date.setDate(weekStart.getDate() + index);
-           const key = progressDayKey(date);
-           const entry = activityMap.get(key);
-           const isToday = key === progressDayKey(sequenceToday);
-           const isFuture = date > sequenceToday;
-           const studied = progressWasValidDay(entry);
-           const lost = !studied && !isToday && !isFuture && date < sequenceToday;
-           const state = studied ? ' is-study' : lost ? ' is-lost' : isToday ? ' is-current' : '';
-           const icon = studied ? `<img class="home-sequence-icon" src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true">` : lost ? svgIcon('snowflake') : '';
-           const weekday = new Intl.DateTimeFormat('pt-BR', { weekday: 'narrow' }).format(date).toUpperCase();
-           const weekdayName = new Intl.DateTimeFormat('pt-BR', { weekday: 'long' }).format(date);
-           return `<span class="home-sequence-day${state}" title="${weekdayName}"><i>${icon}</i><b>${weekday}</b></span>`;
-         }).join('');
-       document.querySelector('#homeFooterStats').innerHTML = `<article class="home-panel home-progress-card home-sequence-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-fire"><img src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true"></span><h3>Sequ&ecirc;ncia</h3><span class="home-sequence-summary"><strong>${streak}</strong> dias seguidos</span></div><div class="home-sequence-days">${sequenceDays}</div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-clock">${svgIcon('clock')}</span><h3>Tempo estudado hoje</h3></div><div class="home-progress-value"><strong>${duration(todayTime)}</strong></div><p>Meta di&aacute;ria: 2h</p><div class="home-progress"><span style="width:${Math.min(100, Math.round(todayTime / PROGRESS_DAILY_GOAL_MS * 100))}%"></span></div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-flag">${svgIcon('flag')}</span><h3>Objetivo da semana</h3></div><div class="home-progress-value"><strong>${weeklyGoals.percent}%</strong></div><p>${weeklyGoals.completed} de ${weeklyGoals.total} metas conclu&iacute;das</p><div class="home-progress"><span style="width:${weeklyGoals.percent}%"></span></div></article>`;
+          const sequenceDays = Array.from({ length: 7 }, (_, index) => {
+            const date = new Date(weekStart);
+            date.setDate(weekStart.getDate() + index);
+            const key = progressDayKey(date);
+            const entry = activityMap.get(key);
+            const isToday = key === progressDayKey(sequenceToday);
+            const isFuture = date > sequenceToday;
+            const studied = progressWasValidDay(entry);
+            const lost = !studied && !isToday && !isFuture && date < sequenceToday;
+            const state = studied ? ' is-study' : lost ? ' is-lost' : isToday ? ' is-current' : '';
+            const icon = studied
+              ? '<svg class="home-sequence-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7"></path></svg>'
+              : lost ? svgIcon('snowflake') : '';
+            const weekday = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'][index];
+            const weekdayName = new Intl.DateTimeFormat('pt-BR', { weekday: 'long' }).format(date);
+            const labelState = studied ? 'estudo concluido' : lost ? 'dia sem estudo valido' : isToday ? 'hoje, aguardando estudo' : 'dia futuro';
+            const label = `${weekdayName}: ${labelState}`;
+            return `<span class="home-sequence-day${state}" title="${esc(label)}" aria-label="${esc(label)}"><i>${icon}</i><b>${weekday}</b></span>`;
+          }).join('');
+        document.querySelector('#homeFooterStats').innerHTML = `<article class="home-panel home-progress-card home-sequence-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-fire"><img src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true"></span><h3>Sequ&ecirc;ncia</h3><span class="home-sequence-summary"><strong>${streak}</strong> dias seguidos</span></div><div class="home-sequence-days">${sequenceDays}</div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-clock">${svgIcon('clock')}</span><h3>Tempo estudado hoje</h3></div><div class="home-progress-value"><strong>${duration(todayTime)}</strong></div><p>Meta di&aacute;ria: 2h</p><div class="home-progress"><span style="width:${Math.min(100, Math.round(todayTime / PROGRESS_DAILY_GOAL_MS * 100))}%"></span></div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-flag">${svgIcon('flag')}</span><h3>Objetivo da semana</h3></div><div class="home-progress-value"><strong>${weeklyGoals.percent}%</strong></div><p>${weeklyGoals.completed} de ${weeklyGoals.total} metas conclu&iacute;das</p><div class="home-progress"><span style="width:${weeklyGoals.percent}%"></span></div></article>`;
 
       const dailyTarget = item => Math.min(10, Math.max(0, item.stats.review));
       const todayTestRecords = tests.filter(item => String(item.date || '').slice(0, 10) === todayKey());
@@ -1645,3 +1649,183 @@
   document.head.appendChild(style);
 })();
 /* ===== end fixa-progress-desktop-compact.js ===== */
+
+/* ===== fixa-sequence-card-polish.js ===== */
+(() => {
+  const oldStyle = document.getElementById('fixaSequenceCardPolish');
+  if (oldStyle) oldStyle.remove();
+  const style = document.createElement('style');
+  style.id = 'fixaSequenceCardPolish';
+  style.textContent = `
+    [data-home-panel="progress"] .home-sequence-card {
+      min-height: 0 !important;
+      height: 136px !important;
+      max-height: 136px !important;
+      padding: 16px 18px !important;
+      overflow: hidden !important;
+      border-radius: 14px !important;
+      background: #fff !important;
+      border: 1px solid #dbe5f4 !important;
+      box-shadow: 0 10px 26px rgba(15, 23, 42, .055) !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-card .home-progress-card-head {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      min-height: 30px !important;
+      margin: 0 !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-card .home-progress-symbol {
+      width: 30px !important;
+      height: 30px !important;
+      min-width: 30px !important;
+      border-radius: 9px !important;
+      background: #fff1e7 !important;
+      box-shadow: none !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-card .home-progress-symbol img {
+      width: 17px !important;
+      height: 17px !important;
+      object-fit: contain !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-card h3 {
+      margin: 0 !important;
+      font-size: 14px !important;
+      line-height: 1.15 !important;
+      font-weight: 800 !important;
+      color: #0f172a !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-summary {
+      margin-left: auto !important;
+      color: #2563eb !important;
+      font-size: 12px !important;
+      line-height: 1.1 !important;
+      font-weight: 800 !important;
+      white-space: nowrap !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-summary strong {
+      color: inherit !important;
+      font-size: inherit !important;
+      line-height: inherit !important;
+      font-weight: inherit !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-days {
+      display: grid !important;
+      grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+      gap: 8px !important;
+      height: auto !important;
+      margin-top: 14px !important;
+      padding: 0 !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      box-sizing: border-box !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-day {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      gap: 6px !important;
+      min-width: 0 !important;
+      color: #334155 !important;
+      font-size: 10px !important;
+      line-height: 1 !important;
+      font-weight: 800 !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-day i {
+      width: 30px !important;
+      height: 30px !important;
+      display: grid !important;
+      place-items: center !important;
+      border-radius: 999px !important;
+      border: 1px solid #dbe5f4 !important;
+      background: #fff !important;
+      color: transparent !important;
+      box-sizing: border-box !important;
+      font-style: normal !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-day b {
+      color: #334155 !important;
+      font-size: 10px !important;
+      line-height: 1 !important;
+      font-weight: 800 !important;
+      letter-spacing: .01em !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-day.is-study i {
+      background: #ffb13b !important;
+      border-color: #f59e0b !important;
+      color: #111827 !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-check {
+      width: 16px !important;
+      height: 16px !important;
+      display: block !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-check path {
+      fill: none !important;
+      stroke: currentColor !important;
+      stroke-width: 3 !important;
+      stroke-linecap: round !important;
+      stroke-linejoin: round !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-day.is-lost i {
+      background: #eff6ff !important;
+      border-color: #dbeafe !important;
+      color: #2563eb !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-day.is-lost i .home-svg {
+      width: 15px !important;
+      height: 15px !important;
+      color: #2563eb !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-day.is-current i {
+      background: #eff6ff !important;
+      border-color: #bfdbfe !important;
+      color: #2563eb !important;
+    }
+
+    [data-home-panel="progress"] .home-sequence-day.is-current i::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: currentColor;
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      [data-home-panel="progress"] .home-sequence-card {
+        height: 126px !important;
+        max-height: 126px !important;
+        padding: 14px 15px !important;
+      }
+      [data-home-panel="progress"] .home-sequence-days {
+        gap: 5px !important;
+        margin-top: 12px !important;
+      }
+      [data-home-panel="progress"] .home-sequence-day i {
+        width: 27px !important;
+        height: 27px !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+})();
+/* ===== end fixa-sequence-card-polish.js ===== */
