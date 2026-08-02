@@ -549,8 +549,11 @@
      .home-progress-card > p { margin: 0; color: #64748b; font-size: 13px; line-height: 18px; }
      .home-progress-card .home-progress { height: 7px; margin-top: 13px; }
     .home-progress-card .home-progress span { background: #2563eb; }
-     .home-sequence-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 6px; height: 58px; margin-top: 11px; padding: 7px 13px; border: 1px solid #e2e8f0; border-radius: 11px; background: #fff; box-sizing: border-box; }
-      .home-sequence-day { display: grid; grid-template-rows: 29px 13px; justify-items: center; gap: 3px; color: #64748b; font-size: 11px; line-height: 13px; font-weight: 700; }
+.home-sequence-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 6px; height: 58px; margin-top: 11px; padding: 7px 13px; border: 1px solid #e2e8f0; border-radius: 11px; background: #fff; box-sizing: border-box; }
+.home-sequence-card .home-progress-card-head { margin-bottom: 10px; }
+.home-sequence-summary { margin-left: auto; color: #2563eb; font-size: 13px; line-height: 18px; font-weight: 650; white-space: nowrap; }
+.home-sequence-summary strong { color: #172033; font-size: 19px; line-height: 22px; }
+.home-sequence-day { display: grid; grid-template-rows: 29px 13px; justify-items: center; gap: 3px; color: #64748b; font-size: 11px; line-height: 13px; font-weight: 700; }
       .home-sequence-day i { grid-row: 1; }
       .home-sequence-day b { grid-row: 2; }
      .home-sequence-day i { width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid #dce4ed; border-radius: 50%; color: transparent; font-style: normal; box-sizing: border-box; }
@@ -946,8 +949,26 @@
      document.querySelector('#homeTests').innerHTML = activityRecords.length ? activityRecords.slice(0, 12).map(item => { const name = testSubjectName(item); const score = Number(item.score || 0); const total = Number(item.total || 0); const percentage = total ? score / total * 100 : 0; const resultClass = percentage >= 80 ? '' : percentage >= 60 ? ' is-warn' : ' is-bad'; return `<div class="home-test-row"${activitySubjectAttr(item)}><span class="home-activity-avatar tone-${activityTone(name)}">${activityInitials(name)}</span><span class="home-test-copy"><span class="home-test-name">${esc(name)}</span><span class="home-test-meta">${activityRelativeTime(item.date)}</span></span><span class="home-test-score${resultClass}">${score}/${total}</span></div>`; }).join('') : '<p class="home-muted">Nenhum teste realizado ainda.</p>';
         const todayTime = progressTodayTime();
         const activityMap = progressActivityMap();
-        const sequenceDays = progressDateRange(7).map((day, index) => { const entry = activityMap.get(day.key); const isToday = index === 6; const studied = progressWasValidDay(entry); const lost = !studied && !isToday && day.date < new Date(); const state = studied ? ' is-study' : lost ? ' is-lost' : isToday ? ' is-current' : ''; const icon = studied ? `<img class="home-sequence-icon" src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true">` : lost ? svgIcon('snowflake') : ''; return `<span class="home-sequence-day${state}"><b>${new Intl.DateTimeFormat('pt-BR', { weekday: 'narrow' }).format(day.date).toUpperCase()}</b><i>${icon}</i></span>`; }).join('');
-      document.querySelector('#homeFooterStats').innerHTML = `<article class="home-panel home-progress-card home-sequence-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-fire"><img src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true"></span><h3>Sequ&ecirc;ncia</h3></div><div class="home-progress-value"><strong>${streak}</strong><span>dias seguidos</span></div><div class="home-sequence-days">${sequenceDays}</div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-clock">${svgIcon('clock')}</span><h3>Tempo estudado hoje</h3></div><div class="home-progress-value"><strong>${duration(todayTime)}</strong></div><p>Meta di&aacute;ria: 2h</p><div class="home-progress"><span style="width:${Math.min(100, Math.round(todayTime / PROGRESS_DAILY_GOAL_MS * 100))}%"></span></div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-flag">${svgIcon('flag')}</span><h3>Objetivo da semana</h3></div><div class="home-progress-value"><strong>${weeklyGoals.percent}%</strong></div><p>${weeklyGoals.completed} de ${weeklyGoals.total} metas conclu&iacute;das</p><div class="home-progress"><span style="width:${weeklyGoals.percent}%"></span></div></article>`;
+         const sequenceToday = new Date();
+         sequenceToday.setHours(0, 0, 0, 0);
+         const weekStart = new Date(sequenceToday);
+         weekStart.setDate(sequenceToday.getDate() - ((sequenceToday.getDay() + 6) % 7));
+         const sequenceDays = Array.from({ length: 7 }, (_, index) => {
+           const date = new Date(weekStart);
+           date.setDate(weekStart.getDate() + index);
+           const key = progressDayKey(date);
+           const entry = activityMap.get(key);
+           const isToday = key === progressDayKey(sequenceToday);
+           const isFuture = date > sequenceToday;
+           const studied = progressWasValidDay(entry);
+           const lost = !studied && !isToday && !isFuture && date < sequenceToday;
+           const state = studied ? ' is-study' : lost ? ' is-lost' : isToday ? ' is-current' : '';
+           const icon = studied ? `<img class="home-sequence-icon" src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true">` : lost ? svgIcon('snowflake') : '';
+           const weekday = new Intl.DateTimeFormat('pt-BR', { weekday: 'narrow' }).format(date).toUpperCase();
+           const weekdayName = new Intl.DateTimeFormat('pt-BR', { weekday: 'long' }).format(date);
+           return `<span class="home-sequence-day${state}" title="${weekdayName}"><i>${icon}</i><b>${weekday}</b></span>`;
+         }).join('');
+       document.querySelector('#homeFooterStats').innerHTML = `<article class="home-panel home-progress-card home-sequence-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-fire"><img src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true"></span><h3>Sequ&ecirc;ncia</h3><span class="home-sequence-summary"><strong>${streak}</strong> dias seguidos</span></div><div class="home-sequence-days">${sequenceDays}</div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-clock">${svgIcon('clock')}</span><h3>Tempo estudado hoje</h3></div><div class="home-progress-value"><strong>${duration(todayTime)}</strong></div><p>Meta di&aacute;ria: 2h</p><div class="home-progress"><span style="width:${Math.min(100, Math.round(todayTime / PROGRESS_DAILY_GOAL_MS * 100))}%"></span></div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-flag">${svgIcon('flag')}</span><h3>Objetivo da semana</h3></div><div class="home-progress-value"><strong>${weeklyGoals.percent}%</strong></div><p>${weeklyGoals.completed} de ${weeklyGoals.total} metas conclu&iacute;das</p><div class="home-progress"><span style="width:${weeklyGoals.percent}%"></span></div></article>`;
 
       const dailyTarget = item => Math.min(10, Math.max(0, item.stats.review));
       const todayTestRecords = tests.filter(item => String(item.date || '').slice(0, 10) === todayKey());
