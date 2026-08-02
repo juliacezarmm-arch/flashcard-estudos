@@ -528,62 +528,64 @@
     .home-focus-box strong { color: #172033; font-size: 16px; line-height: 20px; font-weight: 600; }
     .home-focus-box small { color: #64748b; font-size: 11px; line-height: 16px; }
     .home-focus-arrow { position: absolute; top: 50%; right: 14px; color: #334155; font-size: 22px; line-height: 1; transform: translateY(-50%); }
-    .home-progress-dashboard { display: grid; grid-template-rows: 118px 220px 188px; gap: 12px; width: 100%; min-width: 0; padding: 8px 0 10px; box-sizing: border-box; }
+     .home-progress-dashboard { display: grid; grid-template-rows: 188px 298px 248px; gap: 16px; width: 100%; min-width: 0; padding: 10px 0 18px; box-sizing: border-box; }
     .home-progress-top-row, .home-progress-middle-row, .home-progress-bottom-row { display: grid; min-width: 0; gap: 12px; }
     .home-progress-top-row { grid-template-columns: repeat(3,minmax(0,1fr)); }
     .home-progress-middle-row, .home-progress-bottom-row { grid-template-columns: repeat(2,minmax(0,1fr)); }
     .home-progress-card, .home-progress-large-panel { min-width: 0; min-height: 0; overflow: hidden; box-sizing: border-box; border: 1px solid #e5eaf1; border-radius: 14px; background: #fff; box-shadow: 0 3px 12px rgba(15,23,42,.035); }
-    .home-progress-card { height: 118px; padding: 12px 16px; }
-    .home-progress-card-head { display: flex; align-items: center; gap: 9px; height: 30px; margin-bottom: 3px; }
-    .home-progress-card-head h3 { margin: 0; color: #172033; font-size: 14px; line-height: 19px; font-weight: 650; }
-    .home-progress-symbol { width: 30px; height: 30px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 9px; background: #eef4ff; color: #2563eb; }
+     .home-progress-card { height: 188px; padding: 20px 24px; }
+     .home-progress-card-head { display: flex; align-items: center; gap: 11px; height: 36px; margin-bottom: 8px; }
+     .home-progress-card-head h3 { margin: 0; color: #172033; font-size: 16px; line-height: 22px; font-weight: 650; }
+     .home-progress-symbol { width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 10px; background: #eef4ff; color: #2563eb; }
      .home-progress-symbol img { width: 16px; height: 16px; object-fit: contain; }
      .home-progress-symbol.home-symbol-fire img { width: 13px; height: 13px; }
-    .home-progress-symbol .home-svg { width: 16px; height: 16px; stroke-width: 2; }
+     .home-progress-symbol .home-svg { width: 19px; height: 19px; stroke-width: 2; }
     .home-progress-symbol.home-symbol-fire { background: #fff1e8; color: #e47832; }
     .home-progress-symbol.home-symbol-clock { background: #eef4ff; color: #2563eb; }
     .home-progress-symbol.home-symbol-flag { background: #eef4ff; color: #2563eb; }
-    .home-progress-value { display: flex; align-items: baseline; gap: 7px; margin-bottom: 1px; }
-    .home-progress-value strong { color: #172033; font-size: 27px; line-height: 31px; font-weight: 700; letter-spacing: 0; }
-    .home-progress-value span { color: #64748b; font-size: 11px; line-height: 15px; }
-    .home-progress-card > p { margin: 0; color: #64748b; font-size: 11px; line-height: 15px; }
-    .home-progress-card .home-progress { height: 6px; margin-top: 7px; }
+     .home-progress-value { display: flex; align-items: baseline; gap: 8px; margin-bottom: 3px; }
+     .home-progress-value strong { color: #172033; font-size: 34px; line-height: 39px; font-weight: 700; letter-spacing: 0; }
+     .home-progress-value span { color: #64748b; font-size: 14px; line-height: 19px; }
+     .home-progress-card > p { margin: 0; color: #64748b; font-size: 13px; line-height: 18px; }
+     .home-progress-card .home-progress { height: 7px; margin-top: 13px; }
     .home-progress-card .home-progress span { background: #2563eb; }
-    .home-sequence-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 4px; height: 43px; margin-top: 6px; padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; box-sizing: border-box; }
-    .home-sequence-day { display: grid; justify-items: center; gap: 2px; color: #64748b; font-size: 9px; line-height: 11px; font-weight: 700; }
-    .home-sequence-day i { width: 25px; height: 25px; display: grid; place-items: center; border: 1px solid #dce4ed; border-radius: 50%; color: transparent; font-style: normal; box-sizing: border-box; }
-     .home-sequence-day i .home-svg, .home-sequence-day i .home-sequence-icon { width: 13px; height: 13px; stroke-width: 2; object-fit: contain; }
+     .home-sequence-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 6px; height: 58px; margin-top: 11px; padding: 7px 13px; border: 1px solid #e2e8f0; border-radius: 11px; background: #fff; box-sizing: border-box; }
+      .home-sequence-day { display: grid; grid-template-rows: 29px 13px; justify-items: center; gap: 3px; color: #64748b; font-size: 11px; line-height: 13px; font-weight: 700; }
+      .home-sequence-day i { grid-row: 1; }
+      .home-sequence-day b { grid-row: 2; }
+     .home-sequence-day i { width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid #dce4ed; border-radius: 50%; color: transparent; font-style: normal; box-sizing: border-box; }
+      .home-sequence-day i .home-svg, .home-sequence-day i .home-sequence-icon { width: 15px; height: 15px; stroke-width: 2; object-fit: contain; }
     .home-sequence-day.is-study i { border-color: #f1a20c; background: #ffb72b; color: #fff; }
     .home-sequence-day.is-lost i { border-color: #a7d8ff; background: #eaf5ff; color: #2588e8; }
     .home-sequence-day.is-current i { border-color: #8dcbff; background: #f5faff; color: #2563eb; }
     .home-sequence-day.is-current i::after { content: ''; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
     .home-sequence-day.is-current { color: #172033; }
-    .home-progress-middle-row > .home-panel, .home-progress-bottom-row > .home-panel { height: 100%; min-height: 0; padding: 14px 18px; box-sizing: border-box; }
-    .home-progress-dashboard .home-panel-head { min-height: 32px; margin: 0; }
-    .home-progress-dashboard .home-panel-head h3 { color: #172033; font-size: 14px; line-height: 19px; font-weight: 650; }
+     .home-progress-middle-row > .home-panel, .home-progress-bottom-row > .home-panel { height: 100%; min-height: 0; padding: 20px 24px; box-sizing: border-box; }
+     .home-progress-dashboard .home-panel-head { min-height: 36px; margin: 0 0 10px; }
+     .home-progress-dashboard .home-panel-head h3 { color: #172033; font-size: 16px; line-height: 22px; font-weight: 650; }
     .home-simple-list, .home-goal-list { display: grid; gap: 0; margin: 0; padding: 0; }
-    .home-stat-row { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; align-items: center; gap: 10px; height: 39px; padding: 0; border-bottom: 1px solid #eef2f6; color: #64748b; font-size: 12px; line-height: 17px; box-sizing: border-box; }
+     .home-stat-row { display: grid; grid-template-columns: 36px minmax(0,1fr) auto; align-items: center; gap: 12px; height: 57px; padding: 0; border-bottom: 1px solid #eef2f6; color: #64748b; font-size: 14px; line-height: 19px; box-sizing: border-box; }
     .home-stat-row:last-child { border-bottom: 0; }
-    .home-stat-row b { color: #172033; font-size: 16px; line-height: 20px; font-weight: 700; white-space: nowrap; }
+     .home-stat-row b { color: #172033; font-size: 18px; line-height: 22px; font-weight: 700; white-space: nowrap; }
     .home-stat-label { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
-    .home-stat-icon, .home-goal-icon, .home-period-icon { width: 28px; height: 28px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 8px; background: #eef4ff; color: #2563eb; }
-    .home-stat-icon .home-svg, .home-goal-icon .home-svg, .home-period-icon .home-svg { width: 14px; height: 14px; stroke-width: 2; }
+     .home-stat-icon, .home-goal-icon, .home-period-icon { width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 10px; background: #eef4ff; color: #2563eb; }
+     .home-stat-icon .home-svg, .home-goal-icon .home-svg, .home-period-icon .home-svg { width: 17px; height: 17px; stroke-width: 2; }
     .home-stat-icon.home-stat-icon-green { background: #ecf9f0; color: #20a856; }
     .home-stat-icon.home-stat-icon-amber { background: #fff6df; color: #e4a000; }
-    .home-goal-list { gap: 7px; }
-    .home-goal-item { height: 43px; padding: 7px 10px; border: 1px solid #e5eaf1; border-radius: 9px; background: #fff; display: grid; gap: 5px; box-sizing: border-box; }
-    .home-goal-head { display: flex; align-items: center; gap: 8px; color: #172033; font-size: 12px; line-height: 17px; font-weight: 600; }
+     .home-goal-list { gap: 9px; }
+     .home-goal-item { height: 58px; padding: 9px 12px; border: 1px solid #e5eaf1; border-radius: 10px; background: #fff; display: grid; gap: 7px; box-sizing: border-box; }
+     .home-goal-head { display: flex; align-items: center; gap: 10px; color: #172033; font-size: 14px; line-height: 19px; font-weight: 600; }
     .home-goal-copy { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; width: 100%; }
-    .home-goal-head span { color: #334155; font-size: 12px; line-height: 17px; font-weight: 600; white-space: nowrap; }
-    .home-goal-item .home-progress { height: 5px; }
-    .home-period-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
-    .home-period-item { min-height: 73px; padding: 10px; display: grid; grid-template-columns: 28px minmax(0,1fr); gap: 8px; align-items: start; border: 1px solid #dce7ff; border-radius: 9px; background: #f5f8ff; box-sizing: border-box; }
+     .home-goal-head span { color: #334155; font-size: 14px; line-height: 19px; font-weight: 600; white-space: nowrap; }
+     .home-goal-item .home-progress { height: 6px; }
+     .home-period-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+     .home-period-item { min-height: 96px; padding: 14px; display: grid; grid-template-columns: 34px minmax(0,1fr); gap: 10px; align-items: start; border: 1px solid #dce7ff; border-radius: 10px; background: #f5f8ff; box-sizing: border-box; }
     .home-period-copy { min-width: 0; }
-     .home-period-copy b { display: block; color: #172033; font-size: 19px; line-height: 22px; font-weight: 700; }
-    .home-period-copy span { display: block; margin-top: 2px; color: #64748b; font-size: 11px; line-height: 15px; }
-    .home-chart { min-width: 0; height: 174px; }
-    .home-chart svg { width: 100%; height: 145px; display: block; overflow: visible; }
-    .home-chart-note { display: flex; align-items: center; gap: 6px; margin-top: 0; padding: 5px 8px; border-radius: 8px; background: #f3f7ff; color: #2563eb; font-size: 10px; line-height: 14px; }
+      .home-period-copy b { display: block; color: #172033; font-size: 24px; line-height: 28px; font-weight: 700; }
+     .home-period-copy span { display: block; margin-top: 3px; color: #64748b; font-size: 12px; line-height: 16px; }
+     .home-chart { min-width: 0; height: 238px; }
+     .home-chart svg { width: 100%; height: 198px; display: block; overflow: visible; }
+     .home-chart-note { display: flex; align-items: center; gap: 8px; margin-top: 0; padding: 8px 11px; border-radius: 9px; background: #f3f7ff; color: #2563eb; font-size: 12px; line-height: 16px; }
     .home-footer-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
     .home-footer-card { min-height: 90px; padding: 16px; display: flex; align-items: center; gap: 10px; }
     .home-footer-card strong { display: block; color: #172033; font-size: 24px; line-height: 28px; font-weight: 700; }
@@ -646,7 +648,7 @@
     .home-test-score.is-warn { background: #fff5d8; color: #a66b00; }
     .home-test-score.is-bad { background: #ffe9e6; color: #c84138; }
     @media (max-width: 1200px) { .home-summary-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
-     @media (max-width: 1100px) { .home-progress-dashboard { grid-template-rows: 108px 205px 176px; } .home-progress-card { padding: 10px 12px; } .home-progress-middle-row > .home-panel, .home-progress-bottom-row > .home-panel { padding: 12px 14px; } }
+      @media (max-width: 1100px) { .home-progress-dashboard { grid-template-rows: 170px 270px 224px; } .home-progress-card { height: 170px; padding: 16px 18px; } .home-progress-middle-row > .home-panel, .home-progress-bottom-row > .home-panel { padding: 16px 18px; } .home-progress-value strong { font-size: 30px; line-height: 35px; } .home-chart { height: 210px; } .home-chart svg { height: 174px; } }
      @media (max-width: 980px) { .home-today-grid { grid-template-columns: 1fr; } .home-priority-list { grid-template-columns: repeat(2,minmax(0,1fr)); } }
      @media (max-width: 760px) {
       body.home-active main { padding: 16px 14px 24px; }
@@ -924,7 +926,7 @@
       const weeklyGoals = progressWeeklyGoals();
       document.querySelector('#homeGoals').innerHTML = weeklyGoals.goals.map(({ type, label, current, target, ratio }) => { const icon = type === 'tests' ? 'flag' : type === 'mastered' ? 'target' : 'calendar'; return `<li class="home-goal-item"><div class="home-goal-head"><i class="home-goal-icon">${svgIcon(icon)}</i><span class="home-goal-copy"><strong>${label}</strong><span>${current}/${target}</span></span></div><div class="home-progress"><span style="width:${Math.max(3, Math.round(ratio * 100))}%"></span></div></li>`; }).join('') || '<li class="home-muted">Nenhuma meta semanal configurada.</li>';
       const periodSummary = progressPeriodSummary();
-      document.querySelector('#homePeriodSummary').innerHTML = [['target',periodSummary.tests,'testes realizados'],['questions',periodSummary.answers,'quest&otilde;es respondidas'],['target',periodSummary.mastered,'quest&otilde;es dominadas'],['clock',periodSummary.reviews,'revis&otilde;es conclu&iacute;das']].map(([icon,value,label]) => `<div class="home-period-item"><i class="home-period-icon">${svgIcon(icon)}</i><div class="home-period-copy"><b>${value}</b><span>${label}</span></div></div>`).join('');
+      document.querySelector('#homePeriodSummary').innerHTML = [['target',periodSummary.tests,'testes realizados'],['questions',periodSummary.answers,'quest&otilde;es cadastradas'],['target',periodSummary.mastered,'quest&otilde;es dominadas'],['clock',periodSummary.reviews,'revis&otilde;es conclu&iacute;das']].map(([icon,value,label]) => `<div class="home-period-item"><i class="home-period-icon">${svgIcon(icon)}</i><div class="home-period-copy"><b>${value}</b><span>${label}</span></div></div>`).join('');
 
      const priorities = testedItems.filter(item => item.stats.review > 0).slice(0, 12);
      document.querySelector('#homePriorities').innerHTML = priorities.length ? priorities.map(({subject,stats}) => `<article class="home-priority-item" data-home-subject="${esc(subject.id)}" tabindex="0"><div class="home-priority-head"><strong>${esc(subject.name)}</strong><span>Revisar ${stats.review}</span></div><div class="home-progress"><span style="width:${clamp(percent(stats.review,stats.total || 1),8,100)}%"></span></div></article>`).join('') : '<p class="home-muted">As revis&otilde;es recomendadas aparecer&atilde;o depois do primeiro teste.</p>';
@@ -945,7 +947,7 @@
         const todayTime = progressTodayTime();
         const activityMap = progressActivityMap();
         const sequenceDays = progressDateRange(7).map((day, index) => { const entry = activityMap.get(day.key); const isToday = index === 6; const studied = progressWasValidDay(entry); const lost = !studied && !isToday && day.date < new Date(); const state = studied ? ' is-study' : lost ? ' is-lost' : isToday ? ' is-current' : ''; const icon = studied ? `<img class="home-sequence-icon" src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true">` : lost ? svgIcon('snowflake') : ''; return `<span class="home-sequence-day${state}"><b>${new Intl.DateTimeFormat('pt-BR', { weekday: 'narrow' }).format(day.date).toUpperCase()}</b><i>${icon}</i></span>`; }).join('');
-         document.querySelector('#homeFooterStats').innerHTML = `<article class="home-panel home-progress-card home-sequence-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-fire"><img src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true"></span><h3>Sequ&ecirc;ncia</h3></div><div class="home-progress-value"><strong>${streak}</strong><span>dias seguidos</span></div><div class="home-sequence-days">${sequenceDays}</div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-clock">${svgIcon('clock')}</span><h3>Tempo estudado hoje</h3></div><div class="home-progress-value"><strong>${duration(todayTime)}</strong></div><p>Meta di&aacute;ria: 2h</p><div class="home-progress"><span style="width:${Math.min(100, Math.round(todayTime / PROGRESS_DAILY_GOAL_MS * 100))}%"></span></div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-flag">${svgIcon('flag')}</span><h3>Metas da semana</h3></div><div class="home-progress-value"><strong>${weeklyGoals.percent}%</strong></div><p>${weeklyGoals.completed} de ${weeklyGoals.total} metas conclu&iacute;das</p><div class="home-progress"><span style="width:${weeklyGoals.percent}%"></span></div></article>`;
+      document.querySelector('#homeFooterStats').innerHTML = `<article class="home-panel home-progress-card home-sequence-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-fire"><img src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true"></span><h3>Sequ&ecirc;ncia</h3></div><div class="home-progress-value"><strong>${streak}</strong><span>dias seguidos</span></div><div class="home-sequence-days">${sequenceDays}</div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-clock">${svgIcon('clock')}</span><h3>Tempo estudado hoje</h3></div><div class="home-progress-value"><strong>${duration(todayTime)}</strong></div><p>Meta di&aacute;ria: 2h</p><div class="home-progress"><span style="width:${Math.min(100, Math.round(todayTime / PROGRESS_DAILY_GOAL_MS * 100))}%"></span></div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-flag">${svgIcon('flag')}</span><h3>Objetivo da semana</h3></div><div class="home-progress-value"><strong>${weeklyGoals.percent}%</strong></div><p>${weeklyGoals.completed} de ${weeklyGoals.total} metas conclu&iacute;das</p><div class="home-progress"><span style="width:${weeklyGoals.percent}%"></span></div></article>`;
 
       const dailyTarget = item => Math.min(10, Math.max(0, item.stats.review));
       const todayTestRecords = tests.filter(item => String(item.date || '').slice(0, 10) === todayKey());
