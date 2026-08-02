@@ -175,6 +175,15 @@
 
 /* ===== topbar-analysis.js ===== */
 (() => {
+  const currentAnalysisPanelButton = document.querySelector('[data-test-panel="analysis"]');
+  if (currentAnalysisPanelButton) {
+    currentAnalysisPanelButton.hidden = true;
+    currentAnalysisPanelButton.tabIndex = -1;
+    currentAnalysisPanelButton.setAttribute('aria-hidden', 'true');
+  }
+  document.querySelector('#topAnalysisTab')?.remove();
+  return;
+
   const tabsContainer = document.querySelector('.topbar-right .tabs');
   const testButton = tabsContainer?.querySelector('[data-view="test"]');
   if (!tabsContainer || !testButton || document.querySelector('#topAnalysisTab')) return;
@@ -693,7 +702,7 @@
          <div class="home-title"><h2 id="homeGreeting"><span id="homeGreetingText">Boa noite, Julia!</span><img id="homeGreetingWave" class="home-greeting-wave" alt="" aria-hidden="true"></h2><p>Pronta para mais um passo rumo aos seus objetivos?</p><span class="home-last-label">&Uacute;ltima cole&ccedil;&atilde;o: <b id="homeLastCollection">Nenhuma ainda</b></span></div>
         <div class="home-hero-actions"><span class="home-date-pill" id="homeDatePill">Hoje</span></div>
       </header>
-      <nav class="home-subtabs" aria-label="Resumo inicial" role="tablist"><button class="home-subtab active" type="button" role="tab" aria-selected="true" data-home-tab="today">Hoje</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="progress">Progresso</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="activity">Atividade</button></nav>
+      <nav class="home-subtabs" aria-label="Resumo inicial" role="tablist"><button class="home-subtab active" type="button" role="tab" aria-selected="true" data-home-tab="today">Hoje</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="progress">Progresso</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="activity">Atividade</button><button class="home-subtab" type="button" role="tab" aria-selected="false" data-home-tab="analysis">Análise</button></nav>
       <section data-home-panel="today"><div class="home-shell">
         <section class="home-summary-grid" id="homeSummaryCards"></section>
         <div class="home-today-grid">
@@ -789,7 +798,7 @@
   function priorityForSubject(item, tests = history()) { const records = testRecordsFor(item.subject, tests); const errors = records.reduce((sum, record) => sum + Math.max(0, Number(record.total || 0) - Number(record.score || 0)), 0); const durationMinutes = records.reduce((sum, record) => sum + (Number(record.durationMs || 0) / 60000), 0); return item.stats.priority + (errors * 6) + (records.length * 2) + Math.round(durationMinutes); }
   function sortedTestedSubjects(tests = history()) { return testedSubjectItems(tests).sort((a, b) => priorityForSubject(b, tests) - priorityForSubject(a, tests)); }
   function setHomePanel(panel) { homePanel = panel; document.body.classList.toggle('home-activity-active', panel === 'activity'); homeView.querySelectorAll('[data-home-tab]').forEach(button => { const active = button.dataset.homeTab === panel; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); }); homeView.querySelectorAll('[data-home-panel]').forEach(view => { view.hidden = view.dataset.homePanel !== panel; }); }
-  function openAppView(view, panel) { document.body.classList.remove('home-active', 'home-activity-active'); homeView.classList.remove('active'); homeTab.classList.remove('active'); homeTab.removeAttribute('aria-current'); if (typeof showView === 'function') showView(view); if (view === 'test' && typeof showTestPanel === 'function') showTestPanel(panel || 'quick'); if (view === 'test' && typeof renderTest === 'function') renderTest(); }
+  function openAppView(view, panel) { document.body.classList.remove('home-active', 'home-activity-active'); homeView.classList.remove('active'); homeTab.classList.remove('active'); homeTab.removeAttribute('aria-current'); if (view === 'analysis') { if (typeof showView === 'function') showView('test'); if (typeof showTestPanel === 'function') showTestPanel('analysis'); if (typeof renderAnalysis === 'function') renderAnalysis(); return; } if (typeof showView === 'function') showView(view); if (view === 'test' && typeof showTestPanel === 'function') showTestPanel(panel || 'quick'); if (view === 'test' && typeof renderTest === 'function') renderTest(); }
   function openHome() { document.body.classList.add('home-active'); document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view === homeView)); tabs.querySelectorAll('.tab').forEach(button => { const active = button === homeTab; button.classList.toggle('active', active); active ? button.setAttribute('aria-current', 'page') : button.removeAttribute('aria-current'); }); setHomePanel('today'); renderHome(); if (typeof closeMobileNav === 'function') closeMobileNav(); }
    function renderCollectionCards(items) { if (!items.length) return '<div class="home-muted">As cole&ccedil;&otilde;es aparecer&atilde;o aqui depois do primeiro teste.</div>'; return items.map(({ subject, stats }) => `<article class="home-collection-card" data-home-subject="${esc(subject.id)}" tabindex="0"><div class="home-collection-head"><div class="home-collection-name"><span class="home-folder-icon">${svgIcon('folder')}</span><span>${esc(subject.name)}</span></div><span class="home-collection-total">${stats.total} quest&otilde;es</span></div><div class="home-collection-metrics"><span><b>${stats.mastered}</b><small>Dominadas</small></span><span><b>${stats.learning}</b><small>Em andamento</small></span><span><b>${stats.review}</b><small>Revisar</small></span></div><div class="home-progress"><span style="width:${clamp(stats.progress,3,100)}%"></span></div><div class="home-collection-foot"><span>Aproveitamento</span><b>${stats.progress}%</b></div></article>`).join(''); }
    const PROGRESS_DAILY_GOAL_MS = 2 * 60 * 60 * 1000;
@@ -937,7 +946,13 @@
    }
 
    homeTab.addEventListener('click', openHome);
-   homeView.querySelectorAll('[data-home-tab]').forEach(button => button.addEventListener('click', () => setHomePanel(button.dataset.homeTab)));
+  homeView.querySelectorAll('[data-home-tab]').forEach(button => button.addEventListener('click', () => {
+    if (button.dataset.homeTab === 'analysis') {
+      openAppView('analysis');
+      return;
+    }
+    setHomePanel(button.dataset.homeTab);
+  }));
    tabs.addEventListener('click', event => { const button = event.target.closest('.tab[data-view]'); if (!button || button === homeTab) return; document.body.classList.remove('home-active', 'home-activity-active'); homeView.classList.remove('active'); homeTab.classList.remove('active'); homeTab.removeAttribute('aria-current'); });
    homeView.addEventListener('click', event => { const action = event.target.closest('[data-home-action]'); if (action) { openAppView('test','quick'); return; } const collection = event.target.closest('[data-home-subject]'); if (collection) { if (typeof selectDestinationCollection === 'function') selectDestinationCollection(collection.dataset.homeSubject); document.body.classList.remove('home-active', 'home-activity-active'); homeView.classList.remove('active'); homeTab.classList.remove('active'); if (typeof showView === 'function') showView('manage'); } });
    homeView.addEventListener('keydown', event => { if (event.key !== 'Enter' && event.key !== ' ') return; const collection = event.target.closest('[data-home-subject]'); if (!collection) return; event.preventDefault(); collection.click(); });

@@ -51,8 +51,27 @@
     }
 
     #testPanelAnalysis .analysis-card-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       margin-bottom: 9px;
     }
+
+#testPanelAnalysis .analysis-card-head h3 {
+  order: 1;
+  margin-right: auto;
+}
+
+#testPanelAnalysis #analysisFolderFilter,
+#testPanelAnalysis #analysisPeriod {
+  order: 2;
+  flex: 0 1 190px;
+  min-height: 36px;
+}
+
+#testPanelAnalysis #analysisPeriod {
+  order: 3;
+}
 
     #testPanelAnalysis .analysis-card-head h3 {
       font-size: 17px;

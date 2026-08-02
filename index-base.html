@@ -5121,6 +5121,7 @@
               <div class="analysis-dashboard" id="analysisContent" hidden>
                 <section class="analysis-card analysis-summary-card">
                   <div class="analysis-card-head">
+                    <select id="analysisFolderFilter" aria-label="Pasta da analise"></select>
                     <h3 id="analysisSummaryTitle">Resumo geral da pasta</h3>
                     <select id="analysisPeriod" aria-label="Período da análise">
                       <option value="all">Período: Todos os testes</option>
@@ -5512,6 +5513,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       analysisContent: document.querySelector("#analysisContent"),
       analysisStartTest: document.querySelector("#analysisStartTest"),
       analysisSummaryTitle: document.querySelector("#analysisSummaryTitle"),
+      analysisFolderFilter: document.querySelector("#analysisFolderFilter"),
       analysisPeriod: document.querySelector("#analysisPeriod"),
       analysisSummaryStats: document.querySelector("#analysisSummaryStats"),
       analysisInsight: document.querySelector("#analysisInsight"),
@@ -7072,14 +7074,29 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       }).join("");
     }
 
+    let analysisFolderId = "all";
+
+    function renderAnalysisFolderFilter() {
+      const filter = el.analysisFolderFilter;
+      if (!filter) return;
+      const folders = Array.isArray(data.folders) ? data.folders : [];
+      const options = ['<option value="all">Todas as pastas</option>']
+        .concat(folders.map(folder => `<option value="${escapeHtml(folder.id)}">${escapeHtml(folder.name)}</option>`));
+      filter.innerHTML = options.join("");
+      filter.value = folders.some(folder => folder.id === analysisFolderId) ? analysisFolderId : "all";
+      analysisFolderId = filter.value;
+    }
+
     function analysisScopeSubjects() {
-      const selected = currentSubject();
-      if (!selected) return [];
-      if (!selected.folder) return [selected];
-      return data.subjects.filter(subject => subject.folder === selected.folder);
+      const subjects = Array.isArray(data.subjects) ? data.subjects : [];
+      if (analysisFolderId === "all") return subjects;
+      return subjects.filter(subject => subject.folder === analysisFolderId);
     }
 
     function analysisScopeTitle(subjects = analysisScopeSubjects()) {
+      if (analysisFolderId === "all") return "Todas as pastas";
+      return folderName(analysisFolderId);
+      /* Legacy subject-specific title kept below for compatibility. */
       const selected = currentSubject();
       if (!selected) return "Análise";
       if (selected.folder) return folderName(selected.folder);
@@ -7314,6 +7331,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
 
     function renderAnalysis() {
       if (!el.analysisDashboard) return;
+      renderAnalysisFolderFilter();
       const subjects = analysisScopeSubjects();
       const cards = analysisCards(subjects);
       const history = filteredAnalysisHistory(subjects);
@@ -7323,9 +7341,18 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (!hasPractice) return;
 
       const scopeTitle = analysisScopeTitle(subjects);
+      el.analysisSummaryTitle.textContent = analysisFolderId === "all"
+        ? "Resumo geral - Todas as pastas"
+        : `Resumo geral da pasta - ${scopeTitle}`;
       const selected = currentSubject();
+      el.analysisSummaryTitle.textContent = analysisFolderId === "all"
+        ? "Resumo geral - Todas as pastas"
+        : `Resumo geral da pasta - ${scopeTitle}`;
       el.analysisSummaryTitle.textContent = selected?.folder ? `Resumo geral da pasta — ${scopeTitle}` : `Resumo geral — ${scopeTitle}`;
 
+      el.analysisSummaryTitle.textContent = analysisFolderId === "all"
+        ? "Resumo geral - Todas as pastas"
+        : `Resumo geral da pasta - ${scopeTitle}`;
       const cardCorrect = cards.reduce((sum, item) => sum + (Number(item.card.totalCorrect) || 0), 0);
       const cardWrong = cards.reduce((sum, item) => sum + (Number(item.card.totalWrong) || 0), 0);
       const historyCorrect = history.reduce((sum, item) => sum + (Number(item.score) || 0), 0);
@@ -8613,6 +8640,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     });
 
 
+    el.analysisFolderFilter?.addEventListener("change", event => {
+      analysisFolderId = event.target.value || "all";
+      renderAnalysis();
+    });
     el.analysisPeriod?.addEventListener("change", renderAnalysis);
     el.analysisStartTest?.addEventListener("click", () => {
       showTestPanel("quick");
