@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260803-etapa-1-abas-1";
+    const FIXA_VERSION = "20260803-etapa-2-espacamento-1";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -25,7 +25,8 @@
       ["layout", "layout-ui.js", "Não foi possível carregar o layout."],
       ["hotfix", "hotfix-home-encoding.js", "Não foi possível carregar a correção de textos."],
       ["progressFix", "progress-objectives-summary-fix.js", "Não foi possível carregar os ajustes do progresso."],
-      ["secondaryTabsLayoutFix", "secondary-tabs-layout-fix.js", "Não foi possível carregar o ajuste das abas secundárias."]
+      ["secondaryTabsLayoutFix", "secondary-tabs-layout-fix.js", "Não foi possível carregar o ajuste das abas secundárias."],
+      ["addSpacingFix", "add-spacing-fix.js", "Não foi possível carregar a correção de espaçamento."]
     ];
 
     function loadFile([key, file, message]) {
@@ -39,7 +40,7 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix", "secondaryTabsLayoutFix"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix"];
         const scripts = scriptFiles.map(key => {
           const safeCode = assets[key].split(closingScript).join("<\\/scr" + "ipt>");
           return "<scr" + "ipt>" + safeCode + closingScript;
