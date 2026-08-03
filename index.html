@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260803-full-rollback-1";
+    const FIXA_VERSION = "20260803-login-stable-backup-1";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -24,11 +24,7 @@
       ["analysis", "analysis-ui.js", "Não foi possível carregar a análise."],
       ["layout", "layout-ui.js", "Não foi possível carregar o layout."],
       ["hotfix", "hotfix-home-encoding.js", "Não foi possível carregar a correção de textos."],
-      ["progressFix", "progress-objectives-summary-fix.js", "Não foi possível carregar os ajustes do progresso."],
-      ["storageImages", "storage-images.js", "Não foi possível carregar o armazenamento de imagens."],
-      ["addReviewTabs", "add-review-tabs.js", "Não foi possível carregar a aba de revisão de questões."],
-      ["addSpacingFix", "add-spacing-fix.js", "Não foi possível carregar a correção de espaçamento."],
-      ["secondaryTabsLayoutFix", "secondary-tabs-layout-fix.js", "Não foi possível carregar o ajuste das abas secundárias."]
+      ["progressFix", "progress-objectives-summary-fix.js", "Não foi possível carregar os ajustes do progresso."]
     ];
 
     function loadFile([key, file, message]) {
@@ -42,7 +38,7 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix", "storageImages", "addReviewTabs", "addSpacingFix", "secondaryTabsLayoutFix"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix"];
         const scripts = scriptFiles.map(key => {
           const safeCode = assets[key].split(closingScript).join("<\\/scr" + "ipt>");
           return "<scr" + "ipt>" + safeCode + closingScript;
