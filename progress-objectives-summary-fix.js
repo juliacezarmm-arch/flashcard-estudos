@@ -1,5 +1,7 @@
 (() => {
   const STYLE_ID = 'fixaProgressObjectivesSummaryFix';
+  const STORE_KEY = 'flashcard-estudos-v2';
+
   if (!document.getElementById(STYLE_ID)) {
     const style = document.createElement('style');
     style.id = STYLE_ID;
@@ -46,7 +48,7 @@
     const labels=['Revisar questões nesta semana','Fazer testes nesta semana','Dominar questões nesta semana'];
     items.forEach((item,index)=>{
       const label=item.querySelector('.home-goal-head span,.home-goal-copy span');
-      if(label)label.textContent=labels[index];
+      if(label&&label.textContent!==labels[index])label.textContent=labels[index];
       const goal=parseGoal(item);
       const fill=item.querySelector('.home-progress span');
       if(fill&&goal)fill.style.width=`${Math.round(goal.ratio*100)}%`;
@@ -61,20 +63,114 @@
     const value=weekly.querySelector('.home-progress-value strong');
     const caption=weekly.querySelector(':scope>p');
     const fill=weekly.querySelector(':scope>.home-progress span');
-    if(title)title.textContent='Objetivo da semana';
-    if(value)value.textContent=`${percent}%`;
-    if(caption)caption.textContent=`${completed} de ${goals.length} objetivos concluídos`;
+    if(title&&title.textContent!=='Objetivo da semana')title.textContent='Objetivo da semana';
+    if(value&&value.textContent!==`${percent}%`)value.textContent=`${percent}%`;
+    const captionText=`${completed} de ${goals.length} objetivos concluídos`;
+    if(caption&&caption.textContent!==captionText)caption.textContent=captionText;
     if(fill)fill.style.width=`${percent}%`;
   }
+
+  function readData(){
+    try{return JSON.parse(localStorage.getItem(STORE_KEY)||'{}')||{};}catch{return {};}
+  }
+
+  function dateOf(value){
+    if(!value)return null;
+    const date=new Date(value);
+    return Number.isNaN(date.getTime())?null:date;
+  }
+
+  function range7(){
+    const end=new Date();
+    end.setHours(23,59,59,999);
+    const start=new Date(end);
+    start.setHours(0,0,0,0);
+    start.setDate(start.getDate()-6);
+    return {start,end};
+  }
+
+  function inside(value,range){
+    const date=dateOf(value);
+    return Boolean(date&&date>=range.start&&date<=range.end);
+  }
+
+  function summaryValues(){
+    const data=readData();
+    const range=range7();
+    const testsRaw=Array.isArray(data.testHistory)?data.testHistory:[];
+    const testIds=new Set();
+    const tests=[];
+    testsRaw.forEach((test,index)=>{
+      if(!test||test.cancelled||test.canceled||test.interrupted||test.inProgress||Number(test.total||0)<=0)return;
+      if(!inside(test.completedAt||test.finishedAt||test.date,range))return;
+      const id=String(test.id||`${test.subjectId||test.subject||'test'}-${test.completedAt||test.finishedAt||test.date||index}`);
+      if(testIds.has(id))return;
+      testIds.add(id);
+      tests.push(test);
+    });
+
+    const attempts=[];
+    const attemptIds=new Set();
+    const subjects=Array.isArray(data.subjects)?data.subjects:[];
+    subjects.forEach((subject,subjectIndex)=>{
+      const cards=Array.isArray(subject.cards)?subject.cards:[];
+      cards.forEach((card,cardIndex)=>{
+        const history=Array.isArray(card.attemptHistory)?card.attemptHistory:[];
+        history.forEach((attempt,attemptIndex)=>{
+          if(attempt?.correct!==true&&attempt?.correct!==false)return;
+          const timestamp=attempt.created_at||attempt.createdAt||attempt.answeredAt||attempt.date;
+          if(!inside(timestamp,range))return;
+          const questionId=String(card.id||card.questionCode||card.code||`${subject.id||subjectIndex}-${cardIndex}`);
+          const id=String(attempt.id||`${questionId}-${attempt.testId||attempt.test_id||attempt.sessionId||''}-${timestamp||attemptIndex}`);
+          if(attemptIds.has(id))return;
+          attemptIds.add(id);
+          attempts.push({...attempt,questionId});
+        });
+      });
+    });
+
+    const questions=attempts.length||tests.reduce((sum,test)=>sum+Math.max(0,Number(test.total||0)),0);
+    const mastered=new Set(attempts.filter(attempt=>{
+      const before=String(attempt.statusBefore||attempt.status_before||'').toLowerCase();
+      const after=String(attempt.statusAfter||attempt.status_after||'').toLowerCase();
+      return (after.includes('master')||after.includes('dominat'))&&!(before.includes('master')||before.includes('dominat'));
+    }).map(attempt=>attempt.questionId)).size;
+
+    const sessions=[data.reviewSessions,data.studySessions,data.sessions,data.study_sessions].find(Array.isArray)||[];
+    const reviewIds=new Set();
+    sessions.forEach((session,index)=>{
+      if(!session||session.status==='cancelled'||session.status==='abandoned')return;
+      const finished=session.completed_at||session.completedAt||session.finished_at||session.finishedAt||session.date;
+      const completed=session.status==='completed'||session.completed===true||Boolean(finished);
+      if(!completed||!inside(finished,range))return;
+      const valid=Number(session.valid_answer_count??session.validAnswerCount??session.total??0);
+      if(valid<=0)return;
+      reviewIds.add(String(session.id||`${session.started_at||session.startedAt||index}-${finished}`));
+    });
+    if(!reviewIds.size){
+      tests.filter(test=>String(test.mode||test.type||'').toLowerCase().includes('review')).forEach(test=>reviewIds.add(String(test.id)));
+    }
+
+    return {tests:tests.length,questions,mastered,reviews:reviewIds.size};
+  }
+
+  function format(value){return new Intl.NumberFormat('pt-BR').format(Math.max(0,Number(value||0)));}
 
   function updateSummary(){
     const box=document.querySelector('#homePeriodSummary');
     if(!box)return;
+    const values=summaryValues();
+    const numbers=[values.tests,values.questions,values.mastered,values.reviews];
+    const labels=['testes realizados','questões respondidas','questões dominadas','revisões concluídas'];
     const items=[...box.querySelectorAll('.home-period-item')];
-    if(items[1]){
-      const label=items[1].querySelector('.home-period-copy span');
-      if(label)label.textContent='questões respondidas';
-    }
+    items.slice(0,4).forEach((item,index)=>{
+      const value=item.querySelector('.home-period-copy b');
+      const label=item.querySelector('.home-period-copy span');
+      const nextValue=format(numbers[index]);
+      if(value&&value.textContent!==nextValue)value.textContent=nextValue;
+      if(label&&label.textContent!==labels[index])label.textContent=labels[index];
+      item.setAttribute('aria-label',`${nextValue} ${labels[index]} nos últimos sete dias`);
+    });
     const panel=box.closest('.home-panel');
     const heading=panel?.querySelector('.home-panel-head h3');
     if(heading&&!heading.querySelector('.home-progress-title-icon')){
