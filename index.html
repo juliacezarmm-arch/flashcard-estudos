@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260803-secondary-tabs-layout-1";
+    const FIXA_VERSION = "20260803-storage-review-manual-1";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -27,6 +27,7 @@
       ["progressFix", "progress-objectives-summary-fix.js", "Não foi possível carregar os ajustes do progresso."],
       ["storageImages", "storage-images.js", "Não foi possível carregar o armazenamento de imagens."],
       ["addReviewTabs", "add-review-tabs.js", "Não foi possível carregar a aba de revisão de questões."],
+      ["storageReviewUi", "storage-review-ui.js", "Não foi possível carregar a revisão das imagens."],
       ["addSpacingFix", "add-spacing-fix.js", "Não foi possível carregar a correção de espaçamento."],
       ["secondaryTabsLayoutFix", "secondary-tabs-layout-fix.js", "Não foi possível carregar o ajuste das abas secundárias."]
     ];
@@ -42,7 +43,7 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix", "storageImages", "addReviewTabs", "addSpacingFix", "secondaryTabsLayoutFix"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix", "storageImages", "addReviewTabs", "storageReviewUi", "addSpacingFix", "secondaryTabsLayoutFix"];
         const scripts = scriptFiles.map(key => {
           const safeCode = assets[key].split(closingScript).join("<\\/scr" + "ipt>");
           return "<scr" + "ipt>" + safeCode + closingScript;
