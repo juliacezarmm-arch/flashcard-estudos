@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260802-encoding-home-today-1";
+    const FIXA_VERSION = "20260802-progress-goals-summary-1";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -23,7 +23,8 @@
       ["importReview", "import-review.js", "Não foi possível carregar a revisão de importação."],
       ["analysis", "analysis-ui.js", "Não foi possível carregar a análise."],
       ["layout", "layout-ui.js", "Não foi possível carregar o layout."],
-      ["hotfix", "hotfix-home-encoding.js", "Não foi possível carregar a correção de textos."]
+      ["hotfix", "hotfix-home-encoding.js", "Não foi possível carregar a correção de textos."],
+      ["progressFix", "progress-objectives-summary-fix.js", "Não foi possível carregar os ajustes do progresso."]
     ];
 
     function loadFile([key, file, message]) {
@@ -37,7 +38,7 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix"];
         const scripts = scriptFiles.map(key => {
           const safeCode = assets[key].split(closingScript).join("<\\/scr" + "ipt>");
           return "<scr" + "ipt>" + safeCode + closingScript;
