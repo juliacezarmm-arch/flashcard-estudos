@@ -15,7 +15,46 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260803-login-stable-backup-1";
+    const FIXA_VERSION = "20260803-company-browser-recovery-1";
+    const LOCAL_STORE_KEY = "flashcard-estudos-v2";
+
+    /* Compatibilidade para navegadores corporativos desatualizados. */
+    if (typeof window.structuredClone !== "function") {
+      window.structuredClone = value => JSON.parse(JSON.stringify(value));
+    }
+
+    /* Um dado local incompleto pode interromper todo o JavaScript antes do login. */
+    try {
+      const savedLocalData = localStorage.getItem(LOCAL_STORE_KEY);
+      if (savedLocalData) JSON.parse(savedLocalData);
+    } catch (error) {
+      console.warn("[Fixa] Dados locais inválidos foram descartados. Os dados online permanecem no Supabase.", error);
+      localStorage.removeItem(LOCAL_STORE_KEY);
+    }
+
+    function showBootError(message) {
+      setTimeout(() => {
+        const notice = document.querySelector("#authNotice");
+        if (notice) {
+          notice.textContent = message;
+          notice.classList.add("show", "error");
+          return;
+        }
+        const loading = document.querySelector(".loading");
+        if (loading) loading.innerHTML = `<strong>Não foi possível iniciar o Fixa.</strong><span>${message}</span>`;
+      }, 0);
+    }
+
+    window.addEventListener("error", event => {
+      console.error("[Fixa] Erro de inicialização:", event.error || event.message);
+      showBootError("Este navegador interrompeu o carregamento do aplicativo. Atualize o navegador ou abra o Fixa em uma janela anônima.");
+    });
+
+    window.addEventListener("unhandledrejection", event => {
+      console.error("[Fixa] Falha não tratada:", event.reason);
+      showBootError("Não foi possível concluir a conexão. Atualize a página e tente novamente.");
+    });
+
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -56,7 +95,7 @@
       })
       .catch(error => {
         console.error("[Fixa] Falha ao carregar:", error);
-        document.body.innerHTML = '<div class="loading"><strong>Não foi possível carregar o Fixa.</strong><span>Atualize a página e tente novamente.</span></div>';
+        document.body.innerHTML = `<div class="loading"><strong>Não foi possível carregar o Fixa.</strong><span>${error.message || "Atualize a página e tente novamente."}</span></div>`;
       });
   </script>
 </body>
