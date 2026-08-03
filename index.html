@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260803-etapa-4a-sequencia-visual-1";
+    const FIXA_VERSION = "20260803-etapa-4b-historico-sequencia-1";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -41,6 +41,19 @@
     Promise.all(appFiles.map(loadFile))
       .then(entries => {
         const assets = Object.fromEntries(entries);
+
+        /* Etapa 4B: a sequência precisa de datas anteriores. O histórico visível pode
+           continuar compacto, mas os dados não devem ser apagados após 10 testes. */
+        assets.html = assets.html
+          .replace(
+            'normalized.testHistory = Array.isArray(normalized.testHistory) ? normalized.testHistory.slice(0, 10) : [];',
+            'normalized.testHistory = Array.isArray(normalized.testHistory) ? normalized.testHistory.slice(0, 400) : [];'
+          )
+          .replace(
+            'data.testHistory = data.testHistory.slice(0, 10);',
+            'data.testHistory = data.testHistory.slice(0, 400);'
+          );
+
         const closingScript = "</scr" + "ipt>";
         const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix"];
         const scripts = scriptFiles.map(key => {
