@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fixa — Diagnóstico do Login</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bg:#f6f7fb; --panel:#fff; --text:#172033; --muted:#64748b; --line:#dfe6f1;
+      --brand:#2563eb; --soft:#eef4ff; --ok:#15803d; --warn:#b45309; --danger:#b91c1c;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;color:var(--text);background:var(--bg)}
+    main{width:min(980px,calc(100% - 28px));margin:0 auto;padding:28px 0 44px}
+    .top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}
+    h1{margin:0 0 6px;font-size:clamp(23px,4vw,32px)}
+    h2,p{margin-top:0}
+    .subtitle{max-width:700px;margin-bottom:0;color:var(--muted);line-height:1.55}
+    .back{flex:0 0 auto;min-height:40px;padding:0 14px;border:1px solid #cbd8ec;border-radius:9px;display:inline-flex;align-items:center;color:var(--brand);background:#fff;font-weight:700;text-decoration:none}
+    .notice{margin-bottom:16px;border:1px solid #bfdbfe;border-radius:12px;padding:13px 15px;color:#1e40af;background:#eff6ff;font-size:13px;line-height:1.5}
+    .actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:18px}
+    button{min-height:42px;border:0;border-radius:9px;padding:0 16px;color:#fff;background:var(--brand);font:inherit;font-weight:750;cursor:pointer}
+    button:disabled{cursor:wait;opacity:.68}
+    .status{color:var(--muted);font-size:13px}.status.error{color:var(--danger)}
+    .summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+    .metric,.panel{border:1px solid var(--line);border-radius:13px;background:var(--panel)}
+    .metric{min-height:116px;padding:16px;display:grid;align-content:space-between;gap:8px}
+    .metric span{color:var(--muted);font-size:12px;font-weight:700}.metric strong{font-size:25px;line-height:1}.metric small{color:var(--muted);line-height:1.4;overflow-wrap:anywhere}
+    .panel{padding:18px;margin-top:14px}.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:13px}
+    .panel-head h2{margin-bottom:4px;font-size:17px}.panel-head p{margin-bottom:0;color:var(--muted);font-size:13px;line-height:1.45}
+    .pill{flex:0 0 auto;min-height:28px;padding:0 9px;border-radius:999px;display:inline-flex;align-items:center;color:var(--brand);background:var(--soft);font-size:11px;font-weight:800}
+    .detail-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}.detail-list li{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid #eef2f7;padding:9px 0;color:var(--muted);font-size:13px}.detail-list li:last-child{border-bottom:0}.detail-list strong{max-width:62%;color:var(--text);text-align:right;overflow-wrap:anywhere}
+    .ok{color:var(--ok)!important}.warn{color:var(--warn)!important}.danger{color:var(--danger)!important}
+    .recommendation{border-radius:10px;padding:12px 13px;color:#334155;background:#f8faff;font-size:13px;line-height:1.5}.recommendation strong{display:block;margin-bottom:4px}
+    @media(max-width:800px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.top{flex-direction:column}.back{align-self:flex-start}}
+    @media(max-width:460px){main{width:min(100% - 20px,980px);padding-top:18px}.summary{grid-template-columns:1fr}.panel{padding:15px}.panel-head{flex-direction:column}.detail-list li{flex-direction:column}.detail-list strong{max-width:none;text-align:left}}
+  </style>
+</head>
+<body>
+  <main>
+    <header class="top">
+      <div>
+        <h1>Diagnóstico do Login</h1>
+        <p class="subtitle">Verifica a biblioteca do Supabase, a sessão salva, o endereço atual e os parâmetros de retorno do login.</p>
+      </div>
+      <a class="back" href="./">Voltar ao Fixa</a>
+    </header>
+
+    <div class="notice"><strong>Página somente de leitura.</strong> Ela não inicia login, não encerra sessão, não limpa o navegador e não altera sua conta.</div>
+
+    <div class="actions">
+      <button id="runDiagnostic" type="button">Executar diagnóstico</button>
+      <span class="status" id="status">Aguardando verificação.</span>
+    </div>
+
+    <section class="summary" aria-label="Resumo do diagnóstico">
+      <article class="metric"><span>Biblioteca Supabase</span><strong id="libraryMetric">—</strong><small id="libraryNote">Ainda não verificada</small></article>
+      <article class="metric"><span>Sessão salva</span><strong id="sessionMetric">—</strong><small id="sessionNote">Ainda não verificada</small></article>
+      <article class="metric"><span>Retorno OAuth</span><strong id="oauthMetric">—</strong><small id="oauthNote">Ainda não verificado</small></article>
+      <article class="metric"><span>Origem atual</span><strong id="originMetric">—</strong><small id="originNote">Ainda não verificada</small></article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div><h2>Ambiente do navegador</h2><p>Dados técnicos que ajudam a identificar problemas de redirecionamento, cache ou sessão.</p></div>
+        <span class="pill" id="environmentPill">Não verificado</span>
+      </div>
+      <ul class="detail-list" id="environmentDetails"><li><span>Resultado</span><strong>Aguardando diagnóstico</strong></li></ul>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div><h2>Sessão do Supabase</h2><p>Consulta a sessão que já está salva neste navegador.</p></div>
+        <span class="pill" id="sessionPill">Não verificado</span>
+      </div>
+      <ul class="detail-list" id="sessionDetails"><li><span>Resultado</span><strong>Aguardando diagnóstico</strong></li></ul>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div><h2>Resultado</h2><p>Orientação baseada somente nas verificações acima.</p></div>
+      </div>
+      <div class="recommendation" id="recommendation"><strong>Aguardando diagnóstico</strong>Execute a verificação para receber uma orientação.</div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const SUPABASE_URL = 'https://rfmeiyjhugpsdnjbzpno.supabase.co';
+      const SUPABASE_ANON_KEY = 'sb_publishable_neuU8-peUJni1wus0dOnHQ_N6ZF-7f2';
+      const EXPECTED_ORIGIN = 'https://juliacezarmm-arch.github.io';
+      const EXPECTED_PATH = '/flashcard-estudos/';
+
+      const el = {
+        button: document.querySelector('#runDiagnostic'), status: document.querySelector('#status'),
+        libraryMetric: document.querySelector('#libraryMetric'), libraryNote: document.querySelector('#libraryNote'),
+        sessionMetric: document.querySelector('#sessionMetric'), sessionNote: document.querySelector('#sessionNote'),
+        oauthMetric: document.querySelector('#oauthMetric'), oauthNote: document.querySelector('#oauthNote'),
+        originMetric: document.querySelector('#originMetric'), originNote: document.querySelector('#originNote'),
+        environmentPill: document.querySelector('#environmentPill'), environmentDetails: document.querySelector('#environmentDetails'),
+        sessionPill: document.querySelector('#sessionPill'), sessionDetails: document.querySelector('#sessionDetails'),
+        recommendation: document.querySelector('#recommendation')
+      };
+
+      function escapeHtml(value) {
+        return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+      }
+
+      function setStatus(text, error = false) {
+        el.status.textContent = text;
+        el.status.classList.toggle('error', error);
+      }
+
+      function row(label, value) {
+        return `<li><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></li>`;
+      }
+
+      function authStorageKeys() {
+        const keys = [];
+        for (let index = 0; index < localStorage.length; index += 1) {
+          const key = localStorage.key(index) || '';
+          if (/supabase|auth-token|pkce/i.test(key)) keys.push(key);
+        }
+        return keys;
+      }
+
+      function oauthState() {
+        const query = new URLSearchParams(location.search);
+        const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
+        const code = query.get('code');
+        const error = query.get('error') || hash.get('error');
+        const errorDescription = query.get('error_description') || hash.get('error_description');
+        const accessToken = hash.get('access_token');
+        return { code, error, errorDescription, accessToken, hasReturn: Boolean(code || error || accessToken) };
+      }
+
+      async function runDiagnostic() {
+        el.button.disabled = true;
+        setStatus('Executando diagnóstico...');
+
+        try {
+          const hasLibrary = Boolean(window.supabase?.createClient);
+          el.libraryMetric.textContent = hasLibrary ? 'OK' : 'Falha';
+          el.libraryMetric.className = hasLibrary ? 'ok' : 'danger';
+          el.libraryNote.textContent = hasLibrary ? 'Biblioteca carregada' : 'Script do Supabase indisponível';
+
+          const currentOrigin = location.origin;
+          const currentPath = location.pathname;
+          const originOk = currentOrigin === EXPECTED_ORIGIN && currentPath.startsWith(EXPECTED_PATH);
+          el.originMetric.textContent = originOk ? 'OK' : 'Revisar';
+          el.originMetric.className = originOk ? 'ok' : 'warn';
+          el.originNote.textContent = currentOrigin + currentPath;
+
+          const oauth = oauthState();
+          el.oauthMetric.textContent = oauth.error ? 'Erro' : oauth.hasReturn ? 'Detectado' : 'Nenhum';
+          el.oauthMetric.className = oauth.error ? 'danger' : oauth.hasReturn ? 'warn' : '';
+          el.oauthNote.textContent = oauth.errorDescription || (oauth.hasReturn ? 'Há parâmetros de retorno na URL' : 'URL sem parâmetros de autenticação');
+
+          const storageKeys = authStorageKeys();
+          el.environmentPill.textContent = 'Leitura concluída';
+          el.environmentPill.className = 'pill ok';
+          el.environmentDetails.innerHTML = [
+            ['Endereço completo', location.href],
+            ['Origem esperada', EXPECTED_ORIGIN],
+            ['Caminho esperado', EXPECTED_PATH],
+            ['Navegador', navigator.userAgent],
+            ['Modo online', navigator.onLine ? 'Sim' : 'Não'],
+            ['Chaves de autenticação encontradas', storageKeys.length],
+            ['Parâmetro code', oauth.code ? 'Presente' : 'Ausente'],
+            ['Erro OAuth', oauth.error || 'Nenhum']
+          ].map(item => row(item[0], item[1])).join('');
+
+          if (!hasLibrary) {
+            el.sessionMetric.textContent = '—';
+            el.sessionNote.textContent = 'Sessão não consultada';
+            el.sessionPill.textContent = 'Biblioteca indisponível';
+            el.sessionPill.className = 'pill danger';
+            el.sessionDetails.innerHTML = row('Resultado', 'Não foi possível criar o cliente do Supabase.');
+            el.recommendation.innerHTML = '<strong>Falha no carregamento do Supabase</strong>O problema ocorre antes da autenticação. É necessário revisar o carregamento do script externo ou o bloqueio da rede.';
+            setStatus('Diagnóstico concluído com falha na biblioteca.', true);
+            return;
+          }
+
+          const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: { flowType:'pkce', persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+          });
+          const { data, error } = await client.auth.getSession();
+          if (error) throw error;
+
+          const session = data?.session || null;
+          const user = session?.user || null;
+          el.sessionMetric.textContent = session ? 'Sim' : 'Não';
+          el.sessionMetric.className = session ? 'ok' : 'warn';
+          el.sessionNote.textContent = user?.email || 'Nenhuma sessão ativa';
+          el.sessionPill.textContent = session ? 'Sessão encontrada' : 'Sem sessão';
+          el.sessionPill.className = session ? 'pill ok' : 'pill warn';
+          el.sessionDetails.innerHTML = [
+            ['Usuário', user?.email || 'Não conectado'],
+            ['ID da conta', user?.id || '—'],
+            ['Provedor', user?.app_metadata?.provider || '—'],
+            ['Expiração', session?.expires_at ? new Date(session.expires_at * 1000).toLocaleString('pt-BR') : '—'],
+            ['Token salvo no navegador', storageKeys.length ? 'Sim' : 'Não']
+          ].map(item => row(item[0], item[1])).join('');
+
+          if (oauth.error) {
+            el.recommendation.innerHTML = `<strong>O provedor devolveu um erro</strong>${escapeHtml(oauth.errorDescription || oauth.error)}. O próximo ajuste deve ser feito somente no fluxo de login ou nos endereços autorizados do Supabase/Google.`;
+          } else if (session) {
+            el.recommendation.innerHTML = '<strong>A sessão está funcionando neste navegador</strong>O Supabase reconheceu a conta. Caso o Fixa ainda mostre a tela de login, o problema está na atualização visual da aplicação após carregar a sessão.';
+          } else if (oauth.hasReturn) {
+            el.recommendation.innerHTML = '<strong>O retorno do login chegou, mas a sessão não foi criada</strong>O próximo passo é revisar apenas o processamento PKCE e o endereço de redirecionamento, sem mexer no restante do aplicativo.';
+          } else if (!originOk) {
+            el.recommendation.innerHTML = '<strong>O endereço atual não corresponde ao endereço publicado esperado</strong>O Google e o Supabase precisam usar exatamente a origem e o caminho corretos para retornar ao Fixa.';
+          } else if (storageKeys.length) {
+            el.recommendation.innerHTML = '<strong>Existem dados de autenticação salvos, mas não há sessão válida</strong>O próximo ajuste deve tratar apenas a recuperação ou renovação da sessão, sem alterar o login visual.';
+          } else {
+            el.recommendation.innerHTML = '<strong>Nenhuma sessão foi encontrada</strong>Esta página não inicia login. Para testar o botão do Google, abra o Fixa normalmente e depois retorne ao diagnóstico.';
+          }
+
+          setStatus('Diagnóstico concluído. Nenhuma configuração foi alterada.');
+        } catch (error) {
+          console.error('[Fixa] Falha no diagnóstico do login:', error);
+          el.sessionMetric.textContent = 'Erro';
+          el.sessionMetric.className = 'danger';
+          el.sessionNote.textContent = error.message || 'Falha desconhecida';
+          el.sessionPill.textContent = 'Falha na consulta';
+          el.sessionPill.className = 'pill danger';
+          el.sessionDetails.innerHTML = row('Erro', error.message || 'Falha desconhecida');
+          el.recommendation.innerHTML = `<strong>Falha ao consultar a sessão</strong>${escapeHtml(error.message || 'Erro desconhecido')}. O próximo passo deve ficar restrito ao módulo de autenticação.`;
+          setStatus('O diagnóstico encontrou um erro ao consultar o Supabase.', true);
+        } finally {
+          el.button.disabled = false;
+        }
+      }
+
+      el.button.addEventListener('click', runDiagnostic);
+    })();
+  </script>
+</body>
+</html>
