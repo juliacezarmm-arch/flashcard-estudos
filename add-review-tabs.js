@@ -17,7 +17,22 @@
       box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08) !important;
     }
 
-    /* Deixa as opções de Adicionar compactas, como as abas secundárias do Início. */
+    /* As abas de Adicionar ficam fora do cartão, como Teste e Histórico. */
+    #add .add-workspace.add-workspace-tabs-outside {
+      width: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    #add .add-workspace.add-workspace-tabs-outside > .unified-add-panel {
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
     #add .add-mode {
       width: fit-content;
       max-width: 100%;
@@ -25,7 +40,9 @@
       display: inline-flex;
       align-items: center;
       align-self: flex-start;
+      flex: 0 0 auto;
       gap: 4px;
+      margin: 0;
       padding: 4px;
       border: 0;
       border-radius: 10px;
@@ -177,6 +194,16 @@
       line-height: 1.5;
     }
 
+    @media (min-width: 861px) {
+      #add.view.active .add-workspace.add-workspace-tabs-outside {
+        height: 100%;
+      }
+
+      #add.view.active .add-workspace.add-workspace-tabs-outside > .unified-add-panel {
+        height: auto !important;
+      }
+    }
+
     @media (max-width: 760px) {
       #add .add-mode {
         width: 100%;
@@ -201,6 +228,13 @@
   const addModeInfo = document.querySelector('#addModeInfo');
 
   if (!addMode || !importButton || !importSection) return;
+
+  const addPanel = addMode.closest('.unified-add-panel');
+  const addWorkspace = addPanel?.parentElement;
+  if (addPanel && addWorkspace && addMode.parentElement === addPanel) {
+    addWorkspace.insertBefore(addMode, addPanel);
+    addWorkspace.classList.add('add-workspace-tabs-outside');
+  }
 
   let reviewButton = document.querySelector('#showReviewQuestions');
   if (!reviewButton) {
