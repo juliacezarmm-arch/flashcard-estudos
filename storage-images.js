@@ -8,10 +8,12 @@
   const signedCache = new Map();
   const pendingImages = new Map();
   let signedTimer = null;
-  let migrationRunning = false;
 
   function storageReady() {
-    return typeof supabaseClient !== "undefined" && supabaseClient && typeof currentUser !== "undefined" && currentUser?.id;
+    return typeof supabaseClient !== "undefined"
+      && Boolean(supabaseClient)
+      && typeof currentUser !== "undefined"
+      && Boolean(currentUser?.id);
   }
 
   function formatBytes(bytes) {
@@ -40,10 +42,10 @@
   function validateImage(blob, name) {
     const type = normalizeType(blob, name);
     if (!ALLOWED_TYPES.has(type)) {
-      throw new Error(`Imagem recusada: “${name}” não está em um formato permitido. Use PNG, JPG ou WebP. Nenhuma questão foi importada.`);
+      throw new Error(`Imagem recusada: “${name}” não está em um formato permitido. Use PNG, JPG ou WebP.`);
     }
     if (blob.size > MAX_FILE_SIZE) {
-      throw new Error(`Imagem recusada: “${name}” possui ${formatBytes(blob.size)} e o limite é 5 MB. Substitua essa imagem no ZIP por uma versão menor e importe novamente. Nenhuma questão foi importada.`);
+      throw new Error(`Imagem recusada: “${name}” possui ${formatBytes(blob.size)} e o limite é 5 MB.`);
     }
     return type;
   }
@@ -58,7 +60,11 @@
   }
 
   function safeSegment(value, fallback) {
-    const clean = String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+    const clean = String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
     return clean || fallback;
   }
 
@@ -73,7 +79,7 @@
       upsert: false
     });
     if (error && !/already exists|duplicate|resource exists/i.test(error.message || "")) {
-      throw new Error(`Não foi possível enviar a imagem “${originalName}”: ${error.message || "erro no Storage"}. Nenhuma questão foi importada.`);
+      throw new Error(`Não foi possível enviar a imagem “${originalName}”: ${error.message || "erro no Storage"}.`);
     }
     return path;
   }
@@ -88,7 +94,7 @@
   }
 
   function dataUrlToBlob(dataUrl) {
-    const match = String(dataUrl || "").match(/^data:([^;,]+);base64,(.+)$/);
+    const match = String(dataUrl || "").match(/^data:([^;,]+);base64,(.+)$/s);
     if (!match) return null;
     const binary = atob(match[2]);
     const bytes = new Uint8Array(binary.length);
@@ -112,17 +118,19 @@
       if (!card.image || String(card.image).startsWith(PREFIX) || /^https?:/i.test(String(card.image))) continue;
       let blob;
       let originalName;
+
       if (String(card.image).startsWith("data:")) {
         blob = dataUrlToBlob(card.image);
         originalName = `imagem-${prepared.length + 1}.${extensionFor(blob?.type || "image/png")}`;
       } else {
         const entry = zipEntry(zip, card.image);
-        if (!entry) throw new Error(`Imagem não encontrada no ZIP: “${card.image}”. Corrija o arquivo e tente novamente. Nenhuma questão foi importada.`);
+        if (!entry) throw new Error(`Imagem não encontrada no ZIP: “${card.image}”.`);
         originalName = entry.name.split("/").pop();
         blob = await entry.async("blob");
         if (!blob.type) blob = new Blob([await blob.arrayBuffer()], { type: mimeFromName(originalName) });
       }
-      if (!blob) throw new Error(`Não foi possível ler a imagem “${originalName}”. Nenhuma questão foi importada.`);
+
+      if (!blob) throw new Error(`Não foi possível ler a imagem “${originalName}”.`);
       validateImage(blob, originalName);
       prepared.push({ card, blob, originalName });
     }
@@ -139,7 +147,9 @@
         uploaded.push(path);
       }
     } catch (error) {
-      if (uploaded.length) await supabaseClient.storage.from(BUCKET).remove(uploaded).catch(() => {});
+      if (uploaded.length) {
+        try { await supabaseClient.storage.from(BUCKET).remove(uploaded); } catch (_) {}
+      }
       throw error;
     }
 
@@ -169,6 +179,7 @@
     const paths = [...pendingImages.keys()];
     const targets = new Map(pendingImages);
     pendingImages.clear();
+
     try {
       const { data: rows, error } = await supabaseClient.storage.from(BUCKET).createSignedUrls(paths, 3600);
       if (error) throw error;
@@ -176,7 +187,9 @@
         const path = row.path || paths[index];
         if (!row.signedUrl) return;
         signedCache.set(path, { url: row.signedUrl, expires: Date.now() + 50 * 60 * 1000 });
-        (targets.get(path) || []).forEach(img => { if (img.isConnected) img.src = row.signedUrl; });
+        (targets.get(path) || []).forEach(img => {
+          if (img.isConnected) img.src = row.signedUrl;
+        });
       });
     } catch (error) {
       console.error("[Fixa Storage] Falha ao assinar imagens:", error);
@@ -194,48 +207,16 @@
     });
   }
 
-  async function migrateEmbeddedImages() {
-    if (migrationRunning || !storageReady() || typeof data === "undefined") return;
-    const pending = [];
-    (data.subjects || []).forEach(subject => (subject.cards || []).forEach(card => {
-      if (String(card.image || "").startsWith("data:image/")) pending.push({ subject, card });
-    }));
-    if (!pending.length) return;
-
-    migrationRunning = true;
-    let changed = 0;
-    try {
-      for (let index = 0; index < pending.length; index += 1) {
-        const { subject, card } = pending[index];
-        const blob = dataUrlToBlob(card.image);
-        if (!blob || blob.size > MAX_FILE_SIZE || !ALLOWED_TYPES.has(blob.type)) continue;
-        try {
-          const path = await uploadBlob(blob, `imagem-existente-${index + 1}.${extensionFor(blob.type)}`, subject.id);
-          card.image = `${PREFIX}${path}`;
-          card.imageStoragePath = path;
-          changed += 1;
-        } catch (error) {
-          console.error("[Fixa Storage] Imagem antiga mantida no banco:", error);
-        }
-      }
-      if (changed && typeof save === "function") {
-        save();
-        if (typeof render === "function") render();
-        console.info(`[Fixa Storage] ${changed} imagem(ns) migrada(s) para o Storage.`);
-      }
-    } finally {
-      migrationRunning = false;
-    }
-  }
-
   async function exportWithStorage(event) {
     const button = event.target.closest?.("#exportCollection");
     if (!button || typeof currentSubject !== "function") return;
     const subject = currentSubject();
     if (!subject?.cards?.some(card => String(card.image || "").startsWith(PREFIX))) return;
+
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
+
     try {
       button.disabled = true;
       button.textContent = "Preparando ZIP...";
@@ -244,6 +225,7 @@
       const exportedCards = [];
       const fileByPath = new Map();
       let imageIndex = 1;
+
       for (const card of subject.cards) {
         let imagePath = card.image || "";
         if (String(imagePath).startsWith(PREFIX)) {
@@ -261,6 +243,7 @@
         }
         exportedCards.push(exportCardToJson(card, imagePath));
       }
+
       zip.file("flashcards.json", JSON.stringify(exportedCards, null, 2));
       const blob = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(blob);
@@ -289,20 +272,27 @@
     }))).observe(document.body, { childList: true, subtree: true });
 
     document.addEventListener("click", exportWithStorage, true);
-    document.addEventListener("click", event => {
-      if (event.target.closest?.("#saveQuestion")) setTimeout(migrateEmbeddedImages, 500);
-    });
 
     let attempts = 0;
     const timer = setInterval(() => {
       attempts += 1;
       if (storageReady()) {
         clearInterval(timer);
-        migrateEmbeddedImages();
         resolveStorageImages();
-      } else if (attempts >= 60) clearInterval(timer);
+      } else if (attempts >= 60) {
+        clearInterval(timer);
+      }
     }, 500);
   }
+
+  window.FixaStorageImages = {
+    bucket: BUCKET,
+    prefix: PREFIX,
+    ready: storageReady,
+    resolve: resolveStorageImages,
+    uploadBlob,
+    dataUrlToBlob
+  };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
   else init();
