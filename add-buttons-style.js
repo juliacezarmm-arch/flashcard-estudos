@@ -4,40 +4,63 @@
   const style = document.createElement('style');
   style.id = 'addButtonsStyle';
   style.textContent = `
-    /* Botões secundários de Adicionar independentes, sem barra agrupadora. */
+    /* Mantém as abas secundárias de Adicionar fora do cartão branco. */
+    #add .add-workspace.add-workspace-tabs-outside {
+      width: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    #add .add-workspace.add-workspace-tabs-outside > .unified-add-panel {
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    /* Mesmo padrão visual das abas Hoje, Progresso, Atividade e Análise. */
     #add .add-mode {
       width: fit-content;
       max-width: 100%;
-      min-height: 40px;
-      display: flex;
+      min-height: 38px;
+      display: inline-flex;
       align-items: center;
       align-self: flex-start;
       flex: 0 0 auto;
-      flex-wrap: wrap;
-      gap: 9px;
+      flex-wrap: nowrap;
+      gap: 4px;
       margin: 0;
-      padding: 0;
+      padding: 4px;
       border: 0;
-      border-radius: 0;
-      background: transparent;
+      border-radius: 10px;
+      background: #f1f5f9;
       box-shadow: none;
-      overflow: visible;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #add .add-mode::-webkit-scrollbar {
+      display: none;
     }
 
     #add .add-mode button {
       flex: 0 0 auto;
       width: auto;
       min-width: max-content;
-      min-height: 40px;
-      padding: 0 15px;
-      border: 1px solid #dbe3ef;
-      border-radius: 10px;
+      min-height: 30px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 8px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 7px;
-      color: #475569;
-      background: #ffffff;
+      color: #64748b;
+      background: transparent;
       box-shadow: none;
       font-size: 13px;
       font-weight: 600;
@@ -47,28 +70,25 @@
 
     #add .add-mode button:hover:not(:disabled):not(.active) {
       color: #2563eb !important;
-      border-color: #bfd3ff !important;
-      background: #f5f8ff !important;
+      background: transparent !important;
     }
 
     #add .add-mode button.active,
     #add .add-mode button.active:hover {
-      color: #ffffff !important;
-      border-color: #2563eb !important;
-      background: #2563eb !important;
-      box-shadow: none !important;
+      color: #2563eb !important;
+      background: #ffffff !important;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08) !important;
     }
 
     #add .add-mode button.active .mode-svg {
-      color: #ffffff !important;
+      color: #2563eb !important;
       stroke: currentColor !important;
     }
 
     #add .add-mode button:disabled {
       color: #94a3b8;
-      border-color: #e2e8f0;
-      background: #f8fafc !important;
-      opacity: 0.6;
+      background: transparent !important;
+      opacity: 0.55;
     }
 
     #add .add-mode .mode-svg {
@@ -77,22 +97,45 @@
       flex-basis: 17px;
     }
 
+    @media (min-width: 861px) {
+      #add.view.active .add-workspace.add-workspace-tabs-outside {
+        height: 100%;
+      }
+
+      #add.view.active .add-workspace.add-workspace-tabs-outside > .unified-add-panel {
+        height: auto !important;
+      }
+    }
+
     @media (max-width: 760px) {
       #add .add-mode {
         width: 100%;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding-bottom: 2px;
-        scrollbar-width: none;
-        -webkit-overflow-scrolling: touch;
-      }
-
-      #add .add-mode::-webkit-scrollbar {
-        display: none;
       }
     }
   `;
 
   document.head.appendChild(style);
+
+  function moveAddTabsOutsidePanel() {
+    const addMode = document.querySelector('#add .add-mode');
+    const addPanel = addMode?.closest('.unified-add-panel');
+    const addWorkspace = addPanel?.parentElement;
+    if (!addMode || !addPanel || !addWorkspace) return;
+
+    if (addMode.parentElement === addPanel) {
+      addWorkspace.insertBefore(addMode, addPanel);
+    }
+
+    addWorkspace.classList.add('add-workspace-tabs-outside');
+  }
+
+  moveAddTabsOutsidePanel();
+
+  const addView = document.querySelector('#add');
+  if (addView) {
+    new MutationObserver(moveAddTabsOutsidePanel).observe(addView, {
+      childList: true,
+      subtree: true
+    });
+  }
 })();
