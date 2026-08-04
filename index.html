@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260804-colecao-abre-questoes-1";
+    const FIXA_VERSION = "20260804-ajuste-altura-questoes-1";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -34,7 +34,8 @@
       ["dexBottomScrollFix", "dex-bottom-scroll-fix.js", "Não foi possível carregar a correção de rolagem do DeX."],
       ["storageImageLazyLoad", "storage-image-lazy-load.js", "Não foi possível carregar as imagens sob demanda."],
       ["reviewStorageUpload", "review-storage-upload.js", "Não foi possível carregar o envio das imagens ao Storage."],
-      ["collectionOpenQuestions", "collection-open-questions.js", "Não foi possível carregar a navegação das coleções."]
+      ["collectionOpenQuestions", "collection-open-questions.js", "Não foi possível carregar a navegação das coleções."],
+      ["questionsHeightFix", "questions-height-fix.js", "Não foi possível carregar o ajuste de altura das questões."]
     ];
 
     function loadFile([key, file, message]) {
@@ -48,7 +49,7 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix"];
         const scripts = scriptFiles.map(key => {
           let safeCode = assets[key];
           if (key === "reviewStorageUpload") {
