@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260803-correcao-rolagem-dex-1";
+    const FIXA_VERSION = "20260803-upload-storage-revisao-1";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -31,7 +31,8 @@
       ["sequenceVisualFix", "sequence-visual-fix.js", "Não foi possível carregar o ajuste visual da sequência."],
       ["reviewQuestionsUi", "review-questions-ui.js", "Não foi possível carregar a interface de revisão de questões."],
       ["authLoginRecovery", "auth-login-recovery.js", "Não foi possível carregar o reforço do login."],
-      ["dexBottomScrollFix", "dex-bottom-scroll-fix.js", "Não foi possível carregar a correção de rolagem do DeX."]
+      ["dexBottomScrollFix", "dex-bottom-scroll-fix.js", "Não foi possível carregar a correção de rolagem do DeX."],
+      ["reviewStorageUpload", "review-storage-upload.js", "Não foi possível carregar o envio das imagens ao Storage."]
     ];
 
     function loadFile([key, file, message]) {
@@ -45,7 +46,7 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "authLoginRecovery", "dexBottomScrollFix"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "authLoginRecovery", "dexBottomScrollFix", "reviewStorageUpload"];
         const scripts = scriptFiles.map(key => {
           const safeCode = assets[key].split(closingScript).join("<\\/scr" + "ipt>");
           return "<scr" + "ipt>" + safeCode + closingScript;
