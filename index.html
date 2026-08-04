@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260803-upload-storage-revisao-1";
+    const FIXA_VERSION = "20260803-imagens-sob-demanda-1";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -32,6 +32,7 @@
       ["reviewQuestionsUi", "review-questions-ui.js", "Não foi possível carregar a interface de revisão de questões."],
       ["authLoginRecovery", "auth-login-recovery.js", "Não foi possível carregar o reforço do login."],
       ["dexBottomScrollFix", "dex-bottom-scroll-fix.js", "Não foi possível carregar a correção de rolagem do DeX."],
+      ["storageImageLazyLoad", "storage-image-lazy-load.js", "Não foi possível carregar as imagens sob demanda."],
       ["reviewStorageUpload", "review-storage-upload.js", "Não foi possível carregar o envio das imagens ao Storage."]
     ];
 
@@ -46,9 +47,16 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "authLoginRecovery", "dexBottomScrollFix", "reviewStorageUpload"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload"];
         const scripts = scriptFiles.map(key => {
-          const safeCode = assets[key].split(closingScript).join("<\\/scr" + "ipt>");
+          let safeCode = assets[key];
+          if (key === "reviewStorageUpload") {
+            safeCode = safeCode.replace(
+              "function resolveStorageImage(img) {\n    const source = img.getAttribute('src') || '';",
+              "function resolveStorageImage(img) {\n    if (window.FixaStorageLazyLoader?.observe) {\n      window.FixaStorageLazyLoader.observe(img);\n      return;\n    }\n    const source = img.getAttribute('src') || '';"
+            );
+          }
+          safeCode = safeCode.split(closingScript).join("<\\/scr" + "ipt>");
           return "<scr" + "ipt>" + safeCode + closingScript;
         }).join("");
         const faviconTag = '<link rel="icon" type="image/svg+xml" href="./favicon.svg">';
