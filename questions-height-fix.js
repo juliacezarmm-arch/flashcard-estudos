@@ -8,8 +8,9 @@
   style.textContent = `
     /*
       Aba Questões:
+      - usa a mesma largura central da página Início;
       - mantém o bloco superior afastado do cabeçalho;
-      - aproveita toda a altura disponível na caixa inferior;
+      - aproveita a altura disponível na caixa inferior;
       - somente a lista de questões possui rolagem.
     */
     @media (min-width: 761px) {
@@ -39,9 +40,12 @@
 
       #manage.view.active {
         box-sizing: border-box !important;
-        width: 100% !important;
+        width: min(100%, 1180px) !important;
+        max-width: 1180px !important;
         height: 100% !important;
         min-height: 0 !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
         padding-top: 14px !important;
         padding-bottom: 0 !important;
         overflow: hidden !important;
@@ -54,6 +58,7 @@
       #manage.view.active > .progress-card {
         position: relative !important;
         z-index: 1 !important;
+        width: 100% !important;
         min-height: 0 !important;
         margin: 0 !important;
         flex: 0 0 auto !important;
@@ -62,6 +67,7 @@
 
       #manage.view.active > .card {
         align-self: stretch !important;
+        width: 100% !important;
         height: auto !important;
         min-height: 0 !important;
         margin: 0 !important;
