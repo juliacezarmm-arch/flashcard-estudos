@@ -1,4 +1,4 @@
-/* Fecha Minhas coleções ao clicar fora do painel */
+/* Fecha Minhas coleções ao clicar fora do painel e evita abrir o teclado automaticamente */
 (() => {
   "use strict";
 
@@ -7,6 +7,8 @@
   const menuToggle = document.querySelector("#mobileMenuToggle");
 
   if (!app || !sidebar || !menuToggle) return;
+
+  let openedAt = 0;
 
   function isOpen() {
     return app.classList.contains("collections-overlay-open");
@@ -26,6 +28,23 @@
     menuToggle.setAttribute("aria-expanded", "false");
     sidebar.setAttribute("aria-hidden", "true");
   }
+
+  new MutationObserver(() => {
+    if (isOpen()) openedAt = performance.now();
+  }).observe(app, {
+    attributes: true,
+    attributeFilter: ["class"]
+  });
+
+  document.addEventListener("focusin", event => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) return;
+    if (target.id !== "collectionsDrawerSearch") return;
+    if (!isOpen()) return;
+
+    const automaticFocus = performance.now() - openedAt < 350;
+    if (automaticFocus) target.blur();
+  }, true);
 
   document.addEventListener("pointerdown", event => {
     if (!isOpen()) return;
