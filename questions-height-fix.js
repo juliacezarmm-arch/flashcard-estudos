@@ -9,7 +9,7 @@
     /*
       Aba Questões:
       - usa a mesma largura central da página Início;
-      - mantém o bloco superior afastado do cabeçalho;
+      - mantém espaço visível entre os botões secundários e o resumo;
       - aproveita a altura disponível na caixa inferior;
       - somente a lista de questões possui rolagem.
     */
@@ -46,7 +46,7 @@
         min-height: 0 !important;
         margin-left: auto !important;
         margin-right: auto !important;
-        padding-top: 14px !important;
+        padding-top: 30px !important;
         padding-bottom: 0 !important;
         overflow: hidden !important;
         display: grid !important;
@@ -74,7 +74,7 @@
         overflow: hidden !important;
         display: flex !important;
         flex-direction: column !important;
-        padding-bottom: 12px !important;
+        padding-bottom: 6px !important;
       }
 
       #manage.view.active > .card > .section-heading {
@@ -106,7 +106,7 @@
         max-height: none !important;
         margin-top: 0 !important;
         padding-right: 8px !important;
-        padding-bottom: 8px !important;
+        padding-bottom: 2px !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
         overscroll-behavior: contain !important;
