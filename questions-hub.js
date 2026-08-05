@@ -104,8 +104,8 @@
       }
 
       body.questions-hub-active #questionsHubNav {
-        margin-left: 0;
-        margin-right: 0;
+        margin-left: max(0px, calc((100% - 1180px) / 2));
+        margin-right: auto;
       }
 
       body.questions-hub-active #manage.view.active,
