@@ -1,57 +1,99 @@
 (() => {
-  if (document.querySelector('#questionsHeightFixStyle')) return;
+  "use strict";
 
-  const style = document.createElement('style');
-  style.id = 'questionsHeightFixStyle';
+  if (document.querySelector("#questionsHeightFixStyle")) return;
+
+  const style = document.createElement("style");
+  style.id = "questionsHeightFixStyle";
   style.textContent = `
-    /* Ajusta somente a aba Questões para a caixa acompanhar o conteúdo. */
-    @media (min-width: 861px) {
+    /*
+      Aba Questões:
+      - cabeçalho do aplicativo permanece fixo;
+      - indicadores e barra da coleção permanecem fixos;
+      - título, Exportar e filtros permanecem fixos;
+      - somente a lista de questões possui rolagem.
+    */
+    @media (min-width: 761px) {
       body:has(#manage.view.active) {
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
+        height: 100dvh !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
       }
 
-      .app:has(#manage.view.active) {
-        height: auto !important;
-        min-height: 100vh !important;
+      #appShell.app:has(#manage.view.active) {
+        height: 100dvh !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
       }
 
-      .app:has(#manage.view.active) main {
-        height: auto !important;
-        min-height: 100vh !important;
-        overflow: visible !important;
-        grid-template-rows: 52px auto !important;
-        align-content: start !important;
+      #appShell.app:has(#manage.view.active) > main {
+        height: 100dvh !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        grid-template-rows: 52px minmax(0, 1fr) !important;
+        align-content: stretch !important;
       }
 
       #manage.view.active {
+        width: 100% !important;
+        height: 100% !important;
         min-height: 0 !important;
-        grid-template-rows: auto auto !important;
-        align-content: start !important;
+        overflow: hidden !important;
+        display: grid !important;
+        grid-template-rows: auto minmax(0, 1fr) !important;
+        align-content: stretch !important;
+      }
+
+      #manage.view.active > .progress-card {
+        min-height: 0 !important;
+        flex: 0 0 auto !important;
+        overflow: visible !important;
       }
 
       #manage.view.active > .card {
+        height: 100% !important;
         min-height: 0 !important;
-        height: auto !important;
-        overflow: visible !important;
-        display: block !important;
-        padding-bottom: 16px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding-bottom: 14px !important;
+      }
+
+      #manage.view.active > .card > .section-heading {
+        flex: 0 0 auto !important;
       }
 
       #manage.view.active #questionsContent {
-        flex: none !important;
-        min-height: 0 !important;
+        flex: 1 1 auto !important;
         height: auto !important;
-        overflow: visible !important;
-        display: block !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      #manage.view.active #questionsContent > .row {
+        position: relative !important;
+        z-index: 2 !important;
+        flex: 0 0 auto !important;
+        margin-bottom: 10px !important;
+        background: rgba(255, 255, 255, 0.98) !important;
       }
 
       #manage.view.active #questionList {
-        flex: none !important;
-        min-height: 0 !important;
+        flex: 1 1 auto !important;
+        width: 100% !important;
         height: auto !important;
+        min-height: 0 !important;
         max-height: none !important;
-        overflow: visible !important;
+        margin-top: 0 !important;
+        padding-right: 8px !important;
+        padding-bottom: 8px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        overscroll-behavior: contain !important;
+        scrollbar-gutter: stable !important;
+        align-content: start !important;
       }
     }
   `;
