@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260805-fechar-colecoes-fora-1";
+    const FIXA_VERSION = "20260805-competicao-v1";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -40,7 +40,8 @@
       ["storageImageLazyLoad", "storage-image-lazy-load.js", "Não foi possível carregar as imagens sob demanda."],
       ["reviewStorageUpload", "review-storage-upload.js", "Não foi possível carregar o envio das imagens ao Storage."],
       ["collectionOpenQuestions", "collection-open-questions.js", "Não foi possível carregar a navegação das coleções."],
-      ["questionsHeightFix", "questions-height-fix.js", "Não foi possível carregar o ajuste de altura das questões."]
+      ["questionsHeightFix", "questions-height-fix.js", "Não foi possível carregar o ajuste de altura das questões."],
+      ["competitionUi", "competition-ui.js", "Não foi possível carregar a área de competição."]
     ];
 
     function loadFile([key, file, message]) {
@@ -54,7 +55,7 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix", "competitionUi"];
         const scripts = scriptFiles.map(key => {
           let safeCode = assets[key];
           if (key === "reviewStorageUpload") {
