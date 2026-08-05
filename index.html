@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260805-menu-colecoes-sobreposto-1";
+    const FIXA_VERSION = "20260805-alinhamento-topo-home-1";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -25,6 +25,7 @@
       ["layout", "layout-ui.js", "Não foi possível carregar o layout."],
       ["collectionsOverlayStyle", "collections-overlay-style.js", "Não foi possível carregar o estilo do menu de coleções."],
       ["collectionsOverlayMenu", "collections-overlay-menu.js", "Não foi possível carregar o menu de coleções."],
+      ["topbarHomeAlignment", "topbar-home-alignment.js", "Não foi possível alinhar o cabeçalho da página inicial."],
       ["hotfix", "hotfix-home-encoding.js", "Não foi possível carregar a correção de textos."],
       ["progressFix", "progress-objectives-summary-fix.js", "Não foi possível carregar os ajustes do progresso."],
       ["secondaryTabsLayoutFix", "secondary-tabs-layout-fix.js", "Não foi possível carregar o ajuste das abas secundárias."],
@@ -51,7 +52,7 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "collectionsOverlayStyle", "collectionsOverlayMenu", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "collectionsOverlayStyle", "collectionsOverlayMenu", "topbarHomeAlignment", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix"];
         const scripts = scriptFiles.map(key => {
           let safeCode = assets[key];
           if (key === "reviewStorageUpload") {
