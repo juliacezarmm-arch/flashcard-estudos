@@ -8,9 +8,8 @@
   style.textContent = `
     /*
       Aba Questões:
-      - cabeçalho do aplicativo permanece fixo;
-      - indicadores e barra da coleção permanecem fixos;
-      - título, Exportar e filtros permanecem fixos;
+      - mantém o bloco superior afastado do cabeçalho;
+      - aproveita toda a altura disponível na caixa inferior;
       - somente a lista de questões possui rolagem.
     */
     @media (min-width: 761px) {
@@ -34,29 +33,42 @@
         align-content: stretch !important;
       }
 
+      #appShell.app:has(#manage.view.active) .topbar-title {
+        display: none !important;
+      }
+
       #manage.view.active {
+        box-sizing: border-box !important;
         width: 100% !important;
         height: 100% !important;
         min-height: 0 !important;
+        padding-top: 14px !important;
+        padding-bottom: 0 !important;
         overflow: hidden !important;
         display: grid !important;
         grid-template-rows: auto minmax(0, 1fr) !important;
         align-content: stretch !important;
+        gap: 12px !important;
       }
 
       #manage.view.active > .progress-card {
+        position: relative !important;
+        z-index: 1 !important;
         min-height: 0 !important;
+        margin: 0 !important;
         flex: 0 0 auto !important;
         overflow: visible !important;
       }
 
       #manage.view.active > .card {
-        height: 100% !important;
+        align-self: stretch !important;
+        height: auto !important;
         min-height: 0 !important;
+        margin: 0 !important;
         overflow: hidden !important;
         display: flex !important;
         flex-direction: column !important;
-        padding-bottom: 14px !important;
+        padding-bottom: 12px !important;
       }
 
       #manage.view.active > .card > .section-heading {
@@ -76,7 +88,7 @@
         position: relative !important;
         z-index: 2 !important;
         flex: 0 0 auto !important;
-        margin-bottom: 10px !important;
+        margin-bottom: 8px !important;
         background: rgba(255, 255, 255, 0.98) !important;
       }
 
