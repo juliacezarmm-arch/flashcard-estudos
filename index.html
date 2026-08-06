@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260805-order-manager-alpha-v2";
+    const FIXA_VERSION = "20260805-home-art-competition-icon-v1";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -45,7 +45,8 @@
       ["accountDataIsolation", "account-data-isolation.js", "Não foi possível isolar os dados desta conta."],
       ["homeEmptyStates", "home-empty-state-illustrations.js", "Não foi possível carregar as ilustrações da página inicial."],
       ["collectionsMenuActions", "collections-menu-actions.js", "Não foi possível carregar as ações dos menus de coleções."],
-      ["collectionsFloatingMenuFix", "collections-floating-menu-fix.js", "Não foi possível restaurar o menu flutuante das coleções."]
+      ["collectionsFloatingMenuFix", "collections-floating-menu-fix.js", "Não foi possível restaurar o menu flutuante das coleções."],
+      ["homeArtCompetitionFix", "home-art-and-competition-icon-fix.js", "Não foi possível ajustar as imagens e o ícone de competição."]
     ];
 
     function loadFile([key, file, message]) {
@@ -59,7 +60,7 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix", "competitionUi", "accountDataIsolation", "homeEmptyStates", "collectionsMenuActions", "collectionsFloatingMenuFix"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "progressFix", "secondaryTabsLayoutFix", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix", "competitionUi", "accountDataIsolation", "homeEmptyStates", "collectionsMenuActions", "collectionsFloatingMenuFix", "homeArtCompetitionFix"];
         const scripts = scriptFiles.map(key => {
           let safeCode = assets[key];
           if (key === "reviewStorageUpload") {
