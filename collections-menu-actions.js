@@ -1,4 +1,4 @@
-/* Ações adicionais e visibilidade dos menus de pastas e coleções */
+/* Visibilidade dos menus e opções alfabéticas dentro de Ordenar coleções */
 (() => {
   "use strict";
 
@@ -30,80 +30,97 @@
       min-height: 28px !important;
     }
 
-    .sidebar-menu [data-folder-action="sort-az"],
-    .sidebar-menu [data-folder-action="sort-za"] {
+    #collectionOrderModal .collection-order-tools .row {
+      flex-wrap: wrap;
+    }
+
+    #collectionOrderModal [data-order-alpha],
+    #collectionOrderModal [data-order-alpha-desc] {
       white-space: nowrap;
     }
   `;
   document.head.appendChild(style);
 
-  const originalSidebarMenuHtmlForOrdering = sidebarMenuHtml;
-  sidebarMenuHtml = function sidebarMenuHtmlWithFolderOrdering(type) {
-    const html = originalSidebarMenuHtmlForOrdering(type);
-    if (type !== "folder" || html.includes('data-folder-action="sort-az"')) return html;
-
-    return html.replace(
-      '<button type="button" data-folder-action="rename">✎ Renomear pasta</button>',
-      `<button type="button" data-folder-action="rename">✎ Renomear pasta</button>
-       <button type="button" data-folder-action="sort-az">A→Z Ordenar coleções de A a Z</button>
-       <button type="button" data-folder-action="sort-za">Z→A Ordenar coleções de Z a A</button>`
-    );
-  };
-
-  function compareCollectionNames(a, b, direction) {
-    const result = String(a?.name || "").localeCompare(String(b?.name || ""), "pt-BR", {
-      sensitivity: "base",
-      numeric: true,
-      ignorePunctuation: false
-    });
-    return direction === "za" ? -result : result;
+  function removeOldTopLevelSortActions(root = document) {
+    root.querySelectorAll?.(
+      '.sidebar-menu [data-folder-action="sort-az"], .sidebar-menu [data-folder-action="sort-za"]'
+    ).forEach(button => button.remove());
   }
 
-  function sortFolderCollections(folderId, direction) {
-    const targetFolderId = String(folderId || "");
-    if (!targetFolderId || !Array.isArray(data?.subjects)) return;
+  function enhanceOrderManager() {
+    const modal = document.querySelector("#collectionOrderModal");
+    if (!modal) return;
 
-    const positions = [];
-    data.subjects.forEach((subject, index) => {
-      if (String(subject?.folder || "") === targetFolderId) positions.push(index);
+    const ascending = modal.querySelector("[data-order-alpha]");
+    if (ascending) ascending.textContent = "A→Z Ordenar de A a Z";
+
+    const toolsRow = ascending?.closest(".row");
+    if (!toolsRow || toolsRow.querySelector("[data-order-alpha-desc]")) return;
+
+    const descending = document.createElement("button");
+    descending.className = "secondary";
+    descending.type = "button";
+    descending.dataset.orderAlphaDesc = "";
+    descending.textContent = "Z→A Ordenar de Z a A";
+
+    const reset = toolsRow.querySelector("[data-order-reset]");
+    toolsRow.insertBefore(descending, reset || null);
+  }
+
+  function sortVisibleOrderDescending() {
+    const modal = document.querySelector("#collectionOrderModal");
+    const list = modal?.querySelector("[data-order-list]");
+    if (!modal || modal.hidden || !list) return;
+
+    const rows = [...list.querySelectorAll("[data-order-row]")];
+    if (rows.length < 2) return;
+
+    rows.sort((first, second) => {
+      const firstName = first.querySelector(".collection-order-name")?.textContent || "";
+      const secondName = second.querySelector(".collection-order-name")?.textContent || "";
+      return secondName.localeCompare(firstName, "pt-BR", {
+        sensitivity: "base",
+        numeric: true
+      });
     });
 
-    if (positions.length < 2) return;
+    rows.forEach(row => list.appendChild(row));
 
-    const ordered = positions
-      .map(index => data.subjects[index])
-      .sort((a, b) => compareCollectionNames(a, b, direction));
-
-    positions.forEach((position, index) => {
-      data.subjects[position] = ordered[index];
-    });
-
-    if (typeof save === "function") save();
-    if (typeof renderSubjects === "function") renderSubjects();
-
-    requestAnimationFrame(() => {
-      window.FixaCollectionsOverlay?.refresh?.();
-    });
+    /* O módulo original sincroniza a ordem de trabalho ao receber dragend. */
+    rows[0]?.dispatchEvent(new Event("dragend", { bubbles: true }));
   }
 
   document.addEventListener("click", event => {
-    const actionButton = event.target.closest?.(
-      '[data-folder-action="sort-az"], [data-folder-action="sort-za"]'
-    );
-    if (!actionButton) return;
+    if (event.target.closest?.("[data-folder-order]")) {
+      requestAnimationFrame(enhanceOrderManager);
+      return;
+    }
+
+    const descending = event.target.closest?.("[data-order-alpha-desc]");
+    if (!descending) return;
 
     event.preventDefault();
-    event.stopImmediatePropagation();
+    sortVisibleOrderDescending();
+  });
 
-    const menu = actionButton.closest(".sidebar-menu");
-    const folderId = menu?.dataset.menuId || "";
-    const direction = actionButton.dataset.folderAction === "sort-za" ? "za" : "az";
+  const observer = new MutationObserver(records => {
+    records.forEach(record => {
+      record.addedNodes.forEach(node => {
+        if (!(node instanceof Element)) return;
+        removeOldTopLevelSortActions(node);
+        if (node.id === "collectionOrderModal" || node.querySelector?.("#collectionOrderModal")) {
+          enhanceOrderManager();
+        }
+      });
+    });
+  });
 
-    if (typeof closeSidebarMenu === "function") closeSidebarMenu();
-    sortFolderCollections(folderId, direction);
-  }, true);
+  observer.observe(document.body, { childList: true, subtree: true });
+  removeOldTopLevelSortActions();
+  enhanceOrderManager();
 
   window.FixaCollectionsMenuActions = {
-    sortFolderCollections
+    enhanceOrderManager,
+    sortVisibleOrderDescending
   };
 })();
