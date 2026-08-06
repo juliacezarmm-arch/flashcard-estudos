@@ -1,8 +1,12 @@
-/* Remove ilustrações grandes adicionadas e garante troféu no botão Competição */
+/* Mantém somente o ícone vetorial da Competição.
+   As ilustrações da tela Hoje são controladas por home-empty-state-art.js. */
 (() => {
-  "use strict";
+  'use strict';
 
-  if (window.FixaHomeArtCompetitionFix) return;
+  if (window.FixaCompetitionIconOnlyFix) return;
+  window.FixaCompetitionIconOnlyFix = true;
+
+  document.querySelector('#fixaHomeArtCompetitionFixStyle')?.remove();
 
   const TROPHY_SVG = `
     <svg class="competition-tab-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -13,79 +17,48 @@
     </svg>
   `;
 
-  const style = document.createElement("style");
-  style.id = "fixaHomeArtCompetitionFixStyle";
+  const style = document.createElement('style');
+  style.id = 'fixaCompetitionIconOnlyStyle';
   style.textContent = `
-    /* As imagens grandes foram acrescentadas pelo módulo de estados vazios.
-       As imagens originais dos cards continuam preservadas. */
-    .home-empty-art[data-home-art="study"],
-    .home-empty-art[data-home-art="priorities"] {
-      display: none !important;
-    }
-
-    /* Mantém o espaço do conteúdo limpo, sem reservar área para as figuras grandes. */
-    .home-study-card.is-home-empty,
-    .home-priority-panel.is-home-empty {
-      padding-right: 18px !important;
-    }
-
-    /* O ícone da competição segue o mesmo padrão visual dos demais botões do topo. */
     [data-competition-view].tab,
     [data-view="competition"].tab {
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      gap: 9px !important;
+      display:inline-flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      gap:9px!important;
     }
-
     [data-competition-view] .competition-tab-icon,
     [data-view="competition"] .competition-tab-icon {
-      width: 18px !important;
-      height: 18px !important;
-      flex: 0 0 18px !important;
-      fill: none !important;
-      stroke: currentColor !important;
-      stroke-width: 1.9 !important;
-      stroke-linecap: round !important;
-      stroke-linejoin: round !important;
+      width:18px!important;
+      height:18px!important;
+      flex:0 0 18px!important;
+      fill:none!important;
+      stroke:currentColor!important;
+      stroke-width:1.9!important;
+      stroke-linecap:round!important;
+      stroke-linejoin:round!important;
     }
   `;
   document.head.appendChild(style);
-
-  function removeLargeHomeArts() {
-    document.querySelectorAll(
-      '.home-empty-art[data-home-art="study"], .home-empty-art[data-home-art="priorities"]'
-    ).forEach(image => image.remove());
-  }
 
   function ensureCompetitionTrophy() {
     const tab = document.querySelector('[data-competition-view], [data-view="competition"]');
     if (!tab) return;
 
-    const currentSvg = tab.querySelector("svg");
-    if (currentSvg) {
-      currentSvg.classList.add("competition-tab-icon");
-      return;
-    }
+    tab.querySelectorAll('span').forEach(span => {
+      if (/🏆|🥇|🥈|🥉/.test(span.textContent || '')) span.remove();
+    });
 
-    tab.insertAdjacentHTML("afterbegin", TROPHY_SVG);
+    let svg = tab.querySelector('svg');
+    if (!svg) {
+      tab.insertAdjacentHTML('afterbegin', TROPHY_SVG);
+      svg = tab.querySelector('svg');
+    }
+    svg?.classList.add('competition-tab-icon');
   }
 
-  function applyFixes() {
-    removeLargeHomeArts();
-    ensureCompetitionTrophy();
-  }
-
-  const observer = new MutationObserver(applyFixes);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
-
-  window.addEventListener("load", applyFixes);
-  document.addEventListener("click", event => {
-    if (event.target.closest('[data-home-tab], [data-view="home"], [data-competition-view]')) {
-      requestAnimationFrame(applyFixes);
-    }
-  });
-
-  applyFixes();
-  window.FixaHomeArtCompetitionFix = true;
+  const observer = new MutationObserver(() => requestAnimationFrame(ensureCompetitionTrophy));
+  observer.observe(document.documentElement, { childList:true, subtree:true });
+  window.addEventListener('load', ensureCompetitionTrophy);
+  ensureCompetitionTrophy();
 })();
