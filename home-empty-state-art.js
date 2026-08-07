@@ -11,11 +11,8 @@
       .home-empty-action:hover{color:#fff!important;background:#2563eb!important;border-color:#2563eb!important}
       .home-review-empty-art-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,240px);align-items:center;gap:18px;min-height:180px}
       .home-review-empty-art{width:100%;max-width:230px;max-height:190px;object-fit:contain;justify-self:end;transition:.2s ease}
-      .home-panel.home-has-review-art{position:relative}
-      .home-panel.home-has-review-art>.home-review-data-art{display:flex;align-items:center;gap:10px;margin:0 0 12px 0}
-      .home-review-data-art img{width:58px;height:58px;object-fit:contain;flex:0 0 auto}
-      .home-review-data-art span{font-weight:800;color:#64748b;font-size:12px}
-      @media(max-width:760px){.home-review-empty-art-wrap{grid-template-columns:1fr;min-height:0}.home-review-empty-art{justify-self:center;max-width:190px;order:-1}.home-empty-action{width:100%}.home-review-data-art img{width:48px;height:48px}}
+      .home-review-data-art{display:none!important}
+      @media(max-width:760px){.home-review-empty-art-wrap{grid-template-columns:1fr;min-height:0}.home-review-empty-art{justify-self:center;max-width:190px;order:-1}.home-empty-action{width:100%}}
     `;
     document.head.appendChild(style);
   }
@@ -72,20 +69,9 @@
     });
   }
 
-  function addReviewCompactArt(panel) {
-    let art = panel.querySelector(':scope > .home-review-data-art');
-    if (!art) {
-      art = document.createElement('div');
-      art.className = 'home-review-data-art';
-      art.innerHTML = `<img src="${REVIEW_ART}" alt="" aria-hidden="true"><span>Revisões de hoje</span>`;
-      const head = panel.querySelector('.home-panel-head');
-      head?.insertAdjacentElement('afterend', art);
-    }
-    panel.classList.add('home-has-review-art');
-  }
-
   function removeReviewCompactArt(panel) {
-    panel.querySelector(':scope > .home-review-data-art')?.remove();
+    if (!panel) return;
+    panel.querySelectorAll(':scope > .home-review-data-art,.home-review-data-art').forEach(node => node.remove());
     panel.classList.remove('home-has-review-art');
   }
 
@@ -109,11 +95,9 @@
       const reviews = document.querySelector('#homePriorities');
       const reviewsPanel = reviews?.closest('.home-panel');
       if (reviews && reviewsPanel) {
+        removeReviewCompactArt(reviewsPanel);
         if (isEmpty(reviews)) {
           ensureReviewEmpty(reviews,'As revisões recomendadas aparecerão aqui conforme você realiza testes e estuda suas coleções.','Fazer um teste agora','test');
-          removeReviewCompactArt(reviewsPanel);
-        } else {
-          addReviewCompactArt(reviewsPanel);
         }
       }
     } finally {
