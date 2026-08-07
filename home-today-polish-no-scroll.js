@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  if (window.FixaHomeTodayAdaptiveHeightV1) return;
-  window.FixaHomeTodayAdaptiveHeightV1 = true;
+  if (window.FixaHomeTodayAdaptiveHeightV2) return;
+  window.FixaHomeTodayAdaptiveHeightV2 = true;
 
   document.querySelector('#fixaHomeTodayPolishNoScrollStyle')?.remove();
   document.querySelector('#fixaHomeTodayAdaptiveHeightStyle')?.remove();
@@ -12,16 +12,31 @@
   style.textContent = `
     /*
       A tela Hoje preserva toda a largura original.
-      Somente medidas verticais são comprimidas quando a altura disponível
-      não comporta o conteúdo sem rolagem.
+      Somente medidas verticais são comprimidas quando necessário.
     */
     @media (min-width: 761px) {
+      body.home-active main {
+        box-sizing: border-box !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+      }
+
+      /* Na aba Hoje não exibimos barra vertical. */
       body.home-active.fixa-home-today-fit main {
         overflow-y: hidden !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+      }
+
+      body.home-active.fixa-home-today-fit main::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
       }
 
       body.home-active.fixa-home-today-fit .home-view.active {
         min-height: 0 !important;
+        max-height: 100% !important;
       }
 
       /* Primeiro nível: compactação suave. */
@@ -256,40 +271,26 @@
 
       if (!todayIsActive() || !main) return;
 
-      /* Mede primeiro no tamanho normal. */
+      /* A aba Hoje nunca exibe barra vertical no desktop. */
+      body.classList.add(FIT);
+      main.scrollTop = 0;
+
       await new Promise(resolve => requestAnimationFrame(resolve));
 
-      if (!mainOverflows(main)) {
-        body.classList.add(FIT);
-        main.scrollTop = 0;
-        return;
-      }
+      if (!mainOverflows(main)) return;
 
-      /* Se não couber, reduz apenas medidas verticais. */
+      /* Se passar da altura disponível, reduz apenas medidas verticais. */
       body.classList.add(COMPACT);
       await new Promise(resolve => requestAnimationFrame(resolve));
 
-      if (!mainOverflows(main)) {
-        body.classList.add(FIT);
-        main.scrollTop = 0;
-        return;
-      }
+      if (!mainOverflows(main)) return;
 
-      /* Em alturas menores, aplica o segundo nível. */
+      /* Em telas ainda mais baixas, aplica o segundo nível. */
       body.classList.add(TIGHT);
       await new Promise(resolve => requestAnimationFrame(resolve));
 
-      if (!mainOverflows(main)) {
-        body.classList.add(FIT);
-        main.scrollTop = 0;
-        return;
-      }
-
-      /*
-        Se a tela for realmente baixa demais para o conteúdo, não esconde a
-        rolagem: mantém o modo compacto para não cortar informações.
-      */
-      body.classList.remove(FIT);
+      /* Mantém FIT mesmo aqui: a barra não reaparece. */
+      main.scrollTop = 0;
     } finally {
       fitting = false;
     }
