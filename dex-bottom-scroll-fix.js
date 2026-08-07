@@ -5,17 +5,38 @@
   style.id = 'dexBottomScrollFixStyle';
   style.textContent = `
     /*
-      Mantém o final das páginas acessível em telas desktop de pouca altura,
-      especialmente no Samsung DeX, cuja barra inferior pode sobrepor o navegador.
+      Correção para telas desktop/DeX de pouca altura.
+      Não adiciona mais 88px artificiais ao final de TODAS as páginas,
+      pois isso criava espaço vazio e uma barra de rolagem desnecessária.
     */
     @media (min-width: 761px) and (max-height: 950px) {
       main {
-        padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
-        scroll-padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+        scroll-padding-bottom: env(safe-area-inset-bottom, 0px);
         overscroll-behavior-y: contain;
       }
 
-      /* Libera a rolagem das telas que antes ficavam presas à altura da janela. */
+      /* A tela Hoje usa a altura real disponível da janela. */
+      body.home-active:not(.home-activity-active) main {
+        padding-bottom: 10px !important;
+        overflow-y: hidden !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+      }
+
+      body.home-active:not(.home-activity-active) main::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+      }
+
+      body.home-active:not(.home-activity-active) main > .home-view.active {
+        padding-bottom: 0 !important;
+      }
+
+      /*
+        A aba Atividade pode ter conteúdo maior; nela a rolagem continua
+        disponível, mas sem os 88px extras que existiam anteriormente.
+      */
       body.home-active.home-activity-active,
       body.home-active.home-activity-active main,
       body.home-active.home-activity-active .home-view.active,
@@ -30,11 +51,11 @@
 
       body.home-active.home-activity-active main {
         overflow-y: auto !important;
+        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
       }
 
-      /* Espaço final comum para todas as abas. */
-      main > .view.active,
-      main > .home-view.active {
+      /* Outras telas mantêm apenas um respiro pequeno, sem reserva artificial. */
+      body:not(.home-active) main > .view.active {
         padding-bottom: 12px;
       }
     }
