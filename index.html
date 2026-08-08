@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260807-competition-v5-user-fix";
+    const FIXA_VERSION = "20260807-competition-v5-no-blank";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -79,6 +79,10 @@
             safeCode = safeCode.replace(
               "const uid = () => window.currentUser?.id || null;",
               "const uid = () => window.currentUser?.id || (typeof currentUser !== 'undefined' ? currentUser?.id : null) || null;"
+            );
+            safeCode = safeCode.replace(
+              "async function load(){if(!uid()||!sb())return;root.innerHTML=",
+              "async function load(){if(!sb()){root.innerHTML=head()+'<div class=\"cv3-card\"><h3>Não foi possível conectar ao servidor</h3><p class=\"cv3-muted\">Atualize a página e tente novamente.</p></div>';bind();return;}root.innerHTML="
             );
           }
 
