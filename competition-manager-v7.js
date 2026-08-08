@@ -6,6 +6,11 @@
   const sb = () => window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
   const state = { list: [], tab: 'active', loading: false };
 
+  const trophySvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4"/></svg>';
+  const plusSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+  const hashSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3 8 21M16 3l-2 18M4 9h16M3 15h16"/></svg>';
+  const mailSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
+
   const style = document.createElement('style');
   style.id = 'competitionManagerV7Style';
   style.textContent = `
@@ -35,17 +40,24 @@
     .cv7-open { min-height:38px; padding:8px 13px; border:1px solid #d7e2f2; border-radius:9px; background:#fff; color:#172033; font-size:12px; font-weight:800; }
     .cv7-open.primary { border-color:#2563eb; background:#2563eb; color:#fff; box-shadow:0 6px 14px rgba(37,99,235,.14); }
     .cv7-delete { min-height:38px; padding:8px 12px; border:1px solid #fecaca; border-radius:9px; background:#fff7f7; color:#dc2626; font-size:12px; font-weight:800; }
-    .cv7-empty { min-height:250px; display:grid; place-items:center; align-content:center; gap:8px; padding:28px; border:1px solid #e3e9f2; border-radius:15px; background:#fff; text-align:center; }
-    .cv7-empty-mark { width:76px; height:76px; border-radius:50%; display:grid; place-items:center; background:#eef4ff; color:#2563eb; }
-    .cv7-empty-mark svg { width:38px; height:38px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
-    .cv7-empty h3 { margin:4px 0 0; font-size:18px; color:#172033; }
-    .cv7-empty p { margin:0; max-width:480px; color:#64748b; font-size:12px; line-height:18px; }
-    .cv7-create { min-height:40px; padding:8px 15px; margin-top:5px; border:0; border-radius:9px; background:#2563eb; color:#fff; font-size:12px; font-weight:800; }
+    .cv7-empty { min-height:300px; display:grid; place-items:center; align-content:center; gap:10px; padding:34px 28px; border:1px solid #e3e9f2; border-radius:15px; background:#fff; text-align:center; }
+    .cv7-empty-mark { width:76px; height:76px; border-radius:50%; display:grid; place-items:center; background:#eef4ff; color:#2563eb; border:1px solid #dce8ff; }
+    .cv7-empty-mark svg { width:40px; height:40px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+    .cv7-empty h3 { margin:5px 0 0; font-size:20px; line-height:1.2; color:#172033; }
+    .cv7-empty p { margin:0; max-width:520px; color:#64748b; font-size:13px; line-height:19px; }
+    .cv7-empty-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:9px; margin-top:8px; }
+    .cv7-empty-action { min-height:40px; padding:8px 15px; border:1px solid #d7e2f2; border-radius:9px; background:#fff; color:#172033; display:inline-flex; align-items:center; justify-content:center; gap:7px; font-size:12px; font-weight:800; }
+    .cv7-empty-action svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+    .cv7-empty-action.primary { border-color:#2563eb; background:#2563eb; color:#fff; box-shadow:0 6px 14px rgba(37,99,235,.14); }
     .cv7-loading { padding:20px; border:1px solid #e3e9f2; border-radius:14px; background:#fff; color:#64748b; font-size:12px; }
+    .competition-v3.cv7-home-open .cv3-secondary-nav [data-list] { color:#2563eb !important; background:#fff !important; box-shadow:0 1px 4px rgba(15,23,42,.08) !important; }
     @media(max-width:760px){
       .cv7-manager-head { flex-direction:column; }
       .cv7-card { grid-template-columns:1fr; }
       .cv7-actions { justify-content:flex-start; }
+      .cv7-empty { min-height:260px; padding:28px 18px; }
+      .cv7-empty-actions { width:100%; }
+      .cv7-empty-action { flex:1 1 150px; }
     }
   `;
   document.head.appendChild(style);
@@ -53,10 +65,23 @@
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt = d => d ? new Date(`${d}T12:00:00`).toLocaleDateString('pt-BR') : 'Sem término';
   const statusLabel = s => ({ active:'Ativa', upcoming:'Próxima', completed:'Encerrada' })[s] || s;
-  const emptyTrophy = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4"/></svg>';
 
   function root() { return document.querySelector('.competition-v3.active #cv3'); }
+  function view() { return document.querySelector('.competition-v3'); }
   function hero() { return root()?.querySelector('.cv3-hero'); }
+
+  function setManagerActive(active) {
+    const v = view();
+    if (!v) return;
+    v.classList.toggle('cv7-home-open', !!active);
+    const nav = v.querySelector('.cv3-secondary-nav');
+    nav?.querySelectorAll('.home-subtab').forEach(button => {
+      const selected = !!active && button.matches('[data-list]');
+      button.classList.toggle('active', selected);
+      if (selected) button.setAttribute('aria-current', 'page');
+      else button.removeAttribute('aria-current');
+    });
+  }
 
   function clearContentAfterHero() {
     const r = root();
@@ -92,30 +117,31 @@
     return `<article class="cv7-card"><div class="cv7-card-main"><div class="cv7-card-title"><h3>${esc(c.name)}</h3><span class="cv7-status ${status}">${statusLabel(status)}</span></div><div class="cv7-meta"><span>${esc(period)}</span><span><b>${Number(c.my_xp||0)} XP</b></span><span>${Number(c.member_count||0)} participante${Number(c.member_count||0)===1?'':'s'}</span>${c.daily_xp_limit?`<span>limite diário ${Number(c.daily_xp_limit)} XP</span>`:''}</div></div><div class="cv7-actions"><button class="cv7-open ${status==='active'?'primary':''}" data-cv7-open="${c.id}" data-cv7-status="${status}">${actionLabel}</button>${c.is_owner?`<button class="cv7-delete" data-cv7-delete="${c.id}">Excluir</button>`:`<button class="cv7-open" data-cv7-leave="${c.id}">Sair</button>`}</div></article>`;
   }
 
-  function emptyState() {
-    if (state.list.length === 0) {
-      return `<div class="cv7-empty"><div class="cv7-empty-mark">${emptyTrophy}</div><h3>Nenhuma competição encontrada</h3><p>Crie sua primeira competição ou entre em uma competição.</p><button class="cv7-create" data-cv7-create>Criar competição</button></div>`;
-    }
+  function generalEmptyState() {
+    return `<div class="cv7-empty"><div class="cv7-empty-mark">${trophySvg}</div><h3>Nenhuma competição encontrada</h3><p>Crie uma competição ou entre em uma competição.</p><div class="cv7-empty-actions"><button class="cv7-empty-action primary" type="button" data-cv7-create>${plusSvg} Criar competição</button><button class="cv7-empty-action" type="button" data-cv7-join>${hashSvg} Entrar por código</button><button class="cv7-empty-action" type="button" data-cv7-invitations>${mailSvg} Convites <span data-cv7-invite-count></span></button></div></div>`;
+  }
 
+  function categoryEmptyState() {
     const copy = {
       active: ['Nenhuma competição ativa', 'As competições ativas aparecerão aqui.'],
       upcoming: ['Nenhuma competição agendada', 'Competições com data futura aparecerão aqui.'],
       completed: ['Nenhuma competição encerrada', 'Os resultados das competições finalizadas aparecerão aqui.']
     }[state.tab] || ['Nenhuma competição encontrada', 'Não há competições nesta categoria.'];
-
-    return `<div class="cv7-empty"><div class="cv7-empty-mark">${emptyTrophy}</div><h3>${copy[0]}</h3><p>${copy[1]}</p></div>`;
+    return `<div class="cv7-empty"><div class="cv7-empty-mark">${trophySvg}</div><h3>${copy[0]}</h3><p>${copy[1]}</p></div>`;
   }
 
   function render() {
     const r = root();
     if (!r) return;
     clearContentAfterHero();
+    setManagerActive(true);
     const wrap = document.createElement('section');
     wrap.className = 'cv7-manager';
     const items = currentItems();
-    wrap.innerHTML = managerHeader() + (items.length ? `<div class="cv7-list">${items.map(card).join('')}</div>` : emptyState());
+    wrap.innerHTML = managerHeader() + (state.list.length === 0 ? generalEmptyState() : items.length ? `<div class="cv7-list">${items.map(card).join('')}</div>` : categoryEmptyState());
     r.appendChild(wrap);
     bindManager();
+    syncEmptyInviteCount();
   }
 
   async function loadManager(preferredTab) {
@@ -125,6 +151,7 @@
     if (!client || !r) return;
     state.loading = true;
     clearContentAfterHero();
+    setManagerActive(true);
     const loading = document.createElement('div');
     loading.className = 'cv7-loading';
     loading.textContent = 'Carregando suas competições...';
@@ -150,7 +177,31 @@
     }
   }
 
+  async function syncEmptyInviteCount() {
+    const target = document.querySelector('[data-cv7-invite-count]');
+    if (!target || !sb()) return;
+    try {
+      const { data } = await sb().rpc('list_my_competition_invitations');
+      const count = Array.isArray(data) ? data.length : 0;
+      target.textContent = count ? ` ${count}` : '';
+    } catch {}
+  }
+
+  function clickSecondary(selector) {
+    const button = document.querySelector(`.competition-v3 .cv3-secondary-nav ${selector}`);
+    if (!button) return false;
+    button.click();
+    return true;
+  }
+
+  function openInvitationsFromEmpty() {
+    if (clickSecondary('[data-cv9-invitations]')) return;
+    window.dispatchEvent(new Event('focus'));
+    setTimeout(() => clickSecondary('[data-cv9-invitations]'), 60);
+  }
+
   function openCompetition(id, status) {
+    setManagerActive(false);
     localStorage.setItem('fixa-selected-competition', id);
     sessionStorage.setItem('fixa-open-competition-on-load', '1');
     sessionStorage.setItem('fixa-open-competition-detail', '1');
@@ -172,7 +223,9 @@
   function bindManager() {
     document.querySelectorAll('[data-cv7-tab]').forEach(b => b.onclick = () => { state.tab = b.dataset.cv7Tab; render(); });
     document.querySelectorAll('[data-cv7-open]').forEach(b => b.onclick = () => openCompetition(b.dataset.cv7Open, b.dataset.cv7Status));
-    document.querySelector('[data-cv7-create]')?.addEventListener('click', () => document.querySelector('.competition-v3 [data-create]')?.click());
+    document.querySelector('[data-cv7-create]')?.addEventListener('click', () => clickSecondary('[data-create]'));
+    document.querySelector('[data-cv7-join]')?.addEventListener('click', () => clickSecondary('[data-join]'));
+    document.querySelector('[data-cv7-invitations]')?.addEventListener('click', openInvitationsFromEmpty);
     document.querySelectorAll('[data-cv7-delete]').forEach(b => b.onclick = () => customConfirm({ title:'Excluir competição?', text:'Essa ação é definitiva. Se você quer apenas finalizar e manter o resultado, use Encerrar competição.', confirmText:'Excluir', onConfirm:async()=>{const client=sb();if(!client)return{error:new Error('Não foi possível conectar ao servidor.')};const result=await client.rpc('delete_competition',{p_competition_id:b.dataset.cv7Delete});if(!result.error)await loadManager(state.tab);return result;} }));
     document.querySelectorAll('[data-cv7-leave]').forEach(b => b.onclick = () => customConfirm({ title:'Sair da competição?', text:'Você deixará de participar desta competição.', confirmText:'Sair', onConfirm:async()=>{const client=sb();if(!client)return{error:new Error('Não foi possível conectar ao servidor.')};const result=await client.rpc('leave_competition',{p_competition_id:b.dataset.cv7Leave});if(!result.error)await loadManager(state.tab);return result;} }));
   }
@@ -223,6 +276,7 @@
     const openingDetail = sessionStorage.getItem('fixa-open-competition-detail') === '1';
     if (openingDetail) {
       sessionStorage.removeItem('fixa-open-competition-detail');
+      setManagerActive(false);
       return;
     }
 
@@ -243,10 +297,10 @@
   });
 
   const observer = new MutationObserver(() => {
-    const view = document.querySelector('.competition-v3.active');
-    if (!view) return;
-    const completed = view.querySelector('.cv3-status')?.textContent?.trim() === 'Encerrada';
-    if (completed && sessionStorage.getItem('fixa-open-completed-result') !== '1' && !view.querySelector('.cv7-manager')) {
+    const v = document.querySelector('.competition-v3.active');
+    if (!v) return;
+    const completed = v.querySelector('.cv3-status')?.textContent?.trim() === 'Encerrada';
+    if (completed && sessionStorage.getItem('fixa-open-completed-result') !== '1' && !v.querySelector('.cv7-manager')) {
       setTimeout(() => loadManager('completed'), 0);
     }
     if (completed && sessionStorage.getItem('fixa-open-completed-result') === '1') {
