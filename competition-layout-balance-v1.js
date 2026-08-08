@@ -41,7 +41,6 @@
       .competition-v3 .cv3-area-ranking .cv3-rank-list { max-height:240px; overflow-y:auto; align-content:start!important; grid-auto-rows:max-content!important; }
     }
 
-    /* Estado vazio de Minhas competições usa o mesmo padrão azul do Fixa. */
     .competition-v3 .cv7-empty-mark {
       width:76px!important;
       height:76px!important;
@@ -122,4 +121,81 @@
     if (event.target.closest('.competition-v3, [data-competition-view="v3"]')) burst();
   }, true);
   burst();
+})();
+
+/* Ajuste automático da Competição à altura útil da tela desktop. */
+(() => {
+  'use strict';
+  if (window.FixaCompetitionViewportFitV1) return;
+  window.FixaCompetitionViewportFitV1 = true;
+
+  let queued = false;
+  let lastZoom = 1;
+
+  function activeCompetition() {
+    return document.querySelector('.competition-v3.active');
+  }
+
+  function clearFit(view) {
+    if (!view) return;
+    view.style.removeProperty('zoom');
+    view.dataset.fixaViewportZoom = '1';
+    lastZoom = 1;
+  }
+
+  function fitCompetition() {
+    const view = activeCompetition();
+    if (!view) return;
+
+    /* Celular será tratado em etapa própria. */
+    if (window.innerWidth < 861) {
+      clearFit(view);
+      return;
+    }
+
+    view.style.zoom = '1';
+    const rect = view.getBoundingClientRect();
+    const availableHeight = Math.max(420, window.innerHeight - rect.top - 8);
+    const contentHeight = Math.max(view.scrollHeight, view.getBoundingClientRect().height);
+
+    if (!contentHeight || contentHeight <= availableHeight + 3) {
+      clearFit(view);
+      return;
+    }
+
+    const raw = availableHeight / contentHeight;
+    const zoom = Math.max(0.72, Math.min(1, Math.floor(raw * 100) / 100));
+
+    if (Math.abs(zoom - lastZoom) > 0.005) {
+      view.style.zoom = String(zoom);
+      view.dataset.fixaViewportZoom = String(zoom);
+      lastZoom = zoom;
+    } else {
+      view.style.zoom = String(lastZoom);
+    }
+  }
+
+  function queueFit() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      fitCompetition();
+    });
+  }
+
+  function fitBurst() {
+    [0,80,220,500,1000,1600].forEach(delay => window.setTimeout(queueFit, delay));
+  }
+
+  window.addEventListener('resize', queueFit, { passive:true });
+  window.addEventListener('orientationchange', fitBurst, { passive:true });
+  window.addEventListener('pageshow', fitBurst, { passive:true });
+  window.addEventListener('load', fitBurst, { once:true });
+
+  document.addEventListener('click', event => {
+    if (event.target.closest('.competition-v3, [data-competition-view="v3"]')) fitBurst();
+  }, true);
+
+  fitBurst();
 })();
