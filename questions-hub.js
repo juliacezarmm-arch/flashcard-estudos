@@ -22,6 +22,12 @@
       display: none !important;
     }
 
+    /* Adicionar NÃO pertence à navegação principal.
+       O acesso ao fluxo de adicionar existe somente dentro de Questões. */
+    #appShell .topbar .tabs > .tab[data-view="add"] {
+      display: none !important;
+    }
+
     /* O visual e o alinhamento global desta barra ficam em
        secondary-tabs-layout-fix.js. Aqui permanecem apenas
        as regras funcionais/estruturais necessárias do módulo. */
@@ -69,9 +75,15 @@
   `;
   document.head.appendChild(style);
 
-  addTopButton.hidden = true;
-  addTopButton.setAttribute("aria-hidden", "true");
-  addTopButton.tabIndex = -1;
+  function keepAddTopButtonHidden() {
+    addTopButton.hidden = true;
+    addTopButton.setAttribute("aria-hidden", "true");
+    addTopButton.tabIndex = -1;
+    addTopButton.classList.remove("active", "fixa-nav-pending");
+    addTopButton.removeAttribute("aria-current");
+  }
+
+  keepAddTopButtonHidden();
 
   const nav = document.createElement("nav");
   nav.id = "questionsHubNav";
@@ -140,17 +152,17 @@
   }
 
   function setMainQuestionsState(isActive) {
+    keepAddTopButtonHidden();
     questionsTopButton.classList.toggle("active", isActive);
     if (isActive) {
       questionsTopButton.setAttribute("aria-current", "page");
     } else {
       questionsTopButton.removeAttribute("aria-current");
     }
-    addTopButton.classList.remove("active");
-    addTopButton.removeAttribute("aria-current");
   }
 
   function sync() {
+    keepAddTopButtonHidden();
     const mode = activeHubMode();
     const isHubActive = Boolean(mode);
     nav.hidden = !isHubActive;
@@ -171,6 +183,7 @@
 
   function openAddMode(mode) {
     addTopButton.click();
+    keepAddTopButtonHidden();
     const internalButton = internalButtons[mode];
     if (internalButton) internalButton.click();
     requestAnimationFrame(sync);
@@ -196,6 +209,7 @@
   });
 
   const observed = [
+    tabs,
     manageView,
     addView,
     document.querySelector("#createCollectionSection"),
@@ -210,6 +224,7 @@
     syncQueued = true;
     requestAnimationFrame(() => {
       syncQueued = false;
+      keepAddTopButtonHidden();
       sync();
     });
   };
@@ -217,7 +232,7 @@
   const observer = new MutationObserver(scheduleSync);
   observed.forEach(element => observer.observe(element, {
     attributes: true,
-    attributeFilter: ["class", "hidden"]
+    attributeFilter: ["class", "hidden", "style"]
   }));
 
   window.addEventListener("popstate", scheduleSync);
