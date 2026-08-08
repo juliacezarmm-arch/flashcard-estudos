@@ -22,21 +22,10 @@
       display: none !important;
     }
 
-    /* Mesmo componente visual usado nas abas Hoje, Progresso, Atividade e Análise. */
+    /* O visual e o alinhamento global desta barra ficam em
+       secondary-tabs-layout-fix.js. Aqui permanecem apenas
+       as regras funcionais/estruturais necessárias do módulo. */
     #questionsHubNav {
-      width: fit-content;
-      max-width: min(100%, 1180px);
-      min-height: 38px;
-      margin: 0 auto;
-      padding: 4px;
-      display: inline-flex;
-      align-items: center;
-      justify-self: start;
-      gap: 4px;
-      border: 0;
-      border-radius: 10px;
-      background: #f1f5f9;
-      box-shadow: none;
       overflow-x: auto;
       overflow-y: hidden;
       scrollbar-width: none;
@@ -47,46 +36,7 @@
       display: none;
     }
 
-    .questions-hub-button {
-      width: auto;
-      min-width: max-content;
-      min-height: 30px;
-      flex: 0 0 auto;
-      border: 0;
-      border-radius: 8px;
-      padding: 0 14px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      color: #64748b;
-      background: transparent;
-      box-shadow: none;
-      font-size: 13px;
-      font-weight: 600;
-      line-height: 1;
-      white-space: nowrap;
-    }
-
-    .questions-hub-button:hover:not(.active),
-    .questions-hub-button:focus-visible:not(.active) {
-      color: #2563eb !important;
-      background: transparent !important;
-      box-shadow: none !important;
-    }
-
-    .questions-hub-button.active,
-    .questions-hub-button.active:hover,
-    .questions-hub-button.active:focus-visible {
-      color: #2563eb !important;
-      background: #ffffff !important;
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08) !important;
-    }
-
     .questions-hub-button svg {
-      width: 17px;
-      height: 17px;
-      flex: 0 0 17px;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;
@@ -100,12 +50,7 @@
 
     @media (min-width: 861px) {
       body.questions-hub-active #appShell.app:not(.locked) > main {
-        grid-template-rows: 52px auto minmax(0, 1fr) !important;
-      }
-
-      body.questions-hub-active #questionsHubNav {
-        margin-left: max(0px, calc((100% - 1180px) / 2));
-        margin-right: auto;
+        grid-template-rows: 56px auto minmax(0, 1fr) !important;
       }
 
       body.questions-hub-active #manage.view.active,
@@ -119,12 +64,6 @@
         width: 100%;
         max-width: 100%;
         margin: 0;
-      }
-
-      .questions-hub-button {
-        min-height: 30px;
-        padding: 0 12px;
-        font-size: 12px;
       }
     }
   `;
