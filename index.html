@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260807-competition-v5-native-tabs";
+    const FIXA_VERSION = "20260807-competition-v5-user-fix";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "collections.js", "Não foi possível carregar as coleções."],
@@ -72,6 +72,13 @@
             safeCode = safeCode.replace(
               "  const studyArt = homeView.querySelector('.home-study-head .home-icon');\n   if (studyArt) {\n    const image = document.createElement('img');\n    image.className = 'home-study-art';\n    image.src = homeAsset(HOME_ASSETS.clipboard);\n    image.alt = 'Prancheta com tarefas de estudo';\n     studyArt.replaceWith(image);\n   }",
               "  const studyArt = homeView.querySelector('.home-study-head .home-icon');\n  if (studyArt) studyArt.remove();"
+            );
+          }
+
+          if (key === "competitionUpdateV3") {
+            safeCode = safeCode.replace(
+              "const uid = () => window.currentUser?.id || null;",
+              "const uid = () => window.currentUser?.id || (typeof currentUser !== 'undefined' ? currentUser?.id : null) || null;"
             );
           }
 
