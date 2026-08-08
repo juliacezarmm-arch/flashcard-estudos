@@ -1,6 +1,5 @@
 (() => {
   const STYLE_ID = 'homeEmptyStateArtStyle';
-  const REVIEW_ART = 'referencias/home-revisoes-hoje.webp';
 
   if (!document.getElementById(STYLE_ID)) {
     const style = document.createElement('style');
@@ -9,10 +8,10 @@
       .home-empty-art-copy{display:grid;align-content:center;gap:12px;min-width:0}
       .home-empty-action{width:max-content;max-width:100%;min-height:42px;border:1px solid #cfe0ff!important;border-radius:10px!important;padding:10px 14px!important;color:#2563eb!important;background:#fff!important;font-weight:800!important;box-shadow:0 8px 22px rgba(37,99,235,.08)!important}
       .home-empty-action:hover{color:#fff!important;background:#2563eb!important;border-color:#2563eb!important}
-      .home-review-empty-art-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,240px);align-items:center;gap:18px;min-height:180px}
-      .home-review-empty-art{width:100%;max-width:230px;max-height:190px;object-fit:contain;justify-self:end;transition:.2s ease}
+      .home-review-empty-art-wrap{display:block;min-height:0}
+      .home-review-empty-art{display:none!important}
       .home-review-data-art{display:none!important}
-      @media(max-width:760px){.home-review-empty-art-wrap{grid-template-columns:1fr;min-height:0}.home-review-empty-art{justify-self:center;max-width:190px;order:-1}.home-empty-action{width:100%}}
+      @media(max-width:760px){.home-empty-action{width:100%}}
     `;
     document.head.appendChild(style);
   }
@@ -41,7 +40,7 @@
   }
 
   function reviewEmptyMarkup(text, button, action) {
-    return `<div class="home-review-empty-art-wrap"><div class="home-empty-art-copy"><p class="home-muted">${text}</p><button class="home-empty-action" type="button" data-home-empty-action="${action}">${button}</button></div><img class="home-review-empty-art" src="${REVIEW_ART}" alt="" aria-hidden="true"></div>`;
+    return `<div class="home-review-empty-art-wrap"><div class="home-empty-art-copy"><p class="home-muted">${text}</p><button class="home-empty-action" type="button" data-home-empty-action="${action}">${button}</button></div></div>`;
   }
 
   function ensureCopyOnly(el, text, button, action) {
@@ -71,7 +70,7 @@
 
   function removeReviewCompactArt(panel) {
     if (!panel) return;
-    panel.querySelectorAll(':scope > .home-review-data-art,.home-review-data-art').forEach(node => node.remove());
+    panel.querySelectorAll(':scope > .home-review-data-art,.home-review-data-art,.home-review-empty-art').forEach(node => node.remove());
     panel.classList.remove('home-has-review-art');
   }
 
@@ -107,8 +106,15 @@
 
   document.addEventListener('click', event => {
     const button = event.target.closest('[data-home-empty-action]');
-    if (!button) return;
-    button.dataset.homeEmptyAction === 'questions' ? openQuestions() : openTest();
+    if (button) {
+      button.dataset.homeEmptyAction === 'questions' ? openQuestions() : openTest();
+      return;
+    }
+
+    if (event.target.closest('[data-view="home"], [data-home-tab], .home-subtab')) {
+      window.setTimeout(apply, 80);
+      window.setTimeout(apply, 350);
+    }
   });
 
   let scheduled = false;
@@ -121,9 +127,30 @@
     });
   };
 
-  const observer = new MutationObserver(scheduleApply);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
-  window.addEventListener('load', scheduleApply);
+  const observed = new WeakSet();
+  function installHomeObservers() {
+    [
+      document.querySelector('#homeStudyRecommendations'),
+      document.querySelector('#homeCollectionSummary'),
+      document.querySelector('#homePriorities')
+    ].filter(Boolean).forEach(node => {
+      if (observed.has(node)) return;
+      observed.add(node);
+      new MutationObserver(scheduleApply).observe(node, { childList:true, subtree:true });
+    });
+  }
+
+  let observerAttempts = 0;
+  const observerTimer = window.setInterval(() => {
+    observerAttempts += 1;
+    installHomeObservers();
+    if (observerAttempts >= 12 || document.querySelector('#homePriorities')) window.clearInterval(observerTimer);
+  }, 350);
+
+  window.addEventListener('load', () => {
+    installHomeObservers();
+    scheduleApply();
+  }, { once:true });
   scheduleApply();
 })();
 
@@ -172,8 +199,8 @@
   let wrapAttempts = 0;
   const wrapTimer = window.setInterval(() => {
     wrapAttempts += 1;
-    if (wrapSupabaseRpc() || wrapAttempts >= 40) window.clearInterval(wrapTimer);
-  }, 250);
+    if (wrapSupabaseRpc() || wrapAttempts >= 20) window.clearInterval(wrapTimer);
+  }, 500);
   wrapSupabaseRpc();
 
   function competitionTab() {
@@ -213,13 +240,19 @@
     });
   };
 
-  const recoveryObserver = new MutationObserver(scheduleRecovery);
-  recoveryObserver.observe(document.documentElement, { childList: true, subtree: true });
+  function recoveryBurst() {
+    [80, 350, 900].forEach(delay => window.setTimeout(scheduleRecovery, delay));
+  }
+
+  document.addEventListener('click', event => {
+    if (event.target.closest('[data-competition-view="v3"], .competition-v3 button, .competition-v3 select')) recoveryBurst();
+  }, true);
 
   window.addEventListener('online', () => {
     const retryButton = document.querySelector('[data-competition-retry]');
     if (retryButton) retryCompetition();
   });
 
-  scheduleRecovery();
+  window.addEventListener('load', recoveryBurst, { once:true });
+  recoveryBurst();
 })();
