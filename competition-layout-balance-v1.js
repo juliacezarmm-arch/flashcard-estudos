@@ -7,6 +7,37 @@
   style.id = 'competitionLayoutBalanceV1Style';
   style.textContent = `
     @media (min-width: 761px) {
+      /* Cabeçalho da Competição um pouco mais compacto, sem mudar a largura. */
+      .competition-v3 .cv3-hero {
+        padding: 16px 18px !important;
+        gap: 18px !important;
+      }
+
+      .competition-v3 .cv3-hero-icon {
+        width: 64px !important;
+        height: 64px !important;
+        border-radius: 18px !important;
+      }
+
+      .competition-v3 .cv3-hero-icon .cv3-icon {
+        width: 32px !important;
+        height: 32px !important;
+      }
+
+      .competition-v3 .cv3-hero-copy h2 {
+        margin-bottom: 5px !important;
+        font-size: 25px !important;
+      }
+
+      .competition-v3 .cv3-hero-copy p {
+        font-size: 11px !important;
+        line-height: 1.4 !important;
+      }
+
+      .competition-v3 .cv3-hero-tools select {
+        min-height: 40px !important;
+      }
+
       .competition-v3 .cv3-dashboard {
         align-items: stretch !important;
       }
@@ -19,7 +50,7 @@
         box-sizing: border-box;
       }
 
-      /* Ranking acompanha exatamente a altura de Minha posição. */
+      /* Ranking acompanha a altura de Minha posição, mas as pessoas ficam em linhas compactas. */
       .competition-v3 .cv3-area-ranking {
         display: flex !important;
         flex-direction: column !important;
@@ -37,8 +68,17 @@
         overflow-y: auto;
         overflow-x: hidden;
         padding-right: 3px;
+        display: grid !important;
+        align-content: start !important;
+        grid-auto-rows: max-content !important;
         scrollbar-width: thin;
         scrollbar-color: #cbd5e1 transparent;
+      }
+
+      .competition-v3 .cv3-area-ranking .cv3-rank {
+        min-height: 52px !important;
+        height: auto !important;
+        align-self: start !important;
       }
 
       .competition-v3 .cv3-area-ranking .cv3-rank-list::-webkit-scrollbar {
@@ -146,6 +186,8 @@
       .competition-v3 .cv3-area-ranking .cv3-rank-list {
         max-height: 240px;
         overflow-y: auto;
+        align-content: start !important;
+        grid-auto-rows: max-content !important;
       }
     }
   `;
