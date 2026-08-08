@@ -153,6 +153,7 @@
   function openCompetition(id, status) {
     localStorage.setItem('fixa-selected-competition', id);
     sessionStorage.setItem('fixa-open-competition-on-load', '1');
+    sessionStorage.setItem('fixa-open-competition-detail', '1');
     if (status === 'completed') sessionStorage.setItem('fixa-open-completed-result', '1');
     else sessionStorage.removeItem('fixa-open-completed-result');
     location.reload();
@@ -182,6 +183,7 @@
     const result = await client.rpc('end_competition', { p_competition_id:id });
     if (!result.error) {
       localStorage.removeItem('fixa-selected-competition');
+      sessionStorage.removeItem('fixa-open-competition-detail');
       await loadManager();
       const c = counts();
       state.tab = c.active ? 'active' : 'completed';
@@ -195,6 +197,7 @@
     if (listBtn) {
       event.preventDefault();
       event.stopImmediatePropagation();
+      sessionStorage.removeItem('fixa-open-competition-detail');
       loadManager('active');
       return;
     }
@@ -209,6 +212,26 @@
   }
 
   document.addEventListener('click', interceptActions, true);
+
+  /* A aba principal Competição sempre abre Minhas competições.
+     A única exceção é quando o usuário acabou de clicar explicitamente
+     em uma competição da lista para abrir seus detalhes. */
+  document.addEventListener('click', event => {
+    const mainCompetitionTab = event.target.closest('[data-competition-view]');
+    if (!mainCompetitionTab) return;
+
+    const openingDetail = sessionStorage.getItem('fixa-open-competition-detail') === '1';
+    if (openingDetail) {
+      sessionStorage.removeItem('fixa-open-competition-detail');
+      return;
+    }
+
+    sessionStorage.removeItem('fixa-open-completed-result');
+    window.setTimeout(() => loadManager('active'), 0);
+    window.setTimeout(() => {
+      if (!document.querySelector('.competition-v3.active .cv7-manager')) loadManager('active');
+    }, 180);
+  }, true);
 
   window.addEventListener('load', () => {
     if (sessionStorage.getItem('fixa-open-competition-on-load') === '1') {
