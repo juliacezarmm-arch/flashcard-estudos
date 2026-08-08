@@ -12,6 +12,13 @@
     secondary-tabs-layout-fix.js.
     Este módulo cuida apenas da posição/estrutura da navegação da Competição,
     sem definir tamanho, cor, fonte, espaçamento ou estado visual próprios.
+
+    Ordem fixa da Competição:
+    1. Minhas competições
+    2. Criar
+    3. Entrar por código
+    4. Convidar amigos
+    5. Convites
   */
   const style = document.createElement('style');
   style.id = 'competitionSecondaryTabsPlacementStyleV3';
@@ -37,13 +44,75 @@
   `;
   document.head.appendChild(style);
 
+  const usersIcon = '<svg class="cv3-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path></svg>';
+  const mailIcon = '<svg class="cv3-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>';
+
   function normalizeButton(button) {
-    button.classList.remove('tab', 'cv3-primary', 'active');
+    button.classList.remove('tab', 'cv3-primary');
     button.classList.add('home-subtab');
 
     if (button.matches('[data-create]')) {
       button.setAttribute('aria-label', 'Criar competição');
     }
+    if (button.matches('[data-list]')) {
+      button.setAttribute('aria-label', 'Minhas competições');
+    }
+    if (button.matches('[data-join]')) {
+      button.setAttribute('aria-label', 'Entrar por código');
+    }
+    if (button.matches('[data-invite]')) {
+      button.setAttribute('aria-label', 'Convidar amigos');
+    }
+    if (button.matches('[data-cv9-invitations]')) {
+      button.setAttribute('aria-label', 'Convites');
+    }
+  }
+
+  function createInviteButton() {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'home-subtab';
+    button.setAttribute('data-invite', '');
+    button.setAttribute('aria-label', 'Convidar amigos');
+    button.innerHTML = `${usersIcon}<span>Convidar amigos</span>`;
+    return button;
+  }
+
+  function createInvitationsButton() {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'home-subtab';
+    button.setAttribute('data-cv9-invitations', '1');
+    button.setAttribute('aria-label', 'Convites');
+    button.innerHTML = `${mailIcon}<span data-cv9-label>Convites</span><span class="cv9-badge" data-cv9-badge hidden>0</span>`;
+    return button;
+  }
+
+  function ensureFiveButtons(nav) {
+    let invite = nav.querySelector('[data-invite]');
+    if (!invite) {
+      invite = createInviteButton();
+      nav.appendChild(invite);
+    }
+
+    let invitations = nav.querySelector('[data-cv9-invitations]');
+    if (!invitations) {
+      invitations = createInvitationsButton();
+      nav.appendChild(invitations);
+    }
+
+    const order = [
+      nav.querySelector('[data-list]'),
+      nav.querySelector('[data-create]'),
+      nav.querySelector('[data-join]'),
+      invite,
+      invitations
+    ].filter(Boolean);
+
+    order.forEach(button => {
+      normalizeButton(button);
+      nav.appendChild(button);
+    });
   }
 
   function reposition() {
@@ -67,6 +136,8 @@
       normalizeButton(button);
       nav.appendChild(button);
     });
+
+    ensureFiveButtons(nav);
   }
 
   let queued = false;
