@@ -36,7 +36,8 @@
     .cv7-open.primary { border-color:#2563eb; background:#2563eb; color:#fff; box-shadow:0 6px 14px rgba(37,99,235,.14); }
     .cv7-delete { min-height:38px; padding:8px 12px; border:1px solid #fecaca; border-radius:9px; background:#fff7f7; color:#dc2626; font-size:12px; font-weight:800; }
     .cv7-empty { min-height:250px; display:grid; place-items:center; align-content:center; gap:8px; padding:28px; border:1px solid #e3e9f2; border-radius:15px; background:#fff; text-align:center; }
-    .cv7-empty-mark { width:76px; height:76px; border-radius:50%; display:grid; place-items:center; background:#eef4ff; color:#2563eb; font-size:31px; }
+    .cv7-empty-mark { width:76px; height:76px; border-radius:50%; display:grid; place-items:center; background:#eef4ff; color:#2563eb; }
+    .cv7-empty-mark svg { width:38px; height:38px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
     .cv7-empty h3 { margin:4px 0 0; font-size:18px; color:#172033; }
     .cv7-empty p { margin:0; max-width:480px; color:#64748b; font-size:12px; line-height:18px; }
     .cv7-create { min-height:40px; padding:8px 15px; margin-top:5px; border:0; border-radius:9px; background:#2563eb; color:#fff; font-size:12px; font-weight:800; }
@@ -52,6 +53,7 @@
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt = d => d ? new Date(`${d}T12:00:00`).toLocaleDateString('pt-BR') : 'Sem término';
   const statusLabel = s => ({ active:'Ativa', upcoming:'Próxima', completed:'Encerrada' })[s] || s;
+  const emptyTrophy = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4"/></svg>';
 
   function root() { return document.querySelector('.competition-v3.active #cv3'); }
   function hero() { return root()?.querySelector('.cv3-hero'); }
@@ -90,6 +92,20 @@
     return `<article class="cv7-card"><div class="cv7-card-main"><div class="cv7-card-title"><h3>${esc(c.name)}</h3><span class="cv7-status ${status}">${statusLabel(status)}</span></div><div class="cv7-meta"><span>${esc(period)}</span><span><b>${Number(c.my_xp||0)} XP</b></span><span>${Number(c.member_count||0)} participante${Number(c.member_count||0)===1?'':'s'}</span>${c.daily_xp_limit?`<span>limite diário ${Number(c.daily_xp_limit)} XP</span>`:''}</div></div><div class="cv7-actions"><button class="cv7-open ${status==='active'?'primary':''}" data-cv7-open="${c.id}" data-cv7-status="${status}">${actionLabel}</button>${c.is_owner?`<button class="cv7-delete" data-cv7-delete="${c.id}">Excluir</button>`:`<button class="cv7-open" data-cv7-leave="${c.id}">Sair</button>`}</div></article>`;
   }
 
+  function emptyState() {
+    if (state.list.length === 0) {
+      return `<div class="cv7-empty"><div class="cv7-empty-mark">${emptyTrophy}</div><h3>Nenhuma competição encontrada</h3><p>Crie sua primeira competição ou entre em uma competição.</p><button class="cv7-create" data-cv7-create>Criar competição</button></div>`;
+    }
+
+    const copy = {
+      active: ['Nenhuma competição ativa', 'As competições ativas aparecerão aqui.'],
+      upcoming: ['Nenhuma competição agendada', 'Competições com data futura aparecerão aqui.'],
+      completed: ['Nenhuma competição encerrada', 'Os resultados das competições finalizadas aparecerão aqui.']
+    }[state.tab] || ['Nenhuma competição encontrada', 'Não há competições nesta categoria.'];
+
+    return `<div class="cv7-empty"><div class="cv7-empty-mark">${emptyTrophy}</div><h3>${copy[0]}</h3><p>${copy[1]}</p></div>`;
+  }
+
   function render() {
     const r = root();
     if (!r) return;
@@ -97,7 +113,7 @@
     const wrap = document.createElement('section');
     wrap.className = 'cv7-manager';
     const items = currentItems();
-    wrap.innerHTML = managerHeader() + (items.length ? `<div class="cv7-list">${items.map(card).join('')}</div>` : `<div class="cv7-empty"><div class="cv7-empty-mark">🏆</div><h3>${state.tab==='active'?'Nenhuma competição ativa':state.tab==='upcoming'?'Nenhuma competição agendada':'Nenhuma competição encerrada'}</h3><p>${state.tab==='active'?'Crie uma nova competição ou entre usando um código.':state.tab==='upcoming'?'Competições com data futura aparecerão aqui.':'Quando você encerrar uma competição, o resultado ficará disponível aqui.'}</p>${state.tab==='active'?'<button class="cv7-create" data-cv7-create>Criar competição</button>':''}</div>`);
+    wrap.innerHTML = managerHeader() + (items.length ? `<div class="cv7-list">${items.map(card).join('')}</div>` : emptyState());
     r.appendChild(wrap);
     bindManager();
   }
@@ -118,10 +134,14 @@
       if (error) throw error;
       state.list = Array.isArray(data) ? data : [];
       const c = counts();
-      if (preferredTab) state.tab = preferredTab;
-      if (state.tab === 'active' && c.active === 0) state.tab = c.upcoming ? 'upcoming' : 'completed';
-      if (state.tab === 'upcoming' && c.upcoming === 0) state.tab = c.active ? 'active' : 'completed';
-      if (state.tab === 'completed' && c.completed === 0) state.tab = c.active ? 'active' : 'upcoming';
+      if (state.list.length === 0) {
+        state.tab = 'active';
+      } else {
+        if (preferredTab) state.tab = preferredTab;
+        if (state.tab === 'active' && c.active === 0) state.tab = c.upcoming ? 'upcoming' : 'completed';
+        if (state.tab === 'upcoming' && c.upcoming === 0) state.tab = c.active ? 'active' : 'completed';
+        if (state.tab === 'completed' && c.completed === 0) state.tab = c.active ? 'active' : 'upcoming';
+      }
       render();
     } catch (err) {
       loading.textContent = err?.message || 'Não foi possível carregar suas competições.';
@@ -192,8 +212,10 @@
 
   window.addEventListener('load', () => {
     if (sessionStorage.getItem('fixa-open-competition-on-load') === '1') {
-      sessionStorage.removeItem('fixa-open-competition-on-load');
-      setTimeout(() => document.querySelector('[data-competition-view]')?.click(), 350);
+      setTimeout(() => {
+        document.querySelector('[data-competition-view]')?.click();
+        sessionStorage.removeItem('fixa-open-competition-on-load');
+      }, 350);
     }
   });
 
