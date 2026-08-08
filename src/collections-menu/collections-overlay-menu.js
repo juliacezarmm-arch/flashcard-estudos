@@ -29,6 +29,10 @@
 
   let favorites = readFavorites();
 
+  function canAutoFocusSearch() {
+    return window.matchMedia?.("(pointer: fine)").matches && !window.matchMedia?.("(hover: none)").matches;
+  }
+
   function saveFavorites() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify([...favorites]));
@@ -53,7 +57,9 @@
     backdrop.hidden = false;
     menuToggle.setAttribute("aria-expanded", "true");
     sidebar.setAttribute("aria-hidden", "false");
-    requestAnimationFrame(() => document.querySelector("#collectionsDrawerSearch")?.focus());
+    if (canAutoFocusSearch()) {
+      requestAnimationFrame(() => document.querySelector("#collectionsDrawerSearch")?.focus({ preventScroll: true }));
+    }
   }
 
   function closeDrawer() {
