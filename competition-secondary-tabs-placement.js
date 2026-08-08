@@ -115,6 +115,28 @@
     });
   }
 
+  function syncActiveState(nav, root) {
+    if (!nav || !root) return;
+
+    /* Ações não ficam selecionadas só por existirem no DOM.
+       Na home interna, apenas "Minhas competições" fica ativa.
+       Na tela detalhada, nenhuma ação secundária fica marcada indevidamente. */
+    nav.querySelectorAll('.home-subtab').forEach(button => {
+      button.classList.remove('active');
+      button.removeAttribute('aria-current');
+      button.setAttribute('aria-pressed', 'false');
+    });
+
+    if (root.querySelector('.cv7-manager')) {
+      const listButton = nav.querySelector('[data-list]');
+      if (listButton) {
+        listButton.classList.add('active');
+        listButton.setAttribute('aria-current', 'page');
+        listButton.setAttribute('aria-pressed', 'true');
+      }
+    }
+  }
+
   function reposition() {
     const view = document.querySelector('.competition-v3');
     const root = view?.querySelector('#cv3');
@@ -138,6 +160,7 @@
     });
 
     ensureFiveButtons(nav);
+    syncActiveState(nav, root);
   }
 
   let queued = false;
