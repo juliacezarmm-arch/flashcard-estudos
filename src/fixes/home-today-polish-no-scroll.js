@@ -297,11 +297,16 @@
   }
 
   let queued = false;
+  let lastFitRun = 0;
   function queueFit() {
-    if (queued) return;
+    if (!todayIsActive() || document.hidden) return;
+    const now = Date.now();
+    if (queued || now - lastFitRun < 180) return;
     queued = true;
     requestAnimationFrame(() => {
       queued = false;
+      if (!todayIsActive() || document.hidden) return;
+      lastFitRun = Date.now();
       fitTodayHeight();
     });
   }
@@ -310,23 +315,27 @@
   window.addEventListener('orientationchange', queueFit, { passive: true });
   window.addEventListener('load', queueFit);
   window.addEventListener('pageshow', queueFit);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) queueFit();
+  });
 
   document.addEventListener('click', event => {
     if (event.target.closest('[data-home-tab], [data-view="home"], #homeTopTab')) {
       setTimeout(queueFit, 0);
-      setTimeout(queueFit, 120);
-      setTimeout(queueFit, 450);
+      setTimeout(queueFit, 180);
     }
   });
 
-  const homeObserver = new MutationObserver(queueFit);
+  const homeObserver = new MutationObserver(() => {
+    if (todayIsActive()) queueFit();
+  });
   const startObserver = () => {
     const home = document.querySelector('#home');
     if (!home) {
       setTimeout(startObserver, 250);
       return;
     }
-    homeObserver.observe(home, { childList: true, subtree: true });
+    homeObserver.observe(home, { childList: true, subtree: false });
     queueFit();
   };
 

@@ -1217,8 +1217,28 @@
    const closeStreakPopover = () => { if (!streakPopover) return; streakPopover.hidden = true; streakButton?.setAttribute('aria-expanded', 'false'); };
    streakButton?.addEventListener('click', event => { event.stopPropagation(); if (!streakPopover) return; renderStreakPopover(); streakPopover.hidden = !streakPopover.hidden; streakButton.setAttribute('aria-expanded', String(!streakPopover.hidden)); });
    document.addEventListener('click', event => { if (!event.target.closest('#homeTopTools')) closeStreakPopover(); });
-   const observer = new MutationObserver(() => { if (homeView.classList.contains('active')) requestAnimationFrame(renderHome); });
-  observer.observe(document.querySelector('#subjects') || document.body, { childList: true, subtree: true });
+   let homeRenderQueued = false;
+   let lastHomeSidebarRender = 0;
+   const scheduleHomeSidebarRender = () => {
+      if (!homeView.classList.contains('active') || document.hidden) return;
+      const now = Date.now();
+      if (homeRenderQueued || now - lastHomeSidebarRender < 250) return;
+      homeRenderQueued = true;
+      requestAnimationFrame(() => {
+         homeRenderQueued = false;
+         if (!homeView.classList.contains('active') || document.hidden) return;
+         lastHomeSidebarRender = Date.now();
+         renderHome();
+      });
+   };
+   const subjectsRoot = document.querySelector('#subjects');
+   if (subjectsRoot) {
+      const observer = new MutationObserver(scheduleHomeSidebarRender);
+      observer.observe(subjectsRoot, { childList: true, subtree: false });
+   }
+   document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && homeView.classList.contains('active')) requestAnimationFrame(renderHome);
+   });
    requestAnimationFrame(() => openHome('today'));
 })();
 /* ===== fixa-mobile-topbar-repair.js ===== */
