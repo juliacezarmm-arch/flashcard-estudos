@@ -6,10 +6,13 @@
   const sb = () => window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+  const mailIcon = '<svg class="cv3-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>';
+
   const style = document.createElement('style');
   style.id = 'competitionInvitationsV9Style';
   style.textContent = `
     .cv9-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:5px;border-radius:999px;background:#2563eb;color:#fff;font-size:10px;font-weight:800}
+    .cv9-badge[hidden]{display:none!important}
     .cv9-modal-bg{position:fixed;inset:0;z-index:980;display:grid;place-items:center;padding:18px;background:rgba(15,23,42,.42);backdrop-filter:blur(3px)}
     .cv9-modal{width:min(560px,100%);max-height:88vh;overflow:auto;background:#fff;border:1px solid #e5eaf1;border-radius:18px;box-shadow:0 26px 70px rgba(15,23,42,.22)}
     .cv9-modal.wide{width:min(760px,100%)}
@@ -43,22 +46,29 @@
     catch{ button.textContent='Não foi possível copiar'; }
   }
 
-  let badgeRequest = null;
-  let lastBadgeRefresh = 0;
-  async function refreshBadge(force=false){
+  function ensureInvitationsButton(){
     const nav=document.querySelector('.competition-v3 .cv3-secondary-nav');
-    if(!nav||!sb()) return;
-
+    if(!nav) return null;
     let btn=nav.querySelector('[data-cv9-invitations]');
     if(!btn){
       btn=document.createElement('button');
       btn.type='button';
       btn.className='home-subtab';
       btn.dataset.cv9Invitations='1';
-      btn.innerHTML='✉ Convites';
+      btn.innerHTML=`${mailIcon}<span data-cv9-label>Convites</span><span class="cv9-badge" data-cv9-badge hidden>0</span>`;
       nav.appendChild(btn);
-      btn.onclick=invitationCenter;
     }
+    if(!btn.querySelector('[data-cv9-label]')){
+      btn.innerHTML=`${mailIcon}<span data-cv9-label>Convites</span><span class="cv9-badge" data-cv9-badge hidden>0</span>`;
+    }
+    return btn;
+  }
+
+  let badgeRequest = null;
+  let lastBadgeRefresh = 0;
+  async function refreshBadge(force=false){
+    const btn=ensureInvitationsButton();
+    if(!btn||!sb()) return;
 
     const now=Date.now();
     if(!force && now-lastBadgeRefresh<15000) return;
@@ -68,8 +78,12 @@
       try{
         const {data}=await sb().rpc('list_my_competition_invitations');
         const count=Array.isArray(data)?data.length:0;
-        const html=`✉ Convites${count?` <span class="cv9-badge">${count}</span>`:''}`;
-        if(btn.innerHTML!==html) btn.innerHTML=html;
+        const badge=btn.querySelector('[data-cv9-badge]');
+        if(badge){
+          badge.textContent=String(count);
+          badge.hidden=count===0;
+        }
+        document.querySelectorAll('[data-cv7-invite-count]').forEach(el=>{ el.textContent=count?` ${count}`:''; });
         lastBadgeRefresh=Date.now();
       } finally {
         badgeRequest=null;
@@ -79,7 +93,8 @@
   }
 
   function inviteModal(){
-    const id=currentCompetitionId(); if(!id) return;
+    const id=currentCompetitionId();
+    if(!id) return modal('Convidar amigos','Abra uma competição para convidar participantes.','<div class="cv9-msg">Para convidar amigos, primeiro abra uma competição em Minhas competições ou crie uma nova.</div>');
     if(currentCompetitionClosed()) return modal('Competição encerrada','Não é possível adicionar novos participantes.','<div class="cv9-msg error">Esta competição já foi encerrada.</div>');
     const {bg}=modal('Convidar amigos','Digite o e-mail exato da pessoa. O Fixa não exibe listas públicas de usuários.',`<label class="cv9-label">E-mail da pessoa<div class="cv9-input-row"><input class="cv9-input" type="email" data-cv9-email placeholder="exemplo@email.com"><button class="cv9-btn secondary" data-cv9-search type="button">Procurar</button></div></label><div data-cv9-result></div>`);
     const email=bg.querySelector('[data-cv9-email]'), result=bg.querySelector('[data-cv9-result]'), search=bg.querySelector('[data-cv9-search]');
@@ -97,13 +112,13 @@
   }
 
   async function invitationCenter(){
-    const {bg}=modal('Convites','Veja os convites recebidos e acompanhe os que você enviou.','<div class="cv9-tabs"><button class="cv9-tab active" data-cv9-tab="received">Recebidos</button><button class="cv9-tab" data-cv9-tab="sent">Enviados</button></div><div data-cv9-content><div class="cv9-empty">Carregando...</div></div>',true);
+    const {bg,close}=modal('Convites','Veja os convites recebidos e acompanhe os que você enviou.','<div class="cv9-tabs"><button class="cv9-tab active" data-cv9-tab="received">Recebidos</button><button class="cv9-tab" data-cv9-tab="sent">Enviados</button></div><div data-cv9-content><div class="cv9-empty">Carregando...</div></div>',true);
     const content=bg.querySelector('[data-cv9-content]');
     async function show(type){bg.querySelectorAll('.cv9-tab').forEach(x=>x.classList.toggle('active',x.dataset.cv9Tab===type));content.innerHTML='<div class="cv9-empty">Carregando...</div>';
       if(type==='received'){
         const {data,error}=await sb().rpc('list_my_competition_invitations'); if(error){content.innerHTML=`<div class="cv9-msg error">${esc(error.message)}</div>`;return;} const rows=Array.isArray(data)?data:[];
         content.innerHTML=rows.length?`<div class="cv9-list">${rows.map(i=>`<div class="cv9-item"><div><h4>${esc(i.competition_name)}</h4><p>Convidada por ${esc(i.invited_by_name)} · ${esc(i.folder_name||'Pasta compartilhada')}</p><p>${i.ends_at?`${esc(i.starts_at)} a ${esc(i.ends_at)}`:'Tempo indeterminado'}</p></div><div class="cv9-actions"><button class="cv9-btn secondary" data-cv9-decline="${i.id}">Recusar</button><button class="cv9-btn primary" data-cv9-accept="${i.id}">Aceitar convite</button></div></div>`).join('')}</div>`:'<div class="cv9-empty">Você não tem convites pendentes.</div>';
-        content.querySelectorAll('[data-cv9-accept]').forEach(b=>b.onclick=async()=>{b.disabled=true;const {data:id,error:e}=await sb().rpc('accept_competition_invitation',{p_invitation_id:b.dataset.cv9Accept});if(e){b.disabled=false;content.insertAdjacentHTML('afterbegin',`<div class="cv9-msg error">${esc(e.message)}</div>`);return;}localStorage.setItem('fixa-selected-competition',id);await show('received');refreshBadge(true);if(window.FixaCompetitionV3?.load)window.FixaCompetitionV3.load();});
+        content.querySelectorAll('[data-cv9-accept]').forEach(b=>b.onclick=async()=>{b.disabled=true;const {data:id,error:e}=await sb().rpc('accept_competition_invitation',{p_invitation_id:b.dataset.cv9Accept});if(e){b.disabled=false;content.insertAdjacentHTML('afterbegin',`<div class="cv9-msg error">${esc(e.message)}</div>`);return;}localStorage.setItem('fixa-selected-competition',id);await refreshBadge(true);close();await window.FixaCompetitionManagerV7?.loadManager?.('active');});
         content.querySelectorAll('[data-cv9-decline]').forEach(b=>b.onclick=async()=>{b.disabled=true;const {error:e}=await sb().rpc('decline_competition_invitation',{p_invitation_id:b.dataset.cv9Decline});if(e){b.disabled=false;content.insertAdjacentHTML('afterbegin',`<div class="cv9-msg error">${esc(e.message)}</div>`);return;}await show('received');refreshBadge(true);});
       } else {
         const {data,error}=await sb().rpc('list_sent_competition_invitations',{p_competition_id:null});if(error){content.innerHTML=`<div class="cv9-msg error">${esc(error.message)}</div>`;return;}const rows=Array.isArray(data)?data:[]; const labels={pending:'Pendente',accepted:'Aceito',declined:'Recusado',cancelled:'Cancelado'};
@@ -115,13 +130,17 @@
   }
 
   function intercept(e){
-    const invite=e.target.closest('.competition-v3 [data-invite], .competition-v3 [data-share]'); if(invite){e.preventDefault();e.stopImmediatePropagation();inviteModal();return;}
-    const copy=e.target.closest('.competition-v3 [data-copy]'); if(copy){e.preventDefault();e.stopImmediatePropagation();copyCurrentCode(copy);return;}
-    if(e.target.closest('[data-competition-view]')) setTimeout(()=>refreshBadge(true),250);
+    const invitations=e.target.closest('.competition-v3 [data-cv9-invitations]');
+    if(invitations){e.preventDefault();e.stopImmediatePropagation();invitationCenter();return;}
+    const invite=e.target.closest('.competition-v3 [data-invite], .competition-v3 [data-share]');
+    if(invite){e.preventDefault();e.stopImmediatePropagation();inviteModal();return;}
+    const copy=e.target.closest('.competition-v3 [data-copy]');
+    if(copy){e.preventDefault();e.stopImmediatePropagation();copyCurrentCode(copy);return;}
+    if(e.target.closest('[data-competition-view]')) setTimeout(()=>refreshBadge(true),100);
   }
 
   document.addEventListener('click',intercept,true);
-  window.addEventListener('load',()=>setTimeout(()=>refreshBadge(true),450));
+  window.addEventListener('load',()=>setTimeout(()=>refreshBadge(true),250));
   window.addEventListener('focus',()=>{
     if(document.querySelector('.competition-v3.active')) refreshBadge(false);
   });
