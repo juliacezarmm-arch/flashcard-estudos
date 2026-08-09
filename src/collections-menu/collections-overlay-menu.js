@@ -17,6 +17,16 @@
   let activeFilter = "all";
   let searchTerm = "";
   let decorating = false;
+  let decorateQueued = false;
+
+  function queueDecorateSubjects() {
+    if (decorateQueued) return;
+    decorateQueued = true;
+    requestAnimationFrame(() => {
+      decorateQueued = false;
+      decorateSubjects();
+    });
+  }
 
   function readFavorites() {
     try {
@@ -30,7 +40,11 @@
   let favorites = readFavorites();
 
   function canAutoFocusSearch() {
-    return window.matchMedia?.("(pointer: fine)").matches && !window.matchMedia?.("(hover: none)").matches;
+    const finePointer = window.matchMedia?.("(pointer: fine)")?.matches === true;
+    const coarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches === true;
+    const hoverNone = window.matchMedia?.("(hover: none)")?.matches === true;
+    const touchPoints = Number(navigator.maxTouchPoints || 0);
+    return finePointer && !coarsePointer && !hoverNone && touchPoints === 0 && window.innerWidth >= 1024;
   }
 
   function saveFavorites() {
@@ -317,7 +331,7 @@
         if (input) input.value = "";
         searchTerm = "";
         applyFilter();
-        input?.focus();
+        input?.focus({ preventScroll: true });
         return;
       }
 
@@ -380,7 +394,7 @@
 
   const observer = new MutationObserver(() => {
     if (decorating) return;
-    requestAnimationFrame(decorateSubjects);
+    queueDecorateSubjects();
   });
   observer.observe(subjects, { childList: true, subtree: true });
 
@@ -388,6 +402,6 @@
     open: openDrawer,
     close: closeDrawer,
     toggle: toggleDrawer,
-    refresh: decorateSubjects
+    refresh: queueDecorateSubjects
   };
 })();

@@ -209,6 +209,9 @@
         overflow-y: auto !important;
         overflow-x: hidden !important;
         scrollbar-gutter: stable;
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior: contain !important;
+        touch-action: pan-y !important;
       }
 
       #collectionsSidebar .folder-block {
@@ -411,6 +414,26 @@
         .drawer-folder-count { display: none; }
       }
 
+            @media (pointer: coarse), (max-width: 860px) {
+        #mobileNavBackdrop {
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+        }
+
+        #collectionsSidebar,
+        #collectionsSidebar .subject,
+        #collectionsSidebar .folder-title,
+        #collectionsSidebar .folder-options,
+        #collectionsSidebar .folder-toggle-mark,
+        .collections-drawer-icon-button,
+        .collections-filter-tab {
+          transition: none !important;
+        }
+
+        #collectionsSidebar {
+          will-change: auto;
+        }
+      }
       @media (prefers-reduced-motion: reduce) {
         #collectionsSidebar { transition: none !important; }
       }
