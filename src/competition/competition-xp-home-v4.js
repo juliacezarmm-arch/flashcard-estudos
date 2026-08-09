@@ -403,11 +403,24 @@
     renderHistoryXp();
   }
 
+  let renderTimer = 0;
+  let renderFrame = 0;
+
+  function queueRenderXpUi(delay = 120) {
+    if (document.hidden || renderTimer || renderFrame) return;
+    renderTimer = window.setTimeout(() => {
+      renderTimer = 0;
+      renderFrame = requestAnimationFrame(() => {
+        renderFrame = 0;
+        renderXpUi();
+      });
+    }, delay);
+  }
   async function syncAll(force = false) {
     if (state.syncing || !getClient() || !getUserId() || !appData()) return;
     const signature = history().map(item => `${item.id}:${item.total}:${item.mode}:${item.date}`).join('|');
     if (!force && signature === state.lastSignature) {
-      renderXpUi();
+      queueRenderXpUi(250);
       return;
     }
 
@@ -424,14 +437,14 @@
       try {
         if (typeof renderTestHistory === 'function') renderTestHistory();
       } catch {}
-      requestAnimationFrame(renderXpUi);
+      queueRenderXpUi(0);
     } finally {
       state.syncing = false;
     }
   }
 
-  const observer = new MutationObserver(() => requestAnimationFrame(renderXpUi));
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  const observer = new MutationObserver(() => queueRenderXpUi(300));
+  observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
 
   document.addEventListener('click', event => {
     if (event.target.closest('[data-view="home"], #homeTopTab, [data-test-panel="history"], [data-competition-view]')) {
@@ -441,7 +454,12 @@
 
   window.addEventListener('fixa-xp-updated', () => refreshSummary());
   window.addEventListener('load', () => setTimeout(() => syncAll(true), 600));
-  setInterval(() => syncAll(false), 5000);
+  setInterval(() => {
+    if (!document.hidden) syncAll(false);
+  }, 60000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) setTimeout(() => syncAll(false), 500);
+  });
   setTimeout(() => syncAll(true), 800);
 
   window.FixaCompetitionXpHomeV4 = {

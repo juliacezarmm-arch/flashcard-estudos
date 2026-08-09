@@ -315,7 +315,7 @@
 
   function refreshReviewList() {
     document.querySelector('#refreshReviewQuestions')?.click();
-    requestAnimationFrame(enhanceReviewList);
+    queueEnhanceReviewList(120);
   }
 
   async function runButtonUpload(item, button, operation) {
@@ -426,6 +426,32 @@
     }
   }
 
+  let enhanceTimer = 0;
+  let enhanceFrame = 0;
+  let imageScanTimer = 0;
+  let pendingImageRoot = null;
+
+  function queueEnhanceReviewList(delay = 120) {
+    if (enhanceTimer || enhanceFrame) return;
+    enhanceTimer = window.setTimeout(() => {
+      enhanceTimer = 0;
+      enhanceFrame = requestAnimationFrame(() => {
+        enhanceFrame = 0;
+        enhanceReviewList();
+      });
+    }, delay);
+  }
+
+  function queueResolveStorageImages(root = document, delay = 160) {
+    pendingImageRoot = root === document || pendingImageRoot === document ? document : (pendingImageRoot || root);
+    if (imageScanTimer) return;
+    imageScanTimer = window.setTimeout(() => {
+      const target = pendingImageRoot || document;
+      pendingImageRoot = null;
+      imageScanTimer = 0;
+      resolveStorageImages(target);
+    }, delay);
+  }
   function enhanceReviewList() {
     const list = document.querySelector('#reviewQuestionsList');
     if (!list || list.hidden) return;
@@ -495,10 +521,10 @@
     }
 
     document.querySelector('#showReviewQuestions')?.addEventListener('click', () => {
-      setTimeout(enhanceReviewList, 0);
+      queueEnhanceReviewList(0);
     });
     document.querySelector('#refreshReviewQuestions')?.addEventListener('click', () => {
-      setTimeout(enhanceReviewList, 0);
+      queueEnhanceReviewList(0);
     });
 
     new MutationObserver(records => {
@@ -508,7 +534,7 @@
           return;
         }
         record.addedNodes.forEach(node => {
-          if (node.nodeType === 1) resolveStorageImages(node);
+          if (node.nodeType === 1) queueResolveStorageImages(node, 200);
         });
       });
     }).observe(document.body, {
@@ -522,12 +548,12 @@
     enhanceReviewList();
 
     let attempts = 0;
-    const connectionTimer = setInterval(() => {
-      attempts += 1;
-      enhanceReviewList();
-      resolveStorageImages();
-      if (storageReady() || attempts >= 80) clearInterval(connectionTimer);
-    }, 500);
+  const connectionTimer = setInterval(() => {
+    attempts += 1;
+    queueEnhanceReviewList(0);
+    queueResolveStorageImages(document, 0);
+    if (storageReady() || attempts >= 20) clearInterval(connectionTimer);
+  }, 1500);
   }
 
   window.FixaReviewStorageUpload = {
