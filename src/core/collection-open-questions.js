@@ -14,4 +14,12 @@
       if (typeof showView === "function") showView("manage");
     }, 0);
   }, true);
+
+  if (!window.FixaTestFolder && !document.querySelector('script[data-fixa-test-folder-loader]')) {
+    const script = document.createElement("script");
+    script.src = `src/test/test-folder.js?v=${Date.now()}`;
+    script.dataset.fixaTestFolderLoader = "1";
+    script.defer = true;
+    document.head.appendChild(script);
+  }
 })();
