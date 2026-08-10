@@ -4,7 +4,9 @@
 
   const state = {
     folderId: '',
-    allocations: {}
+    allocations: {},
+    order: [],
+    draggedKey: ''
   };
 
   const iconFolder = '<svg class="test-folder-line-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path></svg>';
@@ -12,6 +14,7 @@
   const iconList = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path></svg>';
   const iconShuffle = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>';
   const iconGrid = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h.01M10 7h.01M16 7h.01M4 12h.01M10 12h.01M16 12h.01M4 17h.01M10 17h.01M16 17h.01"></path></svg>';
+  const iconDrag = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="6" r="1"></circle><circle cx="16" cy="6" r="1"></circle><circle cx="8" cy="12" r="1"></circle><circle cx="16" cy="12" r="1"></circle><circle cx="8" cy="18" r="1"></circle><circle cx="16" cy="18" r="1"></circle></svg>';
 
   function esc(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
@@ -47,6 +50,14 @@
     return normalized;
   }
 
+  function folders() {
+    return Array.isArray(appData()?.folders) ? appData().folders : [];
+  }
+
+  function folderById(folderId = state.folderId) {
+    return folders().find(folder => folder.id === folderId) || null;
+  }
+
   function persistAllocations() {
     if (!state.folderId) return;
     const folder = folderById(state.folderId);
@@ -71,12 +82,28 @@
     }
   }
 
-  function folders() {
-    return Array.isArray(appData()?.folders) ? appData().folders : [];
+  function loadOrder(folderId) {
+    const folder = folderById(folderId);
+    state.order = Array.isArray(folder?.testFolderOrder)
+      ? folder.testFolderOrder.map(String).filter(Boolean)
+      : [];
   }
 
-  function folderById(folderId = state.folderId) {
-    return folders().find(folder => folder.id === folderId) || null;
+  function persistOrder(order = state.order) {
+    if (!state.folderId) return;
+    const folder = folderById(state.folderId);
+    if (!folder) return;
+    const unique = [];
+    const used = new Set();
+    (order || []).forEach(key => {
+      const value = String(key || '');
+      if (!value || used.has(value)) return;
+      used.add(value);
+      unique.push(value);
+    });
+    state.order = unique;
+    folder.testFolderOrder = [...unique];
+    try { if (typeof save === 'function') save(); } catch (_) {}
   }
 
   function subjectsForFolder(folderId = state.folderId) {
@@ -126,26 +153,74 @@
     }, 0);
   }
 
-  function distributionItems() {
+  function baseDistributionItems() {
+    const subjects = subjectsForFolder();
     const groups = normalizedGroups().filter(group => group.subjectIds.length);
-    return [
-      ...ungroupedSubjects().map(subject => ({
+    const groupBySubject = new Map();
+    groups.forEach(group => group.subjectIds.forEach(subjectId => groupBySubject.set(subjectId, group)));
+
+    const emittedGroups = new Set();
+    const items = [];
+
+    subjects.forEach(subject => {
+      const group = groupBySubject.get(subject.id);
+      if (group) {
+        if (emittedGroups.has(group.id)) return;
+        emittedGroups.add(group.id);
+        items.push({
+          key: `g:${group.id}`,
+          type: 'group',
+          id: group.id,
+          name: group.name,
+          available: availableForGroup(group),
+          detail: `${group.subjectIds.length} coleç${group.subjectIds.length === 1 ? 'ão' : 'ões'}`
+        });
+        return;
+      }
+
+      items.push({
         key: `s:${subject.id}`,
         type: 'subject',
         id: subject.id,
         name: subject.name,
         available: testableForSubject(subject).length,
         detail: 'Coleção individual'
-      })),
-      ...groups.map(group => ({
-        key: `g:${group.id}`,
-        type: 'group',
-        id: group.id,
-        name: group.name,
-        available: availableForGroup(group),
-        detail: `${group.subjectIds.length} coleç${group.subjectIds.length === 1 ? 'ão' : 'ões'}`
-      }))
-    ];
+      });
+    });
+
+    return items;
+  }
+
+  function distributionItems() {
+    const base = baseDistributionItems();
+    if (!base.length) return [];
+
+    const byKey = new Map(base.map(item => [item.key, item]));
+    const ordered = [];
+    const used = new Set();
+
+    state.order.forEach(key => {
+      const item = byKey.get(key);
+      if (!item || used.has(key)) return;
+      used.add(key);
+      ordered.push(item);
+    });
+
+    base.forEach(item => {
+      if (used.has(item.key)) return;
+      used.add(item.key);
+      ordered.push(item);
+    });
+
+    const nextOrder = ordered.map(item => item.key);
+    const changed = nextOrder.length !== state.order.length || nextOrder.some((key, index) => key !== state.order[index]);
+    if (changed) {
+      state.order = nextOrder;
+      const folder = folderById();
+      if (folder) folder.testFolderOrder = [...nextOrder];
+    }
+
+    return ordered;
   }
 
   function totalRequested() {
@@ -199,9 +274,17 @@
       .test-folder-start{min-height:44px;min-width:150px;padding:0 20px;border-radius:9px;font-weight:850;box-shadow:0 8px 18px rgba(37,99,235,.16)}
       .test-folder-start:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
       .test-folder-distribution{border-top:1px solid #edf1f7;padding-top:18px;display:grid;gap:10px}
-      .test-folder-distribution h4{margin:0 0 4px;font-size:14px;color:#172033}
-      .test-folder-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;min-height:58px;border:1px solid #dbe3f1;border-radius:10px;padding:10px 13px;background:#fff}
-      .test-folder-row-main{display:flex;align-items:center;gap:11px;min-width:0}
+      .test-folder-distribution-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:2px}
+      .test-folder-distribution h4{margin:0;font-size:14px;color:#172033}
+      .test-folder-distribution-head small{color:#7b879b;font-size:10px}
+      .test-folder-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;min-height:58px;border:1px solid #dbe3f1;border-radius:10px;padding:10px 13px;background:#fff;transition:border-color .14s ease,background .14s ease,opacity .14s ease}
+      .test-folder-row.is-dragging{opacity:.5;border-color:#8fb4ff;background:#f5f8ff}
+      .test-folder-row.is-drag-over{border-color:#2563eb;background:#f8fbff}
+      .test-folder-row-main{display:flex;align-items:center;gap:10px;min-width:0}
+      .test-folder-drag{width:28px;height:34px;flex:0 0 28px;border:0;padding:0;display:grid;place-items:center;color:#94a3b8;background:transparent;cursor:grab;touch-action:none}
+      .test-folder-drag:active{cursor:grabbing}.test-folder-drag:hover,.test-folder-drag:focus-visible{color:#2563eb;background:#eef4ff}
+      .test-folder-drag svg{width:18px;height:18px;fill:currentColor;stroke:none}
+      .test-folder-sequence{width:25px;height:25px;flex:0 0 25px;display:grid;place-items:center;border:1px solid #d7e2f1;border-radius:999px;color:#53617a;background:#f8faff;font-size:10px;font-weight:850}
       .test-folder-row-icon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#2563eb;background:#eef4ff;flex:0 0 auto}
       .test-folder-row-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
       .test-folder-row-copy{min-width:0}.test-folder-row-copy strong{display:block;color:#172033;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.test-folder-row-copy small{color:#7b879b;font-size:10px}
@@ -210,7 +293,7 @@
       .test-folder-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#64748b;font-size:11px}
       .test-folder-message{margin:0;font-size:11px;color:#64748b}.test-folder-message.error{color:#dc2626}.test-folder-message.ok{color:#15803d}
       .test-folder-empty{min-height:150px;border:1px dashed #d8e3f4;border-radius:12px;display:grid;place-items:center;text-align:center;padding:24px;color:#64748b}
-      @media(max-width:800px){.test-folder-body{padding:18px}.test-folder-head{grid-template-columns:54px minmax(0,1fr)}.test-folder-icon{width:54px;height:54px}.test-folder-start{grid-column:1/-1;width:100%}.test-folder-controls{grid-column:1/-1}.test-folder-row{grid-template-columns:1fr}.test-folder-amount{justify-content:flex-end}.test-folder-select{min-width:100%;max-width:none;flex:1 1 100%}}
+      @media(max-width:800px){.test-folder-body{padding:18px}.test-folder-head{grid-template-columns:54px minmax(0,1fr)}.test-folder-icon{width:54px;height:54px}.test-folder-start{grid-column:1/-1;width:100%}.test-folder-controls{grid-column:1/-1}.test-folder-row{grid-template-columns:1fr}.test-folder-amount{justify-content:flex-end}.test-folder-select{min-width:100%;max-width:none;flex:1 1 100%}.test-folder-drag{width:30px;flex-basis:30px}}
     `;
     document.head.appendChild(style);
   }
@@ -279,10 +362,11 @@
 
   function ensureFolderSelection() {
     const available = folders();
-    if (!available.length) { state.folderId = ''; state.allocations = {}; return; }
+    if (!available.length) { state.folderId = ''; state.allocations = {}; state.order = []; return; }
     if (!available.some(folder => folder.id === state.folderId)) {
       state.folderId = available[0].id;
       loadAllocations(state.folderId);
+      loadOrder(state.folderId);
     }
   }
 
@@ -295,6 +379,21 @@
       changed = true;
     });
     if (changed) persistAllocations();
+  }
+
+  function updateSequenceNumbers() {
+    document.querySelectorAll('[data-folder-order-key] .test-folder-sequence').forEach((badge, index) => {
+      badge.textContent = String(index + 1);
+    });
+  }
+
+  function persistVisibleOrder() {
+    const list = [...document.querySelectorAll('[data-folder-order-key]')]
+      .map(row => row.dataset.folderOrderKey)
+      .filter(Boolean);
+    if (!list.length) return;
+    persistOrder(list);
+    updateSequenceNumbers();
   }
 
   function renderFolderPanel() {
@@ -322,10 +421,15 @@
     const items = distributionItems();
 
     distribution.innerHTML = `
-      <h4>Distribuição das questões</h4>
-      ${items.map(item => `
-        <div class="test-folder-row">
+      <div class="test-folder-distribution-head">
+        <h4>Distribuição das questões</h4>
+        <small>Arraste pelo ícone à esquerda para ordenar a sequência.</small>
+      </div>
+      ${items.map((item, index) => `
+        <div class="test-folder-row" data-folder-order-key="${esc(item.key)}">
           <div class="test-folder-row-main">
+            <button type="button" class="test-folder-drag" draggable="true" data-folder-drag-handle="${esc(item.key)}" aria-label="Arrastar ${esc(item.name)} para ordenar" title="Arraste para ordenar">${iconDrag}</button>
+            <span class="test-folder-sequence" aria-label="Posição ${index + 1}">${index + 1}</span>
             <div class="test-folder-row-icon">${item.type === 'group' ? iconUsers : iconList}</div>
             <div class="test-folder-row-copy"><strong>${esc(item.name)}</strong><small>${item.available} disponível${item.available === 1 ? '' : 'is'} · ${esc(item.detail)}</small></div>
           </div>
@@ -352,18 +456,22 @@
 
   function selectedCardsForTest() {
     const selected = [];
+    const items = distributionItems();
 
-    ungroupedSubjects().forEach(subject => {
-      const amount = Math.max(0, Number(state.allocations[`s:${subject.id}`]) || 0);
+    items.forEach(item => {
+      const amount = Math.max(0, Number(state.allocations[item.key]) || 0);
       if (!amount) return;
-      selected.push(...shuffle(testableForSubject(subject)).slice(0, amount));
-    });
 
-    normalizedGroups().filter(group => group.subjectIds.length).forEach(group => {
-      const amount = Math.max(0, Number(state.allocations[`g:${group.id}`]) || 0);
-      if (!amount) return;
+      if (item.type === 'subject') {
+        const subject = subjectsForFolder().find(subjectItem => subjectItem.id === item.id);
+        selected.push(...shuffle(testableForSubject(subject)).slice(0, amount));
+        return;
+      }
+
+      const group = normalizedGroups().find(groupItem => groupItem.id === item.id);
+      if (!group) return;
       const pool = group.subjectIds.flatMap(subjectId => {
-        const subject = subjectsForFolder().find(item => item.id === subjectId);
+        const subject = subjectsForFolder().find(subjectItem => subjectItem.id === subjectId);
         return testableForSubject(subject);
       });
       selected.push(...shuffle(pool).slice(0, amount));
@@ -381,6 +489,7 @@
     if (!selectedCards.length) return;
     const folder = folderById();
     persistAllocations();
+    persistOrder(state.order);
 
     try {
       testState = {
@@ -428,6 +537,7 @@
       if (folderSelect) {
         state.folderId = folderSelect.value;
         loadAllocations(state.folderId);
+        loadOrder(state.folderId);
         renderFolderPanel();
       }
     });
@@ -438,6 +548,48 @@
       state.allocations[amount.dataset.folderAmount] = Math.max(0, Math.floor(Number(amount.value) || 0));
       persistAllocations();
       updateSummary();
+    });
+
+    document.addEventListener('dragstart', event => {
+      const handle = event.target.closest?.('[data-folder-drag-handle]');
+      if (!handle) return;
+      const key = handle.dataset.folderDragHandle || '';
+      const row = handle.closest('[data-folder-order-key]');
+      if (!key || !row) return;
+      state.draggedKey = key;
+      row.classList.add('is-dragging');
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', key);
+    });
+
+    document.addEventListener('dragover', event => {
+      if (!state.draggedKey) return;
+      const targetRow = event.target.closest?.('[data-folder-order-key]');
+      if (!targetRow || targetRow.dataset.folderOrderKey === state.draggedKey) return;
+      const draggedRow = document.querySelector(`[data-folder-order-key="${CSS.escape(state.draggedKey)}"]`);
+      if (!draggedRow || draggedRow === targetRow) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('[data-folder-order-key].is-drag-over').forEach(row => row.classList.remove('is-drag-over'));
+      targetRow.classList.add('is-drag-over');
+      const rect = targetRow.getBoundingClientRect();
+      const after = event.clientY > rect.top + rect.height / 2;
+      targetRow.parentElement.insertBefore(draggedRow, after ? targetRow.nextSibling : targetRow);
+      updateSequenceNumbers();
+    });
+
+    document.addEventListener('drop', event => {
+      if (!state.draggedKey) return;
+      if (event.target.closest?.('[data-folder-order-key]')) event.preventDefault();
+      persistVisibleOrder();
+      document.querySelectorAll('[data-folder-order-key].is-drag-over').forEach(row => row.classList.remove('is-drag-over'));
+    });
+
+    document.addEventListener('dragend', () => {
+      if (!state.draggedKey) return;
+      document.querySelectorAll('[data-folder-order-key].is-dragging,[data-folder-order-key].is-drag-over').forEach(row => row.classList.remove('is-dragging', 'is-drag-over'));
+      persistVisibleOrder();
+      state.draggedKey = '';
     });
 
     const restart = document.querySelector('#restartTest');
@@ -480,7 +632,10 @@
     if (quickTitle?.textContent.trim() === 'Teste') quickTitle.textContent = 'Teste coleção';
 
     ensureFolderSelection();
-    if (state.folderId) loadAllocations(state.folderId);
+    if (state.folderId) {
+      loadAllocations(state.folderId);
+      loadOrder(state.folderId);
+    }
     bindEvents();
     window.FixaTestFolder = {
       show: showFolderPanel,
