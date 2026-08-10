@@ -5,6 +5,7 @@
   const state = {
     folderId: '',
     allocations: {},
+    weights: {},
     order: [],
     draggedKey: ''
   };
@@ -50,6 +51,15 @@
     return normalized;
   }
 
+  function normalizeWeights(source) {
+    const normalized = {};
+    if (!source || typeof source !== 'object') return normalized;
+    Object.entries(source).forEach(([key, value]) => {
+      normalized[key] = Math.min(99, Math.max(1, Math.floor(Number(value) || 1)));
+    });
+    return normalized;
+  }
+
   function folders() {
     return Array.isArray(appData()?.folders) ? appData().folders : [];
   }
@@ -80,6 +90,23 @@
       folder.testFolderAllocations = { ...state.allocations };
       try { if (typeof save === 'function') save(); } catch (_) {}
     }
+  }
+
+  function loadWeights(folderId) {
+    const folder = folderById(folderId);
+    state.weights = normalizeWeights(folder?.testFolderWeights || {});
+  }
+
+  function persistWeights() {
+    if (!state.folderId) return;
+    const folder = folderById(state.folderId);
+    if (!folder) return;
+    folder.testFolderWeights = normalizeWeights(state.weights);
+    try { if (typeof save === 'function') save(); } catch (_) {}
+  }
+
+  function weightForKey(key) {
+    return Math.min(99, Math.max(1, Math.floor(Number(state.weights[key]) || 1)));
   }
 
   function loadOrder(folderId) {
@@ -227,6 +254,13 @@
     return distributionItems().reduce((sum, item) => sum + Math.max(0, Number(state.allocations[item.key]) || 0), 0);
   }
 
+  function totalPoints() {
+    return distributionItems().reduce((sum, item) => {
+      const amount = Math.max(0, Number(state.allocations[item.key]) || 0);
+      return sum + (amount * weightForKey(item.key));
+    }, 0);
+  }
+
   function validation() {
     if (!state.folderId) return { valid: false, message: 'Selecione uma pasta para configurar o teste.' };
     const items = distributionItems();
@@ -238,7 +272,7 @@
       const requested = Math.max(0, Number(state.allocations[item.key]) || 0);
       if (requested > item.available) return { valid: false, message: `${item.name} possui apenas ${item.available} questão${item.available === 1 ? '' : 'ões'} disponível${item.available === 1 ? '' : 'is'}.` };
     }
-    return { valid: true, message: `${total} questões configuradas para este teste.` };
+    return { valid: true, message: `${total} questões · ${totalPoints()} pontos configurados para este teste.` };
   }
 
   function shuffle(items) {
@@ -288,12 +322,14 @@
       .test-folder-row-icon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#2563eb;background:#eef4ff;flex:0 0 auto}
       .test-folder-row-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
       .test-folder-row-copy{min-width:0}.test-folder-row-copy strong{display:block;color:#172033;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.test-folder-row-copy small{color:#7b879b;font-size:10px}
-      .test-folder-amount{display:flex;align-items:center;gap:7px;color:#53617a;font-size:11px;font-weight:700}
+      .test-folder-fields{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+      .test-folder-amount,.test-folder-weight{display:flex;align-items:center;gap:7px;color:#53617a;font-size:11px;font-weight:700;white-space:nowrap}
       .test-folder-amount input{width:70px;height:36px;padding:5px 8px;text-align:center;font-weight:850;color:#172033}
+      .test-folder-weight input{width:54px;height:36px;padding:5px 8px;text-align:center;font-weight:850;color:#172033}
       .test-folder-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#64748b;font-size:11px}
       .test-folder-message{margin:0;font-size:11px;color:#64748b}.test-folder-message.error{color:#dc2626}.test-folder-message.ok{color:#15803d}
       .test-folder-empty{min-height:150px;border:1px dashed #d8e3f4;border-radius:12px;display:grid;place-items:center;text-align:center;padding:24px;color:#64748b}
-      @media(max-width:800px){.test-folder-body{padding:18px}.test-folder-head{grid-template-columns:54px minmax(0,1fr)}.test-folder-icon{width:54px;height:54px}.test-folder-start{grid-column:1/-1;width:100%}.test-folder-controls{grid-column:1/-1}.test-folder-row{grid-template-columns:1fr}.test-folder-amount{justify-content:flex-end}.test-folder-select{min-width:100%;max-width:none;flex:1 1 100%}.test-folder-drag{width:30px;flex-basis:30px}}
+      @media(max-width:800px){.test-folder-body{padding:18px}.test-folder-head{grid-template-columns:54px minmax(0,1fr)}.test-folder-icon{width:54px;height:54px}.test-folder-start{grid-column:1/-1;width:100%}.test-folder-controls{grid-column:1/-1}.test-folder-row{grid-template-columns:1fr}.test-folder-fields{justify-content:flex-end}.test-folder-select{min-width:100%;max-width:none;flex:1 1 100%}.test-folder-drag{width:30px;flex-basis:30px}}
     `;
     document.head.appendChild(style);
   }
@@ -360,25 +396,37 @@
     return folders().map(folder => `<option value="${esc(folder.id)}">${esc(folder.name)}</option>`).join('');
   }
 
+  function loadFolderConfiguration(folderId) {
+    loadAllocations(folderId);
+    loadWeights(folderId);
+    loadOrder(folderId);
+  }
+
   function ensureFolderSelection() {
     const available = folders();
-    if (!available.length) { state.folderId = ''; state.allocations = {}; state.order = []; return; }
+    if (!available.length) { state.folderId = ''; state.allocations = {}; state.weights = {}; state.order = []; return; }
     if (!available.some(folder => folder.id === state.folderId)) {
       state.folderId = available[0].id;
-      loadAllocations(state.folderId);
-      loadOrder(state.folderId);
+      loadFolderConfiguration(state.folderId);
     }
   }
 
-  function cleanAllocationsForCurrentStructure() {
+  function cleanConfigForCurrentStructure() {
     const allowed = new Set(distributionItems().map(item => item.key));
-    let changed = false;
+    let allocationsChanged = false;
+    let weightsChanged = false;
     Object.keys(state.allocations).forEach(key => {
       if (allowed.has(key)) return;
       delete state.allocations[key];
-      changed = true;
+      allocationsChanged = true;
     });
-    if (changed) persistAllocations();
+    Object.keys(state.weights).forEach(key => {
+      if (allowed.has(key)) return;
+      delete state.weights[key];
+      weightsChanged = true;
+    });
+    if (allocationsChanged) persistAllocations();
+    if (weightsChanged) persistWeights();
   }
 
   function updateSequenceNumbers() {
@@ -417,7 +465,7 @@
       return;
     }
 
-    cleanAllocationsForCurrentStructure();
+    cleanConfigForCurrentStructure();
     const items = distributionItems();
 
     distribution.innerHTML = `
@@ -433,7 +481,10 @@
             <div class="test-folder-row-icon">${item.type === 'group' ? iconUsers : iconList}</div>
             <div class="test-folder-row-copy"><strong>${esc(item.name)}</strong><small>${item.available} disponível${item.available === 1 ? '' : 'is'} · ${esc(item.detail)}</small></div>
           </div>
-          <label class="test-folder-amount">Questões na prova <input type="number" min="0" max="${item.available}" value="${Math.max(0, Number(state.allocations[item.key]) || 0)}" inputmode="numeric" data-folder-amount="${esc(item.key)}"></label>
+          <div class="test-folder-fields">
+            <label class="test-folder-amount">Questões na prova <input type="number" min="0" max="${item.available}" value="${Math.max(0, Number(state.allocations[item.key]) || 0)}" inputmode="numeric" data-folder-amount="${esc(item.key)}"></label>
+            <label class="test-folder-weight">Peso <input type="number" min="1" max="99" value="${weightForKey(item.key)}" inputmode="numeric" data-folder-weight="${esc(item.key)}"></label>
+          </div>
         </div>`).join('')}
       <div class="test-folder-summary"><span>${ungroupedSubjects().length} coleç${ungroupedSubjects().length === 1 ? 'ão individual' : 'ões individuais'} · ${normalizedGroups().filter(group => group.subjectIds.length).length} grupo${normalizedGroups().filter(group => group.subjectIds.length).length === 1 ? '' : 's'}</span><p class="test-folder-message" data-folder-test-message></p></div>`;
     updateSummary();
@@ -461,10 +512,11 @@
     items.forEach(item => {
       const amount = Math.max(0, Number(state.allocations[item.key]) || 0);
       if (!amount) return;
+      const weight = weightForKey(item.key);
 
       if (item.type === 'subject') {
         const subject = subjectsForFolder().find(subjectItem => subjectItem.id === item.id);
-        selected.push(...shuffle(testableForSubject(subject)).slice(0, amount));
+        selected.push(...shuffle(testableForSubject(subject)).slice(0, amount).map(card => ({ ...card, testWeight: weight, testDistributionKey: item.key })));
         return;
       }
 
@@ -474,7 +526,7 @@
         const subject = subjectsForFolder().find(subjectItem => subjectItem.id === subjectId);
         return testableForSubject(subject);
       });
-      selected.push(...shuffle(pool).slice(0, amount));
+      selected.push(...shuffle(pool).slice(0, amount).map(card => ({ ...card, testWeight: weight, testDistributionKey: item.key })));
     });
 
     const unique = new Map();
@@ -489,12 +541,13 @@
     if (!selectedCards.length) return;
     const folder = folderById();
     persistAllocations();
+    persistWeights();
     persistOrder(state.order);
 
     try {
       testState = {
         active: true,
-        questions: selectedCards.map(card => buildTestQuestion(card)),
+        questions: selectedCards.map(card => ({ ...buildTestQuestion(card), weight: Math.max(1, Number(card.testWeight) || 1), distributionKey: card.testDistributionKey || '' })),
         index: 0,
         selected: null,
         answered: false,
@@ -508,6 +561,7 @@
         ratings: typeof defaultRatings === 'function' ? defaultRatings() : { again:0, hard:0, good:0, easy:0 },
         mode: 'folder',
         subjectIds: [...new Set(selectedCards.map(card => card.subjectId).filter(Boolean))],
+        weightedMaxPoints: totalPoints(),
         skipped: 0
       };
       showFolderEngine();
@@ -536,18 +590,28 @@
       const folderSelect = event.target.closest('[data-folder-test-select]');
       if (folderSelect) {
         state.folderId = folderSelect.value;
-        loadAllocations(state.folderId);
-        loadOrder(state.folderId);
+        loadFolderConfiguration(state.folderId);
         renderFolderPanel();
       }
     });
 
     document.addEventListener('input', event => {
       const amount = event.target.closest('[data-folder-amount]');
-      if (!amount) return;
-      state.allocations[amount.dataset.folderAmount] = Math.max(0, Math.floor(Number(amount.value) || 0));
-      persistAllocations();
-      updateSummary();
+      if (amount) {
+        state.allocations[amount.dataset.folderAmount] = Math.max(0, Math.floor(Number(amount.value) || 0));
+        persistAllocations();
+        updateSummary();
+        return;
+      }
+
+      const weight = event.target.closest('[data-folder-weight]');
+      if (weight) {
+        const key = weight.dataset.folderWeight;
+        const normalized = Math.min(99, Math.max(1, Math.floor(Number(weight.value) || 1)));
+        state.weights[key] = normalized;
+        persistWeights();
+        updateSummary();
+      }
     });
 
     document.addEventListener('dragstart', event => {
@@ -632,10 +696,7 @@
     if (quickTitle?.textContent.trim() === 'Teste') quickTitle.textContent = 'Teste coleção';
 
     ensureFolderSelection();
-    if (state.folderId) {
-      loadAllocations(state.folderId);
-      loadOrder(state.folderId);
-    }
+    if (state.folderId) loadFolderConfiguration(state.folderId);
     bindEvents();
     window.FixaTestFolder = {
       show: showFolderPanel,
