@@ -7,7 +7,7 @@
     allocations: {}
   };
 
-  const iconFolder = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path></svg>';
+  const iconFolder = '<svg class="test-folder-line-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path></svg>';
   const iconUsers = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 1 3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path></svg>';
   const iconList = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path></svg>';
   const iconShuffle = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>';
@@ -33,21 +33,42 @@
     return `fixa:test-folder-allocations:${userId()}`;
   }
 
-  function allSavedAllocations() {
+  function legacySavedAllocations() {
     try { return JSON.parse(localStorage.getItem(allocationStorageKey()) || '{}') || {}; }
     catch (_) { return {}; }
   }
 
+  function normalizeAllocations(source) {
+    const normalized = {};
+    if (!source || typeof source !== 'object') return normalized;
+    Object.entries(source).forEach(([key, value]) => {
+      normalized[key] = Math.max(0, Math.floor(Number(value) || 0));
+    });
+    return normalized;
+  }
+
   function persistAllocations() {
     if (!state.folderId) return;
-    const saved = allSavedAllocations();
-    saved[state.folderId] = state.allocations;
-    localStorage.setItem(allocationStorageKey(), JSON.stringify(saved));
+    const folder = folderById(state.folderId);
+    if (!folder) return;
+    folder.testFolderAllocations = normalizeAllocations(state.allocations);
+    try { if (typeof save === 'function') save(); } catch (_) {}
   }
 
   function loadAllocations(folderId) {
-    const saved = allSavedAllocations();
-    state.allocations = saved?.[folderId] && typeof saved[folderId] === 'object' ? { ...saved[folderId] } : {};
+    const folder = folderById(folderId);
+    const stored = folder?.testFolderAllocations;
+    if (stored && typeof stored === 'object') {
+      state.allocations = normalizeAllocations(stored);
+      return;
+    }
+
+    const legacy = legacySavedAllocations()?.[folderId];
+    state.allocations = normalizeAllocations(legacy);
+    if (folder && legacy && typeof legacy === 'object') {
+      folder.testFolderAllocations = { ...state.allocations };
+      try { if (typeof save === 'function') save(); } catch (_) {}
+    }
   }
 
   function folders() {
@@ -160,6 +181,7 @@
     const style = document.createElement('style');
     style.id = 'fixaTestFolderStyles';
     style.textContent = `
+      #test .test-tabs [data-test-panel="folder"] svg{fill:none!important;stroke:#2563eb!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important}
       .test-folder-card{border:1px solid #dbe3f1;border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(23,32,51,.035);overflow:hidden}
       .test-folder-body{padding:26px 28px;display:grid;gap:22px}
       .test-folder-head{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:18px;align-items:center}
