@@ -1,5 +1,5 @@
 /* Mantém somente o ícone vetorial da Competição.
-   As ilustrações da tela Hoje são controladas por home-empty-state-art.js. */
+   As ilustrações e ajustes finais da tela inicial são controlados pelos módulos dedicados. */
 (() => {
   'use strict';
 
@@ -56,6 +56,18 @@
     }
     svg?.classList.add('competition-tab-icon');
   }
+
+  function loadHomePolishModule(src, id) {
+    if (document.getElementById(id)) return;
+    const script = document.createElement('script');
+    script.id = id;
+    script.src = `${src}?v=20260811-home-readable-v1`;
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
+  loadHomePolishModule('src/fixes/home-readable-layout-v1.js', 'fixaHomeReadableLayoutV1Loader');
+  loadHomePolishModule('src/fixes/home-today-period-v1.js', 'fixaHomeTodayPeriodV1Loader');
 
   const observer = new MutationObserver(() => requestAnimationFrame(ensureCompetitionTrophy));
   observer.observe(document.documentElement, { childList:true, subtree:true });
