@@ -270,7 +270,6 @@
     renderCollectionsToday();
     renderPerformanceToday();
     renderChartToday();
-    window.setTimeout(() => window.FixaHomeReadableLayoutV1 && document.dispatchEvent(new Event('fixa:home-readable-refresh')), 0);
   }
 
   function queueToday(delay = 0) {
@@ -295,14 +294,8 @@
   }, true);
 
   document.addEventListener('change', event => {
-    if (todayActive && event.target.closest('#fixaWeekFolderFilter')) queueToday(30);
+    if (todayActive && event.target.closest('#fixaWeekFolderFilter')) queueToday(40);
   });
-
-  const observer = new MutationObserver(() => {
-    ensureTodayButton();
-    if (todayActive) queueToday(20);
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
 
   function install() {
     ensureTodayButton();
@@ -310,4 +303,6 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install, { once: true });
   else install();
+
+  [40, 120, 300, 700, 1400].forEach(delay => window.setTimeout(ensureTodayButton, delay));
 })();
