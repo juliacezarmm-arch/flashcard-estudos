@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260811-home-weekly-v1";
+    const FIXA_VERSION = "20260811-home-stability-v2";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "src/core/collections.js", "Não foi possível carregar as coleções."],
@@ -72,7 +72,7 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "testFolder", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "progressFix", "secondaryTabsLayoutFix", "secondaryContentSpacingV1", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix", "competitionUpdateV3", "competitionSecondaryTabsPlacement", "competitionPolishV6", "competitionActiveFlowV1", "competitionManagerV7", "competitionPositionCardV1", "competitionLayoutBalanceV1", "competitionInvitationsV9", "competitionXpHomeV4", "accountDataIsolation", "homeEmptyStates", "collectionsMenuActions", "collectionsFloatingMenuFix", "homeArtCompetitionFix", "homeTodayPolishNoScroll", "homeEmptyStateArt"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "testFolder", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "progressFix", "secondaryTabsLayoutFix", "secondaryContentSpacingV1", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix", "competitionUpdateV3", "competitionSecondaryTabsPlacement", "competitionPolishV6", "competitionActiveFlowV1", "competitionManagerV7", "competitionPositionCardV1", "competitionLayoutBalanceV1", "competitionInvitationsV9", "accountDataIsolation", "competitionXpHomeV4", "homeEmptyStates", "collectionsMenuActions", "collectionsFloatingMenuFix", "homeArtCompetitionFix", "homeTodayPolishNoScroll", "homeEmptyStateArt"];
         const scripts = scriptFiles.map(key => {
           let safeCode = assets[key];
 
@@ -80,6 +80,13 @@
             safeCode = safeCode.replace(
               "  const studyArt = homeView.querySelector('.home-study-head .home-icon');\n   if (studyArt) {\n    const image = document.createElement('img');\n    image.className = 'home-study-art';\n    image.src = homeAsset(HOME_ASSETS.clipboard);\n    image.alt = 'Prancheta com tarefas de estudo';\n     studyArt.replaceWith(image);\n   }",
               "  const studyArt = homeView.querySelector('.home-study-head .home-icon');\n  if (studyArt) studyArt.remove();"
+            );
+          }
+
+          if (key === "progressFix") {
+            safeCode = safeCode.replace(
+              "  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});",
+              "  const progressPanelObserverTarget=document.querySelector('[data-home-panel=\"progress\"]');\n  if(progressPanelObserverTarget)new MutationObserver(schedule).observe(progressPanelObserverTarget,{childList:true,subtree:true});"
             );
           }
 
@@ -94,10 +101,35 @@
             );
           }
 
+          if (key === "competitionXpHomeV4") {
+            safeCode = safeCode.replace(
+              "  const observer = new MutationObserver(() => queueRenderXpUi(300));\n  observer.observe(document.body || document.documentElement, { childList: true, subtree: true });\n",
+              ""
+            );
+            safeCode = safeCode.replace(
+              "  setInterval(() => {\n    if (!document.hidden) syncAll(false);\n  }, 60000);\n",
+              ""
+            );
+          }
+
           if (key === "reviewStorageUpload") {
             safeCode = safeCode.replace(
               "function resolveStorageImage(img) {\n    const source = img.getAttribute('src') || '';",
               "function resolveStorageImage(img) {\n    if (window.FixaStorageLazyLoader?.observe) {\n      window.FixaStorageLazyLoader.observe(img);\n      return;\n    }\n    const source = img.getAttribute('src') || '';"
+            );
+          }
+
+          if (key === "homeTodayPolishNoScroll") {
+            safeCode = safeCode.replace(
+              "  function install() {\n    if (!setupLayout()) return false;\n",
+              "  function install() {\n    if (!setupLayout()) return false;\n\n    try {\n      if (typeof renderHome === 'function' && !renderHome.__fixaWeeklyStable) {\n        const originalRenderHome = renderHome;\n        const stableRenderHome = function(...args) {\n          const result = originalRenderHome.apply(this, args);\n          setupLayout();\n          renderWeeklyDashboard();\n          return result;\n        };\n        stableRenderHome.__fixaWeeklyStable = true;\n        renderHome = stableRenderHome;\n      }\n    } catch (_) {}\n"
+            );
+          }
+
+          if (key === "homeEmptyStateArt") {
+            safeCode = safeCode.replace(
+              "(() => {\n  const STYLE_ID = 'homeEmptyStateArtStyle';",
+              "(() => {\n  if (window.FixaHomeWeeklyDashboardV2) return;\n  const STYLE_ID = 'homeEmptyStateArtStyle';"
             );
           }
 
