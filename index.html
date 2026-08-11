@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260811-home-week-single-source-v3";
+    const FIXA_VERSION = "20260811-home-week-single-source-v4";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "src/core/collections.js", "Não foi possível carregar as coleções."],
@@ -79,6 +79,10 @@
               "  const studyArt = homeView.querySelector('.home-study-head .home-icon');\n   if (studyArt) {\n    const image = document.createElement('img');\n    image.className = 'home-study-art';\n    image.src = homeAsset(HOME_ASSETS.clipboard);\n    image.alt = 'Prancheta com tarefas de estudo';\n     studyArt.replaceWith(image);\n   }",
               "  const studyArt = homeView.querySelector('.home-study-head .home-icon');\n  if (studyArt) studyArt.remove();"
             );
+            safeCode = safeCode.replace(
+              "   function renderHome() {\n",
+              "   function renderHome() {\n     if (window.FixaHomeWeeklyDashboardV2?.refresh) {\n       window.FixaHomeWeeklyDashboardV2.refresh();\n       return;\n     }\n"
+            );
           }
 
           if (key === "competitionUpdateV3") {
@@ -119,8 +123,12 @@
 
           if (key === "homeTodayPolishNoScroll") {
             safeCode = safeCode.replace(
-              "  function install() {\n    if (!setupLayout()) return false;\n",
-              "  function install() {\n    if (!setupLayout()) return false;\n\n    try {\n      if (typeof renderHome === 'function' && !renderHome.__fixaWeeklyStable) {\n        const originalRenderHome = renderHome;\n        const stableRenderHome = function(...args) {\n          const result = originalRenderHome.apply(this, args);\n          setupLayout();\n          renderWeeklyDashboard();\n          return result;\n        };\n        stableRenderHome.__fixaWeeklyStable = true;\n        renderHome = stableRenderHome;\n      }\n    } catch (_) {}\n"
+              "  if (window.FixaHomeWeeklyDashboardV2) return;\n  window.FixaHomeWeeklyDashboardV2 = true;",
+              "  if (window.FixaHomeWeeklyDashboardV2?.refresh) return;\n  window.FixaHomeWeeklyDashboardV2 = { refresh: null };"
+            );
+            safeCode = safeCode.replace(
+              "  if (!install()) document.addEventListener('DOMContentLoaded', () => install(), { once: true });\n})();",
+              "  window.FixaHomeWeeklyDashboardV2.refresh = () => queueRefresh(0);\n  if (!install()) document.addEventListener('DOMContentLoaded', () => install(), { once: true });\n})();"
             );
           }
 
