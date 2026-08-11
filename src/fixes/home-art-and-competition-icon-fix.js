@@ -61,7 +61,7 @@
     if (document.getElementById(id)) return;
     const script = document.createElement('script');
     script.id = id;
-    script.src = `${src}?v=20260811-home-readable-v1`;
+    script.src = `${src}?v=20260811-home-readable-v2`;
     script.defer = true;
     document.head.appendChild(script);
   }
