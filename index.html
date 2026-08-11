@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260811-home-stability-v2";
+    const FIXA_VERSION = "20260811-home-week-single-source-v3";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "src/core/collections.js", "Não foi possível carregar as coleções."],
@@ -29,7 +29,6 @@
       ["collectionsOverlayOutsideClick", "src/collections-menu/collections-overlay-outside-click.js", "Não foi possível carregar o fechamento do menu de coleções."],
       ["topbarHomeAlignment", "src/fixes/topbar-home-alignment.js", "Não foi possível alinhar o cabeçalho da página inicial."],
       ["hotfix", "src/fixes/hotfix-home-encoding.js", "Não foi possível carregar a correção de textos."],
-      ["progressFix", "src/fixes/progress-objectives-summary-fix.js", "Não foi possível carregar os ajustes do progresso."],
       ["secondaryTabsLayoutFix", "src/fixes/secondary-tabs-layout-fix.js", "Não foi possível carregar o ajuste das abas secundárias."],
       ["secondaryContentSpacingV1", "src/fixes/secondary-content-spacing-v1.js", "Não foi possível ajustar o espaçamento entre as abas secundárias e o conteúdo."],
       ["addSpacingFix", "src/fixes/add-spacing-fix.js", "Não foi possível carregar a correção de espaçamento."],
@@ -53,12 +52,11 @@
       ["competitionInvitationsV9", "src/competition/competition-invitations-v9.js", "Não foi possível carregar os convites da competição."],
       ["competitionXpHomeV4", "src/competition/competition-xp-home-v4.js", "Não foi possível concluir a integração de XP."],
       ["accountDataIsolation", "src/auth/account-data-isolation.js", "Não foi possível isolar os dados desta conta."],
-      ["homeEmptyStates", "src/fixes/home-empty-state-illustrations.js", "Não foi possível carregar as ilustrações da página inicial."],
       ["collectionsMenuActions", "src/collections-menu/collections-menu-actions.js", "Não foi possível carregar as ações dos menus de coleções."],
       ["collectionsFloatingMenuFix", "src/collections-menu/collections-floating-menu-fix.js", "Não foi possível restaurar o menu flutuante das coleções."],
-      ["homeArtCompetitionFix", "src/fixes/home-art-and-competition-icon-fix.js", "Não foi possível ajustar as imagens e o ícone de competição."],
-      ["homeTodayPolishNoScroll", "src/fixes/home-today-polish-no-scroll.js", "Não foi possível refinar a tela Hoje."],
-      ["homeEmptyStateArt", "src/fixes/home-empty-state-art.js", "Não foi possível carregar os novos estados visuais da página inicial."]
+      ["homeArtCompetitionFix", "src/fixes/home-art-and-competition-icon-fix.js", "Não foi possível ajustar o ícone de competição."],
+      ["homeTodayPolishNoScroll", "src/fixes/home-today-polish-no-scroll.js", "Não foi possível carregar o painel semanal."],
+      ["homeEmptyStateArt", "src/fixes/home-empty-state-art.js", "Não foi possível carregar os estados auxiliares da página inicial."]
     ];
 
     function loadFile([key, file, message]) {
@@ -72,7 +70,7 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "testFolder", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "progressFix", "secondaryTabsLayoutFix", "secondaryContentSpacingV1", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix", "competitionUpdateV3", "competitionSecondaryTabsPlacement", "competitionPolishV6", "competitionActiveFlowV1", "competitionManagerV7", "competitionPositionCardV1", "competitionLayoutBalanceV1", "competitionInvitationsV9", "accountDataIsolation", "competitionXpHomeV4", "homeEmptyStates", "collectionsMenuActions", "collectionsFloatingMenuFix", "homeArtCompetitionFix", "homeTodayPolishNoScroll", "homeEmptyStateArt"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "testFolder", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "secondaryTabsLayoutFix", "secondaryContentSpacingV1", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix", "competitionUpdateV3", "competitionSecondaryTabsPlacement", "competitionPolishV6", "competitionActiveFlowV1", "competitionManagerV7", "competitionPositionCardV1", "competitionLayoutBalanceV1", "competitionInvitationsV9", "accountDataIsolation", "competitionXpHomeV4", "collectionsMenuActions", "collectionsFloatingMenuFix", "homeArtCompetitionFix", "homeTodayPolishNoScroll", "homeEmptyStateArt"];
         const scripts = scriptFiles.map(key => {
           let safeCode = assets[key];
 
@@ -80,13 +78,6 @@
             safeCode = safeCode.replace(
               "  const studyArt = homeView.querySelector('.home-study-head .home-icon');\n   if (studyArt) {\n    const image = document.createElement('img');\n    image.className = 'home-study-art';\n    image.src = homeAsset(HOME_ASSETS.clipboard);\n    image.alt = 'Prancheta com tarefas de estudo';\n     studyArt.replaceWith(image);\n   }",
               "  const studyArt = homeView.querySelector('.home-study-head .home-icon');\n  if (studyArt) studyArt.remove();"
-            );
-          }
-
-          if (key === "progressFix") {
-            safeCode = safeCode.replace(
-              "  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});",
-              "  const progressPanelObserverTarget=document.querySelector('[data-home-panel=\"progress\"]');\n  if(progressPanelObserverTarget)new MutationObserver(schedule).observe(progressPanelObserverTarget,{childList:true,subtree:true});"
             );
           }
 
@@ -109,6 +100,13 @@
             safeCode = safeCode.replace(
               "  setInterval(() => {\n    if (!document.hidden) syncAll(false);\n  }, 60000);\n",
               ""
+            );
+          }
+
+          if (key === "homeArtCompetitionFix") {
+            safeCode = safeCode.replace(
+              "  const observer = new MutationObserver(() => requestAnimationFrame(ensureCompetitionTrophy));\n  observer.observe(document.documentElement, { childList:true, subtree:true });",
+              "  const observerTarget = document.querySelector('.topbar') || document.querySelector('header');\n  if (observerTarget) new MutationObserver(() => requestAnimationFrame(ensureCompetitionTrophy)).observe(observerTarget, { childList:true, subtree:true });"
             );
           }
 
