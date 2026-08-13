@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260813-home-compact-pairs-v2";
+    const FIXA_VERSION = "20260813-home-greeting-subnav-v3";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "src/core/collections.js", "Não foi possível carregar as coleções."],
@@ -125,6 +125,38 @@
             safeCode = safeCode.replace(
               "  if (window.FixaHomeWeeklyDashboardV2) return;\n  window.FixaHomeWeeklyDashboardV2 = true;",
               "  if (window.FixaHomeWeeklyDashboardV2?.refresh) return;\n  window.FixaHomeWeeklyDashboardV2 = { refresh: null };"
+            );
+            safeCode = safeCode.replace(
+              "    const date = home.querySelector('#homeDatePill');\n    if (!hero || !actions || !greeting || !date) return;",
+              "    const date = home.querySelector('#homeDatePill');\n    const nav = home.querySelector('.home-subtabs');\n    if (!hero || !actions || !greeting || !date || !nav) return;"
+            );
+            safeCode = safeCode.replace(
+              "    if (greeting.parentElement !== greetingSlot) greetingSlot.appendChild(greeting);",
+              "    if (greeting.parentElement !== nav) nav.appendChild(greeting);"
+            );
+            safeCode = safeCode.replace(
+              "    #home .home-subtabs{margin:-4px 0 -3px!important;gap:7px!important;min-height:32px!important}",
+              "    #home .home-subtabs{width:100%!important;max-width:none!important;margin:-4px 0 -3px!important;gap:7px!important;min-height:32px!important;background:transparent!important;padding:0!important}"
+            );
+            safeCode = safeCode.replace(
+              "    #home .home-subtab svg{width:14px;height:14px;fill:none;stroke:currentColor}",
+              "    #home .home-subtab svg{width:14px;height:14px;fill:none;stroke:currentColor}\n    #home .home-subtabs>#homeGreeting{margin:0 0 0 auto!important;font-size:20px!important;line-height:24px!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:5px!important;white-space:nowrap!important}\n    #home .home-subtabs>#homeGreeting .home-greeting-wave{width:20px!important;height:20px!important}"
+            );
+            safeCode = safeCode.replace(
+              "    #home .home-hero-head{min-height:70px!important;margin:-7px 0 -2px!important;",
+              "    #home .home-hero-head{min-height:43px!important;margin:-2px 0 -2px!important;"
+            );
+            safeCode = safeCode.replace(
+              "    .fixa-week-header-stack{display:grid;justify-items:end;gap:1px;min-width:min(100%,540px)}",
+              "    .fixa-week-header-stack{display:grid;justify-items:end;gap:0;min-width:min(100%,540px)}"
+            );
+            safeCode = safeCode.replace(
+              "    .fixa-week-greeting-slot{min-height:25px}.fixa-week-greeting-slot #homeGreeting{margin:0!important;font-size:20px!important;line-height:24px!important;justify-content:flex-end!important}.fixa-week-greeting-slot .home-greeting-wave{width:20px!important;height:20px!important}",
+              "    .fixa-week-greeting-slot{display:none!important}"
+            );
+            safeCode = safeCode.replace(
+              "    @media(max-width:760px){#home .home-hero-head{min-height:0!important;margin:0!important}.fixa-week-header-stack{width:100%;min-width:0;justify-items:stretch}.fixa-week-greeting-slot,.fixa-week-date-slot{text-align:right}.fixa-week-greeting-slot #homeGreeting{justify-content:flex-end!important;font-size:19px!important}",
+              "    @media(max-width:760px){#home .home-hero-head{min-height:0!important;margin:0!important}.fixa-week-header-stack{width:100%;min-width:0;justify-items:stretch}.fixa-week-date-slot{text-align:right}#home .home-subtabs{flex-wrap:wrap!important}#home .home-subtabs>#homeGreeting{justify-content:flex-end!important;font-size:19px!important}"
             );
             safeCode = safeCode.replace(
               "  if (!install()) document.addEventListener('DOMContentLoaded', () => install(), { once: true });\n})();",
