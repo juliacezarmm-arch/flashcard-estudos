@@ -256,3 +256,104 @@
   window.addEventListener('load', recoveryBurst, { once:true });
   recoveryBurst();
 })();
+
+/* ===== Home: Atividades dentro da primeira caixa branca ===== */
+(() => {
+  'use strict';
+  if (window.FixaHomeUnifiedActivityV1) return;
+  window.FixaHomeUnifiedActivityV1 = true;
+
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[char]);
+  const tones = ['green','purple','amber','blue','pink'];
+
+  function appData(){ try{return typeof data !== 'undefined' ? data : null;}catch(_){return null;} }
+  function subjects(){ return Array.isArray(appData()?.subjects) ? appData().subjects : []; }
+  function dateOf(test){ const d=new Date(test?.completedAt||test?.finishedAt||test?.date||0); return Number.isNaN(d.getTime())?null:d; }
+  function subjectOf(test){ return subjects().find(s=>String(s.id||'')===String(test?.subjectId||''))||subjects().find(s=>s.name===test?.subject)||null; }
+  function nameOf(test){ return test?.subject||subjectOf(test)?.name||'Coleção'; }
+  function idOf(test){ return subjectOf(test)?.id||test?.subjectId||''; }
+  function initials(name){ const p=String(name||'Coleção').trim().split(/\s+/).filter(Boolean); return (p.slice(0,2).map(x=>x[0]).join('')||'C').toUpperCase(); }
+  function tone(name){ const n=Array.from(String(name||'')).reduce((s,c)=>s+c.charCodeAt(0),0); return tones[n%tones.length]; }
+  function relative(d){ if(!d)return ''; const ms=Math.max(0,Date.now()-d.getTime()),m=Math.floor(ms/60000); if(m<1)return 'agora'; if(m<60)return `há ${m} min`; const h=Math.floor(m/60); if(h<24)return `há ${h}h`; const days=Math.floor(h/24); if(days<7)return `há ${days} dia${days===1?'':'s'}`; return new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit'}).format(d); }
+  function attr(test){ const id=idOf(test); return id?` data-home-subject="${esc(id)}" tabindex="0"`:''; }
+
+  function currentRange(){
+    const period=document.querySelector('[data-fixa-week-period].active')?.dataset.fixaWeekPeriod||'week';
+    const now=new Date();
+    const start=new Date(now),end=new Date(now);
+    if(period==='today'){ start.setHours(0,0,0,0); end.setHours(23,59,59,999); return {start,end}; }
+    if(period==='month'){ return {start:new Date(now.getFullYear(),now.getMonth(),1),end:new Date(now.getFullYear(),now.getMonth()+1,0,23,59,59,999)}; }
+    start.setHours(0,0,0,0); start.setDate(start.getDate()-((start.getDay()+6)%7));
+    end.setTime(start.getTime()); end.setDate(end.getDate()+6); end.setHours(23,59,59,999);
+    return {start,end};
+  }
+
+  function visibleTests(){
+    const folder=document.querySelector('#fixaWeekFolderFilter')?.value||'all';
+    const {start,end}=currentRange();
+    let allowedIds=null,allowedNames=null;
+    if(folder!=='all'){
+      const list=subjects().filter(s=>String(s.folder||'')===String(folder));
+      allowedIds=new Set(list.map(s=>String(s.id))); allowedNames=new Set(list.map(s=>s.name));
+    }
+    return (Array.isArray(appData()?.testHistory)?appData().testHistory:[])
+      .filter(t=>!t?.cancelled&&!t?.canceled&&!t?.interrupted&&Number(t?.total||0)>0)
+      .filter(t=>{ const d=dateOf(t); return d&&d>=start&&d<=end; })
+      .filter(t=>{ if(!allowedIds)return true; const ids=(Array.isArray(t?.subjectIds)&&t.subjectIds.length?t.subjectIds:[t?.subjectId]).filter(Boolean).map(String); return ids.some(id=>allowedIds.has(id))||allowedNames.has(t?.subject); })
+      .sort((a,b)=>(dateOf(b)?.getTime()||0)-(dateOf(a)?.getTime()||0));
+  }
+
+  function ensureStyle(){
+    if(document.querySelector('#fixaHomeUnifiedActivityStyle'))return;
+    const style=document.createElement('style'); style.id='fixaHomeUnifiedActivityStyle'; style.textContent=`
+      #home .home-subtabs .home-subtab,#home .home-subtabs [data-home-tab]{display:none!important}
+      #home .home-subtabs{background:transparent!important;border:0!important;padding-left:0!important;padding-right:0!important}
+      .fixa-week-activities-panel{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;align-items:stretch!important}
+      .fixa-week-activities-panel>.home-activity-panel{min-width:0!important;min-height:230px!important;max-height:270px!important;margin:0!important;overflow:hidden!important}
+      .fixa-week-activities-panel .home-activity-scroll{max-height:205px!important;overflow-y:auto!important;overflow-x:hidden!important;padding-right:3px!important}
+      .fixa-week-activities-panel .home-panel-head{min-height:42px!important;margin-bottom:0!important}
+      .fixa-week-activities-panel .home-panel-head h3{display:flex!important;align-items:center!important;gap:7px!important}
+      .fixa-week-activities-panel .home-activity-title-icon svg{width:16px!important;height:16px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.9!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+      @media(max-width:760px){.fixa-week-activities-panel{grid-template-columns:1fr!important}.fixa-week-activities-panel>.home-activity-panel,.fixa-week-activities-panel .home-activity-scroll{max-height:none!important}}
+    `; document.head.appendChild(style);
+  }
+
+  function ensureLayout(){
+    const home=document.querySelector('#home.home-view');
+    const today=home?.querySelector('[data-home-panel="today"]');
+    const shell=today?.querySelector('.fixa-week-main-shell');
+    const tabs=shell?.querySelector('.fixa-week-content-tabs');
+    const stage=shell?.querySelector('.fixa-week-main-stage');
+    if(!home||!today||!tabs||!stage)return false;
+    ensureStyle();
+    const nav=home.querySelector('.home-subtabs');
+    nav?.querySelectorAll('[data-home-tab],.home-subtab').forEach(b=>b.remove());
+    const greeting=home.querySelector('#homeGreeting'); if(nav&&greeting&&greeting.parentElement!==nav)nav.appendChild(greeting);
+    today.hidden=false;
+    let tab=tabs.querySelector('[data-fixa-main-tab="activities"]');
+    if(!tab){ tab=document.createElement('button'); tab.type='button'; tab.setAttribute('role','tab'); tab.setAttribute('aria-selected','false'); tab.dataset.fixaMainTab='activities'; tab.textContent='Atividades'; tabs.appendChild(tab); }
+    let panel=stage.querySelector('[data-fixa-main-panel="activities"]');
+    if(!panel){ panel=document.createElement('section'); panel.className='fixa-week-main-pair fixa-week-activities-panel'; panel.dataset.fixaMainPanel='activities'; panel.hidden=true; stage.appendChild(panel); }
+    const activity=home.querySelector('#homeActivity')?.closest('.home-panel');
+    const tests=home.querySelector('#homeTests')?.closest('.home-panel');
+    [activity,tests].filter(Boolean).forEach(card=>{ card.classList.add('fixa-week-main-pane'); card.hidden=false; if(card.parentElement!==panel)panel.appendChild(card); });
+    home.querySelector('[data-home-panel="activity"]')?.setAttribute('hidden','');
+    return Boolean(activity&&tests);
+  }
+
+  function render(){
+    const activity=document.querySelector('#homeActivity'),testsBox=document.querySelector('#homeTests'); if(!activity||!testsBox)return;
+    const recent=visibleTests().slice(0,12);
+    activity.innerHTML=recent.length?recent.map(t=>`<li class="home-activity-item home-activity-clickable"${attr(t)}><span class="home-activity-time">${relative(dateOf(t))}</span><span class="home-activity-timeline"><span class="home-activity-status" aria-hidden="true"></span></span><span class="home-activity-body"><span class="home-activity-title">Finalizou teste em ${esc(nameOf(t))}</span><small>${Number(t.score||0)} de ${Number(t.total||0)} acertos</small></span></li>`).join(''):'<li class="home-activity-item"><span></span><span class="home-activity-timeline"><span class="home-activity-status" aria-hidden="true"></span></span><span class="home-activity-body"><span class="home-activity-title">Sua atividade aparecerá aqui.</span></span></li>';
+    testsBox.innerHTML=recent.length?recent.map(t=>{ const n=nameOf(t),s=Number(t.score||0),total=Number(t.total||0),p=total?s/total*100:0,c=p>=80?'':p>=60?' is-warn':' is-bad'; return `<div class="home-test-row"${attr(t)}><span class="home-activity-avatar tone-${tone(n)}">${initials(n)}</span><span class="home-test-copy"><span class="home-test-name">${esc(n)}</span><span class="home-test-meta">${relative(dateOf(t))}</span></span><span class="home-test-score${c}">${s}/${total}</span></div>`; }).join(''):'<p class="home-muted">Nenhum teste realizado ainda.</p>';
+    const clock=document.querySelector('[data-home-activity-icon="clock"]'); if(clock)clock.innerHTML='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>';
+    const chart=document.querySelector('[data-home-activity-icon="chart"]'); if(chart)chart.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"></path><path d="m7 15 4-4 3 2 5-7"></path></svg>';
+  }
+
+  let timer=0; function refresh(delay=0){ clearTimeout(timer); timer=setTimeout(()=>{ if(ensureLayout())render(); },delay); }
+  document.addEventListener('click',e=>{ if(e.target.closest('[data-view="home"],#homeTopTab,[data-fixa-main-tab],[data-fixa-week-period]'))refresh(60); },true);
+  document.addEventListener('change',e=>{ if(e.target.closest('#fixaWeekFolderFilter'))refresh(40); },true);
+  window.addEventListener('load',()=>refresh(80),{once:true});
+  let tries=0; const boot=setInterval(()=>{ tries++; const ok=ensureLayout(); if(ok)render(); if(ok||tries>=20)clearInterval(boot); },250);
+  refresh(0); refresh(350);
+})();
