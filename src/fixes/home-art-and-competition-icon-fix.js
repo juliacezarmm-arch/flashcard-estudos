@@ -61,13 +61,14 @@
     if (document.getElementById(id)) return;
     const script = document.createElement('script');
     script.id = id;
-    script.src = `${src}?v=20260811-home-readable-v2`;
+    script.src = `${src}?v=20260813-study-insights-v1`;
     script.defer = true;
     document.head.appendChild(script);
   }
 
   loadHomePolishModule('src/fixes/home-readable-layout-v1.js', 'fixaHomeReadableLayoutV1Loader');
   loadHomePolishModule('src/fixes/home-today-period-v1.js', 'fixaHomeTodayPeriodV1Loader');
+  loadHomePolishModule('src/fixes/home-study-insights-v1.js', 'fixaHomeStudyInsightsV1Loader');
 
   const observer = new MutationObserver(() => requestAnimationFrame(ensureCompetitionTrophy));
   observer.observe(document.documentElement, { childList:true, subtree:true });
