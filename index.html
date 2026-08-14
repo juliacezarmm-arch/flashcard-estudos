@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260814-home-single-render-v1";
+    const FIXA_VERSION = "20260814-home-single-render-v2";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "src/core/collections.js", "Não foi possível carregar as coleções."],
@@ -56,6 +56,7 @@
       ["collectionsFloatingMenuFix", "src/collections-menu/collections-floating-menu-fix.js", "Não foi possível restaurar o menu flutuante das coleções."],
       ["homeTodayPolishNoScroll", "src/fixes/home-today-polish-no-scroll.js", "Não foi possível carregar a estrutura da página inicial."],
       ["homeUnifiedDashboardV2", "src/fixes/home-unified-dashboard-v2.js", "Não foi possível carregar a página inicial consolidada."],
+      ["homeGoalsStreakProtectionV1", "src/fixes/home-goals-streak-protection-v1.js", "Não foi possível carregar XP e proteção da página inicial."],
       ["homeArtCompetitionFix", "src/fixes/home-art-and-competition-icon-fix.js", "Não foi possível ajustar o cabeçalho e o ícone de competição."],
       ["homeEmptyStateArt", "src/fixes/home-empty-state-art.js", "Não foi possível carregar os estados auxiliares da página inicial."]
     ];
@@ -71,7 +72,7 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "testFolder", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "secondaryTabsLayoutFix", "secondaryContentSpacingV1", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix", "competitionUpdateV3", "competitionSecondaryTabsPlacement", "competitionPolishV6", "competitionActiveFlowV1", "competitionManagerV7", "competitionPositionCardV1", "competitionLayoutBalanceV1", "competitionInvitationsV9", "accountDataIsolation", "competitionXpHomeV4", "collectionsMenuActions", "collectionsFloatingMenuFix", "homeTodayPolishNoScroll", "homeUnifiedDashboardV2", "homeArtCompetitionFix", "homeEmptyStateArt"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "testFolder", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "secondaryTabsLayoutFix", "secondaryContentSpacingV1", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix", "competitionUpdateV3", "competitionSecondaryTabsPlacement", "competitionPolishV6", "competitionActiveFlowV1", "competitionManagerV7", "competitionPositionCardV1", "competitionLayoutBalanceV1", "competitionInvitationsV9", "accountDataIsolation", "competitionXpHomeV4", "collectionsMenuActions", "collectionsFloatingMenuFix", "homeTodayPolishNoScroll", "homeUnifiedDashboardV2", "homeGoalsStreakProtectionV1", "homeArtCompetitionFix", "homeEmptyStateArt"];
         const scripts = scriptFiles.map(key => {
           let safeCode = assets[key];
 
@@ -99,6 +100,10 @@
 
           if (key === "competitionXpHomeV4") {
             safeCode = safeCode.replace(
+              "  function renderXpUi() {\n    ensureHomeXpCard();\n    renderCollectionXp();\n    renderHistoryXp();\n  }",
+              "  function renderXpUi() {\n    renderHistoryXp();\n    window.FixaHomeWeeklyDashboardV2?.refresh?.();\n  }"
+            );
+            safeCode = safeCode.replace(
               "  const observer = new MutationObserver(() => queueRenderXpUi(300));\n  observer.observe(document.body || document.documentElement, { childList: true, subtree: true });\n",
               ""
             );
@@ -116,8 +121,6 @@
           }
 
           if (key === "homeTodayPolishNoScroll") {
-            /* O módulo antigo fica apenas como base de dados/estrutura. Depois que a Home final existe,
-               ele não volta a reposicionar o cabeçalho nem deixa uma versão intermediária na tela. */
             safeCode = safeCode.replace(
               "    ensureHeader(home);",
               "    if (!home.querySelector('.fixa-home-header-row')) ensureHeader(home);"
@@ -138,13 +141,70 @@
               "    renderWeeklyDashboard();\n    queueRefresh(80);\n    window.setTimeout(() => {\n      if (document.querySelector('#home.home-view')) {\n        setupLayout();\n        renderWeeklyDashboard();\n      }\n    }, 320);\n    return true;",
               "    renderWeeklyDashboard();\n    return true;"
             );
+
+            /* A sequência tem uma única origem: dias com teste concluído; proteção pode preservar a contagem sem pintar o calendário como teste. */
+            safeCode = safeCode.replace(
+              "  function consecutiveStreak() {\n    const dates = new Set(completedTests().map(test => {\n      const date = testDate(test);\n      return date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}` : '';\n    }).filter(Boolean));",
+              "  function consecutiveStreak() {\n    const dates = new Set(completedTests().map(test => {\n      const date = testDate(test);\n      return date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}` : '';\n    }).filter(Boolean));\n    (window.FixaHomeGoalsStreakProtectionV1?.protection?.protected_days || []).forEach(value => {\n      const date = dateOf(value);\n      if (date) dates.add(`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`);\n    });"
+            );
+            safeCode = safeCode.replace(
+              "  function masteredInRange() {",
+              "  function setTopbarStreak(streak) {\n    const right = document.querySelector('.topbar-right');\n    if (!right) return;\n    const box = Array.from(right.querySelectorAll('button,div,span')).find(element => {\n      if (element.classList.contains('fixa-streak-freeze-box')) return false;\n      return /^\\s*[^\\d]*\\d+\\s+dias?\\s*$/i.test((element.textContent || '').trim());\n    }) || right.querySelector('[class*=streak], [class*=sequence]');\n    if (!box) return;\n    const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT);\n    let node;\n    while ((node = walker.nextNode())) {\n      if (/\\d+\\s+dias?/i.test(node.nodeValue || '')) {\n        node.nodeValue = (node.nodeValue || '').replace(/\\d+\\s+dias?/i, `${streak} dia${streak === 1 ? '' : 's'}`);\n        return;\n      }\n    }\n  }\n\n  function masteredInRange() {"
+            );
+            safeCode = safeCode.replace(
+              "    const goalTitle = state.period === 'today' ? 'Objetivo do dia' : state.period === 'month' ? 'Objetivo do mês' : 'Objetivo da semana';",
+              "    const goalTitle = state.period === 'today' ? 'Objetivo do dia' : state.period === 'month' ? 'Objetivo do mês' : 'Objetivo da semana';\n    setTopbarStreak(streak);"
+            );
+            safeCode = safeCode.replace(
+              "<strong class=\"fixa-week-main-value\">${goal.percent}%</strong><small>${goal.completed} de 3 metas concluídas</small>",
+              "<strong class=\"fixa-week-main-value\">${goal.percent}%</strong><small>Progresso geral dos objetivos</small>"
+            );
+
+            /* XP e XP da semana passam a nascer no mesmo render, sem card ser acrescentado depois. */
+            safeCode = safeCode.replace(
+              "    const xp = Number(xpSummary.total_xp || completedTests().reduce((sum, test) => sum + Number(test.xp || 0), 0));\n    const rows = [",
+              "    const xp = Number(xpSummary.total_xp || completedTests().reduce((sum, test) => sum + Number(test.xp || 0), 0));\n    const weekXp = Number(window.FixaHomeGoalsStreakProtectionV1?.weekXp || 0);\n    const rows = ["
+            );
+            safeCode = safeCode.replace(
+              "      ['target', 'XP', xp, 'Total de todas as coleções', 'blue']\n    ];",
+              "      ['target', 'XP', xp, 'Total de todas as coleções', 'blue'],\n      ['target', 'XP na semana', `${weekXp} XP`, 'Total acumulado na semana', 'blue']\n    ];"
+            );
+            safeCode = safeCode.replace(
+              "#homeSummaryCards.fixa-week-summary{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:8px!important}",
+              "#homeSummaryCards.fixa-week-summary{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:8px!important}"
+            );
+
+            /* O XP das coleções usa o resumo já calculado, mas continua sendo desenhado somente pela Home. */
+            safeCode = safeCode.replace(
+              "    const xp = tests.reduce((sum, test) => sum + Number(test.xp || 0), 0);",
+              "    const xpBySubject = window.FixaCompetitionXpHomeV4?.summary?.by_subject || {};\n    const xp = Number(xpBySubject[String(subject.id)] || tests.reduce((sum, test) => sum + Number(test.xp || 0), 0));"
+            );
+
+            /* Desempenho final já nasce completo, sem uma segunda versão ser inserida depois. */
+            safeCode = safeCode.replace(
+              "    const best = tests.reduce((max, test) => Math.max(max, Number(test.score || 0)), 0);\n    const rows = [",
+              "    const best = tests.reduce((max, test) => Math.max(max, Number(test.score || 0)), 0);\n    const range = currentRange();\n    const studyDays = new Set(tests.map(test => { const date = testDate(test); return date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}` : ''; }).filter(Boolean));\n    const span = range.end.getTime() - range.start.getTime() + 1;\n    const prevStart = new Date(range.start.getTime() - span);\n    const prevEnd = new Date(range.start.getTime() - 1);\n    const prevTests = completedTests().filter(test => { const date = testDate(test); return date && date >= prevStart && date <= prevEnd; });\n    const prevTotal = prevTests.reduce((sum, test) => sum + Number(test.total || 0), 0);\n    const prevScore = prevTests.reduce((sum, test) => sum + Number(test.score || 0), 0);\n    const currentAccuracy = total ? percent(score, total) : 0;\n    const previousAccuracy = prevTotal ? percent(prevScore, prevTotal) : 0;\n    const evolution = prevTotal ? currentAccuracy - previousAccuracy : 0;\n    const maxDays = state.period === 'today' ? 1 : state.period === 'month' ? new Date(range.end).getDate() : 7;\n    const rows = [\n      ['target', 'Média de acertos', total ? `${currentAccuracy}%` : 'Sem dados', 'blue'],\n      ['chart', 'Evolução em relação ao período anterior', prevTotal ? `${evolution > 0 ? '+' : ''}${evolution}%` : 'Sem dados', evolution >= 0 ? 'green' : 'orange'],\n      ['question', 'Questões respondidas', String(total), 'blue'],\n      ['calendar', 'Dias estudados', `${studyDays.size} de ${maxDays}`, 'blue'],"
+            );
+
+            /* As recompensas das metas são desenhadas no mesmo HTML das metas. */
+            safeCode = safeCode.replace(
+              "    list.innerHTML = rows.map(([ico, label, current, target]) => `<li class=\"fixa-week-goal\"><div class=\"fixa-week-goal-head\"><i>${icon(ico)}</i><span><strong>${label}</strong><small>${current} / ${target}</small></span></div><div class=\"home-progress\"><span style=\"width:${Math.max(2, clamp(current / target * 100))}%\"></span></div></li>`).join('');",
+              "    list.innerHTML = rows.map(([ico, label, current, target], index) => `<li class=\"fixa-week-goal\"><div class=\"fixa-week-goal-head\"><i>${icon(ico)}</i><span><strong>${label}</strong><small>${current} / ${target}</small></span><b class=\"fixa-goal-reward\">+${[20,25,40][index] || 20} XP</b></div><div class=\"home-progress\"><span style=\"width:${Math.max(2, clamp(current / target * 100))}%\"></span></div></li>`).join('');"
+            );
+            safeCode = safeCode.replace(
+              ".fixa-week-goal-head{display:grid;grid-template-columns:25px minmax(0,1fr);gap:7px;align-items:center}",
+              ".fixa-week-goal-head{display:grid;grid-template-columns:25px minmax(0,1fr) auto;gap:7px;align-items:center}.fixa-goal-reward{padding:3px 6px;border-radius:999px;color:#7c3aed;background:#f3e8ff;font-size:7px;font-weight:850;white-space:nowrap}"
+            );
           }
 
           if (key === "homeUnifiedDashboardV2") {
-            /* A Home final passa a ser aplicada uma única vez por ciclo, sem polling e sem setTimeouts concorrentes. */
             safeCode = safeCode.replace(
               "  if (window.FixaHomeUnifiedDashboardV2) return;\n  window.FixaHomeUnifiedDashboardV2 = true;",
               "  if (window.FixaHomeUnifiedDashboardV2?.active) return;\n  window.FixaHomeUnifiedDashboardV2 = { active: true, refresh: null };"
+            );
+            safeCode = safeCode.replace(
+              "renderReviewReference(); renderPriorities(priorities); renderQuestionStatus(status); renderChart(chart); renderActivities(); restoreSummaryIcons(); patchSequence();",
+              "renderReviewReference(); renderPriorities(priorities); renderQuestionStatus(status); renderChart(chart); renderActivities(); restoreSummaryIcons();"
             );
             safeCode = safeCode.replace(
               "if(!firstTabApplied){firstTabApplied=true;setTimeout(()=>shell.querySelector('[data-fixa-main-tab=\"performance-goals\"]')?.click(),0);}",
@@ -156,11 +216,11 @@
             );
             safeCode = safeCode.replace(
               "if(event.target.closest('[data-view=\"home\"],#homeTopTab,[data-fixa-main-tab],[data-fixa-week-period],[data-view=\"test\"]')){apply();setTimeout(apply,0);hideTestAnalysisButton();}",
-              "if(event.target.closest('[data-view=\"home\"],#homeTopTab,[data-fixa-main-tab],[data-fixa-week-period],[data-view=\"test\"]')){apply();hideTestAnalysisButton();}"
+              "if(event.target.closest('[data-view=\"home\"],#homeTopTab,[data-view=\"test\"]')){apply();hideTestAnalysisButton();}"
             );
             safeCode = safeCode.replace(
               "document.addEventListener('change',event=>{if(event.target.closest('#fixaWeekFolderFilter')){apply();setTimeout(apply,0);}});",
-              "document.addEventListener('change',event=>{if(event.target.closest('#fixaWeekFolderFilter'))apply();});"
+              "document.addEventListener('change',()=>{});"
             );
             safeCode = safeCode.replace(
               "  let tries=0;const boot=setInterval(()=>{tries+=1;wrapDashboardRefresh();hideTestAnalysisButton();const ready=apply();if((ready&&wrapDashboardRefresh()&&tries>=8)||tries>=40)clearInterval(boot);},200);\n  window.addEventListener('load',()=>{schedule(0);setTimeout(apply,250);},{once:true});\n  wrapDashboardRefresh();schedule(0);",
@@ -169,9 +229,8 @@
           }
 
           if (key === "homeArtCompetitionFix") {
-            /* O dashboard V2 já foi carregado diretamente acima; não carregar uma segunda cópia por script dinâmico. */
             safeCode = safeCode.replace(
-              "  loadHomeModule('src/fixes/home-unified-dashboard-v2.js', 'fixaHomeUnifiedDashboardV2Loader');\n",
+              "/* Carrega uma única vez o complemento de metas, XP e proteção de sequência. */\n(() => {\n  'use strict';\n  if (document.getElementById('fixaHomeGoalsStreakProtectionV1Loader')) return;\n  const script = document.createElement('script');\n  script.id = 'fixaHomeGoalsStreakProtectionV1Loader';\n  script.src = 'src/fixes/home-goals-streak-protection-v1.js?v=20260814-streak-goals-v3';\n  script.defer = true;\n  document.head.appendChild(script);\n})();\n\n",
               ""
             );
           }
