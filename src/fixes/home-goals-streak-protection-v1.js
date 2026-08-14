@@ -6,7 +6,11 @@
   const STYLE_ID = 'fixaHomeGoalsStreakProtectionV1Style';
   const FROZEN_FIRE_SRC = 'referencias/fogo-congelado-sequencia.png';
   const GOAL_REWARDS = { questions: 20, tests: 25, mastered: 40 };
-  const state = { protection: { available: 0, maximum: 3, protected_days: [] }, syncing: false };
+  const state = {
+    protection: { available: 0, maximum: 3, protected_days: [] },
+    weekXp: 0,
+    syncing: false
+  };
 
   const getClient = () => {
     try {
@@ -37,6 +41,10 @@
   }
   function startOfDay(base = new Date()) { const d = new Date(base); d.setHours(0,0,0,0); return d; }
   function startOfWeek(base = new Date()) { const d = startOfDay(base); d.setDate(d.getDate() - ((d.getDay()+6)%7)); return d; }
+  function localDateKey(date) {
+    if (!date) return '';
+    return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  }
   function currentRange() {
     const period = document.querySelector('[data-fixa-week-period].active')?.dataset.fixaWeekPeriod || 'week';
     const now = new Date();
@@ -51,9 +59,12 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      .fixa-streak-freeze-box{height:38px;min-width:68px;border:1px solid #c8dcff;border-radius:9px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;color:#1d4ed8;background:#edf5ff;font-size:11px;font-weight:850;box-shadow:none;white-space:nowrap}
+      .topbar .tab,[data-view="home"].tab,[data-view="questions"].tab,[data-view="test"].tab,[data-view="competition"].tab,[data-competition-view].tab{height:38px!important;min-height:38px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
+      .fixa-streak-freeze-box{height:38px;border:1px solid #c8dcff;border-radius:9px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;color:#1d4ed8;background:#edf5ff;font-size:11px;font-weight:850;box-shadow:none;white-space:nowrap;box-sizing:border-box}
       .fixa-streak-freeze-box img{width:18px;height:24px;object-fit:contain;display:block}
       .fixa-streak-freeze-box:hover{background:#e7f1ff;border-color:#b8d1ff}
+      #homeSummaryCards.fixa-home-summary-with-week-xp{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+      .fixa-week-xp-card .home-card-number{color:#7c3aed!important}
       .fixa-performance-expanded{height:auto!important;min-height:0!important;overflow:visible!important}
       .fixa-performance-expanded .fixa-week-main-stage{height:auto!important;min-height:365px!important}
       #homePerformance.fixa-performance-extra{display:grid!important;gap:5px!important}
@@ -61,10 +72,9 @@
       .fixa-performance-extra-row span{display:flex;align-items:center;gap:7px;min-width:0;color:#53617a;font-size:8px}.fixa-performance-extra-row strong{font-size:9.5px;color:#172033;white-space:nowrap}.fixa-performance-extra-row strong.good{color:#15803d}.fixa-performance-extra-row strong.bad{color:#c2413b}
       .fixa-performance-extra-dot{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;background:#eef4ff;color:#2563eb;font-size:11px;flex:0 0 22px}
       .fixa-goal-reward{margin-left:auto;padding:3px 6px;border-radius:999px;color:#7c3aed;background:#f3e8ff;font-size:7px;font-weight:850;white-space:nowrap}
-      .fixa-goal-footer{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-      .fixa-goal-footer-card{min-height:52px;padding:8px 10px;border:1px solid #e5eaf3;border-radius:9px;background:#fafcff;display:grid;align-content:center;gap:2px}
-      .fixa-goal-footer-card span{color:#6b778c;font-size:7.5px}.fixa-goal-footer-card strong{font-size:14px;color:#172033}.fixa-goal-footer-card.protection{grid-template-columns:auto 1fr;column-gap:8px}.fixa-goal-footer-card.protection img{width:24px;height:34px;object-fit:contain;grid-row:1/3}.fixa-goal-footer-card.protection strong{color:#2563eb}
-      @media(max-width:760px){.fixa-goal-footer{grid-template-columns:1fr}.fixa-streak-freeze-box{min-width:56px;padding:0 8px}}
+      #homeGoalsPanel button,#homeGoals+button{ }
+      @media(max-width:1080px){#homeSummaryCards.fixa-home-summary-with-week-xp{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+      @media(max-width:760px){#homeSummaryCards.fixa-home-summary-with-week-xp{grid-template-columns:1fr!important}.fixa-streak-freeze-box{padding:0 8px}}
     `;
     document.head.appendChild(style);
   }
@@ -73,6 +83,22 @@
     const client = getClient();
     if (!client) return { data:null, error:new Error('Supabase indisponível') };
     return client.rpc(name,args);
+  }
+
+  async function loadWeekXp() {
+    const client = getClient();
+    if (!client?.from) return;
+    try {
+      const start = startOfWeek(new Date());
+      const end = new Date(start); end.setDate(end.getDate()+6);
+      const { data: rows, error } = await client
+        .from('user_xp_events')
+        .select('points,occurred_on')
+        .gte('occurred_on', localDateKey(start))
+        .lte('occurred_on', localDateKey(end));
+      if (!error && Array.isArray(rows)) state.weekXp = rows.reduce((sum,row)=>sum+Math.max(0,Number(row?.points||0)),0);
+    } catch (_) {}
+    renderWeekXpCard();
   }
 
   async function syncProtection() {
@@ -85,16 +111,39 @@
     } finally {
       state.syncing = false;
       renderProtectionBox();
-      renderGoalFooter();
       patchSequenceWithProtectedDays();
     }
+  }
+
+  function findTopbarStreakBox() {
+    const right = document.querySelector('.topbar-right');
+    if (!right) return null;
+    return Array.from(right.querySelectorAll('button,div,span')).find(el => {
+      if (el.classList.contains('fixa-streak-freeze-box')) return false;
+      const text=(el.textContent||'').trim();
+      return /^\s*[^\d]*\d+\s+dias?\s*$/i.test(text) || /^\s*\d+\s+dias?\s*$/i.test(text);
+    }) || right.querySelector('[class*=streak], [class*=sequence]');
+  }
+
+  function matchFreezeToStreak(box, streakBox) {
+    if (!box || !streakBox) return;
+    const rect = streakBox.getBoundingClientRect();
+    const css = getComputedStyle(streakBox);
+    if (rect.width > 0) {
+      box.style.width = `${Math.round(rect.width)}px`;
+      box.style.minWidth = `${Math.round(rect.width)}px`;
+    }
+    if (rect.height > 0) box.style.height = `${Math.round(rect.height)}px`;
+    box.style.borderRadius = css.borderRadius;
+    box.style.padding = css.padding;
+    box.style.fontSize = css.fontSize;
+    box.style.fontWeight = css.fontWeight;
   }
 
   function renderProtectionBox() {
     const right = document.querySelector('.topbar-right');
     if (!right) return;
-    let streakBox = Array.from(right.querySelectorAll('button,div,span')).find(el => /\bdias?\b/i.test((el.textContent||'').trim()) && !el.classList.contains('fixa-streak-freeze-box'));
-    if (!streakBox) streakBox = right.querySelector('[class*=streak], [class*=sequence]');
+    const streakBox = findTopbarStreakBox();
     let box = right.querySelector('.fixa-streak-freeze-box');
     if (!box) {
       box = document.createElement('div');
@@ -104,6 +153,7 @@
       else right.prepend(box);
     }
     box.innerHTML = `<img src="${FROZEN_FIRE_SRC}" alt=""><span>${Math.max(0,Number(state.protection?.available||0))}</span>`;
+    requestAnimationFrame(()=>matchFreezeToStreak(box,findTopbarStreakBox()));
   }
 
   function selectedSubjects() {
@@ -168,8 +218,16 @@
     });
   }
 
+  function removeAddObjectiveButton() {
+    const goals=document.querySelector('#homeGoals');
+    const panel=goals?.closest('.home-panel') || goals?.parentElement;
+    if(!panel)return;
+    panel.querySelectorAll('button').forEach(button=>{
+      if(/adicionar\s+objetivo/i.test(button.textContent||'')) button.remove();
+    });
+  }
+
   function goalValues() {
-    const stats=performanceStats();
     const cards=Array.from(document.querySelectorAll('#homeGoals .fixa-week-goal'));
     return cards.map((card,index)=>{
       const small=card.querySelector('small')?.textContent||'';
@@ -193,15 +251,31 @@
         p_metadata:{reward_points:goal.reward,goal_index:goal.index}
       });
     }
+    loadWeekXp();
   }
 
-  function renderGoalFooter() {
-    const goals=document.querySelector('#homeGoals'); if(!goals)return;
-    const panel=goals.closest('.home-panel') || goals.parentElement; if(!panel)return;
-    let footer=panel.querySelector('.fixa-goal-footer');
-    if(!footer){footer=document.createElement('div');footer.className='fixa-goal-footer';panel.appendChild(footer);}
-    const total=goalValues().reduce((s,g)=>s+g.reward,0);
-    footer.innerHTML=`<div class="fixa-goal-footer-card"><span>XP total possível neste período</span><strong>${total} XP</strong></div><div class="fixa-goal-footer-card protection"><img src="${FROZEN_FIRE_SRC}" alt=""><span>Proteção de sequência</span><strong>${Math.max(0,Number(state.protection?.available||0))} / ${Number(state.protection?.maximum||3)}</strong></div>`;
+  function removeGoalFooter() {
+    document.querySelectorAll('.fixa-goal-footer').forEach(el=>el.remove());
+  }
+
+  function renderWeekXpCard() {
+    const grid=document.querySelector('#homeSummaryCards');
+    if(!grid)return;
+    grid.classList.add('fixa-home-summary-with-week-xp');
+    let card=grid.querySelector('.fixa-week-xp-card');
+    if(!card){
+      card=document.createElement('article');
+      card.className='home-card fixa-week-xp-card';
+      card.innerHTML='<span><strong>XP na semana</strong><span class="home-card-number">0 XP</span><small class="home-muted">Total acumulado na semana</small></span>';
+    }
+    const xpCard=grid.querySelector('.fixa-xp-card');
+    if(xpCard){
+      if(card.previousElementSibling!==xpCard) xpCard.insertAdjacentElement('afterend',card);
+    }else if(!card.parentElement){
+      grid.appendChild(card);
+    }
+    const number=card.querySelector('.home-card-number');
+    if(number)number.textContent=`${Math.max(0,Number(state.weekXp||0))} XP`;
   }
 
   function patchObjectiveSummary() {
@@ -220,10 +294,32 @@
     return days;
   }
   function correctedStreak(days){if(!days.size)return 0;const cursor=new Date();cursor.setHours(12,0,0,0);if(!days.has(dateKey(cursor)))cursor.setDate(cursor.getDate()-1);let s=0;while(days.has(dateKey(cursor))){s++;cursor.setDate(cursor.getDate()-1);}return s;}
+
+  function setTopbarStreak(streak){
+    const box=findTopbarStreakBox();
+    if(!box)return;
+    const walker=document.createTreeWalker(box,NodeFilter.SHOW_TEXT);
+    let node;
+    while((node=walker.nextNode())){
+      if(/\d+\s+dias?/i.test(node.nodeValue||'')){
+        node.nodeValue=(node.nodeValue||'').replace(/\d+\s+dias?/i,`${streak} dia${streak===1?'':'s'}`);
+        return;
+      }
+    }
+    const candidate=Array.from(box.children||[]).find(el=>/\d+\s+dias?/i.test(el.textContent||''));
+    if(candidate)candidate.textContent=`${streak} dia${streak===1?'':'s'}`;
+  }
+
   function patchSequenceWithProtectedDays(){
-    const card=document.querySelector('#homeFooterStats .fixa-week-top-card:first-child');if(!card)return;
-    const days=activityDays(),streak=correctedStreak(days),label=card.querySelector('.fixa-week-top-head>b');
+    const days=activityDays(),streak=correctedStreak(days);
+    const card=document.querySelector('#homeFooterStats .fixa-week-top-card:first-child');
+    const label=card?.querySelector('.fixa-week-top-head>b');
     if(label)label.textContent=`${streak} dia${streak===1?'':'s'} seguidos`;
+    setTopbarStreak(streak);
+    requestAnimationFrame(()=>{
+      const freeze=document.querySelector('.fixa-streak-freeze-box');
+      matchFreezeToStreak(freeze,findTopbarStreakBox());
+    });
   }
 
   function apply(){
@@ -231,7 +327,9 @@
     renderProtectionBox();
     renderPerformanceExtras();
     patchGoalCards();
-    renderGoalFooter();
+    removeAddObjectiveButton();
+    removeGoalFooter();
+    renderWeekXpCard();
     patchObjectiveSummary();
     patchSequenceWithProtectedDays();
     document.querySelector('.fixa-week-main-shell')?.classList.add('fixa-performance-expanded');
@@ -242,6 +340,6 @@
   function schedule(delay=0){clearTimeout(timer);timer=setTimeout(()=>requestAnimationFrame(apply),delay);}
   document.addEventListener('click',e=>{if(e.target.closest('[data-view="home"],#homeTopTab,[data-fixa-main-tab],[data-fixa-week-period]'))schedule(30);},true);
   document.addEventListener('change',e=>{if(e.target.closest('#fixaWeekFolderFilter'))schedule(30);},true);
-  window.addEventListener('load',()=>{schedule(80);syncProtection();},{once:true});
-  schedule(0); syncProtection();
+  window.addEventListener('load',()=>{schedule(80);syncProtection();loadWeekXp();},{once:true});
+  schedule(0); syncProtection(); loadWeekXp();
 })();
