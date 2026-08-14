@@ -12,12 +12,13 @@
     */
 
     /*
-      Questões é a referência visual: aproximadamente 6px entre a barra
-      secundária e a primeira caixa de conteúdo.
-      No Teste, o gap do próprio view somava espaço ao margin da barra.
+      Questões é a referência visual: aproximadamente 5–6px entre o botão
+      secundário ativo e a primeira caixa de conteúdo.
+      A barra do Teste já possui esse respiro interno; por isso o view não
+      deve acrescentar outro gap entre a barra e o conteúdo.
     */
     #appShell #test.view.active {
-      gap: 6px !important;
+      gap: 0 !important;
     }
 
     #appShell #test.view .test-tabs {
@@ -29,8 +30,8 @@
     }
 
     /*
-      Na Competição, a barra secundária e o conteúdo #cv3 são filhos diretos
-      da tela. O gap fica em 6px e a barra não acrescenta margem extra.
+      Na Competição, a barra secundária e o conteúdo já estão visualmente
+      no mesmo intervalo de Questões; mantém-se o comportamento existente.
     */
     #appShell .competition-v3.active {
       gap: 6px !important;
