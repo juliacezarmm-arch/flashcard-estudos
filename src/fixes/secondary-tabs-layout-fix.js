@@ -163,6 +163,14 @@
         transition: color .12s ease, background-color .12s ease, border-color .12s ease, box-shadow .12s ease !important;
       }
 
+      /* Questões, Teste e Competição sobem 1px para ficar exatamente no eixo visual do Início. */
+      #appShell .topbar-right > .tabs > .tab[data-view="questions"],
+      #appShell .topbar-right > .tabs > .tab[data-view="test"],
+      #appShell .topbar-right > .tabs > .tab[data-view="competition"],
+      #appShell .topbar-right > .tabs > .tab[data-competition-view] {
+        transform: translateY(-1px) !important;
+      }
+
       #appShell .topbar-right > .tabs > .tab:hover:not(.active),
       #appShell .topbar-right > .tabs > .tab:focus-visible:not(.active) {
         color: #2563eb !important;
