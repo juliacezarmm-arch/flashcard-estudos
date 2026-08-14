@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260813-home-greeting-subnav-v3";
+    const FIXA_VERSION = "20260814-home-single-render-v1";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "src/core/collections.js", "Não foi possível carregar as coleções."],
@@ -54,8 +54,9 @@
       ["accountDataIsolation", "src/auth/account-data-isolation.js", "Não foi possível isolar os dados desta conta."],
       ["collectionsMenuActions", "src/collections-menu/collections-menu-actions.js", "Não foi possível carregar as ações dos menus de coleções."],
       ["collectionsFloatingMenuFix", "src/collections-menu/collections-floating-menu-fix.js", "Não foi possível restaurar o menu flutuante das coleções."],
-      ["homeArtCompetitionFix", "src/fixes/home-art-and-competition-icon-fix.js", "Não foi possível ajustar o ícone de competição."],
-      ["homeTodayPolishNoScroll", "src/fixes/home-today-polish-no-scroll.js", "Não foi possível carregar o painel semanal."],
+      ["homeTodayPolishNoScroll", "src/fixes/home-today-polish-no-scroll.js", "Não foi possível carregar a estrutura da página inicial."],
+      ["homeUnifiedDashboardV2", "src/fixes/home-unified-dashboard-v2.js", "Não foi possível carregar a página inicial consolidada."],
+      ["homeArtCompetitionFix", "src/fixes/home-art-and-competition-icon-fix.js", "Não foi possível ajustar o cabeçalho e o ícone de competição."],
       ["homeEmptyStateArt", "src/fixes/home-empty-state-art.js", "Não foi possível carregar os estados auxiliares da página inicial."]
     ];
 
@@ -70,7 +71,7 @@
       .then(entries => {
         const assets = Object.fromEntries(entries);
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "testFolder", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "secondaryTabsLayoutFix", "secondaryContentSpacingV1", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix", "competitionUpdateV3", "competitionSecondaryTabsPlacement", "competitionPolishV6", "competitionActiveFlowV1", "competitionManagerV7", "competitionPositionCardV1", "competitionLayoutBalanceV1", "competitionInvitationsV9", "accountDataIsolation", "competitionXpHomeV4", "collectionsMenuActions", "collectionsFloatingMenuFix", "homeArtCompetitionFix", "homeTodayPolishNoScroll", "homeEmptyStateArt"];
+        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "testFolder", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "secondaryTabsLayoutFix", "secondaryContentSpacingV1", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix", "competitionUpdateV3", "competitionSecondaryTabsPlacement", "competitionPolishV6", "competitionActiveFlowV1", "competitionManagerV7", "competitionPositionCardV1", "competitionLayoutBalanceV1", "competitionInvitationsV9", "accountDataIsolation", "competitionXpHomeV4", "collectionsMenuActions", "collectionsFloatingMenuFix", "homeTodayPolishNoScroll", "homeUnifiedDashboardV2", "homeArtCompetitionFix", "homeEmptyStateArt"];
         const scripts = scriptFiles.map(key => {
           let safeCode = assets[key];
 
@@ -107,13 +108,6 @@
             );
           }
 
-          if (key === "homeArtCompetitionFix") {
-            safeCode = safeCode.replace(
-              "  const observer = new MutationObserver(() => requestAnimationFrame(ensureCompetitionTrophy));\n  observer.observe(document.documentElement, { childList:true, subtree:true });",
-              "  const observerTarget = document.querySelector('.topbar') || document.querySelector('header');\n  if (observerTarget) new MutationObserver(() => requestAnimationFrame(ensureCompetitionTrophy)).observe(observerTarget, { childList:true, subtree:true });"
-            );
-          }
-
           if (key === "reviewStorageUpload") {
             safeCode = safeCode.replace(
               "function resolveStorageImage(img) {\n    const source = img.getAttribute('src') || '';",
@@ -122,45 +116,63 @@
           }
 
           if (key === "homeTodayPolishNoScroll") {
+            /* O módulo antigo fica apenas como base de dados/estrutura. Depois que a Home final existe,
+               ele não volta a reposicionar o cabeçalho nem deixa uma versão intermediária na tela. */
             safeCode = safeCode.replace(
-              "  if (window.FixaHomeWeeklyDashboardV2) return;\n  window.FixaHomeWeeklyDashboardV2 = true;",
-              "  if (window.FixaHomeWeeklyDashboardV2?.refresh) return;\n  window.FixaHomeWeeklyDashboardV2 = { refresh: null };"
+              "    ensureHeader(home);",
+              "    if (!home.querySelector('.fixa-home-header-row')) ensureHeader(home);"
             );
             safeCode = safeCode.replace(
-              "    const date = home.querySelector('#homeDatePill');\n    if (!hero || !actions || !greeting || !date) return;",
-              "    const date = home.querySelector('#homeDatePill');\n    const nav = home.querySelector('.home-subtabs');\n    if (!hero || !actions || !greeting || !date || !nav) return;"
+              "        setupLayout();\n        renderWeeklyDashboard();",
+              "        setupLayout();\n        renderWeeklyDashboard();\n        window.FixaHomeUnifiedDashboardV2?.refresh?.();"
             );
             safeCode = safeCode.replace(
-              "    if (greeting.parentElement !== greetingSlot) greetingSlot.appendChild(greeting);",
-              "    if (greeting.parentElement !== nav) nav.appendChild(greeting);"
+              "      state.folderId = select.value || 'all';\n      renderWeeklyDashboard();",
+              "      state.folderId = select.value || 'all';\n      renderWeeklyDashboard();\n      window.FixaHomeUnifiedDashboardV2?.refresh?.();"
             );
             safeCode = safeCode.replace(
-              "    #home .home-subtabs{margin:-4px 0 -3px!important;gap:7px!important;min-height:32px!important}",
-              "    #home .home-subtabs{width:100%!important;max-width:none!important;margin:-4px 0 -3px!important;gap:7px!important;min-height:32px!important;background:transparent!important;padding:0!important}"
+              "        state.period = ['today', 'week', 'month'].includes(period.dataset.fixaWeekPeriod) ? period.dataset.fixaWeekPeriod : 'week';\n        renderWeeklyDashboard();\n        return;",
+              "        state.period = ['today', 'week', 'month'].includes(period.dataset.fixaWeekPeriod) ? period.dataset.fixaWeekPeriod : 'week';\n        renderWeeklyDashboard();\n        window.FixaHomeUnifiedDashboardV2?.refresh?.();\n        return;"
             );
             safeCode = safeCode.replace(
-              "    #home .home-subtab svg{width:14px;height:14px;fill:none;stroke:currentColor}",
-              "    #home .home-subtab svg{width:14px;height:14px;fill:none;stroke:currentColor}\n    #home .home-subtabs>#homeGreeting{margin:0 0 0 auto!important;font-size:20px!important;line-height:24px!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:5px!important;white-space:nowrap!important}\n    #home .home-subtabs>#homeGreeting .home-greeting-wave{width:20px!important;height:20px!important}"
+              "    renderWeeklyDashboard();\n    queueRefresh(80);\n    window.setTimeout(() => {\n      if (document.querySelector('#home.home-view')) {\n        setupLayout();\n        renderWeeklyDashboard();\n      }\n    }, 320);\n    return true;",
+              "    renderWeeklyDashboard();\n    return true;"
+            );
+          }
+
+          if (key === "homeUnifiedDashboardV2") {
+            /* A Home final passa a ser aplicada uma única vez por ciclo, sem polling e sem setTimeouts concorrentes. */
+            safeCode = safeCode.replace(
+              "  if (window.FixaHomeUnifiedDashboardV2) return;\n  window.FixaHomeUnifiedDashboardV2 = true;",
+              "  if (window.FixaHomeUnifiedDashboardV2?.active) return;\n  window.FixaHomeUnifiedDashboardV2 = { active: true, refresh: null };"
             );
             safeCode = safeCode.replace(
-              "    #home .home-hero-head{min-height:70px!important;margin:-7px 0 -2px!important;",
-              "    #home .home-hero-head{min-height:43px!important;margin:-2px 0 -2px!important;"
+              "if(!firstTabApplied){firstTabApplied=true;setTimeout(()=>shell.querySelector('[data-fixa-main-tab=\"performance-goals\"]')?.click(),0);}",
+              "if(!firstTabApplied){firstTabApplied=true;shell.querySelector('[data-fixa-main-tab=\"performance-goals\"]')?.click();}"
             );
             safeCode = safeCode.replace(
-              "    .fixa-week-header-stack{display:grid;justify-items:end;gap:1px;min-width:min(100%,540px)}",
-              "    .fixa-week-header-stack{display:grid;justify-items:end;gap:0;min-width:min(100%,540px)}"
+              "  function wrapDashboardRefresh(){\n    const api=window.FixaHomeWeeklyDashboardV2;if(!api||typeof api.refresh!=='function'||api.__unifiedDashboardV2Wrapped)return false;\n    const original=api.refresh.bind(api);api.refresh=(...args)=>{const result=original(...args);setTimeout(apply,0);return result;};Object.defineProperty(api,'__unifiedDashboardV2Wrapped',{value:true,configurable:false});return true;\n  }",
+              "  function wrapDashboardRefresh(){ return true; }"
             );
             safeCode = safeCode.replace(
-              "    .fixa-week-greeting-slot{min-height:25px}.fixa-week-greeting-slot #homeGreeting{margin:0!important;font-size:20px!important;line-height:24px!important;justify-content:flex-end!important}.fixa-week-greeting-slot .home-greeting-wave{width:20px!important;height:20px!important}",
-              "    .fixa-week-greeting-slot{display:none!important}"
+              "if(event.target.closest('[data-view=\"home\"],#homeTopTab,[data-fixa-main-tab],[data-fixa-week-period],[data-view=\"test\"]')){apply();setTimeout(apply,0);hideTestAnalysisButton();}",
+              "if(event.target.closest('[data-view=\"home\"],#homeTopTab,[data-fixa-main-tab],[data-fixa-week-period],[data-view=\"test\"]')){apply();hideTestAnalysisButton();}"
             );
             safeCode = safeCode.replace(
-              "    @media(max-width:760px){#home .home-hero-head{min-height:0!important;margin:0!important}.fixa-week-header-stack{width:100%;min-width:0;justify-items:stretch}.fixa-week-greeting-slot,.fixa-week-date-slot{text-align:right}.fixa-week-greeting-slot #homeGreeting{justify-content:flex-end!important;font-size:19px!important}",
-              "    @media(max-width:760px){#home .home-hero-head{min-height:0!important;margin:0!important}.fixa-week-header-stack{width:100%;min-width:0;justify-items:stretch}.fixa-week-date-slot{text-align:right}#home .home-subtabs{flex-wrap:wrap!important}#home .home-subtabs>#homeGreeting{justify-content:flex-end!important;font-size:19px!important}"
+              "document.addEventListener('change',event=>{if(event.target.closest('#fixaWeekFolderFilter')){apply();setTimeout(apply,0);}});",
+              "document.addEventListener('change',event=>{if(event.target.closest('#fixaWeekFolderFilter'))apply();});"
             );
             safeCode = safeCode.replace(
-              "  if (!install()) document.addEventListener('DOMContentLoaded', () => install(), { once: true });\n})();",
-              "  window.FixaHomeWeeklyDashboardV2.refresh = () => queueRefresh(0);\n  if (!install()) document.addEventListener('DOMContentLoaded', () => install(), { once: true });\n})();"
+              "  let tries=0;const boot=setInterval(()=>{tries+=1;wrapDashboardRefresh();hideTestAnalysisButton();const ready=apply();if((ready&&wrapDashboardRefresh()&&tries>=8)||tries>=40)clearInterval(boot);},200);\n  window.addEventListener('load',()=>{schedule(0);setTimeout(apply,250);},{once:true});\n  wrapDashboardRefresh();schedule(0);",
+              "  const bootOnce=()=>{wrapDashboardRefresh();hideTestAnalysisButton();apply();};\n  window.FixaHomeUnifiedDashboardV2.refresh=()=>apply();\n  bootOnce();\n  window.addEventListener('load',bootOnce,{once:true});"
+            );
+          }
+
+          if (key === "homeArtCompetitionFix") {
+            /* O dashboard V2 já foi carregado diretamente acima; não carregar uma segunda cópia por script dinâmico. */
+            safeCode = safeCode.replace(
+              "  loadHomeModule('src/fixes/home-unified-dashboard-v2.js', 'fixaHomeUnifiedDashboardV2Loader');\n",
+              ""
             );
           }
 
