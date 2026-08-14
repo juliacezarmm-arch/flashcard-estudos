@@ -1,5 +1,5 @@
 /* Mantém somente o ícone vetorial da Competição.
-   As ilustrações e ajustes finais da tela inicial são controlados pelos módulos dedicados. */
+   A página inicial consolidada é carregada por um único módulo. */
 (() => {
   'use strict';
 
@@ -57,22 +57,22 @@
     svg?.classList.add('competition-tab-icon');
   }
 
-  function loadHomePolishModule(src, id) {
+  function loadHomeModule(src, id) {
     if (document.getElementById(id)) return;
     const script = document.createElement('script');
     script.id = id;
-    script.src = `${src}?v=20260814-unified-dashboard-v1`;
+    script.src = `${src}?v=20260814-home-consolidated-v2`;
     script.defer = true;
     document.head.appendChild(script);
   }
 
-  loadHomePolishModule('src/fixes/home-readable-layout-v1.js', 'fixaHomeReadableLayoutV1Loader');
-  loadHomePolishModule('src/fixes/home-today-period-v1.js', 'fixaHomeTodayPeriodV1Loader');
-  loadHomePolishModule('src/fixes/home-study-insights-v1.js', 'fixaHomeStudyInsightsV1Loader');
-  loadHomePolishModule('src/fixes/home-unified-dashboard-v1.js', 'fixaHomeUnifiedDashboardV1Loader');
+  loadHomeModule('src/fixes/home-unified-dashboard-v2.js', 'fixaHomeUnifiedDashboardV2Loader');
 
-  const observer = new MutationObserver(() => requestAnimationFrame(ensureCompetitionTrophy));
-  observer.observe(document.documentElement, { childList:true, subtree:true });
+  const observerTarget = document.querySelector('.topbar') || document.querySelector('header');
+  if (observerTarget) {
+    new MutationObserver(() => requestAnimationFrame(ensureCompetitionTrophy))
+      .observe(observerTarget, { childList:true, subtree:true });
+  }
   window.addEventListener('load', ensureCompetitionTrophy);
   ensureCompetitionTrophy();
 })();
@@ -165,25 +165,24 @@
 
   document.addEventListener('click', event => {
     if (event.target.closest('[data-view="home"],#homeTopTab,[data-fixa-week-period],[data-fixa-main-tab]')) {
-      schedule(20);
-      schedule(100);
+      schedule(0);
     }
-  }, true);
+  });
 
   document.addEventListener('change', event => {
-    if (event.target.closest('#fixaWeekFolderFilter')) schedule(30);
-  }, true);
+    if (event.target.closest('#fixaWeekFolderFilter')) schedule(0);
+  });
 
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) schedule(30);
+    if (!document.hidden) schedule(0);
   });
 
   let attempts = 0;
   const boot = window.setInterval(() => {
     attempts += 1;
-    if (apply() || attempts >= 30) window.clearInterval(boot);
+    if (apply() || attempts >= 20) window.clearInterval(boot);
   }, 200);
 
-  window.addEventListener('load', () => { schedule(50); schedule(400); }, { once:true });
+  window.addEventListener('load', () => schedule(0), { once:true });
   schedule(0);
 })();
