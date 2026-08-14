@@ -1,5 +1,5 @@
-/* Mantém somente o ícone vetorial da Competição.
-   A página inicial consolidada é carregada por um único módulo. */
+/* Ícone da Competição + cabeçalho final da Home.
+   Este arquivo não carrega nem redesenha o dashboard: ele cuida somente desses dois elementos. */
 (() => {
   'use strict';
 
@@ -57,35 +57,23 @@
     svg?.classList.add('competition-tab-icon');
   }
 
-  function loadHomeModule(src, id) {
-    if (document.getElementById(id)) return;
-    const script = document.createElement('script');
-    script.id = id;
-    script.src = `${src}?v=20260814-home-consolidated-v2`;
-    script.defer = true;
-    document.head.appendChild(script);
-  }
-
-  loadHomeModule('src/fixes/home-unified-dashboard-v2.js', 'fixaHomeUnifiedDashboardV2Loader');
-
   const observerTarget = document.querySelector('.topbar') || document.querySelector('header');
   if (observerTarget) {
     new MutationObserver(() => requestAnimationFrame(ensureCompetitionTrophy))
       .observe(observerTarget, { childList:true, subtree:true });
   }
-  window.addEventListener('load', ensureCompetitionTrophy);
+  window.addEventListener('load', ensureCompetitionTrophy, { once:true });
   ensureCompetitionTrophy();
 })();
 
 /* Cabeçalho do Início: saudação à esquerda e filtros à direita, na mesma linha. */
 (() => {
   'use strict';
-  if (window.FixaHomeCompactHeaderRowV1) return;
-  window.FixaHomeCompactHeaderRowV1 = true;
+  if (window.FixaHomeCompactHeaderRowV2) return;
+  window.FixaHomeCompactHeaderRowV2 = true;
 
   const STYLE_ID = 'fixaHomeCompactHeaderRowStyle';
   let applying = false;
-  let headerObserver = null;
 
   function ensureStyle() {
     if (document.getElementById(STYLE_ID)) return;
@@ -113,21 +101,14 @@
     document.head.appendChild(style);
   }
 
-  function observeHero(hero) {
-    if (!hero || headerObserver) return;
-    headerObserver = new MutationObserver(() => schedule(0));
-    headerObserver.observe(hero, { childList:true, subtree:true });
-  }
-
   function apply() {
     if (applying) return false;
     const home = document.querySelector('#home.home-view');
-    const hero = home?.querySelector('.home-hero-head');
     const actions = home?.querySelector('.home-hero-actions');
     const greeting = home?.querySelector('#homeGreeting');
     const date = home?.querySelector('#homeDatePill');
     const filters = home?.querySelector('.fixa-week-filters');
-    if (!home || !hero || !actions || !greeting || !date || !filters) return false;
+    if (!home || !actions || !greeting || !date || !filters) return false;
 
     applying = true;
     try {
@@ -144,45 +125,24 @@
       if (greeting.parentElement !== left) left.appendChild(greeting);
       if (date.parentElement !== left) left.appendChild(date);
       if (filters.parentElement !== right) right.appendChild(filters);
-      observeHero(hero);
       return true;
     } finally {
       applying = false;
     }
   }
 
-  let scheduled = false;
-  function schedule(delay = 0) {
-    window.setTimeout(() => {
-      if (scheduled) return;
-      scheduled = true;
-      requestAnimationFrame(() => {
-        scheduled = false;
-        apply();
-      });
-    }, delay);
-  }
-
   document.addEventListener('click', event => {
-    if (event.target.closest('[data-view="home"],#homeTopTab,[data-fixa-week-period],[data-fixa-main-tab]')) {
-      schedule(0);
-    }
+    if (event.target.closest('[data-view="home"],#homeTopTab,[data-fixa-week-period],[data-fixa-main-tab]')) apply();
   });
 
   document.addEventListener('change', event => {
-    if (event.target.closest('#fixaWeekFolderFilter')) schedule(0);
+    if (event.target.closest('#fixaWeekFolderFilter')) apply();
   });
 
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) schedule(0);
+    if (!document.hidden) apply();
   });
 
-  let attempts = 0;
-  const boot = window.setInterval(() => {
-    attempts += 1;
-    if (apply() || attempts >= 20) window.clearInterval(boot);
-  }, 200);
-
-  window.addEventListener('load', () => schedule(0), { once:true });
-  schedule(0);
+  window.addEventListener('load', apply, { once:true });
+  apply();
 })();
