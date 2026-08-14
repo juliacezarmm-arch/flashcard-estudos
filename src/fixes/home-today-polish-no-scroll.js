@@ -381,16 +381,18 @@
     const score = tests.reduce((sum, test) => sum + Number(test.score || 0), 0);
     const xpSummary = window.FixaCompetitionXpHomeV4?.summary || {};
     const xp = Number(xpSummary.total_xp || completedTests().reduce((sum, test) => sum + Number(test.xp || 0), 0));
+    const weekXp = Number(window.FixaHomeGoalsStreakProtectionV1?.weekXp || 0);
     const rows = [
       ['books', 'Coleções', subjects().length, 'Total de coleções', 'green'],
       ['question', 'Questões', cards.length, 'Total de questões', 'cyan'],
       ['trophy', 'Dominadas', mastered, `${percent(mastered, cards.length)}% do total`, 'orange'],
       ['chart', 'Aproveitamento', `${percent(score, total)}%`, `Média de ${periodWord()}`, 'purple'],
-      ['target', 'XP', xp, 'Total de todas as coleções', 'blue']
+      ['target', 'XP de todas as coleções', xp, '', 'blue'],
+      ['target', 'XP acumulado na semana', weekXp, '', 'blue']
     ];
     grid.classList.add('fixa-week-summary');
     grid.innerHTML = rows.map(([ico, label, value, caption, tone]) => `
-      <article class="home-card fixa-week-summary-card${label === 'XP' ? ' fixa-xp-card' : ''}">
+      <article class="home-card fixa-week-summary-card${label.startsWith('XP') ? ' fixa-xp-card' : ''}">
         <span class="fixa-week-summary-icon ${tone}">${icon(ico)}</span>
         <span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span>
       </article>`).join('');
@@ -827,7 +829,7 @@
     .fixa-week-top-head{display:flex;align-items:center;gap:7px;min-width:0}.fixa-week-top-head h3{margin:0;font-size:12px;line-height:15px;flex:1;white-space:nowrap}.fixa-week-top-head>b{color:#2563eb;font-size:10px;white-space:nowrap}.fixa-week-symbol{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;background:#eef4ff;color:#2563eb}.fixa-week-symbol.orange{background:#fff2e7;color:#ea580c}.fixa-week-symbol svg{width:14px;height:14px}
     .fixa-week-main-value{font-size:22px;line-height:24px;color:#172033}.fixa-week-top-card>small{font-size:8.5px;line-height:10px;color:#687086}.fixa-week-top-card>.home-progress{height:4px!important;margin-top:2px!important}.fixa-week-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:3px}.fixa-week-day{display:grid;place-items:center;gap:1px;color:#64748b}.fixa-week-day i{width:22px;height:22px;border:1px solid #dde5ef;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:9px;background:#fff}.fixa-week-day.active i{border-color:#f5b071;color:#8a4300;background:#f7b373}.fixa-week-day b{font-size:8px;color:#26324b}
 
-    #homeSummaryCards.fixa-week-summary{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:8px!important}
+    #homeSummaryCards.fixa-week-summary{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:8px!important}
     .fixa-week-summary-card{height:70px!important;min-height:70px!important;padding:8px 10px!important;display:grid!important;grid-template-columns:38px minmax(0,1fr)!important;align-items:center!important;gap:8px!important}.fixa-week-summary-card .home-card-number{font-size:19px!important;line-height:21px!important}.fixa-week-summary-card strong{font-size:10px!important;line-height:12px!important;margin-bottom:1px!important}.fixa-week-summary-card small{font-size:8px!important;line-height:9px!important}.fixa-week-summary-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center}.fixa-week-summary-icon svg{width:21px;height:21px}.fixa-week-summary-icon.green{color:#15803d;background:#effbf3}.fixa-week-summary-icon.cyan{color:#0284c7;background:#ecf8ff}.fixa-week-summary-icon.orange{color:#ea580c;background:#fff3e8}.fixa-week-summary-icon.purple{color:#9333ea;background:#f7efff}.fixa-week-summary-icon.blue{color:#2563eb;background:#eef4ff}
 
     .fixa-week-main-shell,.fixa-week-analysis-shell{width:100%!important;padding:0!important;overflow:hidden!important;border-radius:14px!important}
