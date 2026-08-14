@@ -368,3 +368,35 @@
   `;
   document.head.appendChild(style);
 })();
+
+/* Card XP semanal: somente o valor acompanha o visual do XP total. */
+(() => {
+  'use strict';
+  if (window.FixaWeeklyXpValueMatchV1) return;
+  window.FixaWeeklyXpValueMatchV1 = true;
+
+  function apply() {
+    const cards = document.querySelectorAll('#homeSummaryCards .fixa-week-summary-card');
+    const totalCard = cards[4];
+    const weekCard = cards[5];
+    const totalValue = totalCard?.querySelector('.home-card-number');
+    const weekValue = weekCard?.querySelector('.home-card-number');
+    if (!totalValue || !weekValue) return;
+
+    weekValue.textContent = (weekValue.textContent || '').replace(/\s*XP\s*$/i, '');
+    const css = getComputedStyle(totalValue);
+    weekValue.style.setProperty('color', css.color, 'important');
+    weekValue.style.setProperty('font-size', css.fontSize, 'important');
+    weekValue.style.setProperty('line-height', css.lineHeight, 'important');
+    weekValue.style.setProperty('font-weight', css.fontWeight, 'important');
+  }
+
+  document.addEventListener('click', event => {
+    if (event.target.closest('[data-view="home"],#homeTopTab,[data-fixa-week-period]')) requestAnimationFrame(apply);
+  }, true);
+  document.addEventListener('change', event => {
+    if (event.target.closest('#fixaWeekFolderFilter')) requestAnimationFrame(apply);
+  }, true);
+  window.addEventListener('load', apply, { once:true });
+  requestAnimationFrame(apply);
+})();
