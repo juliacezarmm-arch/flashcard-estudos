@@ -214,3 +214,84 @@
   window.addEventListener('load', queueApply, { once:true });
   queueApply();
 })();
+
+/* Painel branco principal: ocupa o restante da tela e só rola quando o conteúdo precisar. */
+(() => {
+  'use strict';
+  if (window.FixaHomeMainPanelFillViewportV1) return;
+  window.FixaHomeMainPanelFillViewportV1 = true;
+
+  const STYLE_ID = 'fixaHomeMainPanelFillViewportStyle';
+
+  function ensureStyle() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = `
+      #home .fixa-week-main-shell{
+        display:flex!important;
+        flex-direction:column!important;
+        overflow:hidden!important;
+        margin-bottom:0!important;
+      }
+      #home .fixa-week-content-tabs{
+        flex:0 0 auto!important;
+      }
+      #home .fixa-week-main-stage{
+        flex:1 1 auto!important;
+        height:auto!important;
+        min-height:0!important;
+        max-height:none!important;
+        overflow-y:auto!important;
+        overflow-x:hidden!important;
+        scrollbar-width:thin;
+        overscroll-behavior:contain;
+      }
+      #home .fixa-week-main-stage>[data-fixa-main-panel]{
+        min-height:100%!important;
+        height:auto!important;
+        overflow:visible!important;
+      }
+      #home .fixa-week-main-stage>[data-fixa-main-panel][hidden]{
+        display:none!important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function resizePanel() {
+    ensureStyle();
+    const shell = document.querySelector('#home .fixa-week-main-shell');
+    if (!shell || shell.offsetParent === null) return false;
+
+    const top = shell.getBoundingClientRect().top;
+    const bottomGap = 8;
+    const available = Math.max(240, Math.floor(window.innerHeight - top - bottomGap));
+
+    shell.style.setProperty('height', `${available}px`, 'important');
+    shell.style.setProperty('min-height', `${available}px`, 'important');
+    shell.style.setProperty('max-height', `${available}px`, 'important');
+    return true;
+  }
+
+  let frame = 0;
+  function scheduleResize() {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(resizePanel);
+  }
+
+  window.addEventListener('resize', scheduleResize);
+  window.addEventListener('load', scheduleResize, { once:true });
+  document.addEventListener('click', event => {
+    if (event.target.closest('[data-view="home"],#homeTopTab,[data-fixa-main-tab],[data-fixa-week-period]')) {
+      requestAnimationFrame(scheduleResize);
+    }
+  }, true);
+  document.addEventListener('change', event => {
+    if (event.target.closest('#fixaWeekFolderFilter')) requestAnimationFrame(scheduleResize);
+  }, true);
+
+  const observer = new MutationObserver(scheduleResize);
+  observer.observe(document.body, { childList:true, subtree:true });
+  scheduleResize();
+})();
