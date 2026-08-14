@@ -79,6 +79,37 @@
     return client.rpc(name, args);
   }
 
+  function polishXpSummaryCards() {
+    const grid = document.querySelector('#homeSummaryCards');
+    if (!grid) return;
+
+    const cards = Array.from(grid.querySelectorAll('.fixa-week-summary-card'));
+    const totalXpCard = cards.find(card =>
+      card.classList.contains('fixa-xp-card') ||
+      card.querySelector('strong')?.textContent?.trim() === 'XP' ||
+      card.querySelector('strong')?.textContent?.trim() === 'XP de todas as coleções'
+    );
+    if (totalXpCard) {
+      const title = totalXpCard.querySelector('strong');
+      if (title) title.textContent = 'XP de todas as coleções';
+      totalXpCard.querySelector('small.home-muted')?.remove();
+    }
+
+    const weekXpCard = cards.find(card => {
+      const title = card.querySelector('strong')?.textContent?.trim();
+      return title === 'XP na semana' || title === 'XP acumulado na semana';
+    });
+    if (weekXpCard) {
+      const title = weekXpCard.querySelector('strong');
+      if (title) title.textContent = 'XP acumulado na semana';
+      weekXpCard.querySelector('small.home-muted')?.remove();
+    }
+  }
+
+  function queueXpCardPolish() {
+    requestAnimationFrame(polishXpSummaryCards);
+  }
+
   function notifyHome() {
     if (typeof window.FixaHomeWeeklyDashboardV2?.refresh === 'function') {
       window.FixaHomeWeeklyDashboardV2.refresh();
@@ -86,6 +117,7 @@
     if (typeof window.FixaHomeUnifiedDashboardV2?.refresh === 'function') {
       window.FixaHomeUnifiedDashboardV2.refresh();
     }
+    queueXpCardPolish();
   }
 
   async function loadWeekXp() {
@@ -228,10 +260,22 @@
     renderProtectionBox();
     await Promise.all([loadWeekXp(), syncProtection()]);
     await awardCompletedGoals();
+    queueXpCardPolish();
   }
+
+  document.addEventListener('click', event => {
+    if (event.target.closest('[data-view="home"],#homeTopTab,[data-fixa-week-period]')) {
+      queueXpCardPolish();
+    }
+  }, true);
+
+  document.addEventListener('change', event => {
+    if (event.target.closest('#fixaWeekFolderFilter')) queueXpCardPolish();
+  }, true);
 
   window.addEventListener('fixa-xp-updated', loadWeekXp);
   window.addEventListener('load', refreshData, { once: true });
   renderProtectionBox();
+  queueXpCardPolish();
   refreshData();
 })();
