@@ -17,6 +17,7 @@
       #appShell.app:not(.locked) > main {
         width: 100% !important;
         max-width: none !important;
+        padding-top: 10px !important;
         padding-left: 16px !important;
         padding-right: 16px !important;
       }
@@ -161,14 +162,6 @@
         line-height: 1 !important;
         white-space: nowrap !important;
         transition: color .12s ease, background-color .12s ease, border-color .12s ease, box-shadow .12s ease !important;
-      }
-
-      /* Questões, Teste e Competição sobem 1px para ficar exatamente no eixo visual do Início. */
-      #appShell .topbar-right > .tabs > .tab[data-view="questions"],
-      #appShell .topbar-right > .tabs > .tab[data-view="test"],
-      #appShell .topbar-right > .tabs > .tab[data-view="competition"],
-      #appShell .topbar-right > .tabs > .tab[data-competition-view] {
-        transform: translateY(-1px) !important;
       }
 
       #appShell .topbar-right > .tabs > .tab:hover:not(.active),
