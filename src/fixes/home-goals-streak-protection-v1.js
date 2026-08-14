@@ -288,8 +288,11 @@
   function dateKey(date){return date?`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`:'';}
   function activityDays(){
     const days=new Set();
-    history().forEach(t=>{const d=testDate(t);if(d)days.add(dateKey(d));});
-    allSubjects().forEach(s=>cardsFor(s).forEach(c=>attemptsOf(c).forEach(a=>{const d=attemptDate(a);if(d)days.add(dateKey(d));})));
+    history().forEach(test=>{
+      if(test?.cancelled || test?.canceled || test?.interrupted || Number(test?.total||0)<=0)return;
+      const d=testDate(test);
+      if(d)days.add(dateKey(d));
+    });
     (state.protection?.protected_days||[]).forEach(value=>{const d=dateOf(value);if(d)days.add(dateKey(d));});
     return days;
   }
