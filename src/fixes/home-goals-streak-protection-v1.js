@@ -79,49 +79,9 @@
     return client.rpc(name, args);
   }
 
-  function polishXpSummaryCards() {
-    const grid = document.querySelector('#homeSummaryCards');
-    if (!grid) return;
-
-    const cards = Array.from(grid.querySelectorAll('.fixa-week-summary-card'));
-    const totalXpCard = cards.find(card => {
-      const title = card.querySelector('strong')?.textContent?.trim();
-      return title === 'XP' || title === 'XP de todas as coleções' || title === 'XP Coleções';
-    });
-    if (totalXpCard) {
-      const title = totalXpCard.querySelector('strong');
-      if (title) title.textContent = 'XP Coleções';
-      totalXpCard.querySelector('small.home-muted')?.remove();
-    }
-
-    const weekXpCard = cards.find(card => {
-      const title = card.querySelector('strong')?.textContent?.trim();
-      return title === 'XP na semana' || title === 'XP acumulado na semana' || title === 'XP Semana';
-    });
-    if (weekXpCard) {
-      const title = weekXpCard.querySelector('strong');
-      if (title) title.textContent = 'XP Semana';
-      weekXpCard.querySelector('small.home-muted')?.remove();
-      weekXpCard.classList.add('fixa-xp-card');
-
-      const weekNumber = weekXpCard.querySelector('.home-card-number');
-      const totalNumber = totalXpCard?.querySelector('.home-card-number');
-      if (weekNumber) {
-        weekNumber.textContent = (weekNumber.textContent || '').replace(/\s*XP\s*$/i, '').trim();
-        weekNumber.style.setProperty('color', '#2563eb', 'important');
-        if (totalNumber) {
-          const totalStyle = getComputedStyle(totalNumber);
-          weekNumber.style.setProperty('font-size', totalStyle.fontSize, 'important');
-          weekNumber.style.setProperty('line-height', totalStyle.lineHeight, 'important');
-          weekNumber.style.setProperty('font-weight', totalStyle.fontWeight, 'important');
-        }
-      }
-    }
-  }
-
-  function queueXpCardPolish() {
-    requestAnimationFrame(polishXpSummaryCards);
-  }
+  // O visual dos cards de XP pertence exclusivamente ao renderizador principal da Home.
+  // Este módulo cuida apenas dos dados de XP/proteção e não reescreve mais títulos, cores ou números.
+  function queueXpCardPolish() {}
 
   function notifyHome() {
     if (typeof window.FixaHomeWeeklyDashboardV2?.refresh === 'function') {
@@ -130,7 +90,6 @@
     if (typeof window.FixaHomeUnifiedDashboardV2?.refresh === 'function') {
       window.FixaHomeUnifiedDashboardV2.refresh();
     }
-    queueXpCardPolish();
   }
 
   async function loadWeekXp() {
@@ -273,22 +232,10 @@
     renderProtectionBox();
     await Promise.all([loadWeekXp(), syncProtection()]);
     await awardCompletedGoals();
-    queueXpCardPolish();
   }
-
-  document.addEventListener('click', event => {
-    if (event.target.closest('[data-view="home"],#homeTopTab,[data-fixa-week-period]')) {
-      queueXpCardPolish();
-    }
-  }, true);
-
-  document.addEventListener('change', event => {
-    if (event.target.closest('#fixaWeekFolderFilter')) queueXpCardPolish();
-  }, true);
 
   window.addEventListener('fixa-xp-updated', loadWeekXp);
   window.addEventListener('load', refreshData, { once: true });
   renderProtectionBox();
-  queueXpCardPolish();
   refreshData();
 })();
