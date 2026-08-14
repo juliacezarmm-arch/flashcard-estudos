@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260814-home-single-render-v2";
+    const FIXA_VERSION = "20260814-home-single-render-v3";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "src/core/collections.js", "Não foi possível carregar as coleções."],
@@ -141,8 +141,15 @@
               "    renderWeeklyDashboard();\n    queueRefresh(80);\n    window.setTimeout(() => {\n      if (document.querySelector('#home.home-view')) {\n        setupLayout();\n        renderWeeklyDashboard();\n      }\n    }, 320);\n    return true;",
               "    renderWeeklyDashboard();\n    return true;"
             );
+            safeCode = safeCode.replace(
+              "        setupLayout();\n        renderWeeklyDashboard();\n      });",
+              "        setupLayout();\n        renderWeeklyDashboard();\n        window.FixaHomeUnifiedDashboardV2?.refresh?.();\n      });"
+            );
+            safeCode = safeCode.replace(
+              "  api.refresh = () => queueRefresh(0);",
+              "  api.refresh = () => {\n    setupLayout();\n    renderWeeklyDashboard();\n    window.FixaHomeUnifiedDashboardV2?.refresh?.();\n  };"
+            );
 
-            /* A sequência tem uma única origem: dias com teste concluído; proteção pode preservar a contagem sem pintar o calendário como teste. */
             safeCode = safeCode.replace(
               "  function consecutiveStreak() {\n    const dates = new Set(completedTests().map(test => {\n      const date = testDate(test);\n      return date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}` : '';\n    }).filter(Boolean));",
               "  function consecutiveStreak() {\n    const dates = new Set(completedTests().map(test => {\n      const date = testDate(test);\n      return date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}` : '';\n    }).filter(Boolean));\n    (window.FixaHomeGoalsStreakProtectionV1?.protection?.protected_days || []).forEach(value => {\n      const date = dateOf(value);\n      if (date) dates.add(`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`);\n    });"
@@ -160,7 +167,6 @@
               "<strong class=\"fixa-week-main-value\">${goal.percent}%</strong><small>Progresso geral dos objetivos</small>"
             );
 
-            /* XP e XP da semana passam a nascer no mesmo render, sem card ser acrescentado depois. */
             safeCode = safeCode.replace(
               "    const xp = Number(xpSummary.total_xp || completedTests().reduce((sum, test) => sum + Number(test.xp || 0), 0));\n    const rows = [",
               "    const xp = Number(xpSummary.total_xp || completedTests().reduce((sum, test) => sum + Number(test.xp || 0), 0));\n    const weekXp = Number(window.FixaHomeGoalsStreakProtectionV1?.weekXp || 0);\n    const rows = ["
@@ -174,19 +180,16 @@
               "#homeSummaryCards.fixa-week-summary{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:8px!important}"
             );
 
-            /* O XP das coleções usa o resumo já calculado, mas continua sendo desenhado somente pela Home. */
             safeCode = safeCode.replace(
               "    const xp = tests.reduce((sum, test) => sum + Number(test.xp || 0), 0);",
               "    const xpBySubject = window.FixaCompetitionXpHomeV4?.summary?.by_subject || {};\n    const xp = Number(xpBySubject[String(subject.id)] || tests.reduce((sum, test) => sum + Number(test.xp || 0), 0));"
             );
 
-            /* Desempenho final já nasce completo, sem uma segunda versão ser inserida depois. */
             safeCode = safeCode.replace(
               "    const best = tests.reduce((max, test) => Math.max(max, Number(test.score || 0)), 0);\n    const rows = [",
               "    const best = tests.reduce((max, test) => Math.max(max, Number(test.score || 0)), 0);\n    const range = currentRange();\n    const studyDays = new Set(tests.map(test => { const date = testDate(test); return date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}` : ''; }).filter(Boolean));\n    const span = range.end.getTime() - range.start.getTime() + 1;\n    const prevStart = new Date(range.start.getTime() - span);\n    const prevEnd = new Date(range.start.getTime() - 1);\n    const prevTests = completedTests().filter(test => { const date = testDate(test); return date && date >= prevStart && date <= prevEnd; });\n    const prevTotal = prevTests.reduce((sum, test) => sum + Number(test.total || 0), 0);\n    const prevScore = prevTests.reduce((sum, test) => sum + Number(test.score || 0), 0);\n    const currentAccuracy = total ? percent(score, total) : 0;\n    const previousAccuracy = prevTotal ? percent(prevScore, prevTotal) : 0;\n    const evolution = prevTotal ? currentAccuracy - previousAccuracy : 0;\n    const maxDays = state.period === 'today' ? 1 : state.period === 'month' ? new Date(range.end).getDate() : 7;\n    const rows = [\n      ['target', 'Média de acertos', total ? `${currentAccuracy}%` : 'Sem dados', 'blue'],\n      ['chart', 'Evolução em relação ao período anterior', prevTotal ? `${evolution > 0 ? '+' : ''}${evolution}%` : 'Sem dados', evolution >= 0 ? 'green' : 'orange'],\n      ['question', 'Questões respondidas', String(total), 'blue'],\n      ['calendar', 'Dias estudados', `${studyDays.size} de ${maxDays}`, 'blue'],"
             );
 
-            /* As recompensas das metas são desenhadas no mesmo HTML das metas. */
             safeCode = safeCode.replace(
               "    list.innerHTML = rows.map(([ico, label, current, target]) => `<li class=\"fixa-week-goal\"><div class=\"fixa-week-goal-head\"><i>${icon(ico)}</i><span><strong>${label}</strong><small>${current} / ${target}</small></span></div><div class=\"home-progress\"><span style=\"width:${Math.max(2, clamp(current / target * 100))}%\"></span></div></li>`).join('');",
               "    list.innerHTML = rows.map(([ico, label, current, target], index) => `<li class=\"fixa-week-goal\"><div class=\"fixa-week-goal-head\"><i>${icon(ico)}</i><span><strong>${label}</strong><small>${current} / ${target}</small></span><b class=\"fixa-goal-reward\">+${[20,25,40][index] || 20} XP</b></div><div class=\"home-progress\"><span style=\"width:${Math.max(2, clamp(current / target * 100))}%\"></span></div></li>`).join('');"
