@@ -1,5 +1,5 @@
 /* Ícone da Competição + cabeçalho final da Home.
-   Este arquivo não carrega nem redesenha o dashboard: ele cuida somente desses dois elementos. */
+   Este arquivo não redesenha o dashboard. */
 (() => {
   'use strict';
 
@@ -145,4 +145,15 @@
 
   window.addEventListener('load', apply, { once:true });
   apply();
+})();
+
+/* Carrega uma única vez o complemento de metas, XP e proteção de sequência. */
+(() => {
+  'use strict';
+  if (document.getElementById('fixaHomeGoalsStreakProtectionV1Loader')) return;
+  const script = document.createElement('script');
+  script.id = 'fixaHomeGoalsStreakProtectionV1Loader';
+  script.src = 'src/fixes/home-goals-streak-protection-v1.js?v=20260814-streak-goals-v1';
+  script.defer = true;
+  document.head.appendChild(script);
 })();
