@@ -85,17 +85,19 @@
       #home .home-hero-actions{width:100%!important;display:block!important;margin:0!important}
       .fixa-home-header-row{width:100%;min-height:50px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:20px;padding:0 2px}
       .fixa-home-header-left{min-width:0;display:grid;align-content:center;justify-items:start;gap:1px}
-      .fixa-home-header-left #homeGreeting{margin:0!important;font-size:20px!important;line-height:24px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:5px!important;white-space:nowrap!important;text-align:left!important}
-      .fixa-home-header-left #homeGreeting .home-greeting-wave{width:20px!important;height:20px!important}
-      .fixa-home-header-left #homeDatePill{border:0!important;background:transparent!important;color:#64748b!important;padding:0!important;margin:0!important;font-size:9px!important;line-height:12px!important;text-align:left!important;white-space:nowrap!important}
+      .fixa-home-header-left #homeGreeting{margin:0!important;font-size:22px!important;line-height:26px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:5px!important;white-space:nowrap!important;text-align:left!important}
+      .fixa-home-header-left #homeGreeting .home-greeting-wave{width:22px!important;height:22px!important}
+      .fixa-home-header-left #homeDatePill{border:0!important;background:transparent!important;color:#64748b!important;padding:0!important;margin:0!important;font-size:10.5px!important;line-height:14px!important;text-align:left!important;white-space:nowrap!important}
       .fixa-home-header-right{display:flex;align-items:center;justify-content:flex-end;min-width:0}
       .fixa-home-header-right .fixa-week-filters{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;flex-wrap:nowrap!important}
+      .fixa-home-header-right #fixaWeekFolderFilter{font-size:11.5px!important}
+      .fixa-home-header-right .fixa-week-period button{font-size:11.5px!important}
       #home .fixa-week-header-stack{display:none!important}
       @media(max-width:760px){
         .fixa-home-header-row{grid-template-columns:1fr;gap:7px;align-items:start;padding:4px 0 2px}
         .fixa-home-header-right{justify-content:flex-start;width:100%}
         .fixa-home-header-right .fixa-week-filters{width:100%;justify-content:flex-start!important;flex-wrap:wrap!important}
-        .fixa-home-header-left #homeGreeting{font-size:19px!important}
+        .fixa-home-header-left #homeGreeting{font-size:20px!important}
       }
     `;
     document.head.appendChild(style);
