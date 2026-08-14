@@ -103,6 +103,20 @@
       const title = weekXpCard.querySelector('strong');
       if (title) title.textContent = 'XP acumulado na semana';
       weekXpCard.querySelector('small.home-muted')?.remove();
+      weekXpCard.classList.add('fixa-xp-card');
+
+      const weekNumber = weekXpCard.querySelector('.home-card-number');
+      const totalNumber = totalXpCard?.querySelector('.home-card-number');
+      if (weekNumber) {
+        weekNumber.textContent = (weekNumber.textContent || '').replace(/\s*XP\s*$/i, '').trim();
+        weekNumber.style.setProperty('color', '#2563eb', 'important');
+        if (totalNumber) {
+          const totalStyle = getComputedStyle(totalNumber);
+          weekNumber.style.setProperty('font-size', totalStyle.fontSize, 'important');
+          weekNumber.style.setProperty('line-height', totalStyle.lineHeight, 'important');
+          weekNumber.style.setProperty('font-weight', totalStyle.fontWeight, 'important');
+        }
+      }
     }
   }
 
