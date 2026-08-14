@@ -295,3 +295,74 @@
   observer.observe(document.body, { childList:true, subtree:true });
   scheduleResize();
 })();
+
+/* Tipografia da Home: aumenta a leitura sem alterar dimensões ou espaçamentos dos componentes. */
+(() => {
+  'use strict';
+  if (window.FixaHomeComfortTypographyV1) return;
+  window.FixaHomeComfortTypographyV1 = true;
+
+  const style = document.createElement('style');
+  style.id = 'fixaHomeComfortTypographyStyle';
+  style.textContent = `
+    @media (min-width:861px){
+      #home .fixa-week-top-head h3{font-size:13px!important;line-height:16px!important}
+      #home .fixa-week-top-head>b{font-size:11px!important}
+      #home .fixa-week-top-card>small{font-size:9.5px!important;line-height:11px!important}
+      #home .fixa-week-day i{font-size:10px!important}
+      #home .fixa-week-day b{font-size:9px!important}
+
+      #home .fixa-week-summary-card strong{font-size:12px!important;line-height:14px!important}
+      #home .fixa-week-summary-card small{font-size:9.5px!important;line-height:11px!important}
+
+      #home .fixa-week-content-tabs button{font-size:11px!important}
+      #home .fixa-week-main-pane .home-panel-head h3,
+      #home .home-study-card .home-study-head h3{font-size:13px!important;line-height:17px!important}
+      #home .home-study-card #homeStudyText{font-size:9.5px!important}
+
+      #home .fixa-week-performance-row>span{font-size:10.5px!important}
+      #home .fixa-week-performance-row>b{font-size:11.5px!important}
+      #home .fixa-week-goal-head strong{font-size:10.5px!important;line-height:12px!important}
+      #home .fixa-week-goal-head small{font-size:8.5px!important}
+      #home .fixa-goal-reward{font-size:8px!important}
+      #home .fixa-week-add-goals{font-size:9px!important}
+
+      #home .fixa-review-reference-head strong{font-size:10px!important;line-height:12px!important}
+      #home .fixa-review-reference-head span{font-size:8.5px!important}
+      #home .fixa-review-reference-head b{font-size:8.5px!important}
+      #home .fixa-review-all{font-size:9px!important}
+      #home .fixa-review-empty-compact{font-size:9.5px!important}
+
+      #home .fixa-week-collection .home-collection-name,
+      #home .fixa-week-collection .home-collection-total{font-size:9.5px!important}
+      #home .fixa-week-collection .home-collection-metrics b{font-size:10.5px!important}
+      #home .fixa-week-collection .home-collection-metrics small{font-size:7.5px!important}
+      #home .fixa-week-collection .home-collection-foot>span,
+      #home .fixa-collection-xp{font-size:8.5px!important}
+
+      #home .fixa-unified-head h3{font-size:14px!important;line-height:18px!important}
+      #home .fixa-unified-head p{font-size:9px!important}
+      #home .fixa-unified-priority-copy strong{font-size:10.5px!important}
+      #home .fixa-unified-priority-copy small{font-size:8.5px!important}
+      #home .fixa-unified-priority-level{font-size:8px!important}
+      #home .fixa-unified-priority-score{font-size:9.5px!important}
+
+      #home .fixa-question-group-head{font-size:10px!important}
+      #home .fixa-question-line strong{font-size:9.5px!important}
+      #home .fixa-question-line small{font-size:8px!important}
+      #home .fixa-question-chip{font-size:8px!important}
+      #home .fixa-question-empty{font-size:9px!important}
+
+      #home .fixa-week-activities-panel .home-panel-head h3{font-size:13px!important}
+      #home .home-activity-title{font-size:10px!important}
+      #home .home-activity-time,
+      #home .home-activity-body small,
+      #home .home-test-meta{font-size:8.5px!important}
+      #home .home-test-name,
+      #home .home-test-score{font-size:10px!important}
+
+      #home .fixa-chart-axis{font-size:10px!important}
+    }
+  `;
+  document.head.appendChild(style);
+})();
