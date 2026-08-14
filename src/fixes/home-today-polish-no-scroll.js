@@ -387,8 +387,8 @@
       ['question', 'Questões', cards.length, 'Total de questões', 'cyan'],
       ['trophy', 'Dominadas', mastered, `${percent(mastered, cards.length)}% do total`, 'orange'],
       ['chart', 'Aproveitamento', `${percent(score, total)}%`, `Média de ${periodWord()}`, 'purple'],
-      ['target', 'XP de todas as coleções', xp, '', 'blue'],
-      ['target', 'XP acumulado na semana', weekXp, '', 'blue']
+      ['target', 'XP Coleções', xp, '', 'blue'],
+      ['target', 'XP Semana', weekXp, '', 'blue']
     ];
     grid.classList.add('fixa-week-summary');
     grid.innerHTML = rows.map(([ico, label, value, caption, tone]) => `
