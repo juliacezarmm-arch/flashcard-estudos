@@ -84,24 +84,23 @@
     if (!grid) return;
 
     const cards = Array.from(grid.querySelectorAll('.fixa-week-summary-card'));
-    const totalXpCard = cards.find(card =>
-      card.classList.contains('fixa-xp-card') ||
-      card.querySelector('strong')?.textContent?.trim() === 'XP' ||
-      card.querySelector('strong')?.textContent?.trim() === 'XP de todas as coleções'
-    );
+    const totalXpCard = cards.find(card => {
+      const title = card.querySelector('strong')?.textContent?.trim();
+      return title === 'XP' || title === 'XP de todas as coleções' || title === 'XP Coleções';
+    });
     if (totalXpCard) {
       const title = totalXpCard.querySelector('strong');
-      if (title) title.textContent = 'XP de todas as coleções';
+      if (title) title.textContent = 'XP Coleções';
       totalXpCard.querySelector('small.home-muted')?.remove();
     }
 
     const weekXpCard = cards.find(card => {
       const title = card.querySelector('strong')?.textContent?.trim();
-      return title === 'XP na semana' || title === 'XP acumulado na semana';
+      return title === 'XP na semana' || title === 'XP acumulado na semana' || title === 'XP Semana';
     });
     if (weekXpCard) {
       const title = weekXpCard.querySelector('strong');
-      if (title) title.textContent = 'XP acumulado na semana';
+      if (title) title.textContent = 'XP Semana';
       weekXpCard.querySelector('small.home-muted')?.remove();
       weekXpCard.classList.add('fixa-xp-card');
 
