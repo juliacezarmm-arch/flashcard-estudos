@@ -157,3 +157,60 @@
   script.defer = true;
   document.head.appendChild(script);
 })();
+
+/* Ajuste visual isolado: a proteção congelada copia exatamente o tamanho da sequência. */
+(() => {
+  'use strict';
+  if (window.FixaFrozenStreakExactSizeV1) return;
+  window.FixaFrozenStreakExactSizeV1 = true;
+
+  function findStreakBox(right) {
+    return Array.from(right.querySelectorAll('button,div,span')).find(el => {
+      if (el.classList.contains('fixa-streak-freeze-box')) return false;
+      return /^\s*[^\d]*\d+\s+dias?\s*$/i.test((el.textContent || '').trim());
+    }) || right.querySelector('[class*=streak], [class*=sequence]');
+  }
+
+  function applyFrozenSize() {
+    const right = document.querySelector('.topbar-right');
+    const freeze = right?.querySelector('.fixa-streak-freeze-box');
+    const streak = right ? findStreakBox(right) : null;
+    if (!freeze || !streak) return false;
+
+    const rect = streak.getBoundingClientRect();
+    const css = getComputedStyle(streak);
+    if (!rect.width || !rect.height) return false;
+
+    freeze.style.setProperty('width', `${rect.width}px`, 'important');
+    freeze.style.setProperty('min-width', `${rect.width}px`, 'important');
+    freeze.style.setProperty('max-width', `${rect.width}px`, 'important');
+    freeze.style.setProperty('height', `${rect.height}px`, 'important');
+    freeze.style.setProperty('min-height', `${rect.height}px`, 'important');
+    freeze.style.setProperty('max-height', `${rect.height}px`, 'important');
+    freeze.style.setProperty('padding', css.padding, 'important');
+    freeze.style.setProperty('border-radius', css.borderRadius, 'important');
+    freeze.style.setProperty('font-size', css.fontSize, 'important');
+    freeze.style.setProperty('font-weight', css.fontWeight, 'important');
+    freeze.style.setProperty('line-height', css.lineHeight, 'important');
+    freeze.style.setProperty('box-sizing', css.boxSizing, 'important');
+    freeze.style.setProperty('align-items', 'center', 'important');
+    freeze.style.setProperty('justify-content', 'center', 'important');
+    return true;
+  }
+
+  let queued = false;
+  function queueApply() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      applyFrozenSize();
+    });
+  }
+
+  const target = document.querySelector('.topbar-right') || document.querySelector('.topbar') || document.body;
+  new MutationObserver(queueApply).observe(target, { childList:true, subtree:true, characterData:true });
+  window.addEventListener('resize', queueApply);
+  window.addEventListener('load', queueApply, { once:true });
+  queueApply();
+})();
