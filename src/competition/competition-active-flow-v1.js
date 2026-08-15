@@ -9,8 +9,17 @@
     return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4"/></svg>`;
   }
 
+  function managerOwnsHome(view) {
+    return !!view && (
+      view.classList.contains('cv7-home-open') ||
+      !!view.querySelector('.cv7-manager, .cv7-loading')
+    );
+  }
+
   function renderNoActiveCompetition() {
-    const root = document.querySelector('.competition-v3.active #cv3');
+    const view = document.querySelector('.competition-v3.active');
+    if (managerOwnsHome(view)) return;
+    const root = view?.querySelector('#cv3');
     if (!root) return;
 
     const hero = root.querySelector('.cv3-hero');
@@ -35,10 +44,10 @@
   async function syncActiveSelection() {
     const view = document.querySelector('.competition-v3.active');
     const client = sb();
-    if (!view || !client || view.querySelector('.cv3-modal-bg, .cv3-confirm-bg')) return;
+    if (!view || managerOwnsHome(view) || !client || view.querySelector('.cv3-modal-bg, .cv3-confirm-bg')) return;
 
     const { data: list, error } = await client.rpc('list_my_competitions');
-    if (error || !Array.isArray(list)) return;
+    if (error || !Array.isArray(list) || managerOwnsHome(view)) return;
 
     const active = list.find(c => c.effective_status === 'active') || list.find(c => c.effective_status === 'upcoming');
     const select = view.querySelector('#cv3select');
@@ -47,7 +56,7 @@
     if (active) {
       if (!selected || selected.effective_status === 'completed') {
         localStorage.setItem('fixa-selected-competition', active.id);
-        if (window.FixaCompetitionV3?.load) {
+        if (window.FixaCompetitionV3?.load && !managerOwnsHome(view)) {
           await window.FixaCompetitionV3.load();
         }
       }
