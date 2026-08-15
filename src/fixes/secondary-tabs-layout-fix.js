@@ -359,8 +359,7 @@
       .home-subtab.active,
       .questions-hub-button.active,
       #test .test-tabs button.active,
-      .competition-v3 .cv3-secondary-nav .home-subtab.active,
-      .competition-v3 .cv3-secondary-nav .home-subtab[data-create] {
+      .competition-v3 .cv3-secondary-nav .home-subtab.active {
         color: #2563eb !important;
         background: #ffffff !important;
         box-shadow: 0 1px 4px rgba(15,23,42,.08) !important;
@@ -395,6 +394,22 @@
     }
   `;
   document.head.appendChild(style);
+
+  /* Teste: garante que a troca entre Teste coleção, Teste pasta e Histórico
+     deixe apenas a aba realmente clicada com o estado ativo. */
+  document.addEventListener('click', event => {
+    const tab = event.target.closest('#test .test-tabs [data-test-panel]');
+    if (!tab) return;
+    requestAnimationFrame(() => {
+      const tabs = tab.closest('.test-tabs');
+      if (!tabs) return;
+      tabs.querySelectorAll('[data-test-panel]').forEach(button => {
+        const active = button === tab;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+    });
+  }, true);
 
   function placeHomeTabs() {
     const homeTabs = document.querySelector('.home-view .home-subtabs');
