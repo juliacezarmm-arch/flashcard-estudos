@@ -6,7 +6,7 @@ window.FixaCompetitionV5 = true;
 const sb = () => window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
 const uid = () => window.currentUser?.id || null;
 const appData = () => (typeof data !== 'undefined' ? data : window.data);
-const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fs = () => Array.isArray(appData()?.folders) ? appData().folders : [];
 const ss = () => Array.isArray(appData()?.subjects) ? appData().subjects : [];
 const fb = id => fs().find(x => String(x.id) === String(id));
