@@ -1,7 +1,7 @@
 (() => {
   'use strict';
-  if (window.FixaCompetitionInvitationsV9) return;
-  window.FixaCompetitionInvitationsV9 = true;
+  if (window.FixaCompetitionInvitationsV9?.installed) return;
+  window.FixaCompetitionInvitationsV9 = { installed:true };
 
   const sb = () => window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -129,12 +129,18 @@
     bg.querySelectorAll('[data-cv9-tab]').forEach(b=>b.onclick=()=>show(b.dataset.cv9Tab));show('received');
   }
 
+  Object.assign(window.FixaCompetitionInvitationsV9, {
+    openInvite: inviteModal,
+    openInvitations: invitationCenter,
+    refreshBadge
+  });
+
+  /* A barra secundária possui handlers diretos próprios. Este módulo
+     continua interceptando apenas as ações internas do card Convite. */
   function intercept(e){
-    const invitations=e.target.closest('.competition-v3 [data-cv9-invitations]');
-    if(invitations){e.preventDefault();e.stopImmediatePropagation();invitationCenter();return;}
-    const invite=e.target.closest('.competition-v3 [data-invite], .competition-v3 [data-share]');
-    if(invite){e.preventDefault();e.stopImmediatePropagation();inviteModal();return;}
-    const copy=e.target.closest('.competition-v3 [data-copy]');
+    const share=e.target.closest('.competition-v3 .cv3-area-invite [data-share]');
+    if(share){e.preventDefault();e.stopImmediatePropagation();inviteModal();return;}
+    const copy=e.target.closest('.competition-v3 .cv3-area-invite [data-copy]');
     if(copy){e.preventDefault();e.stopImmediatePropagation();copyCurrentCode(copy);return;}
     if(e.target.closest('[data-competition-view]')) setTimeout(()=>refreshBadge(true),100);
   }
