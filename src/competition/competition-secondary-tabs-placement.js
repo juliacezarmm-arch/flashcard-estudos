@@ -137,6 +137,33 @@
     return button;
   }
 
+  function bindSecondaryOwnedActions(history, invite, invitations) {
+    history.onclick = event => {
+      event.preventDefault();
+      event.stopPropagation();
+      openHistoryModal();
+    };
+
+    invite.onclick = event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const api = window.FixaCompetitionInvitationsV9;
+      if (typeof api?.openInvite === 'function') api.openInvite();
+      else openInviteModal();
+    };
+
+    invitations.onclick = event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const api = window.FixaCompetitionInvitationsV9;
+      if (typeof api?.openInvitations === 'function') {
+        api.openInvitations();
+        return;
+      }
+      modal('Convites', '<div class="cv3-list"><div class="cv3-info">Os convites ainda estão carregando. Tente novamente em um instante.</div></div>', true);
+    };
+  }
+
   function ensureSixButtons(nav) {
     let history = nav.querySelector('[data-competition-history-placeholder]');
     if (!history) {
@@ -169,6 +196,8 @@
       normalizeButton(button);
       nav.appendChild(button);
     });
+
+    bindSecondaryOwnedActions(history, invite, invitations);
   }
 
   function syncActiveState(nav, root) {
@@ -459,23 +488,9 @@
     new MutationObserver(queue).observe(view, { childList: true, subtree: true });
   }
 
-  /*
-    As quatro ações abaixo são tratadas aqui, no próprio módulo que possui
-    a barra secundária. Assim elas não dependem do onclick do botão ter sido
-    criado antes ou depois de o botão ser movido para esta navegação.
-  */
+  /* Reposicionamento continua reagindo apenas à entrada na Competição.
+     Histórico / Convidar / Convites usam onclick direto no próprio botão. */
   document.addEventListener('click', event => {
-    const action = event.target.closest('.competition-v3 .cv3-secondary-nav [data-create], .competition-v3 .cv3-secondary-nav [data-join], .competition-v3 .cv3-secondary-nav [data-invite], .competition-v3 .cv3-secondary-nav [data-competition-history-placeholder]');
-    if (action) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      if (action.matches('[data-create]')) openCreateModal();
-      else if (action.matches('[data-join]')) openJoinModal();
-      else if (action.matches('[data-invite]')) openInviteModal();
-      else openHistoryModal();
-      return;
-    }
-
     if (event.target.closest('[data-competition-view]')) {
       queue();
       setTimeout(queue, 50);
