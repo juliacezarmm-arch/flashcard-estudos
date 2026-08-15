@@ -83,6 +83,10 @@
   // Este módulo cuida apenas dos dados de XP/proteção e não reescreve mais títulos, cores ou números.
   function queueXpCardPolish() {}
 
+  function removeGoalChooser() {
+    document.querySelectorAll('[data-fixa-add-goals]').forEach(button => button.remove());
+  }
+
   function notifyHome() {
     if (typeof window.FixaHomeWeeklyDashboardV2?.refresh === 'function') {
       window.FixaHomeWeeklyDashboardV2.refresh();
@@ -90,6 +94,7 @@
     if (typeof window.FixaHomeUnifiedDashboardV2?.refresh === 'function') {
       window.FixaHomeUnifiedDashboardV2.refresh();
     }
+    removeGoalChooser();
   }
 
   async function loadWeekXp() {
@@ -163,6 +168,7 @@
     const style = document.createElement('style');
     style.id = 'fixaHomeProtectionDataStyle';
     style.textContent = `
+      [data-fixa-add-goals]{display:none!important}
       .fixa-streak-freeze-box{height:38px;border:1px solid #c8dcff;border-radius:9px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:8px;color:#1d4ed8;background:#edf5ff;font-size:13px;font-weight:850;box-shadow:none;white-space:nowrap;box-sizing:border-box}
       .fixa-streak-freeze-box img{width:18px;height:18px;object-fit:contain;display:block;flex:0 0 18px}
       .fixa-streak-freeze-box span{font-size:13px;font-weight:850;line-height:1}
@@ -242,12 +248,19 @@
 
   async function refreshData() {
     renderProtectionBox();
+    removeGoalChooser();
     await Promise.all([loadWeekXp(), syncProtection()]);
     await awardCompletedGoals();
+    removeGoalChooser();
   }
 
   window.addEventListener('fixa-xp-updated', loadWeekXp);
   window.addEventListener('load', refreshData, { once: true });
+  document.addEventListener('click', event => {
+    if (!event.target.closest('[data-view="home"], #homeTopTab, [data-fixa-main-tab], [data-fixa-week-period]')) return;
+    requestAnimationFrame(removeGoalChooser);
+  }, true);
   renderProtectionBox();
+  removeGoalChooser();
   refreshData();
 })();
