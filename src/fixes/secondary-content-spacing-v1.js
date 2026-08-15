@@ -63,6 +63,20 @@
       margin-top: 0 !important;
     }
 
+    /*
+      ALINHAMENTO VERTICAL COM QUESTÕES.
+      Questões é inserido diretamente no main e começa mais perto da navegação
+      principal. Início, Teste e Competição são views inteiros; sobe apenas
+      esses três views em 6px, preservando todos os espaçamentos internos.
+    */
+    @media (min-width: 861px) {
+      #appShell #home.home-view.active,
+      #appShell #test.view.active,
+      #appShell .competition-v3.active {
+        margin-top: -6px !important;
+      }
+    }
+
     /* Espaçamentos INTERNOS da Competição continuam independentes:
        hero -> dashboard/estado vazio não faz parte da barra secundária. */
     .competition-v3 #cv3 > .cv3-hero + .cv3-empty.cv3-empty-state {
