@@ -41,6 +41,12 @@
         gap:10px !important;
       }
 
+      /* Tela detalhada: usa o mesmo espaçamento de 16px já aplicado
+         entre as demais linhas de cards. */
+      .competition-v3:not(.cv7-home-open) #cv3 > .cv3-hero + .cv3-dashboard {
+        margin-top:16px !important;
+      }
+
       /* Cada par de cards deve compartilhar exatamente a mesma altura da linha. */
       .competition-v3 .cv3-dashboard {
         align-items:stretch !important;
