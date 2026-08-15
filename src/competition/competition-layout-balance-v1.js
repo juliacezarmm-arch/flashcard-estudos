@@ -142,4 +142,12 @@
   `;
 
   document.head.appendChild(style);
+
+  if (!document.getElementById('competitionSharedFolderV1Loader')) {
+    const script = document.createElement('script');
+    script.id = 'competitionSharedFolderV1Loader';
+    script.src = 'src/competition/competition-shared-folder-v1.js?v=20260815-shared-folder-v1';
+    script.async = false;
+    document.head.appendChild(script);
+  }
 })();
