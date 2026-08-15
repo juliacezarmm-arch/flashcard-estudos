@@ -5,58 +5,59 @@
   style.id = 'dexBottomScrollFixStyle';
   style.textContent = `
     /*
-      Correção para telas desktop/DeX de pouca altura.
-      Não adiciona mais 88px artificiais ao final de TODAS as páginas,
-      pois isso criava espaço vazio e uma barra de rolagem desnecessária.
+      Regra global de viewport do Fixa.
+      Em desktop/notebook, nenhuma tela principal deve ser cortada porque
+      o CSS-base usa 100vh + overflow:hidden. Quando o conteúdo ultrapassa
+      a altura útil, o navegador passa a oferecer rolagem vertical normal.
+      O drawer de Minhas coleções continua bloqueando o fundo enquanto aberto.
     */
-    @media (min-width: 761px) and (max-height: 950px) {
-      main {
-        scroll-padding-bottom: env(safe-area-inset-bottom, 0px);
-        overscroll-behavior-y: contain;
+    @media (min-width: 761px) {
+      html {
+        min-height: 100%;
+        overflow-y: auto;
       }
 
-      /* A tela Hoje usa a altura real disponível da janela. */
-      body.home-active:not(.home-activity-active) main {
-        padding-bottom: 10px !important;
-        overflow-y: hidden !important;
-        scrollbar-width: none !important;
-        -ms-overflow-style: none !important;
+      body:not(.collections-overlay-open):has(.app:not(.locked)) {
+        height: auto !important;
+        min-height: 100dvh !important;
+        max-height: none !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
       }
 
-      body.home-active:not(.home-activity-active) main::-webkit-scrollbar {
-        display: none !important;
-        width: 0 !important;
-        height: 0 !important;
+      body:not(.collections-overlay-open) .app:not(.locked) {
+        height: auto !important;
+        min-height: 100dvh !important;
+        max-height: none !important;
+        overflow: visible !important;
       }
 
-      body.home-active:not(.home-activity-active) main > .home-view.active {
-        padding-bottom: 0 !important;
+      body:not(.collections-overlay-open) .app:not(.locked) > main {
+        height: auto !important;
+        min-height: 100dvh !important;
+        max-height: none !important;
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+        align-content: start !important;
       }
 
-      /*
-        A aba Atividade pode ter conteúdo maior; nela a rolagem continua
-        disponível, mas sem os 88px extras que existiam anteriormente.
-      */
-      body.home-active.home-activity-active,
-      body.home-active.home-activity-active main,
-      body.home-active.home-activity-active .home-view.active,
-      body.home-active.home-activity-active .home-view.active > .home-shell,
-      body.home-active.home-activity-active .home-view.active > .home-shell > section[data-home-panel="activity"],
-      body.home-active.home-activity-active .home-view.active > .home-shell > section[data-home-panel="activity"] > .home-shell {
+      body:not(.collections-overlay-open) .app:not(.locked) > main > .view.active,
+      body:not(.collections-overlay-open) .app:not(.locked) > main > .home-view.active,
+      body:not(.collections-overlay-open) .competition-v3.active,
+      body:not(.collections-overlay-open) #manage.view.active,
+      body:not(.collections-overlay-open) #add.view.active,
+      body:not(.collections-overlay-open) #test.view.active {
         height: auto !important;
         min-height: 0 !important;
         max-height: none !important;
         overflow-y: visible !important;
       }
 
-      body.home-active.home-activity-active main {
-        overflow-y: auto !important;
-        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
-      }
-
-      /* Outras telas mantêm apenas um respiro pequeno, sem reserva artificial. */
-      body:not(.home-active) main > .view.active {
-        padding-bottom: 12px;
+      /* Mantém um pequeno respiro no fim, sem reservar espaço artificial. */
+      body:not(.collections-overlay-open) .app:not(.locked) > main > .view.active,
+      body:not(.collections-overlay-open) .app:not(.locked) > main > .home-view.active,
+      body:not(.collections-overlay-open) .competition-v3.active {
+        padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
       }
     }
   `;
