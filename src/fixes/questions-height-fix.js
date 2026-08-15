@@ -25,11 +25,11 @@
         height: 100dvh !important;
         min-height: 0 !important;
         overflow: hidden !important;
-        /* Topbar + barra secundária de Questões + conteúdo.
-           Antes havia apenas duas linhas; a barra secundária ocupava a
-           linha flexível e empurrava #manage para uma linha implícita no
-           fim da tela. */
+        /* Topbar + barra secundária de Questões + conteúdo. */
         grid-template-rows: 56px auto minmax(0, 1fr) !important;
+        /* O Teste é a referência: nenhum espaçamento estrutural extra
+           entre a barra secundária e o primeiro conteúdo. */
+        row-gap: 0 !important;
         align-content: stretch !important;
       }
 
@@ -46,7 +46,8 @@
         min-height: 0 !important;
         margin-left: auto !important;
         margin-right: auto !important;
-        padding-top: 30px !important;
+        /* Antes havia 30px aqui; isso afastava Questões da barra secundária. */
+        padding-top: 0 !important;
         padding-bottom: 0 !important;
         overflow: hidden !important;
         display: flex !important;
