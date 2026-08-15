@@ -22,6 +22,65 @@
   `;
   document.head.appendChild(style);
 
+  function dataRef() {
+    try {
+      return typeof data !== 'undefined' ? data : window.data;
+    } catch (_) {
+      return window.data;
+    }
+  }
+
+  function localDateKey(value) {
+    const date = value instanceof Date ? value : new Date(value || 0);
+    if (Number.isNaN(date.getTime())) return '';
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  /* Mesma origem/regra usada pelo calendário "Sequência de estudos". */
+  function studyDateKey(item) {
+    return localDateKey(item?.date || item?.created_at || item?.createdAt || item?.finishedAt || item?.completedAt);
+  }
+
+  function studyDates() {
+    const history = Array.isArray(dataRef()?.testHistory) ? dataRef().testHistory : [];
+    return new Set(history.map(studyDateKey).filter(Boolean));
+  }
+
+  function studyStreak() {
+    const dates = studyDates();
+    const day = new Date();
+    day.setHours(0, 0, 0, 0);
+    let count = 0;
+
+    for (let i = 0; i < 365; i += 1) {
+      const key = localDateKey(day);
+      if (!dates.has(key)) {
+        /* Se ainda não estudou hoje, mantém a sequência encerrada ontem. */
+        if (i === 0) {
+          day.setDate(day.getDate() - 1);
+          continue;
+        }
+        break;
+      }
+      count += 1;
+      day.setDate(day.getDate() - 1);
+    }
+    return count;
+  }
+
+  function syncTopbarStreak() {
+    const button = document.querySelector('#homeTopStreak');
+    const count = button?.querySelector('b');
+    if (!button || !count) return;
+
+    const streak = studyStreak();
+    const next = String(streak);
+    if (count.textContent !== next) count.textContent = next;
+
+    button.title = `Você estuda há ${streak} dia${streak === 1 ? '' : 's'} consecutivo${streak === 1 ? '' : 's'}.`;
+    button.setAttribute('aria-label', `Sequência de ${streak} dia${streak === 1 ? '' : 's'}`);
+  }
+
   function applyCompletedDayChecks() {
     document.querySelectorAll('.home-sequence-day.is-study i').forEach(icon => {
       if (icon.dataset.sequenceVisualApplied === 'true') return;
@@ -29,6 +88,9 @@
       icon.setAttribute('aria-hidden', 'true');
       icon.textContent = '✓';
     });
+
+    /* O dashboard e o contador do topo sempre terminam a renderização sincronizados. */
+    syncTopbarStreak();
   }
 
   applyCompletedDayChecks();
@@ -38,4 +100,15 @@
     childList: true,
     subtree: true
   });
+
+  document.querySelector('#homeTopStreak')?.addEventListener('click', syncTopbarStreak, true);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) syncTopbarStreak();
+  });
+  window.addEventListener('load', syncTopbarStreak, { once: true });
+
+  window.FixaSequenceVisualFix = {
+    refresh: syncTopbarStreak,
+    count: studyStreak
+  };
 })();
