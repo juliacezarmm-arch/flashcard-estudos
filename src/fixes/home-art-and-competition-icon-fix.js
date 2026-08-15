@@ -38,6 +38,10 @@
       stroke-linecap:round!important;
       stroke-linejoin:round!important;
     }
+    #homeSummaryCards .fixa-xp-card .fixa-week-summary-icon{
+      background:linear-gradient(145deg,#f8fbff 0%,#e8f1ff 48%,#d5e6ff 100%)!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 4px 10px rgba(37,99,235,.08)!important;
+    }
   `;
   document.head.appendChild(style);
 
