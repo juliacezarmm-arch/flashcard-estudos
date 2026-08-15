@@ -6,8 +6,13 @@
   const GOOGLE_BUTTON_ID = "googleAuth";
   const CALLBACK_LOCK_KEY = "fixa-auth-callback-recovery";
   const LOGIN_STARTED_KEY = "fixa-google-login-started";
+  const SIGNOUT_GUARD_KEY = "fixa-explicit-signout";
+  const SIGNOUT_GUARD_MS = 10000;
+  const STYLE_ID = "fixa-auth-responsive-height-v1";
+
   let googleLoginRunning = false;
   let sessionRecoveryRunning = false;
+  let signOutRunning = false;
 
   function authClient() {
     return typeof supabaseClient !== "undefined" ? supabaseClient : null;
@@ -47,6 +52,123 @@
     }
   }
 
+  function installResponsiveAuthStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.textContent = `
+      .auth-screen {
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow-y: auto;
+      }
+
+      @media (max-height: 760px) {
+        .auth-screen {
+          min-height: 100dvh;
+          place-items: start center;
+          padding: 14px 24px;
+        }
+
+        .auth-card-wrap {
+          align-self: start;
+          margin: 0 auto;
+        }
+
+        .auth-card {
+          padding: 20px 28px;
+          gap: 12px;
+        }
+
+        .auth-brand {
+          gap: 12px;
+          margin-bottom: 2px;
+        }
+
+        .auth-logo {
+          width: 50px;
+          height: 50px;
+          border-radius: 12px;
+          font-size: 29px;
+        }
+
+        .auth-brand h1 {
+          font-size: 30px;
+        }
+
+        .auth-brand p {
+          margin-top: 4px;
+          font-size: 14px;
+        }
+
+        .auth-mode button {
+          padding: 10px 8px;
+          font-size: 15px;
+        }
+
+        .auth-field {
+          gap: 5px;
+        }
+
+        .auth-input-wrap {
+          min-height: 44px;
+        }
+
+        .auth-input-wrap input {
+          padding: 10px 4px;
+          font-size: 15px;
+        }
+
+        .auth-google {
+          min-height: 44px;
+        }
+
+        .auth-divider {
+          gap: 10px;
+        }
+      }
+
+      @media (max-height: 650px) {
+        .auth-screen {
+          padding-block: 8px;
+        }
+
+        .auth-card {
+          padding: 16px 24px;
+          gap: 9px;
+        }
+
+        .auth-logo {
+          width: 44px;
+          height: 44px;
+          font-size: 26px;
+        }
+
+        .auth-brand h1 {
+          font-size: 27px;
+        }
+
+        .auth-brand p {
+          font-size: 13px;
+        }
+
+        .auth-mode button {
+          padding: 8px;
+          font-size: 14px;
+        }
+
+        .auth-input-wrap {
+          min-height: 41px;
+        }
+
+        .auth-google {
+          min-height: 41px;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   function callbackParams() {
     const query = new URLSearchParams(location.search);
     const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
@@ -66,8 +188,21 @@
     if (history.replaceState) history.replaceState({}, document.title, redirectUrl());
   }
 
+  function signOutGuardActive() {
+    const startedAt = Number(sessionStorage.getItem(SIGNOUT_GUARD_KEY) || 0);
+    return startedAt > 0 && Date.now() - startedAt < SIGNOUT_GUARD_MS;
+  }
+
+  function startSignOutGuard() {
+    sessionStorage.setItem(SIGNOUT_GUARD_KEY, String(Date.now()));
+  }
+
+  function clearSignOutGuard() {
+    sessionStorage.removeItem(SIGNOUT_GUARD_KEY);
+  }
+
   async function applyRecoveredSession(session, source) {
-    if (!session) return false;
+    if (!session || signOutRunning || signOutGuardActive()) return false;
     console.log("[Fixa Auth Recovery] Sessão recuperada:", source);
     if (typeof applyAuthSession === "function") {
       await applyAuthSession(session);
@@ -80,7 +215,7 @@
 
   async function readAndApplyExistingSession(source) {
     const client = authClient();
-    if (!client || sessionRecoveryRunning) return false;
+    if (!client || sessionRecoveryRunning || signOutRunning || signOutGuardActive()) return false;
     sessionRecoveryRunning = true;
     try {
       const { data, error } = await client.auth.getSession();
@@ -97,7 +232,7 @@
   async function recoverOAuthCallback() {
     const client = authClient();
     const callback = callbackParams();
-    if (!client || !callback.hasCallback) return;
+    if (!client || !callback.hasCallback || signOutRunning || signOutGuardActive()) return;
 
     if (callback.error) {
       const detail = callback.errorDescription || callback.error;
@@ -144,6 +279,7 @@
       return;
     }
 
+    clearSignOutGuard();
     googleLoginRunning = true;
     setGoogleButtonBusy(button, true);
     setNotice("Abrindo o acesso seguro do Google...", "success");
@@ -154,7 +290,10 @@
         provider: "google",
         options: {
           redirectTo: redirectUrl(),
-          skipBrowserRedirect: true
+          skipBrowserRedirect: true,
+          queryParams: {
+            prompt: "select_account"
+          }
         }
       });
       if (error) throw error;
@@ -174,10 +313,78 @@
   }
 
   function installGoogleButtonHandler() {
-    const button = document.querySelector(`#${GOOGLE_BUTTON_ID}`);
-    if (!button || button.dataset.fixaRecoveryHandler === "true") return;
+    const original = document.querySelector(`#${GOOGLE_BUTTON_ID}`);
+    if (!original || original.dataset.fixaRecoveryHandler === "true") return;
+
+    const button = original.cloneNode(true);
     button.dataset.fixaRecoveryHandler = "true";
+    original.replaceWith(button);
     button.addEventListener("click", startGoogleLogin, true);
+  }
+
+  async function finishSignedOutUi() {
+    if (typeof applyAuthSession === "function") {
+      await applyAuthSession(null);
+      return;
+    }
+
+    try {
+      if (typeof currentUser !== "undefined") currentUser = null;
+      if (typeof cloudReady !== "undefined") cloudReady = false;
+    } catch {}
+
+    if (typeof renderAuth === "function") renderAuth();
+    if (typeof setAuthMode === "function") setAuthMode("signin");
+  }
+
+  async function explicitSignOut(event) {
+    const button = event.currentTarget;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    if (signOutRunning) return;
+    const client = authClient();
+    if (!client) {
+      setNotice("Não foi possível acessar o serviço de autenticação.", "error");
+      return;
+    }
+
+    signOutRunning = true;
+    startSignOutGuard();
+    if (button) button.disabled = true;
+
+    try {
+      const { error } = await client.auth.signOut({ scope: "local" });
+      if (error) throw error;
+
+      sessionStorage.removeItem(CALLBACK_LOCK_KEY);
+      sessionStorage.removeItem(LOGIN_STARTED_KEY);
+      googleLoginRunning = false;
+      await finishSignedOutUi();
+      if (typeof setAuthMode === "function") setAuthMode("signin");
+      setNotice("");
+
+      window.setTimeout(() => {
+        clearSignOutGuard();
+      }, 3500);
+    } catch (error) {
+      console.error("[Fixa Auth Recovery] Falha ao sair:", error);
+      clearSignOutGuard();
+      setNotice(`Não foi possível sair da conta: ${error?.message || "erro desconhecido"}.`, "error");
+    } finally {
+      signOutRunning = false;
+      if (button?.isConnected) button.disabled = false;
+    }
+  }
+
+  function installSignOutHandlers() {
+    ["signOut", "signOutFooter"].forEach(id => {
+      const button = document.getElementById(id);
+      if (!button || button.dataset.fixaSignOutHandler === "true") return;
+      button.dataset.fixaSignOutHandler = "true";
+      button.addEventListener("click", explicitSignOut, true);
+    });
   }
 
   function installDiagnosticLink() {
@@ -196,7 +403,9 @@
   }
 
   async function initialize() {
+    installResponsiveAuthStyles();
     installGoogleButtonHandler();
+    installSignOutHandlers();
     installDiagnosticLink();
     recoverOAuthCallback();
 
