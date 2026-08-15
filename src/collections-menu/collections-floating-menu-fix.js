@@ -1,4 +1,4 @@
-/* Restaura o menu flutuante dos três pontinhos acima do painel de coleções */
+/* Ajustes visuais do menu de coleções: menus flutuantes e cabeçalho das pastas */
 (() => {
   "use strict";
 
@@ -50,6 +50,45 @@
     .sidebar-menu button.danger-option:focus-visible {
       color: #b91c1c !important;
       background: #fff1f2 !important;
+    }
+
+    /* A faixa inteira da pasta já expande/recolhe. O botão + / − apenas
+       consumia largura e fazia o nome compartilhado quebrar em duas linhas. */
+    #collectionsSidebar .folder-toggle-mark {
+      display: none !important;
+    }
+
+    #collectionsSidebar .folder-title {
+      grid-template-columns: auto minmax(0, 1fr) auto auto !important;
+    }
+
+    #collectionsSidebar .folder-title .folder-name {
+      min-width: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+      overflow: hidden !important;
+      white-space: nowrap !important;
+    }
+
+    #collectionsSidebar .drawer-folder-name-text {
+      min-width: 0 !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+
+    #collectionsSidebar .folder-title:has(.drawer-shared-folder-mark) .drawer-folder-name-text {
+      font-size: 12px !important;
+    }
+
+    #collectionsSidebar .drawer-shared-folder-mark {
+      width: 18px !important;
+      height: 18px !important;
+      min-width: 18px !important;
+      flex: 0 0 18px !important;
+      margin-left: 0 !important;
+      vertical-align: middle !important;
     }
   `;
   document.head.appendChild(style);
