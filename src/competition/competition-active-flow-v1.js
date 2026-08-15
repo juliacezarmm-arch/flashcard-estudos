@@ -23,7 +23,7 @@
     if (!root) return;
 
     const hero = root.querySelector('.cv3-hero');
-    const nav = root.querySelector('.cv3-secondary-nav');
+    const nav = view?.querySelector('.cv3-secondary-nav');
     if (!hero) return;
 
     root.querySelectorAll('.cv3-dashboard, .cv3-empty').forEach(el => el.remove());
