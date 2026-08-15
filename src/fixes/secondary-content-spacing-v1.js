@@ -65,15 +65,24 @@
 
     /*
       ALINHAMENTO VERTICAL COM QUESTÕES.
-      Questões é inserido diretamente no main e começa mais perto da navegação
-      principal. Início, Teste e Competição são views inteiros; sobe apenas
-      esses três views em 6px, preservando todos os espaçamentos internos.
+      Questões é a referência. Início continua com o pequeno ajuste já aprovado.
+      Teste e Competição são alinhados pela PRÓPRIA barra secundária, em vez de
+      deslocar o view inteiro. O margin-bottom negativo acompanha o deslocamento
+      visual e preserva a distância original entre a barra e o conteúdo abaixo.
     */
     @media (min-width: 861px) {
-      #appShell #home.home-view.active,
-      #appShell #test.view.active,
-      #appShell .competition-v3.active {
+      #appShell #home.home-view.active {
         margin-top: -6px !important;
+      }
+
+      #appShell #test.view.active {
+        margin-top: 0 !important;
+      }
+
+      #appShell #test.view .test-tabs,
+      #appShell .competition-v3 .cv3-secondary-nav.home-subtabs {
+        transform: translateY(-6px) !important;
+        margin-bottom: -6px !important;
       }
     }
 
@@ -99,6 +108,7 @@
       #appShell .competition-v3 .cv3-secondary-nav.home-subtabs,
       #appShell .home-view .home-subtabs {
         margin-bottom: 0 !important;
+        transform: none !important;
       }
 
       .competition-v3 #cv3 > .cv3-hero + .cv3-empty.cv3-empty-state,
