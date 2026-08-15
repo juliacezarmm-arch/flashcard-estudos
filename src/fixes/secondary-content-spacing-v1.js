@@ -7,16 +7,12 @@
   style.id = 'secondaryContentSpacingV1Style';
   style.textContent = `
     /*
-      Mantém um ritmo vertical semelhante entre Início, Questões, Teste
-      e Competição sem alterar tamanhos ou largura dos componentes.
+      PADRÃO ÚNICO DE ESPAÇAMENTO ENTRE NAVEGAÇÃO SECUNDÁRIA E CONTEÚDO.
+      A aba Teste é a referência aprovada: não acrescenta margem/gap
+      estrutural além do próprio contorno dos componentes.
     */
 
-    /*
-      Questões é a referência visual: aproximadamente 5–6px entre o botão
-      secundário ativo e a primeira caixa de conteúdo.
-      A barra do Teste já possui esse respiro interno; por isso o view não
-      deve acrescentar outro gap entre a barra e o conteúdo.
-    */
+    /* TESTE — referência. */
     #appShell #test.view.active {
       gap: 0 !important;
     }
@@ -29,27 +25,50 @@
       margin-top: 0 !important;
     }
 
-    /*
-      Na Competição, a barra secundária e o conteúdo já estão visualmente
-      no mesmo intervalo de Questões; mantém-se o comportamento existente.
-    */
+    /* QUESTÕES — mesma distância do Teste. */
+    #appShell #questionsHubNav {
+      margin-bottom: 0 !important;
+    }
+
+    body.questions-hub-active #appShell.app:not(.locked) > main {
+      row-gap: 0 !important;
+    }
+
+    body.questions-hub-active #manage.view.active,
+    body.questions-hub-active #add.view.active {
+      margin-top: 0 !important;
+    }
+
+    /* COMPETIÇÃO — barra própria + #cv3 começam em sequência, sem gap extra. */
     #appShell .competition-v3.active {
-      gap: 6px !important;
+      gap: 0 !important;
+      row-gap: 0 !important;
     }
 
     #appShell .competition-v3 .cv3-secondary-nav.home-subtabs {
       margin-bottom: 0 !important;
     }
 
-    /*
-      Competição sem dados: cria apenas um pequeno respiro adicional entre
-      o cabeçalho "Competição" e o cartão de estado vazio.
-    */
+    #appShell .competition-v3 > #cv3 {
+      margin-top: 0 !important;
+    }
+
+    /* INÍCIO — atualmente a barra secundária externa fica oculta no layout
+       aprovado; se voltar a ser exibida, segue o mesmo padrão do Teste. */
+    #appShell .home-view .home-subtabs {
+      margin-bottom: 0 !important;
+    }
+
+    #appShell .home-view .home-subtabs + * {
+      margin-top: 0 !important;
+    }
+
+    /* Espaçamentos INTERNOS da Competição continuam independentes:
+       hero -> dashboard/estado vazio não faz parte da barra secundária. */
     .competition-v3 #cv3 > .cv3-hero + .cv3-empty.cv3-empty-state {
       margin-top: 7px !important;
     }
 
-    /* O esqueleto de carregamento segue o mesmo ritmo do conteúdo final. */
     .competition-v3 #cv3 > .cv3-hero + .cv3-skeleton {
       margin-top: 7px !important;
     }
@@ -57,11 +76,14 @@
     @media (max-width: 760px) {
       #appShell #test.view.active,
       #appShell .competition-v3.active {
-        gap: 6px !important;
+        gap: 0 !important;
+        row-gap: 0 !important;
       }
 
       #appShell #test.view .test-tabs,
-      #appShell .competition-v3 .cv3-secondary-nav.home-subtabs {
+      #appShell #questionsHubNav,
+      #appShell .competition-v3 .cv3-secondary-nav.home-subtabs,
+      #appShell .home-view .home-subtabs {
         margin-bottom: 0 !important;
       }
 
