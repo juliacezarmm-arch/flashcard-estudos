@@ -15,10 +15,11 @@
 
     Ordem fixa da Competição:
     1. Minhas competições
-    2. Criar
-    3. Entrar por código
-    4. Convidar amigos
-    5. Convites
+    2. Histórico
+    3. Criar
+    4. Entrar por código
+    5. Convidar amigos
+    6. Convites
   */
   const style = document.createElement('style');
   style.id = 'competitionSecondaryTabsPlacementStyleV3';
@@ -44,6 +45,7 @@
   `;
   document.head.appendChild(style);
 
+  const historyIcon = '<svg class="cv3-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5M12 7v5l3 2"></path></svg>';
   const usersIcon = '<svg class="cv3-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path></svg>';
   const mailIcon = '<svg class="cv3-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>';
 
@@ -57,6 +59,9 @@
     if (button.matches('[data-list]')) {
       button.setAttribute('aria-label', 'Minhas competições');
     }
+    if (button.matches('[data-competition-history-placeholder]')) {
+      button.setAttribute('aria-label', 'Histórico');
+    }
     if (button.matches('[data-join]')) {
       button.setAttribute('aria-label', 'Entrar por código');
     }
@@ -66,6 +71,17 @@
     if (button.matches('[data-cv9-invitations]')) {
       button.setAttribute('aria-label', 'Convites');
     }
+  }
+
+  function createHistoryButton() {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'home-subtab';
+    button.setAttribute('data-competition-history-placeholder', '1');
+    button.setAttribute('aria-label', 'Histórico');
+    button.title = 'Histórico';
+    button.innerHTML = `${historyIcon}<span>Histórico</span>`;
+    return button;
   }
 
   function createInviteButton() {
@@ -88,7 +104,13 @@
     return button;
   }
 
-  function ensureFiveButtons(nav) {
+  function ensureSixButtons(nav) {
+    let history = nav.querySelector('[data-competition-history-placeholder]');
+    if (!history) {
+      history = createHistoryButton();
+      nav.appendChild(history);
+    }
+
     let invite = nav.querySelector('[data-invite]');
     if (!invite) {
       invite = createInviteButton();
@@ -103,6 +125,7 @@
 
     const order = [
       nav.querySelector('[data-list]'),
+      history,
       nav.querySelector('[data-create]'),
       nav.querySelector('[data-join]'),
       invite,
@@ -159,7 +182,7 @@
       nav.appendChild(button);
     });
 
-    ensureFiveButtons(nav);
+    ensureSixButtons(nav);
     syncActiveState(nav, root);
   }
 
