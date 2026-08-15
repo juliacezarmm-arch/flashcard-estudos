@@ -20,6 +20,16 @@
         border-radius:18px !important;
       }
 
+      /* Tela inicial: mantém uma distância visual equilibrada entre
+         Competição, Minhas competições e o conteúdo logo abaixo. */
+      .competition-v3.cv7-home-open #cv3 > .cv3-hero + .cv7-manager {
+        margin-top:10px !important;
+      }
+
+      .competition-v3.cv7-home-open .cv7-manager {
+        gap:10px !important;
+      }
+
       /* Cada par de cards deve compartilhar exatamente a mesma altura da linha. */
       .competition-v3 .cv3-dashboard {
         align-items:stretch !important;
