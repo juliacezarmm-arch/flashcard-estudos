@@ -4,7 +4,7 @@
   window.FixaCompetitionManagerV7 = true;
 
   const sb = () => window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
-  const state = { list: [], tab: 'active', loading: false };
+  const state = { list: [], tab: 'active', loading: false, loaded: false, lastLoadedAt: 0 };
 
   const trophySvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4"/></svg>';
   const plusSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
@@ -105,6 +105,18 @@
     return state.list.filter(x => x.effective_status === state.tab);
   }
 
+  function selectAvailableTab(preferredTab) {
+    const c = counts();
+    if (state.list.length === 0) {
+      state.tab = 'active';
+      return;
+    }
+    if (preferredTab) state.tab = preferredTab;
+    if (state.tab === 'active' && c.active === 0) state.tab = c.upcoming ? 'upcoming' : 'completed';
+    if (state.tab === 'upcoming' && c.upcoming === 0) state.tab = c.active ? 'active' : 'completed';
+    if (state.tab === 'completed' && c.completed === 0) state.tab = c.active ? 'active' : 'upcoming';
+  }
+
   function managerHeader() {
     const c = counts();
     return `<div class="cv7-manager-head"><div><h2>Minhas competições</h2><p>Escolha uma competição ativa, acompanhe as próximas ou consulte resultados anteriores.</p></div><div class="cv7-tabs"><button class="cv7-tab ${state.tab==='active'?'active':''}" data-cv7-tab="active">Ativas <span class="cv7-count">${c.active}</span></button><button class="cv7-tab ${state.tab==='upcoming'?'active':''}" data-cv7-tab="upcoming">Próximas <span class="cv7-count">${c.upcoming}</span></button><button class="cv7-tab ${state.tab==='completed'?'active':''}" data-cv7-tab="completed">Encerradas <span class="cv7-count">${c.completed}</span></button></div></div>`;
@@ -144,37 +156,44 @@
     syncEmptyInviteCount();
   }
 
-  async function loadManager(preferredTab) {
+  async function loadManager(preferredTab, silent = false) {
     if (state.loading) return;
     const client = sb();
     const r = root();
     if (!client || !r) return;
     state.loading = true;
-    clearContentAfterHero();
-    setManagerActive(true);
-    const loading = document.createElement('div');
-    loading.className = 'cv7-loading';
-    loading.textContent = 'Carregando suas competições...';
-    r.appendChild(loading);
+    let loading = null;
+    if (!silent) {
+      clearContentAfterHero();
+      setManagerActive(true);
+      loading = document.createElement('div');
+      loading.className = 'cv7-loading';
+      loading.textContent = 'Carregando suas competições...';
+      r.appendChild(loading);
+    }
     try {
       const { data, error } = await client.rpc('list_my_competitions');
       if (error) throw error;
       state.list = Array.isArray(data) ? data : [];
-      const c = counts();
-      if (state.list.length === 0) {
-        state.tab = 'active';
-      } else {
-        if (preferredTab) state.tab = preferredTab;
-        if (state.tab === 'active' && c.active === 0) state.tab = c.upcoming ? 'upcoming' : 'completed';
-        if (state.tab === 'upcoming' && c.upcoming === 0) state.tab = c.active ? 'active' : 'completed';
-        if (state.tab === 'completed' && c.completed === 0) state.tab = c.active ? 'active' : 'upcoming';
-      }
+      state.loaded = true;
+      state.lastLoadedAt = Date.now();
+      selectAvailableTab(preferredTab);
       render();
     } catch (err) {
-      loading.textContent = err?.message || 'Não foi possível carregar suas competições.';
+      if (!silent && loading) loading.textContent = err?.message || 'Não foi possível carregar suas competições.';
     } finally {
       state.loading = false;
     }
+  }
+
+  function showManager(preferredTab = 'active') {
+    if (!state.loaded) {
+      loadManager(preferredTab);
+      return;
+    }
+    selectAvailableTab(preferredTab);
+    render();
+    if (Date.now() - state.lastLoadedAt > 30000) loadManager(preferredTab, true);
   }
 
   async function syncEmptyInviteCount() {
@@ -203,11 +222,19 @@
   function openCompetition(id, status) {
     setManagerActive(false);
     localStorage.setItem('fixa-selected-competition', id);
-    sessionStorage.setItem('fixa-open-competition-on-load', '1');
-    sessionStorage.setItem('fixa-open-competition-detail', '1');
+    sessionStorage.removeItem('fixa-open-competition-on-load');
+    sessionStorage.removeItem('fixa-open-competition-detail');
     if (status === 'completed') sessionStorage.setItem('fixa-open-completed-result', '1');
     else sessionStorage.removeItem('fixa-open-completed-result');
-    location.reload();
+
+    const select = document.querySelector('.competition-v3 #cv3select');
+    if (select) {
+      select.value = id;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      return;
+    }
+
+    window.FixaCompetitionV3?.load?.();
   }
 
   function customConfirm({title,text,confirmText,onConfirm}) {
@@ -251,7 +278,7 @@
       event.preventDefault();
       event.stopImmediatePropagation();
       sessionStorage.removeItem('fixa-open-competition-detail');
-      loadManager('active');
+      showManager('active');
       return;
     }
     const endBtn = event.target.closest('.competition-v3 [data-end]');
@@ -266,12 +293,28 @@
 
   document.addEventListener('click', interceptActions, true);
 
-  /* A aba principal Competição sempre abre Minhas competições.
-     A única exceção é quando o usuário acabou de clicar explicitamente
-     em uma competição da lista para abrir seus detalhes. */
+  /* A aba principal Competição abre Minhas competições.
+     Depois da primeira carga, a lista já conhecida reaparece imediatamente,
+     sem disparar novamente o carregador antigo da tela detalhada. */
   document.addEventListener('click', event => {
     const mainCompetitionTab = event.target.closest('[data-competition-view]');
     if (!mainCompetitionTab) return;
+
+    const v = view();
+    const canOpenInstantly = state.loaded && !!v?.querySelector('#cv3 .cv3-hero');
+    if (canOpenInstantly) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      document.querySelectorAll('main>.view.active,.home-view.active').forEach(x => x.classList.remove('active'));
+      document.body.classList.remove('home-active');
+      document.querySelectorAll('.topbar-right .tabs .tab').forEach(x => x.classList.remove('active'));
+      mainCompetitionTab.classList.add('active');
+      v.classList.add('active');
+      sessionStorage.removeItem('fixa-open-completed-result');
+      sessionStorage.removeItem('fixa-open-competition-detail');
+      showManager('active');
+      return;
+    }
 
     const openingDetail = sessionStorage.getItem('fixa-open-competition-detail') === '1';
     if (openingDetail) {
@@ -281,9 +324,9 @@
     }
 
     sessionStorage.removeItem('fixa-open-completed-result');
-    window.setTimeout(() => loadManager('active'), 0);
+    window.setTimeout(() => showManager('active'), 0);
     window.setTimeout(() => {
-      if (!document.querySelector('.competition-v3.active .cv7-manager')) loadManager('active');
+      if (!document.querySelector('.competition-v3.active .cv7-manager')) showManager('active');
     }, 180);
   }, true);
 
@@ -301,7 +344,7 @@
     if (!v) return;
     const completed = v.querySelector('.cv3-status')?.textContent?.trim() === 'Encerrada';
     if (completed && sessionStorage.getItem('fixa-open-completed-result') !== '1' && !v.querySelector('.cv7-manager')) {
-      setTimeout(() => loadManager('completed'), 0);
+      setTimeout(() => showManager('completed'), 0);
     }
     if (completed && sessionStorage.getItem('fixa-open-completed-result') === '1') {
       sessionStorage.removeItem('fixa-open-completed-result');
@@ -309,5 +352,5 @@
   });
   observer.observe(document.documentElement,{childList:true,subtree:true});
 
-  window.FixaCompetitionManagerV7 = { loadManager };
+  window.FixaCompetitionManagerV7 = { loadManager, showManager };
 })();
