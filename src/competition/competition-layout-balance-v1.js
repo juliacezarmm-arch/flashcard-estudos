@@ -17,6 +17,19 @@
       -webkit-backdrop-filter:none !important;
     }
 
+    /* Garante que as ações secundárias permaneçam realmente clicáveis,
+       mesmo quando os cards logo abaixo mudam de tamanho/estado. */
+    .competition-v3 .cv3-secondary-nav {
+      position:relative !important;
+      z-index:3 !important;
+    }
+
+    .competition-v3 .cv3-secondary-nav .home-subtab {
+      position:relative !important;
+      z-index:1 !important;
+      pointer-events:auto !important;
+    }
+
     @media (min-width: 761px) {
       .competition-v3 .cv3-hero {
         padding:16px 18px !important;
@@ -141,4 +154,28 @@
   `;
 
   document.head.appendChild(style);
+
+  /*
+    Os botões Criar / Entrar / Convidar da barra secundária são os mesmos
+    botões criados pelo renderizador principal e já possuem a ação oficial
+    em `onclick`. Alguns módulos posteriores também escutam o clique no
+    document; esta ponte garante que o clique físico execute primeiro a
+    ação original do próprio botão, exatamente como acontece quando os
+    botões do estado vazio disparam `.click()` por código.
+  */
+  document.addEventListener('click', event => {
+    const action = event.target.closest(
+      '.competition-v3 .cv3-secondary-nav [data-create], ' +
+      '.competition-v3 .cv3-secondary-nav [data-join], ' +
+      '.competition-v3 .cv3-secondary-nav [data-invite]'
+    );
+    if (!action) return;
+
+    const officialHandler = action.onclick;
+    if (typeof officialHandler !== 'function') return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    officialHandler.call(action, event);
+  }, true);
 })();
