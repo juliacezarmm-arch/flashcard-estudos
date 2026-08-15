@@ -70,20 +70,20 @@
   }
 
   let timer = null;
-  function queue() {
+  function queue(delay = 140) {
     clearTimeout(timer);
-    timer = setTimeout(() => syncActiveSelection().catch(() => {}), 140);
+    timer = setTimeout(() => syncActiveSelection().catch(() => {}), delay);
   }
 
-  const observer = new MutationObserver(queue);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
-
+  /*
+    Não observa mais o DOM inteiro. O fluxo só é conferido quando existe
+    uma navegação/ação real relacionada à Competição.
+  */
   document.addEventListener('click', event => {
     if (event.target.closest('[data-competition-view], .cv3-confirm-danger, [data-history-open]')) {
-      setTimeout(queue, 180);
-      setTimeout(queue, 600);
+      queue(180);
     }
   }, true);
 
-  window.addEventListener('load', queue);
+  window.addEventListener('load', () => queue(180), { once:true });
 })();
