@@ -145,6 +145,17 @@
     box.style.setProperty('font-weight', css.fontWeight, 'important');
     box.style.setProperty('line-height', css.lineHeight, 'important');
     box.style.setProperty('box-sizing', css.boxSizing, 'important');
+
+    const streakText = Array.from(streakBox.querySelectorAll('span,b,strong')).find(element =>
+      /\d+\s+dias?/i.test((element.textContent || '').trim())
+    ) || streakBox;
+    const streakTextCss = getComputedStyle(streakText);
+    const freezeCount = box.querySelector('span');
+    if (freezeCount) {
+      freezeCount.style.setProperty('font-size', streakTextCss.fontSize, 'important');
+      freezeCount.style.setProperty('font-weight', streakTextCss.fontWeight, 'important');
+      freezeCount.style.setProperty('line-height', streakTextCss.lineHeight, 'important');
+    }
   }
 
   function ensureProtectionStyle() {
@@ -152,8 +163,9 @@
     const style = document.createElement('style');
     style.id = 'fixaHomeProtectionDataStyle';
     style.textContent = `
-      .fixa-streak-freeze-box{height:38px;border:1px solid #c8dcff;border-radius:9px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;color:#1d4ed8;background:#edf5ff;font-size:11px;font-weight:850;box-shadow:none;white-space:nowrap;box-sizing:border-box}
-      .fixa-streak-freeze-box img{width:18px;height:24px;object-fit:contain;display:block}
+      .fixa-streak-freeze-box{height:38px;border:1px solid #c8dcff;border-radius:9px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:8px;color:#1d4ed8;background:#edf5ff;font-size:13px;font-weight:850;box-shadow:none;white-space:nowrap;box-sizing:border-box}
+      .fixa-streak-freeze-box img{width:18px;height:18px;object-fit:contain;display:block;flex:0 0 18px}
+      .fixa-streak-freeze-box span{font-size:13px;font-weight:850;line-height:1}
       .fixa-streak-freeze-box:hover{background:#e7f1ff;border-color:#b8d1ff}
     `;
     document.head.appendChild(style);
