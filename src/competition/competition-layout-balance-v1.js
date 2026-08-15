@@ -8,6 +8,17 @@
   style.textContent = `
     /* Ajuste pontual da tela detalhada da Competição.
        Não altera regras, dados, XP, ranking ou navegação global. */
+
+    /* Os quatro modais da Competição usam uma camada de fundo em tela inteira.
+       O blur dessa camada pode atrasar bastante o primeiro desenho da janela,
+       especialmente em máquinas/GPU mais antigas. Mantém o escurecimento,
+       mas remove apenas o desfoque para a janela aparecer imediatamente. */
+    .cv3-modal-bg,
+    .cv9-modal-bg {
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+    }
+
     @media (min-width: 761px) {
       .competition-v3 .cv3-hero {
         padding:16px 18px !important;
