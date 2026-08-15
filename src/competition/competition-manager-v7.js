@@ -339,18 +339,20 @@
     }
   });
 
-  const observer = new MutationObserver(() => {
-    const v = document.querySelector('.competition-v3.active');
-    if (!v) return;
-    const completed = v.querySelector('.cv3-status')?.textContent?.trim() === 'Encerrada';
-    if (completed && sessionStorage.getItem('fixa-open-completed-result') !== '1' && !v.querySelector('.cv7-manager')) {
-      setTimeout(() => showManager('completed'), 0);
+  /*
+    Não observa mais o DOM inteiro. O renderizador detalhado emite um evento
+    explícito quando termina; só então o manager decide se uma competição
+    encerrada deve voltar para a lista de Encerradas.
+  */
+  window.addEventListener('fixa-competition-detail-rendered', event => {
+    const completed = event.detail?.status === 'completed';
+    if (!completed) return;
+    if (sessionStorage.getItem('fixa-open-completed-result') !== '1') {
+      showManager('completed');
+      return;
     }
-    if (completed && sessionStorage.getItem('fixa-open-completed-result') === '1') {
-      sessionStorage.removeItem('fixa-open-completed-result');
-    }
+    sessionStorage.removeItem('fixa-open-completed-result');
   });
-  observer.observe(document.documentElement,{childList:true,subtree:true});
 
   window.FixaCompetitionManagerV7 = { loadManager, showManager };
 })();
