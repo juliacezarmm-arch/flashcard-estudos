@@ -9,10 +9,8 @@
     /* Ajuste pontual da tela detalhada da Competição.
        Não altera regras, dados, XP, ranking ou navegação global. */
 
-    /* Os quatro modais da Competição usam uma camada de fundo em tela inteira.
-       O blur dessa camada pode atrasar bastante o primeiro desenho da janela,
-       especialmente em máquinas/GPU mais antigas. Mantém o escurecimento,
-       mas remove apenas o desfoque para a janela aparecer imediatamente. */
+    /* Os modais da Competição mantêm apenas o fundo escurecido,
+       sem blur em tela inteira. */
     .cv3-modal-bg,
     .cv9-modal-bg {
       backdrop-filter:none !important;
@@ -54,6 +52,7 @@
 
       .competition-v3 .cv3-area-position,
       .competition-v3 .cv3-area-ranking,
+      .competition-v3 .cv3-area-folder,
       .competition-v3 .cv3-area-performance,
       .competition-v3 .cv3-area-invite {
         height:100% !important;
@@ -142,12 +141,4 @@
   `;
 
   document.head.appendChild(style);
-
-  if (!document.getElementById('competitionSharedFolderV1Loader')) {
-    const script = document.createElement('script');
-    script.id = 'competitionSharedFolderV1Loader';
-    script.src = 'src/competition/competition-shared-folder-v1.js?v=20260815-shared-folder-v1';
-    script.async = false;
-    document.head.appendChild(script);
-  }
 })();
