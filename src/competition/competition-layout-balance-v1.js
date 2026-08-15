@@ -9,6 +9,19 @@
     /* Ajuste pontual da tela detalhada da Competição.
        Não altera regras, dados, XP, ranking ou navegação global. */
 
+    /* Agora a barra secundária é irmã de #cv3. Como a área da Competição
+       pode ocupar a altura restante do main, as linhas automáticas do grid
+       não podem se esticar e abrir um vão entre a barra e o conteúdo. */
+    .competition-v3.active {
+      align-content:start !important;
+      grid-auto-rows:max-content !important;
+    }
+
+    .competition-v3.active > #cv3 {
+      align-self:start !important;
+      min-height:0 !important;
+    }
+
     /* Os modais da Competição mantêm apenas o fundo escurecido,
        sem blur em tela inteira. */
     .cv3-modal-bg,
