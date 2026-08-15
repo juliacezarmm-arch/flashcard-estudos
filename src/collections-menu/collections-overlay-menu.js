@@ -11,6 +11,7 @@
   const backdrop = document.querySelector("#mobileNavBackdrop");
   const menuToggle = document.querySelector("#mobileMenuToggle");
   const subjects = document.querySelector("#subjects");
+  const appData = () => (typeof data !== "undefined" ? data : window.data);
 
   if (!app || !sidebar || !backdrop || !menuToggle || !subjects) return;
 
@@ -172,6 +173,47 @@
     return colors[index % colors.length];
   }
 
+  function sharedFolderName(folder) {
+    if (!folder?.sharedCompetitionId) return "";
+    const explicit = String(folder.sharedCompetitionName || "").trim();
+    if (explicit) return explicit;
+    const legacy = String(folder.name || "").trim();
+    if (legacy.includes(" · ")) return legacy.split(" · ").pop().trim();
+    return legacy;
+  }
+
+  function decorateSharedFolder(block, title) {
+    if (!title) return;
+    const folderId = String(block.dataset.folderId || title.dataset.folderId || "");
+    const folder = (appData()?.folders || []).find(item => String(item.id) === folderId);
+    if (!folder?.sharedCompetitionId) return;
+
+    const name = title.querySelector(":scope > .folder-name");
+    if (!name) return;
+
+    let text = name.querySelector(":scope > .drawer-folder-name-text");
+    if (!text) {
+      text = document.createElement("span");
+      text.className = "drawer-folder-name-text";
+      text.textContent = name.textContent.trim();
+      name.textContent = "";
+      name.appendChild(text);
+    }
+
+    const displayName = sharedFolderName(folder);
+    if (displayName && text.textContent !== displayName) text.textContent = displayName;
+
+    if (!name.querySelector(":scope > .drawer-shared-folder-mark")) {
+      const mark = document.createElement("span");
+      mark.className = "drawer-shared-folder-mark";
+      mark.title = "Pasta compartilhada pela competição";
+      mark.setAttribute("aria-label", "Pasta compartilhada");
+      mark.style.cssText = "display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-left:6px;vertical-align:-4px;border-radius:6px;color:#2563eb;background:#eef4ff;";
+      mark.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"></path></svg>';
+      name.appendChild(mark);
+    }
+  }
+
   function decorateSubjects() {
     if (decorating) return;
     decorating = true;
@@ -182,6 +224,8 @@
       folderBlocks.forEach(block => {
         const rows = [...block.querySelectorAll(":scope > .subject")];
         const title = block.querySelector(":scope > .folder-title");
+        decorateSharedFolder(block, title);
+
         if (title && !title.querySelector(".drawer-folder-count")) {
           const count = document.createElement("small");
           count.className = "drawer-folder-count";
