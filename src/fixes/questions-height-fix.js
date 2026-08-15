@@ -25,7 +25,11 @@
         height: 100dvh !important;
         min-height: 0 !important;
         overflow: hidden !important;
-        grid-template-rows: 52px minmax(0, 1fr) !important;
+        /* Topbar + barra secundária de Questões + conteúdo.
+           Antes havia apenas duas linhas; a barra secundária ocupava a
+           linha flexível e empurrava #manage para uma linha implícita no
+           fim da tela. */
+        grid-template-rows: 56px auto minmax(0, 1fr) !important;
         align-content: stretch !important;
       }
 
