@@ -224,25 +224,4 @@
   `;
 
   document.head.appendChild(style);
-
-  /*
-    Criar / Entrar continuam usando exatamente as ações oficiais anexadas
-    pelo renderizador principal. Esta ponte só garante que o clique físico
-    na barra superior chegue ao mesmo handler já usado pelos botões do
-    estado vazio.
-  */
-  document.addEventListener('click', event => {
-    const action = event.target.closest(
-      '.competition-v3 .cv3-secondary-nav [data-create], ' +
-      '.competition-v3 .cv3-secondary-nav [data-join]'
-    );
-    if (!action) return;
-
-    const officialHandler = action.onclick;
-    if (typeof officialHandler !== 'function') return;
-
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    officialHandler.call(action, event);
-  }, true);
 })();
