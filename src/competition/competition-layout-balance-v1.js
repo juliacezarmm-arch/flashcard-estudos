@@ -73,7 +73,8 @@
         box-sizing:border-box !important;
       }
 
-      /* Ranking: o card acompanha Minha posição, mas as linhas internas continuam compactas. */
+      /* Ranking: acompanha a altura da linha e mantém o link de expansão
+         alinhado na base, como a ação da Pasta compartilhada. */
       .competition-v3 .cv3-area-ranking {
         display:flex !important;
         flex-direction:column !important;
@@ -82,6 +83,59 @@
       .competition-v3 .cv3-area-ranking .cv3-rank-list {
         flex:0 1 auto !important;
         align-content:start !important;
+      }
+
+      .competition-v3 .cv3-area-ranking .cv3-rank-more {
+        margin-top:auto !important;
+        min-height:38px !important;
+        padding-top:10px !important;
+        align-self:stretch !important;
+        justify-content:center !important;
+      }
+
+      /* Regras de pontuação: reduz somente a altura interna das cinco
+         caixinhas para a observação inferior continuar totalmente visível. */
+      .competition-v3 .cv3-area-rules {
+        padding:12px 14px !important;
+      }
+
+      .competition-v3 .cv3-area-rules > h3 {
+        margin-bottom:8px !important;
+      }
+
+      .competition-v3 .cv3-area-rules .cv3-rule-row {
+        gap:7px !important;
+      }
+
+      .competition-v3 .cv3-area-rules .cv3-stat {
+        min-height:52px !important;
+        padding:5px 7px !important;
+      }
+
+      .competition-v3 .cv3-area-rules .cv3-rule-icon {
+        width:26px !important;
+        height:26px !important;
+        margin:0 !important;
+      }
+
+      .competition-v3 .cv3-area-rules .cv3-rule-icon .cv3-icon {
+        width:14px !important;
+        height:14px !important;
+      }
+
+      .competition-v3 .cv3-area-rules .cv3-stat b {
+        font-size:15px !important;
+      }
+
+      .competition-v3 .cv3-area-rules .cv3-stat small {
+        margin-top:0 !important;
+        font-size:9px !important;
+        line-height:1.15 !important;
+      }
+
+      .competition-v3 .cv3-area-rules > .cv3-muted {
+        margin:6px 0 0 !important;
+        line-height:1.2 !important;
       }
 
       /* Convite: título/descrição à esquerda, Copiar + Compartilhar juntos no topo,
@@ -141,6 +195,22 @@
       }
     }
 
+    /* Em larguras de notebook/desktop, redistribui apenas as colunas da
+       primeira linha: Minha posição cresce, Ranking diminui e Pasta ganha
+       um pouco mais de largura. As linhas inferiores mantêm sua proporção. */
+    @media (min-width: 1050px) {
+      .competition-v3 .cv3-dashboard {
+        grid-template-columns:repeat(100,minmax(0,1fr)) !important;
+      }
+
+      .competition-v3 .cv3-area-position { grid-column:1 / 30 !important; }
+      .competition-v3 .cv3-area-ranking { grid-column:30 / 65 !important; }
+      .competition-v3 .cv3-area-folder { grid-column:65 / 101 !important; }
+      .competition-v3 .cv3-area-performance { grid-column:1 / 59 !important; }
+      .competition-v3 .cv3-area-invite { grid-column:59 / 101 !important; }
+      .competition-v3 .cv3-area-rules { grid-column:1 / 101 !important; }
+    }
+
     /* Em telas menores, preservar a responsividade atual e evitar forçar o layout desktop. */
     @media (max-width: 760px) {
       .competition-v3 .cv3-area-invite > .cv3-code {
@@ -156,18 +226,15 @@
   document.head.appendChild(style);
 
   /*
-    Os botões Criar / Entrar / Convidar da barra secundária são os mesmos
-    botões criados pelo renderizador principal e já possuem a ação oficial
-    em `onclick`. Alguns módulos posteriores também escutam o clique no
-    document; esta ponte garante que o clique físico execute primeiro a
-    ação original do próprio botão, exatamente como acontece quando os
-    botões do estado vazio disparam `.click()` por código.
+    Criar / Entrar continuam usando exatamente as ações oficiais anexadas
+    pelo renderizador principal. Esta ponte só garante que o clique físico
+    na barra superior chegue ao mesmo handler já usado pelos botões do
+    estado vazio.
   */
   document.addEventListener('click', event => {
     const action = event.target.closest(
       '.competition-v3 .cv3-secondary-nav [data-create], ' +
-      '.competition-v3 .cv3-secondary-nav [data-join], ' +
-      '.competition-v3 .cv3-secondary-nav [data-invite]'
+      '.competition-v3 .cv3-secondary-nav [data-join]'
     );
     if (!action) return;
 
