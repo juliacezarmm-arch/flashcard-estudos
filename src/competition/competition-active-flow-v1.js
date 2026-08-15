@@ -41,6 +41,43 @@
     root.appendChild(empty);
   }
 
+  function openCompetitionFromManager(button) {
+    const id = button?.dataset?.cv7Open;
+    if (!id) return false;
+
+    const view = button.closest('.competition-v3') || document.querySelector('.competition-v3.active');
+    const root = view?.querySelector('#cv3');
+    if (!view || !root) return false;
+
+    localStorage.setItem('fixa-selected-competition', id);
+    sessionStorage.removeItem('fixa-open-competition-on-load');
+    sessionStorage.removeItem('fixa-open-competition-detail');
+    if (button.dataset.cv7Status === 'completed') sessionStorage.setItem('fixa-open-completed-result', '1');
+    else sessionStorage.removeItem('fixa-open-completed-result');
+
+    /* A lista não pode continuar sendo dona da área enquanto o dashboard abre. */
+    view.classList.remove('cv7-home-open');
+    root.querySelectorAll('.cv7-manager, .cv7-loading').forEach(element => element.remove());
+
+    const select = root.querySelector('#cv3select');
+    if (select) {
+      select.style.removeProperty('display');
+      select.value = id;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    }
+
+    /* Fallback raro: recria a estrutura e tenta novamente quando o select voltar. */
+    window.FixaCompetitionV3?.load?.();
+    window.setTimeout(() => {
+      const freshSelect = document.querySelector('.competition-v3.active #cv3select');
+      if (!freshSelect) return;
+      freshSelect.value = id;
+      freshSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }, 80);
+    return true;
+  }
+
   async function syncActiveSelection() {
     const view = document.querySelector('.competition-v3.active');
     const client = sb();
@@ -80,6 +117,14 @@
     uma navegação/ação real relacionada à Competição.
   */
   document.addEventListener('click', event => {
+    const openButton = event.target.closest('.competition-v3 [data-cv7-open]');
+    if (openButton) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openCompetitionFromManager(openButton);
+      return;
+    }
+
     if (event.target.closest('[data-competition-view], .cv3-confirm-danger, [data-history-open]')) {
       queue(180);
     }
