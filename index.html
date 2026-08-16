@@ -71,6 +71,21 @@
     Promise.all(appFiles.map(loadFile))
       .then(entries => {
         const assets = Object.fromEntries(entries);
+        assets.html = assets.html.replace(
+          "A imagem deve conter somente a figura necessária, sem respostas, correções, marcações ou gabarito.</textarea>",
+          `A imagem deve conter somente a figura necessária, sem respostas, correções, marcações ou gabarito.
+
+IMAGENS NA EXPLICAÇÃO
+- Quando a explicação possuir uma ou mais imagens necessárias para compreender a resolução, informar essas imagens no campo explanationImages.
+- explanationImages deve ser uma lista e pode conter uma ou várias imagens, sempre na mesma ordem em que aparecem no material de origem.
+- O campo image continua reservado exclusivamente para a imagem do enunciado/pergunta.
+- Não misturar imagens do enunciado com imagens da explicação.
+- As alternativas (options) continuam somente em texto; não criar imagens nas alternativas por enquanto.
+- Se a explicação não possuir imagem, omitir explanationImages ou usar uma lista vazia.
+- Cada imagem explicativa deve conter apenas o conteúdo necessário da explicação, sem adicionar gabarito, resposta, seta, destaque ou marcação que não exista no material original.
+- No Fixa, cada imagem da explicação será exibida em uma linha própria e sempre centralizada.
+- Ao preparar um ZIP, incluir também todos os arquivos citados em explanationImages junto com o JSON e as demais imagens da questão.</textarea>`
+        );
         const closingScript = "</scr" + "ipt>";
         const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "testFolder", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "secondaryTabsLayoutFix", "secondaryContentSpacingV1", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix", "competitionUpdateV3", "competitionSecondaryTabsPlacement", "competitionPolishV6", "competitionActiveFlowV1", "competitionManagerV7", "competitionPositionCardV1", "competitionLayoutBalanceV1", "competitionInvitationsV9", "accountDataIsolation", "competitionXpHomeV4", "collectionsMenuActions", "collectionsFloatingMenuFix", "homeTodayPolishNoScroll", "homeUnifiedDashboardV2", "homeGoalsStreakProtectionV1", "homeArtCompetitionFix", "homeEmptyStateArt"];
         const scripts = scriptFiles.map(key => {
@@ -237,7 +252,6 @@
               ""
             );
           }
-
           if (key === "homeEmptyStateArt") {
             safeCode = safeCode.replace(
               "(() => {\n  const STYLE_ID = 'homeEmptyStateArtStyle';",
