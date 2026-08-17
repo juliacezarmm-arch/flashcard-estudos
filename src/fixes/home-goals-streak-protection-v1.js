@@ -8,7 +8,9 @@
     weekXp: 0,
     syncingProtection: false,
     loadingXp: false,
-    awardingGoals: false
+    awardingGoals: false,
+    toastQueue: [],
+    toastActive: false
   };
 
   const api = window.FixaHomeGoalsStreakProtectionV1 = {
@@ -50,6 +52,18 @@
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
 
+  function normalizedDateKey(value) {
+    const exact = typeof value === 'string' ? value.trim() : '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(exact)) return exact;
+    const date = value instanceof Date ? value : new Date(value || 0);
+    return Number.isNaN(date.getTime()) ? '' : localDateKey(date);
+  }
+
+  function protectedDaySet() {
+    const values = Array.isArray(state.protection?.protected_days) ? state.protection.protected_days : [];
+    return new Set(values.map(normalizedDateKey).filter(Boolean));
+  }
+
   function currentRange() {
     const period = document.querySelector('[data-fixa-week-period].active')?.dataset.fixaWeekPeriod || 'week';
     const now = new Date();
@@ -87,6 +101,46 @@
     document.querySelectorAll('[data-fixa-add-goals]').forEach(button => button.remove());
   }
 
+  function applyProtectedCalendarVisuals() {
+    const protectedDays = protectedDaySet();
+    const weekStart = startOfWeek(new Date());
+
+    document.querySelectorAll('.home-sequence-days').forEach(container => {
+      const days = Array.from(container.querySelectorAll('.home-sequence-day')).slice(0, 7);
+      days.forEach((element, index) => {
+        const date = new Date(weekStart);
+        date.setDate(weekStart.getDate() + index);
+        const key = localDateKey(date);
+        const isProtected = protectedDays.has(key);
+        element.classList.toggle('is-protected', isProtected);
+        if (!isProtected) return;
+        element.classList.remove('is-lost', 'is-study');
+        const label = `${new Intl.DateTimeFormat('pt-BR', { weekday: 'long' }).format(date)}: sequência protegida`;
+        element.title = label;
+        element.setAttribute('aria-label', label);
+      });
+    });
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    document.querySelectorAll('#homeStreakPopover .home-streak-day:not(.is-empty)').forEach(element => {
+      const day = Number((element.textContent || '').trim());
+      if (!Number.isInteger(day) || day < 1 || day > 31) return;
+      const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const isProtected = protectedDays.has(key);
+      element.classList.toggle('is-protected', isProtected);
+      if (isProtected) element.classList.remove('is-study');
+    });
+
+    const streak = Number(window.FixaSequenceVisualFix?.count?.());
+    if (Number.isFinite(streak)) {
+      document.querySelectorAll('.home-sequence-summary strong').forEach(element => {
+        element.textContent = String(streak);
+      });
+    }
+  }
+
   function notifyHome() {
     if (typeof window.FixaHomeWeeklyDashboardV2?.refresh === 'function') {
       window.FixaHomeWeeklyDashboardV2.refresh();
@@ -95,6 +149,10 @@
       window.FixaHomeUnifiedDashboardV2.refresh();
     }
     removeGoalChooser();
+    requestAnimationFrame(() => {
+      applyProtectedCalendarVisuals();
+      window.FixaSequenceVisualFix?.refresh?.();
+    });
   }
 
   async function loadWeekXp() {
@@ -173,8 +231,71 @@
       .fixa-streak-freeze-box img{width:18px;height:18px;object-fit:contain;display:block;flex:0 0 18px}
       .fixa-streak-freeze-box span{font-size:13px;font-weight:850;line-height:1}
       .fixa-streak-freeze-box:hover{background:#e7f1ff;border-color:#b8d1ff}
+      .home-sequence-day.is-protected i,[data-home-panel="progress"] .home-sequence-day.is-protected i{border-color:#3b82f6!important;background:#2563eb!important;color:#fff!important}
+      .home-sequence-day.is-protected i>*,[data-home-panel="progress"] .home-sequence-day.is-protected i>*{display:none!important}
+      .home-sequence-day.is-protected i::before,[data-home-panel="progress"] .home-sequence-day.is-protected i::before{content:'❄';display:block;color:#fff;font-size:15px;font-weight:800;line-height:1}
+      .home-streak-day.is-protected{background:#2563eb!important;color:#fff!important;font-weight:800!important}
+      .home-streak-day.is-protected.is-today{outline-color:#1d4ed8!important;color:#fff!important}
+      .fixa-streak-protection-toast{position:fixed;z-index:220;top:18px;left:50%;max-width:min(92vw,520px);padding:11px 15px;border:1px solid #bfdbfe;border-radius:10px;color:#1e3a8a;background:#eff6ff;box-shadow:0 12px 32px rgba(15,23,42,.16);font-size:13px;font-weight:750;line-height:1.4;text-align:center;opacity:0;pointer-events:none;transform:translate(-50%,-8px);transition:opacity .18s ease,transform .18s ease}
+      .fixa-streak-protection-toast.is-visible{opacity:1;transform:translate(-50%,0)}
+      @media(max-width:760px){.fixa-streak-protection-toast{top:12px;font-size:12px;padding:10px 12px}}
     `;
     document.head.appendChild(style);
+  }
+
+  function ensureProtectionToast() {
+    ensureProtectionStyle();
+    let toast = document.querySelector('#fixaStreakProtectionToast');
+    if (toast) return toast;
+    toast = document.createElement('div');
+    toast.id = 'fixaStreakProtectionToast';
+    toast.className = 'fixa-streak-protection-toast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    toast.setAttribute('aria-atomic', 'true');
+    document.body.appendChild(toast);
+    return toast;
+  }
+
+  function runProtectionToastQueue() {
+    if (state.toastActive || !state.toastQueue.length) return;
+    const message = state.toastQueue.shift();
+    const toast = ensureProtectionToast();
+    state.toastActive = true;
+    toast.textContent = message;
+    requestAnimationFrame(() => toast.classList.add('is-visible'));
+    window.setTimeout(() => {
+      toast.classList.remove('is-visible');
+      window.setTimeout(() => {
+        state.toastActive = false;
+        runProtectionToastQueue();
+      }, 220);
+    }, 2600);
+  }
+
+  function queueProtectionToast(message) {
+    if (!message) return;
+    state.toastQueue.push(message);
+    runProtectionToastQueue();
+  }
+
+  function showProtectionFeedback(result) {
+    const awards = Array.isArray(result?.awarded_events) ? result.awarded_events : [];
+    const usedDays = Array.isArray(result?.used_days) ? result.used_days : [];
+    const events = [
+      ...awards.map(item => ({
+        type: 'award',
+        date: normalizedDateKey(item?.occurred_on),
+        message: `Você ganhou uma proteção de sequência — ${Math.max(0, Number(item?.available || 0))} de ${Math.max(1, Number(item?.maximum || 3))}`
+      })),
+      ...usedDays.map(value => ({
+        type: 'used',
+        date: normalizedDateKey(value),
+        message: 'Proteção utilizada — sua sequência foi mantida'
+      }))
+    ].sort((a, b) => a.date.localeCompare(b.date) || (a.type === 'award' ? -1 : 1));
+
+    events.forEach(event => queueProtectionToast(event.message));
   }
 
   function renderProtectionBox() {
@@ -199,7 +320,14 @@
     state.syncingProtection = true;
     try {
       const { data: result } = await rpc('sync_streak_protection', {});
-      if (result) state.protection = result;
+      if (result) {
+        state.protection = {
+          available: Math.max(0, Number(result.available || 0)),
+          maximum: Math.max(1, Number(result.maximum || 3)),
+          protected_days: Array.isArray(result.protected_days) ? result.protected_days : []
+        };
+        showProtectionFeedback(result);
+      }
     } catch (_) {
     } finally {
       state.syncingProtection = false;
@@ -252,13 +380,20 @@
     await Promise.all([loadWeekXp(), syncProtection()]);
     await awardCompletedGoals();
     removeGoalChooser();
+    requestAnimationFrame(applyProtectedCalendarVisuals);
   }
 
   window.addEventListener('fixa-xp-updated', loadWeekXp);
   window.addEventListener('load', refreshData, { once: true });
   document.addEventListener('click', event => {
+    if (event.target.closest('#homeTopStreak')) {
+      requestAnimationFrame(applyProtectedCalendarVisuals);
+    }
     if (!event.target.closest('[data-view="home"], #homeTopTab, [data-fixa-main-tab], [data-fixa-week-period]')) return;
-    requestAnimationFrame(removeGoalChooser);
+    requestAnimationFrame(() => {
+      removeGoalChooser();
+      applyProtectedCalendarVisuals();
+    });
   }, true);
   renderProtectionBox();
   removeGoalChooser();
