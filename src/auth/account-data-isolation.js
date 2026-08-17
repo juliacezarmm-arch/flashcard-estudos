@@ -10,6 +10,7 @@
   const USER_DATA_PREFIX = "flashcard-estudos-v2:user:";
 
   const userStorageKey = userId => `${USER_DATA_PREFIX}${userId}`;
+  let hydratedUserId = null;
 
   function emptyData() {
     try {
@@ -56,13 +57,13 @@
   const originalSaveCloudData = saveCloudData;
 
   save = function saveAccountData() {
-    if (!currentUser?.id) return;
+    if (!currentUser?.id || hydratedUserId !== currentUser.id) return;
     writeUserCache(currentUser.id);
     originalScheduleCloudSave();
   };
 
   saveCloudData = async function saveAccountCloudData() {
-    if (!currentUser?.id) return;
+    if (!currentUser?.id || hydratedUserId !== currentUser.id) return;
     writeUserCache(currentUser.id);
     return originalSaveCloudData();
   };
@@ -71,6 +72,7 @@
     if (!currentUser?.id || !supabaseClient) return;
 
     const userId = currentUser.id;
+    hydratedUserId = null;
     loadingCloud = true;
 
     const { data: row, error } = await supabaseClient
@@ -91,11 +93,12 @@
     } else if (row?.data) {
       data = normalizeData(row.data);
       writeUserCache(userId);
+      hydratedUserId = userId;
       setAuthStatus("Dados carregados com segurança para esta conta.");
     } else {
       data = readUserCache(userId) || emptyData();
       writeUserCache(userId);
-      await originalSaveCloudData();
+      hydratedUserId = userId;
       setAuthStatus("Conta nova preparada.");
     }
 
@@ -105,6 +108,7 @@
   };
 
   function resetVisibleData() {
+    hydratedUserId = null;
     data = emptyData();
     try {
       localStorage.removeItem(ACTIVE_USER_KEY);
@@ -121,6 +125,7 @@
         return;
       }
 
+      hydratedUserId = null;
       const previousUserId = localStorage.getItem(ACTIVE_USER_KEY);
       if (previousUserId && previousUserId !== nextUser.id) {
         data = emptyData();
