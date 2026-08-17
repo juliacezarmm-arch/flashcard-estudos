@@ -92,22 +92,37 @@
     return badgeRequest;
   }
 
-  function inviteModal(){
-    const id=currentCompetitionId();
-    if(!id) return modal('Convidar amigos','Abra uma competição para convidar participantes.','<div class="cv9-msg">Para convidar amigos, primeiro abra uma competição em Minhas competições ou crie uma nova.</div>');
-    if(currentCompetitionClosed()) return modal('Competição encerrada','Não é possível adicionar novos participantes.','<div class="cv9-msg error">Esta competição já foi encerrada.</div>');
-    const {bg}=modal('Convidar amigos','Digite o e-mail exato da pessoa. O Fixa não exibe listas públicas de usuários.',`<label class="cv9-label">E-mail da pessoa<div class="cv9-input-row"><input class="cv9-input" type="email" data-cv9-email placeholder="exemplo@email.com"><button class="cv9-btn secondary" data-cv9-search type="button">Procurar</button></div></label><div data-cv9-result></div>`);
-    const email=bg.querySelector('[data-cv9-email]'), result=bg.querySelector('[data-cv9-result]'), search=bg.querySelector('[data-cv9-search]');
+  async function inviteModal(){
+    const client=sb();
+    if(!client) return modal('Convidar amigos','Não foi possível carregar suas competições.','<div class="cv9-msg error">Não foi possível conectar ao servidor.</div>');
+
+    const {data:list,error:listError}=await client.rpc('list_my_competitions');
+    if(listError) return modal('Convidar amigos','Não foi possível carregar suas competições.',`<div class="cv9-msg error">${esc(listError.message)}</div>`);
+
+    const competitions=(Array.isArray(list)?list:[]).filter(c=>c?.effective_status!=='completed');
+    if(!competitions.length) return modal('Convidar amigos','Você precisa de uma competição disponível para convidar participantes.','<div class="cv9-msg">Crie ou entre em uma competição ativa ou próxima antes de convidar amigos.</div>');
+
+    const single=competitions.length===1;
+    const targetHtml=single
+      ? `<div class="cv9-msg">Convidar para: <strong>${esc(competitions[0].name)}</strong></div>`
+      : `<label class="cv9-label">Competição<select class="cv9-input" data-cv9-competition><option value="">Selecione a competição...</option>${competitions.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}</select></label>`;
+
+    const {bg}=modal('Convidar amigos','Digite o e-mail exato da pessoa. O Fixa não exibe listas públicas de usuários.',`${targetHtml}<label class="cv9-label">E-mail da pessoa<div class="cv9-input-row"><input class="cv9-input" type="email" data-cv9-email placeholder="exemplo@email.com"><button class="cv9-btn secondary" data-cv9-search type="button">Procurar</button></div></label><div data-cv9-result></div>`);
+    const email=bg.querySelector('[data-cv9-email]'), result=bg.querySelector('[data-cv9-result]'), search=bg.querySelector('[data-cv9-search]'), competition=bg.querySelector('[data-cv9-competition]');
+    const selectedCompetitionId=()=>single?competitions[0].id:(competition?.value||'');
+    competition?.addEventListener('change',()=>{result.innerHTML='';});
     search.onclick=async()=>{
+      const id=selectedCompetitionId();
+      if(!id){result.innerHTML='<div class="cv9-msg error">Escolha uma competição.</div>';return;}
       const value=email.value.trim(); if(!value){result.innerHTML='<div class="cv9-msg error">Informe um e-mail.</div>';return;}
       search.disabled=true; search.textContent='Procurando...';
-      const {data,error}=await sb().rpc('lookup_competition_invitee_by_email',{p_competition_id:id,p_email:value}); search.disabled=false;search.textContent='Procurar';
+      const {data,error}=await client.rpc('lookup_competition_invitee_by_email',{p_competition_id:id,p_email:value}); search.disabled=false;search.textContent='Procurar';
       if(error){result.innerHTML=`<div class="cv9-msg error">${esc(error.message)}</div>`;return;}
       if(!data?.found){result.innerHTML=`<div class="cv9-msg error">${esc(data?.message||'Usuário não encontrado.')}</div>`;return;}
       const disabled=data.status==='pending'||data.status==='already_member';
       result.innerHTML=`<div class="cv9-user"><div class="cv9-avatar">${avatar(data)}</div><div><h4>${esc(data.name)}</h4><p>${esc(data.email)}</p>${disabled?`<p>${esc(data.message)}</p>`:''}</div><button class="cv9-btn primary" data-cv9-send type="button" ${disabled?'disabled':''}>Enviar convite</button></div><div data-cv9-sendmsg></div>`;
       const send=result.querySelector('[data-cv9-send]'); if(!send)return;
-      send.onclick=async()=>{send.disabled=true;send.textContent='Enviando...';const {data:r,error:e}=await sb().rpc('invite_competition_by_email',{p_competition_id:id,p_email:data.email});const box=result.querySelector('[data-cv9-sendmsg]');if(e){box.innerHTML=`<div class="cv9-msg error">${esc(e.message)}</div>`;send.disabled=false;send.textContent='Enviar convite';return;}box.innerHTML=`<div class="cv9-msg ${r?.status==='sent'?'success':''}">${esc(r?.message||'Convite enviado.')}</div>`;if(r?.status==='sent'){send.textContent='Convite enviado ✓';refreshBadge(true);}else{send.disabled=false;send.textContent='Enviar convite';}};
+      send.onclick=async()=>{send.disabled=true;send.textContent='Enviando...';const {data:r,error:e}=await client.rpc('invite_competition_by_email',{p_competition_id:id,p_email:data.email});const box=result.querySelector('[data-cv9-sendmsg]');if(e){box.innerHTML=`<div class="cv9-msg error">${esc(e.message)}</div>`;send.disabled=false;send.textContent='Enviar convite';return;}box.innerHTML=`<div class="cv9-msg ${r?.status==='sent'?'success':''}">${esc(r?.message||'Convite enviado.')}</div>`;if(r?.status==='sent'){send.textContent='Convite enviado ✓';refreshBadge(true);}else{send.disabled=false;send.textContent='Enviar convite';}};
     };
   }
 
