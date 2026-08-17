@@ -227,6 +227,14 @@
     style.id = 'fixaHomeProtectionDataStyle';
     style.textContent = `
       [data-fixa-add-goals]{display:none!important}
+      .fixa-streak-help{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+      .fixa-streak-help-button{width:36px;height:36px;padding:0;border:1px solid #d7e2f2;border-radius:50%;display:inline-grid;place-items:center;background:#fff;color:#475569;font-size:15px;font-weight:900;line-height:1;box-shadow:none;cursor:pointer}
+      .fixa-streak-help-button:hover,.fixa-streak-help-button[aria-expanded="true"]{border-color:#b8d1ff;background:#f3f7ff;color:#1d4ed8}
+      .fixa-streak-help-popover{position:absolute;z-index:270;top:calc(100% + 10px);right:0;width:min(320px,calc(100vw - 24px));padding:14px 15px;border:1px solid #dbe6f5;border-radius:12px;background:#fff;color:#334155;box-shadow:0 16px 40px rgba(15,23,42,.16);font-size:12px;line-height:1.5;text-align:left}
+      .fixa-streak-help-popover[hidden]{display:none!important}
+      .fixa-streak-help-popover h4{margin:0 0 9px;color:#172033;font-size:14px;line-height:1.25}
+      .fixa-streak-help-popover ul{margin:0;padding-left:18px;display:grid;gap:6px}
+      .fixa-streak-help-popover strong{color:#1d4ed8}
       .fixa-streak-freeze-box{height:38px;border:1px solid #c8dcff;border-radius:9px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:8px;color:#1d4ed8;background:#edf5ff;font-size:13px;font-weight:850;box-shadow:none;white-space:nowrap;box-sizing:border-box}
       .fixa-streak-freeze-box img{width:18px;height:18px;object-fit:contain;display:block;flex:0 0 18px}
       .fixa-streak-freeze-box span{font-size:13px;font-weight:850;line-height:1}
@@ -238,9 +246,51 @@
       .home-streak-day.is-protected.is-today{outline-color:#1d4ed8!important;color:#fff!important}
       .fixa-streak-protection-toast{position:fixed;z-index:220;top:18px;left:50%;max-width:min(92vw,520px);padding:11px 15px;border:1px solid #bfdbfe;border-radius:10px;color:#1e3a8a;background:#eff6ff;box-shadow:0 12px 32px rgba(15,23,42,.16);font-size:13px;font-weight:750;line-height:1.4;text-align:center;opacity:0;pointer-events:none;transform:translate(-50%,-8px);transition:opacity .18s ease,transform .18s ease}
       .fixa-streak-protection-toast.is-visible{opacity:1;transform:translate(-50%,0)}
-      @media(max-width:760px){.fixa-streak-protection-toast{top:12px;font-size:12px;padding:10px 12px}}
+      @media(max-width:760px){.fixa-streak-protection-toast{top:12px;font-size:12px;padding:10px 12px}.fixa-streak-help-popover{right:-88px}}
     `;
     document.head.appendChild(style);
+  }
+
+  function closeProtectionHelp() {
+    const help = document.querySelector('.fixa-streak-help');
+    const button = help?.querySelector('.fixa-streak-help-button');
+    const popover = help?.querySelector('.fixa-streak-help-popover');
+    if (popover) popover.hidden = true;
+    if (button) button.setAttribute('aria-expanded', 'false');
+  }
+
+  function ensureProtectionHelp(right, freezeBox) {
+    if (!right || !freezeBox) return;
+    let help = right.querySelector('.fixa-streak-help');
+    if (!help) {
+      help = document.createElement('div');
+      help.className = 'fixa-streak-help';
+      help.innerHTML = `
+        <button class="fixa-streak-help-button" type="button" aria-label="Como funciona a proteção de sequência" aria-expanded="false" aria-controls="fixaStreakHelpPopover">?</button>
+        <div class="fixa-streak-help-popover" id="fixaStreakHelpPopover" role="dialog" aria-label="Como funciona a proteção de sequência" hidden>
+          <h4>Como funciona a proteção</h4>
+          <ul>
+            <li>Você ganha <strong>1 proteção a cada 4 dias consecutivos</strong> estudando.</li>
+            <li>É possível acumular no máximo <strong>3 proteções</strong>.</li>
+            <li>Se perder um dia, <strong>1 proteção é usada automaticamente</strong> e sua sequência continua.</li>
+            <li>O dia salvo pela proteção aparece em <strong>azul</strong> no calendário.</li>
+            <li>Completar <strong>100% dos objetivos da semana</strong> também pode conceder +1 proteção, respeitando o limite de 3.</li>
+          </ul>
+        </div>`;
+      const button = help.querySelector('.fixa-streak-help-button');
+      const popover = help.querySelector('.fixa-streak-help-popover');
+      button.addEventListener('click', () => {
+        const shouldOpen = popover.hidden;
+        closeProtectionHelp();
+        popover.hidden = !shouldOpen;
+        button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+      });
+    }
+    if (freezeBox.parentElement && help.parentElement === freezeBox.parentElement) {
+      freezeBox.parentElement.insertBefore(help, freezeBox);
+    } else if (freezeBox.parentElement) {
+      freezeBox.parentElement.insertBefore(help, freezeBox);
+    }
   }
 
   function ensureProtectionToast() {
@@ -311,6 +361,7 @@
       if (streakBox?.parentElement) streakBox.parentElement.insertBefore(box, streakBox);
       else right.prepend(box);
     }
+    ensureProtectionHelp(right, box);
     box.innerHTML = `<img src="${FROZEN_FIRE_SRC}" alt=""><span>${Math.max(0, Number(state.protection?.available || 0))}</span>`;
     requestAnimationFrame(() => matchFreezeToStreak(box, findTopbarStreakBox()));
   }
@@ -409,6 +460,7 @@
   window.addEventListener('fixa-xp-updated', loadWeekXp);
   window.addEventListener('load', refreshData, { once: true });
   document.addEventListener('click', event => {
+    if (!event.target.closest('.fixa-streak-help')) closeProtectionHelp();
     if (event.target.closest('#homeTopStreak')) {
       requestAnimationFrame(applyProtectedCalendarVisuals);
     }
