@@ -205,6 +205,7 @@
       badge = document.createElement('span');
       badge.className = 'fixa-notification-badge';
       badge.setAttribute('aria-hidden', 'true');
+      badge.hidden = true;
       button.appendChild(badge);
     }
 
@@ -226,8 +227,9 @@
     if (!button) return;
     const badge = button.querySelector('.fixa-notification-badge');
     if (badge) badge.hidden = state.unread <= 0;
-    button.setAttribute('aria-label', state.unread > 0 ? `Notificações — ${state.unread} não lida${state.unread === 1 ? '' : 's'}` : 'Notificações');
-    button.title = state.unread > 0 ? `${state.unread} notificação${state.unread === 1 ? '' : 'ões'} não lida${state.unread === 1 ? '' : 's'}` : 'Notificações';
+    const unreadLabel = state.unread === 1 ? '1 notificação não lida' : `${state.unread} notificações não lidas`;
+    button.setAttribute('aria-label', state.unread > 0 ? `Notificações — ${unreadLabel}` : 'Notificações');
+    button.title = state.unread > 0 ? unreadLabel : 'Notificações';
   }
 
   function render() {
@@ -264,7 +266,7 @@
     const now = new Date().toISOString();
     state.items.forEach(item => { if (ids.includes(item.id)) item.read_at = now; });
     state.unread = 0;
-    updateBadge();
+    render();
   }
 
   async function refresh() {
@@ -321,6 +323,7 @@
       toggle();
     });
     document.addEventListener('click', event => {
+      if (event.target.closest('.tab[data-view], [data-competition-view]')) refresh();
       if (!state.open) return;
       if (event.target.closest('#fixaNotificationPopover, #homeTopBell')) return;
       close();
