@@ -355,7 +355,8 @@
     try {
       const range = currentRange();
       const keyBase = `${range.period}:${localDateKey(range.start)}`;
-      for (const goal of goalValues()) {
+      const goals = goalValues();
+      for (const goal of goals) {
         if (!goal.target || goal.current < goal.target) continue;
         await rpc('record_user_xp', {
           p_event_type: 'weekly_goal',
@@ -366,6 +367,28 @@
           p_subject_ids: [],
           p_metadata: { reward_points: goal.reward, goal_index: goal.index }
         });
+      }
+
+      const weeklyComplete = range.period === 'week'
+        && goals.length >= 3
+        && goals.every(goal => goal.target > 0 && goal.current >= goal.target);
+
+      if (weeklyComplete) {
+        const { data: reward } = await rpc('award_streak_freeze', {
+          p_source_key: `weekly-goal:${localDateKey(range.start)}`
+        });
+        if (reward) {
+          state.protection = {
+            available: Math.max(0, Number(reward.available || 0)),
+            maximum: Math.max(1, Number(reward.maximum || 3)),
+            protected_days: Array.isArray(reward.protected_days) ? reward.protected_days : []
+          };
+          if (reward.awarded) {
+            queueProtectionToast(`Você ganhou uma proteção de sequência — ${state.protection.available} de ${state.protection.maximum}`);
+          }
+          renderProtectionBox();
+          notifyHome();
+        }
       }
     } catch (_) {
     } finally {
