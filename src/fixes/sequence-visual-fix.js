@@ -31,6 +31,8 @@
   }
 
   function localDateKey(value) {
+    const exactDate = typeof value === 'string' ? value.trim() : '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(exactDate)) return exactDate;
     const date = value instanceof Date ? value : new Date(value || 0);
     if (Number.isNaN(date.getTime())) return '';
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -43,7 +45,13 @@
 
   function studyDates() {
     const history = Array.isArray(dataRef()?.testHistory) ? dataRef().testHistory : [];
-    return new Set(history.map(studyDateKey).filter(Boolean));
+    const dates = new Set(history.map(studyDateKey).filter(Boolean));
+    const protectedDays = window.FixaHomeGoalsStreakProtectionV1?.protection?.protected_days || [];
+    protectedDays.forEach(value => {
+      const key = localDateKey(value);
+      if (key) dates.add(key);
+    });
+    return dates;
   }
 
   function studyStreak() {
