@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "Fixa",
+  "short_name": "Fixa",
+  "description": "Estudos, questões, testes e sequência no Fixa.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f7fb",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
