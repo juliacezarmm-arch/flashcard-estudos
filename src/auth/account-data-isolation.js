@@ -13,6 +13,8 @@
   let hydratedUserId = null;
   let cloudLoadedUserId = null;
   let cloudLoadPromise = null;
+  let authSessionApplyPromise = null;
+  let authSessionApplyUserId = null;
 
   function emptyData() {
     try {
@@ -126,10 +128,43 @@
     return promise;
   };
 
+  const originalApplyAuthSession = typeof applyAuthSession === "function" ? applyAuthSession : null;
+  if (originalApplyAuthSession) {
+    applyAuthSession = function applyHydratedAccountSession(session) {
+      const nextUserId = session?.user?.id || null;
+
+      if (
+        nextUserId
+        && nextUserId === currentUser?.id
+        && hydratedUserId === nextUserId
+        && cloudLoadedUserId === nextUserId
+      ) {
+        return Promise.resolve();
+      }
+
+      if (authSessionApplyPromise && authSessionApplyUserId === nextUserId) {
+        return authSessionApplyPromise;
+      }
+
+      const promise = Promise.resolve(originalApplyAuthSession(session));
+      authSessionApplyUserId = nextUserId;
+      authSessionApplyPromise = promise;
+      promise.finally(() => {
+        if (authSessionApplyPromise === promise) {
+          authSessionApplyPromise = null;
+          authSessionApplyUserId = null;
+        }
+      });
+      return promise;
+    };
+  }
+
   function resetVisibleData() {
     hydratedUserId = null;
     cloudLoadedUserId = null;
     cloudLoadPromise = null;
+    authSessionApplyPromise = null;
+    authSessionApplyUserId = null;
     data = emptyData();
     try {
       localStorage.removeItem(ACTIVE_USER_KEY);
@@ -154,6 +189,8 @@
         hydratedUserId = null;
         cloudLoadedUserId = null;
         cloudLoadPromise = null;
+        authSessionApplyPromise = null;
+        authSessionApplyUserId = null;
         data = emptyData();
         render();
       }
