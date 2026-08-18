@@ -11,6 +11,8 @@
 
   const userStorageKey = userId => `${USER_DATA_PREFIX}${userId}`;
   let hydratedUserId = null;
+  let cloudLoadedUserId = null;
+  let cloudLoadPromise = null;
 
   function emptyData() {
     try {
@@ -68,47 +70,66 @@
     return originalSaveCloudData();
   };
 
-  loadCloudData = async function loadAccountCloudData() {
-    if (!currentUser?.id || !supabaseClient) return;
+  loadCloudData = function loadAccountCloudData() {
+    if (!currentUser?.id || !supabaseClient) return Promise.resolve();
 
     const userId = currentUser.id;
-    hydratedUserId = null;
-    loadingCloud = true;
-
-    const { data: row, error } = await supabaseClient
-      .from(cloudTable)
-      .select("data")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (currentUser?.id !== userId) {
-      loadingCloud = false;
-      return;
+    if (hydratedUserId === userId && cloudLoadedUserId === userId) {
+      return Promise.resolve();
+    }
+    if (cloudLoadPromise?.userId === userId) {
+      return cloudLoadPromise.promise;
     }
 
-    if (error) {
-      console.warn("[Fixa] Não foi possível carregar os dados desta conta:", error.message);
-      data = readUserCache(userId) || emptyData();
-      setAuthStatus("Conectado, mas não consegui carregar os dados online agora.");
-    } else if (row?.data) {
-      data = normalizeData(row.data);
-      writeUserCache(userId);
-      hydratedUserId = userId;
-      setAuthStatus("Dados carregados com segurança para esta conta.");
-    } else {
-      data = readUserCache(userId) || emptyData();
-      writeUserCache(userId);
-      hydratedUserId = userId;
-      setAuthStatus("Conta nova preparada.");
-    }
+    const promise = (async () => {
+      hydratedUserId = null;
+      loadingCloud = true;
 
-    quarantineLegacyCache();
-    loadingCloud = false;
-    render();
+      try {
+        const { data: row, error } = await supabaseClient
+          .from(cloudTable)
+          .select("data")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (currentUser?.id !== userId) return;
+
+        if (error) {
+          console.warn("[Fixa] Não foi possível carregar os dados desta conta:", error.message);
+          data = readUserCache(userId) || emptyData();
+          setAuthStatus("Conectado, mas não consegui carregar os dados online agora.");
+        } else if (row?.data) {
+          data = normalizeData(row.data);
+          writeUserCache(userId);
+          hydratedUserId = userId;
+          cloudLoadedUserId = userId;
+          setAuthStatus("Dados carregados com segurança para esta conta.");
+        } else {
+          data = readUserCache(userId) || emptyData();
+          writeUserCache(userId);
+          hydratedUserId = userId;
+          cloudLoadedUserId = userId;
+          setAuthStatus("Conta nova preparada.");
+        }
+
+        quarantineLegacyCache();
+        render();
+      } finally {
+        loadingCloud = false;
+      }
+    })();
+
+    cloudLoadPromise = { userId, promise };
+    promise.finally(() => {
+      if (cloudLoadPromise?.promise === promise) cloudLoadPromise = null;
+    });
+    return promise;
   };
 
   function resetVisibleData() {
     hydratedUserId = null;
+    cloudLoadedUserId = null;
+    cloudLoadPromise = null;
     data = emptyData();
     try {
       localStorage.removeItem(ACTIVE_USER_KEY);
@@ -125,9 +146,14 @@
         return;
       }
 
-      hydratedUserId = null;
       const previousUserId = localStorage.getItem(ACTIVE_USER_KEY);
-      if (previousUserId && previousUserId !== nextUser.id) {
+      const switchingUser = (hydratedUserId && hydratedUserId !== nextUser.id)
+        || (previousUserId && previousUserId !== nextUser.id);
+
+      if (switchingUser) {
+        hydratedUserId = null;
+        cloudLoadedUserId = null;
+        cloudLoadPromise = null;
         data = emptyData();
         render();
       }
