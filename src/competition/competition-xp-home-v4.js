@@ -416,6 +416,11 @@
       });
     }, delay);
   }
+
+  function testXpAlreadySynced(item) {
+    return Boolean(item?.xpBreakdown && Object.prototype.hasOwnProperty.call(item, 'xp'));
+  }
+
   async function syncAll(force = false) {
     if (state.syncing || !getClient() || !getUserId() || !appData()) return;
     const signature = history().map(item => `${item.id}:${item.total}:${item.mode}:${item.date}`).join('|');
@@ -426,17 +431,23 @@
 
     state.syncing = true;
     try {
-      await loadCompetitions();
-      for (const item of history().slice(0, 100)) await recordTest(item);
-      await recordDailyGoalsAndStreaks(history().slice(0, 100));
+      const recentHistory = history().slice(0, 100);
+      const pendingTests = recentHistory.filter(item => !testXpAlreadySynced(item));
+
+      if (pendingTests.length) {
+        await loadCompetitions();
+        for (const item of pendingTests) await recordTest(item);
+        await recordDailyGoalsAndStreaks(recentHistory);
+        try {
+          if (typeof save === 'function') save();
+        } catch {}
+        try {
+          if (typeof renderTestHistory === 'function') renderTestHistory();
+        } catch {}
+      }
+
       state.lastSignature = signature;
-      try {
-        if (typeof save === 'function') save();
-      } catch {}
       await refreshSummary();
-      try {
-        if (typeof renderTestHistory === 'function') renderTestHistory();
-      } catch {}
       queueRenderXpUi(0);
     } finally {
       state.syncing = false;
