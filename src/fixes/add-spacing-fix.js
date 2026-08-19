@@ -80,6 +80,11 @@
     }
   }, 250);
 
+  window.addEventListener('fixa-cloud-data-loaded', () => {
+    completed = false;
+    refreshHomeWhenReady();
+  });
+
   window.addEventListener('load', () => {
     window.setTimeout(refreshHomeWhenReady, 0);
   }, { once: true });
