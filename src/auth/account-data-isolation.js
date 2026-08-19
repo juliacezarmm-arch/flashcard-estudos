@@ -35,11 +35,20 @@
     }
   }
 
-  function writeUserCache(userId) {
+  function markActiveUser(userId) {
     if (!userId) return;
     try {
-      localStorage.setItem(userStorageKey(userId), JSON.stringify(data));
       localStorage.setItem(ACTIVE_USER_KEY, userId);
+    } catch (error) {
+      console.warn("[Fixa] Não foi possível registrar a conta ativa:", error);
+    }
+  }
+
+  function writeUserCache(userId) {
+    if (!userId) return;
+    markActiveUser(userId);
+    try {
+      localStorage.setItem(userStorageKey(userId), JSON.stringify(data));
     } catch (error) {
       console.warn("[Fixa] Não foi possível salvar o cache desta conta:", error);
     }
@@ -55,6 +64,18 @@
     } catch (error) {
       console.warn("[Fixa] Não foi possível isolar o cache antigo:", error);
     }
+  }
+
+  function announceCloudDataReady(userId) {
+    try {
+      const subjects = Array.isArray(data?.subjects) ? data.subjects.length : 0;
+      const cards = Array.isArray(data?.subjects)
+        ? data.subjects.reduce((sum, subject) => sum + (Array.isArray(subject?.cards) ? subject.cards.length : 0), 0)
+        : 0;
+      window.dispatchEvent(new CustomEvent("fixa-cloud-data-loaded", {
+        detail: { userId, subjects, cards }
+      }));
+    } catch (_) {}
   }
 
   const originalScheduleCloudSave = scheduleCloudSave;
@@ -84,7 +105,6 @@
     }
 
     const promise = (async () => {
-      hydratedUserId = null;
       loadingCloud = true;
 
       try {
@@ -98,24 +118,26 @@
 
         if (error) {
           console.warn("[Fixa] Não foi possível carregar os dados desta conta:", error.message);
-          data = readUserCache(userId) || emptyData();
+          const cached = readUserCache(userId);
+          if (cached) data = cached;
           setAuthStatus("Conectado, mas não consegui carregar os dados online agora.");
         } else if (row?.data) {
           data = normalizeData(row.data);
-          writeUserCache(userId);
           hydratedUserId = userId;
           cloudLoadedUserId = userId;
+          writeUserCache(userId);
           setAuthStatus("Dados carregados com segurança para esta conta.");
         } else {
           data = readUserCache(userId) || emptyData();
-          writeUserCache(userId);
           hydratedUserId = userId;
           cloudLoadedUserId = userId;
+          writeUserCache(userId);
           setAuthStatus("Conta nova preparada.");
         }
 
         quarantineLegacyCache();
         render();
+        announceCloudDataReady(userId);
       } finally {
         loadingCloud = false;
       }
@@ -181,9 +203,8 @@
         return;
       }
 
-      const previousUserId = localStorage.getItem(ACTIVE_USER_KEY);
-      const switchingUser = (hydratedUserId && hydratedUserId !== nextUser.id)
-        || (previousUserId && previousUserId !== nextUser.id);
+      const actualLoadedUser = hydratedUserId || currentUser?.id || null;
+      const switchingUser = Boolean(actualLoadedUser && actualLoadedUser !== nextUser.id);
 
       if (switchingUser) {
         hydratedUserId = null;
@@ -196,6 +217,7 @@
       }
 
       currentUser = nextUser;
+      markActiveUser(nextUser.id);
       cloudReady = true;
       await loadCloudData();
     }, 0);
@@ -207,6 +229,7 @@
 
   setTimeout(() => {
     if (currentUser?.id) {
+      markActiveUser(currentUser.id);
       loadCloudData().catch(error => {
         console.error("[Fixa] Falha ao isolar os dados da conta:", error);
       });
