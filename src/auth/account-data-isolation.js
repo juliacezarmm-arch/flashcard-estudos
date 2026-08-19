@@ -24,6 +24,20 @@
     }
   }
 
+  function visibleDataHasContent() {
+    try {
+      const subjects = Array.isArray(data?.subjects) ? data.subjects : [];
+      const folders = Array.isArray(data?.folders) ? data.folders : [];
+      const tests = Array.isArray(data?.testHistory) ? data.testHistory : [];
+      const cards = subjects.reduce((sum, subject) => {
+        return sum + (Array.isArray(subject?.cards) ? subject.cards.length : 0);
+      }, 0);
+      return subjects.length > 0 || folders.length > 0 || cards > 0 || tests.length > 0;
+    } catch {
+      return false;
+    }
+  }
+
   function readUserCache(userId) {
     if (!userId) return null;
     try {
@@ -97,7 +111,11 @@
     if (!currentUser?.id || !supabaseClient) return Promise.resolve();
 
     const userId = currentUser.id;
-    if (hydratedUserId === userId && cloudLoadedUserId === userId) {
+    if (
+      hydratedUserId === userId
+      && cloudLoadedUserId === userId
+      && visibleDataHasContent()
+    ) {
       return Promise.resolve();
     }
     if (cloudLoadPromise?.userId === userId) {
@@ -160,6 +178,7 @@
         && nextUserId === currentUser?.id
         && hydratedUserId === nextUserId
         && cloudLoadedUserId === nextUserId
+        && visibleDataHasContent()
       ) {
         return Promise.resolve();
       }
