@@ -11,6 +11,7 @@
   if (window.__fixaDataSafetyGuardV1Installed) return;
   window.__fixaDataSafetyGuardV1Installed = true;
 
+  const originalNormalizeData = typeof normalizeData === 'function' ? normalizeData : null;
   const originalRender = typeof render === 'function' ? render : null;
   const originalSave = typeof save === 'function' ? save : null;
   const originalScheduleCloudSave = typeof scheduleCloudSave === 'function' ? scheduleCloudSave : null;
@@ -22,9 +23,14 @@
   let loadPromise = null;
   let baseline = { subjects: 0, cards: 0 };
   let baselineUserId = null;
+  let integrityIssue = false;
+
+  function isValidSubject(subject) {
+    return Boolean(subject) && typeof subject === 'object' && !Array.isArray(subject);
+  }
 
   function counts(value) {
-    const subjects = Array.isArray(value?.subjects) ? value.subjects : [];
+    const subjects = Array.isArray(value?.subjects) ? value.subjects.filter(isValidSubject) : [];
     const cards = subjects.reduce((sum, subject) => {
       return sum + (Array.isArray(subject?.cards) ? subject.cards.length : 0);
     }, 0);
@@ -68,6 +74,15 @@
     } catch (_) {}
   }
 
+  function warnIntegrityIssue(invalidCount) {
+    console.error('[Fixa Data Safety] Estrutura inválida recebida em subjects:', { invalidCount });
+    try {
+      if (typeof setAuthStatus === 'function') {
+        setAuthStatus('Proteção de dados: encontrei uma inconsistência no cadastro. Os dados válidos foram carregados em modo protegido e nenhum salvamento será feito.', 'error');
+      }
+    } catch (_) {}
+  }
+
   function cancelPendingCloudSave() {
     try {
       if (typeof saveTimer !== 'undefined' && saveTimer) {
@@ -107,6 +122,26 @@
     return true;
   }
 
+  if (originalNormalizeData) {
+    normalizeData = function safeNormalizeData(value) {
+      integrityIssue = false;
+
+      if (value && typeof value === 'object' && Array.isArray(value.subjects)) {
+        const invalidCount = value.subjects.reduce((sum, subject) => sum + (isValidSubject(subject) ? 0 : 1), 0);
+        if (invalidCount > 0) {
+          integrityIssue = true;
+          warnIntegrityIssue(invalidCount);
+          value = {
+            ...value,
+            subjects: value.subjects.filter(isValidSubject)
+          };
+        }
+      }
+
+      return originalNormalizeData(value);
+    };
+  }
+
   if (originalRender) {
     render = function safeRender(...args) {
       renderDepth += 1;
@@ -120,12 +155,14 @@
 
   if (originalSave) {
     save = function safeSave(...args) {
-      // render() é apresentação, não mutação. Qualquer save disparado durante render é ignorado.
       if (renderDepth > 0) return;
+      if (integrityIssue) {
+        warnBlockedWrite('estrutura inválida carregada; modo protegido ativo');
+        return;
+      }
 
       const now = currentCounts();
 
-      // Antes da hidratação online, não permitir que um estado transitório vazio substitua cache/dados.
       if (!cloudHydrated && now.subjects === 0 && now.cards === 0) {
         warnBlockedWrite('estado vazio antes da hidratação online', baseline, now);
         return;
@@ -142,6 +179,7 @@
 
   if (originalScheduleCloudSave) {
     scheduleCloudSave = function safeScheduleCloudSave(...args) {
+      if (integrityIssue) return;
       if (!cloudHydrated) return;
       if (typeof loadingCloud !== 'undefined' && loadingCloud) return;
 
@@ -157,7 +195,10 @@
 
   if (originalSaveCloudData) {
     saveCloudData = async function safeSaveCloudData(...args) {
-      // Segunda checagem obrigatória no momento real do write.
+      if (integrityIssue) {
+        warnBlockedWrite('estrutura inválida carregada; write ao Supabase bloqueado');
+        return;
+      }
       if (!cloudHydrated) return;
       if (typeof loadingCloud !== 'undefined' && loadingCloud) return;
 
@@ -171,7 +212,6 @@
 
       const result = await originalSaveCloudData.apply(this, args);
 
-      // Crescimentos e alterações sem perda estrutural passam a ser o novo baseline.
       if (
         uid &&
         (now.cards >= baseline.cards || now.subjects >= baseline.subjects) &&
@@ -200,9 +240,6 @@
           finishHydratedUi(uid);
           return result;
         } catch (error) {
-          // O carregador original atribui os dados do Supabase antes de tentar gravar o cache local.
-          // Se essa etapa local falhar (ex.: quota do localStorage), os dados online já estão íntegros
-          // em memória e devem ser exibidos em vez de deixar a Home presa no estado vazio inicial.
           if (finishHydratedUi(uid, { renderNow: true, reason: error?.message || String(error) })) return;
 
           cloudHydrated = false;
@@ -221,6 +258,7 @@
     counts: currentCounts,
     baseline: () => ({ ...baseline }),
     isHydrated: () => cloudHydrated,
+    hasIntegrityIssue: () => integrityIssue,
     isMassiveReduction: (from, to) => isMassiveReduction(from, to)
   };
 })();
