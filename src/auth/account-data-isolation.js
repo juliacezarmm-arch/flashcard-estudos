@@ -77,6 +77,34 @@
     } catch (_) {}
   }
 
+  function finishHydratedUi(uid, reason = '') {
+    const now = currentCounts();
+    if (now.subjects === 0 && now.cards === 0) return false;
+
+    try {
+      if (typeof loadingCloud !== 'undefined') loadingCloud = false;
+    } catch (_) {}
+
+    baseline = now;
+    baselineUserId = uid || currentUserId();
+    cloudHydrated = true;
+
+    try {
+      if (typeof render === 'function') render();
+    } catch (renderError) {
+      console.error('[Fixa Data Safety] Não foi possível renderizar os dados já carregados:', renderError);
+    }
+
+    try {
+      window.dispatchEvent(new Event('fixa-cloud-data-loaded'));
+    } catch (_) {}
+
+    if (reason) {
+      console.warn('[Fixa Data Safety] Dados online carregados; falha local ignorada:', reason);
+    }
+    return true;
+  }
+
   if (originalRender) {
     render = function safeRender(...args) {
       renderDepth += 1;
@@ -167,11 +195,14 @@
       loadPromise = (async () => {
         try {
           const result = await originalLoadCloudData.apply(this, args);
-          baseline = currentCounts();
-          baselineUserId = uid || currentUserId();
-          cloudHydrated = true;
+          finishHydratedUi(uid);
           return result;
         } catch (error) {
+          // O carregador original atribui os dados do Supabase antes de tentar gravar o cache local.
+          // Se essa etapa local falhar (ex.: quota do localStorage), os dados online já estão íntegros
+          // em memória e devem ser exibidos em vez de deixar a Home presa no estado vazio inicial.
+          if (finishHydratedUi(uid, error?.message || String(error))) return;
+
           cloudHydrated = false;
           throw error;
         } finally {
