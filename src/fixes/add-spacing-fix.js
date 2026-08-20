@@ -226,3 +226,14 @@
   window.addEventListener('load', () => window.setTimeout(apply, 500), { once: true });
   window.setTimeout(apply, 700);
 })();
+
+/* Carrega a proteção de leitura e sinalização da pasta compartilhada. */
+(() => {
+  'use strict';
+  if (window.FixaSharedParticipantGuardLoaderV1) return;
+  window.FixaSharedParticipantGuardLoaderV1 = true;
+  const script = document.createElement('script');
+  script.src = `src/competition/competition-shared-participant-guard-v1.js?v=${Date.now()}`;
+  script.async = false;
+  document.head.appendChild(script);
+})();
