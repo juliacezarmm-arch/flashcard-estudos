@@ -5,9 +5,7 @@
 
   const state = {
     folderId: 'all',
-    subjectId: 'all',
-    installed: false,
-    wrapping: false
+    subjectId: 'all'
   };
 
   const api = window.FixaHomeDevelopmentTrajectoryV1 = {
@@ -69,6 +67,12 @@
   function dataRef() {
     try { return typeof data !== 'undefined' ? data : window.data; }
     catch (_) { return window.data; }
+  }
+
+  function esc(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[char]);
   }
 
   function folders() {
@@ -197,7 +201,7 @@
     const folderList = folders();
     const previousFolder = state.folderId;
     folderSelect.innerHTML = '<option value="all">Todas as pastas</option>' + folderList
-      .map(folder => `<option value="${String(folder.id).replace(/"/g, '&quot;')}">${String(folder.name || '')}</option>`)
+      .map(folder => `<option value="${esc(folder.id)}">${esc(folder.name)}</option>`)
       .join('');
     state.folderId = folderList.some(folder => String(folder.id) === String(previousFolder)) ? String(previousFolder) : 'all';
     folderSelect.value = state.folderId;
@@ -205,7 +209,7 @@
     const available = subjectsForFolder();
     const previousSubject = state.subjectId;
     collectionSelect.innerHTML = '<option value="all">Todas as coleções</option>' + available
-      .map(subject => `<option value="${String(subject.id).replace(/"/g, '&quot;')}">${String(subject.name || '')}</option>`)
+      .map(subject => `<option value="${esc(subject.id)}">${esc(subject.name)}</option>`)
       .join('');
     state.subjectId = available.some(subject => String(subject.id) === String(previousSubject)) ? String(previousSubject) : 'all';
     collectionSelect.value = state.subjectId;
@@ -299,7 +303,8 @@
 
   function wrapWeeklyRefresh() {
     const weekly = window.FixaHomeWeeklyDashboardV2;
-    if (!weekly || typeof weekly.refresh !== 'function' || weekly.__developmentTrajectoryWrapped) return false;
+    if (!weekly || typeof weekly.refresh !== 'function') return false;
+    if (weekly.__developmentTrajectoryWrapped) return true;
     const original = weekly.refresh.bind(weekly);
     weekly.refresh = (...args) => {
       const result = original(...args);
@@ -349,7 +354,6 @@
       }
     });
 
-    state.installed = true;
     return true;
   }
 
