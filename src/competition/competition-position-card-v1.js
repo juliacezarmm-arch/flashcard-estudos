@@ -91,6 +91,10 @@
     }
 
     .competition-v3 .cv3-area-position .cv3-danger-soft {
+      grid-column: 1 / -1 !important;
+      justify-self: center !important;
+      width: min(210px, 100%) !important;
+      margin-inline: auto !important;
       border: 1px solid #ffb7b7 !important;
       background: #fffafa !important;
       color: #ed1c24 !important;
@@ -110,6 +114,18 @@
 
     .competition-v3 .cv3-area-position [data-history]:hover {
       background: #f8fafc !important;
+    }
+
+    .competition-v3 .cv3-area-ranking .cv3-rank-more {
+      position: static !important;
+      align-self: center !important;
+      margin-top: 16px !important;
+      margin-bottom: 2px !important;
+      flex: 0 0 auto !important;
+    }
+
+    .competition-v3 .cv3-area-ranking .cv3-rank-list {
+      padding-bottom: 4px !important;
     }
 
     @media (max-width: 700px) {
