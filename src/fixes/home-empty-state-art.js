@@ -363,3 +363,27 @@
   script.async = false;
   document.head.appendChild(script);
 })();
+
+/* Correção mobile: mantém as artes dos cards de desenvolvimento dentro do ícone. */
+(() => {
+  'use strict';
+  if (document.getElementById('fixaMobileSummaryArtBoundsV1')) return;
+  const style = document.createElement('style');
+  style.id = 'fixaMobileSummaryArtBoundsV1';
+  style.textContent = `
+    #home .fixa-week-summary-icon.fixa-original-summary-art{
+      overflow:hidden!important;
+      border-radius:0!important;
+      background:transparent!important;
+    }
+    #home .fixa-week-summary-icon.fixa-original-summary-art img{
+      display:block!important;
+      width:100%!important;
+      height:100%!important;
+      max-width:100%!important;
+      max-height:100%!important;
+      object-fit:contain!important;
+    }
+  `;
+  document.head.appendChild(style);
+})();
