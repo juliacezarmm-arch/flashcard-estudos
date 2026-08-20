@@ -77,7 +77,7 @@
     } catch (_) {}
   }
 
-  function finishHydratedUi(uid, reason = '') {
+  function finishHydratedUi(uid, { renderNow = false, reason = '' } = {}) {
     const now = currentCounts();
     if (now.subjects === 0 && now.cards === 0) return false;
 
@@ -89,10 +89,12 @@
     baselineUserId = uid || currentUserId();
     cloudHydrated = true;
 
-    try {
-      if (typeof render === 'function') render();
-    } catch (renderError) {
-      console.error('[Fixa Data Safety] Não foi possível renderizar os dados já carregados:', renderError);
+    if (renderNow) {
+      try {
+        if (typeof render === 'function') render();
+      } catch (renderError) {
+        console.error('[Fixa Data Safety] Não foi possível renderizar os dados já carregados:', renderError);
+      }
     }
 
     try {
@@ -201,7 +203,7 @@
           // O carregador original atribui os dados do Supabase antes de tentar gravar o cache local.
           // Se essa etapa local falhar (ex.: quota do localStorage), os dados online já estão íntegros
           // em memória e devem ser exibidos em vez de deixar a Home presa no estado vazio inicial.
-          if (finishHydratedUi(uid, error?.message || String(error))) return;
+          if (finishHydratedUi(uid, { renderNow: true, reason: error?.message || String(error) })) return;
 
           cloudHydrated = false;
           throw error;
