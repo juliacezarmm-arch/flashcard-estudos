@@ -120,3 +120,17 @@
     count: studyStreak
   };
 })();
+
+(() => {
+  if (window.FixaHomeDevelopmentTrajectoryV1?.active || window.__fixaHomeDevelopmentTrajectoryLoading) return;
+  window.__fixaHomeDevelopmentTrajectoryLoading = true;
+  const script = document.createElement('script');
+  script.src = 'src/fixes/home-development-trajectory-layout-v1.js?v=20260819-1';
+  script.async = false;
+  script.onload = () => { window.__fixaHomeDevelopmentTrajectoryLoading = false; };
+  script.onerror = () => {
+    window.__fixaHomeDevelopmentTrajectoryLoading = false;
+    console.warn('[Fixa] Não foi possível carregar a reorganização da Home.');
+  };
+  document.head.appendChild(script);
+})();
