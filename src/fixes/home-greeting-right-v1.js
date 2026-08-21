@@ -1,88 +1,98 @@
 (() => {
   'use strict';
-  if (window.FixaHomeGreetingRightV2) return;
-  window.FixaHomeGreetingRightV2 = true;
+  if (window.FixaHomeGreetingRightV3) return;
+  window.FixaHomeGreetingRightV3 = true;
 
   let applying = false;
   let observer = null;
 
-  const style = document.createElement('style');
-  style.id = 'fixaHomeGreetingRightV2Style';
-  style.textContent = `
-    @media (min-width: 761px) {
-      #home .home-hero-head {
-        min-height: 50px !important;
-      }
-
-      #home .fixa-home-header-row {
-        width: 100% !important;
-        grid-template-columns: auto minmax(0, 1fr) !important;
-        align-items: start !important;
-      }
-
-      #home .fixa-home-header-left {
-        min-width: 0 !important;
-        display: flex !important;
-        align-items: flex-start !important;
-        align-self: start !important;
-        justify-content: flex-start !important;
-        padding-top: 0 !important;
-      }
-
-      #home .fixa-home-header-left .fixa-week-filters {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        flex-wrap: nowrap !important;
-      }
-
-      #home .fixa-home-header-right {
-        min-width: 0 !important;
-        display: grid !important;
-        align-content: start !important;
-        align-self: start !important;
-        justify-items: end !important;
-        justify-content: end !important;
-        gap: 1px !important;
-        transform: none !important;
-        text-align: right !important;
-      }
-
-      #home .fixa-home-header-right #homeGreeting {
-        margin: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-end !important;
-        text-align: right !important;
-        white-space: nowrap !important;
-      }
-
-      #home .fixa-home-header-right #homeDatePill {
-        margin: 0 !important;
-        text-align: right !important;
-        white-space: nowrap !important;
-      }
-    }
-  `;
-  document.head.appendChild(style);
+  const important = (element, property, value) => {
+    if (element) element.style.setProperty(property, value, 'important');
+  };
 
   function apply() {
     if (applying || !window.matchMedia('(min-width: 761px)').matches) return false;
 
     const home = document.querySelector('#home.home-view');
+    const hero = home?.querySelector('.home-hero-head');
+    const actions = home?.querySelector('.home-hero-actions');
     const row = home?.querySelector('.fixa-home-header-row');
     const left = row?.querySelector('.fixa-home-header-left');
     const right = row?.querySelector('.fixa-home-header-right');
     const greeting = home?.querySelector('#homeGreeting');
     const date = home?.querySelector('#homeDatePill');
     const filters = home?.querySelector('.fixa-week-filters');
-    if (!row || !left || !right || !greeting || !date || !filters) return false;
+    if (!hero || !actions || !row || !left || !right || !greeting || !date || !filters) return false;
 
     applying = true;
     try {
+      /* Estrutura final: filtros à esquerda e saudação/data à direita. */
       if (filters.parentElement !== left) left.appendChild(filters);
       if (greeting.parentElement !== right) right.appendChild(greeting);
       if (date.parentElement !== right) right.appendChild(date);
+
+      /* Compacta a faixa superior para os cards realmente subirem. */
+      important(hero, 'min-height', '42px');
+      important(hero, 'height', '42px');
+      important(hero, 'margin', '0 0 2px');
+      important(hero, 'padding', '0');
+      important(hero, 'align-items', 'stretch');
+
+      important(actions, 'width', '100%');
+      important(actions, 'height', '42px');
+      important(actions, 'display', 'block');
+      important(actions, 'margin', '0');
+
+      important(row, 'width', '100%');
+      important(row, 'height', '42px');
+      important(row, 'min-height', '42px');
+      important(row, 'display', 'grid');
+      important(row, 'grid-template-columns', 'auto minmax(0, 1fr)');
+      important(row, 'align-items', 'start');
+      important(row, 'gap', '20px');
+      important(row, 'padding', '0 2px');
+      important(row, 'box-sizing', 'border-box');
+
+      important(left, 'min-width', '0');
+      important(left, 'height', '42px');
+      important(left, 'display', 'flex');
+      important(left, 'align-items', 'flex-start');
+      important(left, 'justify-content', 'flex-start');
+      important(left, 'padding', '0');
+      important(left, 'margin', '0');
+      important(left, 'transform', 'none');
+
+      important(filters, 'display', 'flex');
+      important(filters, 'align-items', 'center');
+      important(filters, 'justify-content', 'flex-start');
+      important(filters, 'flex-wrap', 'nowrap');
+      important(filters, 'margin', '0');
+      important(filters, 'padding', '0');
+      important(filters, 'transform', 'none');
+
+      important(right, 'min-width', '0');
+      important(right, 'height', '42px');
+      important(right, 'display', 'grid');
+      important(right, 'align-content', 'start');
+      important(right, 'justify-items', 'end');
+      important(right, 'justify-content', 'end');
+      important(right, 'gap', '1px');
+      important(right, 'padding', '0');
+      important(right, 'margin', '0');
+      important(right, 'transform', 'none');
+      important(right, 'text-align', 'right');
+
+      important(greeting, 'margin', '0');
+      important(greeting, 'display', 'flex');
+      important(greeting, 'align-items', 'center');
+      important(greeting, 'justify-content', 'flex-end');
+      important(greeting, 'text-align', 'right');
+      important(greeting, 'white-space', 'nowrap');
+
+      important(date, 'margin', '0');
+      important(date, 'text-align', 'right');
+      important(date, 'white-space', 'nowrap');
+
       return true;
     } finally {
       applying = false;
@@ -101,9 +111,7 @@
   }
 
   document.addEventListener('click', event => {
-    if (event.target.closest('[data-view="home"],#homeTopTab,[data-fixa-week-period],[data-fixa-main-tab]')) {
-      schedule(30);
-    }
+    if (event.target.closest('[data-view="home"],#homeTopTab,[data-fixa-week-period],[data-fixa-main-tab]')) schedule(30);
   }, true);
 
   document.addEventListener('change', event => {
@@ -126,6 +134,6 @@
   const timer = window.setInterval(() => {
     attempts += 1;
     watch();
-    if (apply() || attempts >= 30) window.clearInterval(timer);
+    if (apply() || attempts >= 40) window.clearInterval(timer);
   }, 100);
 })();
