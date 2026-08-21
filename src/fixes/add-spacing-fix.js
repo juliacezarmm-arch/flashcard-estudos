@@ -237,3 +237,14 @@
   script.async = false;
   document.head.appendChild(script);
 })();
+
+/* Alinha saudação e data ao canto superior direito da Home. */
+(() => {
+  'use strict';
+  if (window.FixaHomeGreetingRightLoaderV1) return;
+  window.FixaHomeGreetingRightLoaderV1 = true;
+  const script = document.createElement('script');
+  script.src = `src/fixes/home-greeting-right-v1.js?v=${Date.now()}`;
+  script.async = false;
+  document.head.appendChild(script);
+})();
