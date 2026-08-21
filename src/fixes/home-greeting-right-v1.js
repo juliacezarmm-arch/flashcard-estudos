@@ -1,7 +1,7 @@
 (() => {
   'use strict';
-  if (window.FixaHomeGreetingRightV3) return;
-  window.FixaHomeGreetingRightV3 = true;
+  if (window.FixaHomeGreetingRightV4) return;
+  window.FixaHomeGreetingRightV4 = true;
 
   let applying = false;
   let observer = null;
@@ -31,30 +31,38 @@
       if (greeting.parentElement !== right) right.appendChild(greeting);
       if (date.parentElement !== right) right.appendChild(date);
 
-      /* Compacta a faixa superior para os cards realmente subirem. */
+      /* Faixa superior realmente compacta. */
       important(hero, 'min-height', '42px');
       important(hero, 'height', '42px');
       important(hero, 'margin', '0 0 2px');
       important(hero, 'padding', '0');
       important(hero, 'align-items', 'stretch');
 
+      important(actions, 'position', 'relative');
       important(actions, 'width', '100%');
       important(actions, 'height', '42px');
       important(actions, 'display', 'block');
       important(actions, 'margin', '0');
+      important(actions, 'padding', '0');
 
+      /* Não deixa regras antigas de grid/align empurrarem um lado para baixo. */
+      important(row, 'position', 'relative');
       important(row, 'width', '100%');
       important(row, 'height', '42px');
       important(row, 'min-height', '42px');
-      important(row, 'display', 'grid');
-      important(row, 'grid-template-columns', 'auto minmax(0, 1fr)');
-      important(row, 'align-items', 'start');
-      important(row, 'gap', '20px');
+      important(row, 'display', 'block');
       important(row, 'padding', '0 2px');
+      important(row, 'margin', '0');
       important(row, 'box-sizing', 'border-box');
 
-      important(left, 'min-width', '0');
+      important(left, 'position', 'absolute');
+      important(left, 'top', '0');
+      important(left, 'left', '2px');
+      important(left, 'right', 'auto');
+      important(left, 'bottom', 'auto');
+      important(left, 'width', 'auto');
       important(left, 'height', '42px');
+      important(left, 'min-width', '0');
       important(left, 'display', 'flex');
       important(left, 'align-items', 'flex-start');
       important(left, 'justify-content', 'flex-start');
@@ -70,8 +78,14 @@
       important(filters, 'padding', '0');
       important(filters, 'transform', 'none');
 
-      important(right, 'min-width', '0');
+      important(right, 'position', 'absolute');
+      important(right, 'top', '0');
+      important(right, 'right', '2px');
+      important(right, 'left', 'auto');
+      important(right, 'bottom', 'auto');
+      important(right, 'width', 'auto');
       important(right, 'height', '42px');
+      important(right, 'min-width', '0');
       important(right, 'display', 'grid');
       important(right, 'align-content', 'start');
       important(right, 'justify-items', 'end');
