@@ -1,7 +1,7 @@
 (() => {
   'use strict';
-  if (window.FixaHomeGreetingRightV5) return;
-  window.FixaHomeGreetingRightV5 = true;
+  if (window.FixaHomeGreetingRightV6) return;
+  window.FixaHomeGreetingRightV6 = true;
 
   let applying = false;
   let observer = null;
@@ -11,61 +11,85 @@
     if (element) element.style.setProperty(property, value, 'important');
   };
 
+  function ensureCompactRow(actions) {
+    let row = actions.querySelector('#fixaHomeCompactTopRowV6');
+    if (!row) {
+      row = document.createElement('div');
+      row.id = 'fixaHomeCompactTopRowV6';
+      row.innerHTML = '<div class="fixa-home-compact-filters-v6"></div><div class="fixa-home-compact-greeting-v6"></div>';
+      actions.prepend(row);
+    }
+    return row;
+  }
+
   function apply() {
     if (applying || !window.matchMedia('(min-width: 761px)').matches) return false;
 
     const home = document.querySelector('#home.home-view');
     const hero = home?.querySelector('.home-hero-head');
     const actions = home?.querySelector('.home-hero-actions');
-    const row = home?.querySelector('.fixa-home-header-row');
-    const left = row?.querySelector('.fixa-home-header-left');
-    const right = row?.querySelector('.fixa-home-header-right');
     const greeting = home?.querySelector('#homeGreeting');
     const date = home?.querySelector('#homeDatePill');
     const filters = home?.querySelector('.fixa-week-filters');
-    if (!hero || !actions || !row || !left || !right || !greeting || !date || !filters) return false;
+    if (!home || !hero || !actions || !greeting || !date || !filters) return false;
 
     applying = true;
     try {
+      const row = ensureCompactRow(actions);
+      const left = row.querySelector('.fixa-home-compact-filters-v6');
+      const right = row.querySelector('.fixa-home-compact-greeting-v6');
+      if (!left || !right) return false;
+
       if (filters.parentElement !== left) left.appendChild(filters);
       if (greeting.parentElement !== right) right.appendChild(greeting);
       if (date.parentElement !== right) right.appendChild(date);
 
+      /* Elimina a faixa antiga que reservava espaço entre a navegação e os cards. */
       important(hero, 'min-height', '42px');
       important(hero, 'height', '42px');
       important(hero, 'margin', '0 0 2px');
       important(hero, 'padding', '0');
-      important(hero, 'align-items', 'stretch');
+      important(hero, 'display', 'block');
+      important(hero, 'overflow', 'visible');
 
       important(actions, 'position', 'relative');
       important(actions, 'width', '100%');
       important(actions, 'height', '42px');
+      important(actions, 'min-height', '42px');
       important(actions, 'display', 'block');
       important(actions, 'margin', '0');
       important(actions, 'padding', '0');
+
+      /* Qualquer estrutura antiga do cabeçalho deixa de participar do layout. */
+      home.querySelectorAll('.fixa-home-header-row').forEach(oldRow => {
+        if (oldRow !== row) important(oldRow, 'display', 'none');
+      });
+      home.querySelectorAll('.fixa-week-header-stack').forEach(stack => {
+        important(stack, 'display', 'none');
+        important(stack, 'height', '0');
+        important(stack, 'min-height', '0');
+        important(stack, 'margin', '0');
+        important(stack, 'padding', '0');
+      });
 
       important(row, 'position', 'relative');
       important(row, 'width', '100%');
       important(row, 'height', '42px');
       important(row, 'min-height', '42px');
       important(row, 'display', 'block');
-      important(row, 'padding', '0 2px');
       important(row, 'margin', '0');
+      important(row, 'padding', '0 2px');
       important(row, 'box-sizing', 'border-box');
 
       important(left, 'position', 'absolute');
       important(left, 'top', '0');
       important(left, 'left', '2px');
-      important(left, 'right', 'auto');
-      important(left, 'bottom', 'auto');
-      important(left, 'width', 'auto');
       important(left, 'height', '42px');
       important(left, 'display', 'flex');
-      important(left, 'align-items', 'flex-start');
+      important(left, 'align-items', 'center');
       important(left, 'justify-content', 'flex-start');
-      important(left, 'padding', '0');
       important(left, 'margin', '0');
-      important(left, 'transform', 'none');
+      important(left, 'padding', '0');
 
       important(filters, 'display', 'flex');
       important(filters, 'align-items', 'center');
@@ -78,18 +102,13 @@
       important(right, 'position', 'absolute');
       important(right, 'top', '0');
       important(right, 'right', '2px');
-      important(right, 'left', 'auto');
-      important(right, 'bottom', 'auto');
-      important(right, 'width', 'auto');
       important(right, 'height', '42px');
       important(right, 'display', 'grid');
       important(right, 'align-content', 'start');
       important(right, 'justify-items', 'end');
-      important(right, 'justify-content', 'end');
       important(right, 'gap', '1px');
-      important(right, 'padding', '0');
       important(right, 'margin', '0');
-      important(right, 'transform', 'none');
+      important(right, 'padding', '0');
       important(right, 'text-align', 'right');
 
       important(greeting, 'margin', '0');
@@ -123,7 +142,7 @@
   }
 
   function watch() {
-    const root = document.querySelector('#home.home-view') || document.body;
+    const root = document.querySelector('#home.home-view');
     if (!root) return;
     observer?.disconnect();
     observer = new MutationObserver(() => schedule(0));
@@ -156,9 +175,9 @@
   window.addEventListener('load', () => {
     watch();
     schedule(0);
-    schedule(300);
-    schedule(900);
-    schedule(1800);
+    schedule(250);
+    schedule(700);
+    schedule(1500);
   }, { once: true });
 
   let attempts = 0;
@@ -166,6 +185,6 @@
     attempts += 1;
     watch();
     apply();
-    if (attempts >= 80) window.clearInterval(timer);
+    if (attempts >= 100) window.clearInterval(timer);
   }, 100);
 })();
