@@ -1,10 +1,11 @@
 (() => {
   'use strict';
-  if (window.FixaHomeGreetingRightV4) return;
-  window.FixaHomeGreetingRightV4 = true;
+  if (window.FixaHomeGreetingRightV5) return;
+  window.FixaHomeGreetingRightV5 = true;
 
   let applying = false;
   let observer = null;
+  let scheduled = false;
 
   const important = (element, property, value) => {
     if (element) element.style.setProperty(property, value, 'important');
@@ -26,12 +27,10 @@
 
     applying = true;
     try {
-      /* Estrutura final: filtros à esquerda e saudação/data à direita. */
       if (filters.parentElement !== left) left.appendChild(filters);
       if (greeting.parentElement !== right) right.appendChild(greeting);
       if (date.parentElement !== right) right.appendChild(date);
 
-      /* Faixa superior realmente compacta. */
       important(hero, 'min-height', '42px');
       important(hero, 'height', '42px');
       important(hero, 'margin', '0 0 2px');
@@ -45,7 +44,6 @@
       important(actions, 'margin', '0');
       important(actions, 'padding', '0');
 
-      /* Não deixa regras antigas de grid/align empurrarem um lado para baixo. */
       important(row, 'position', 'relative');
       important(row, 'width', '100%');
       important(row, 'height', '42px');
@@ -62,7 +60,6 @@
       important(left, 'bottom', 'auto');
       important(left, 'width', 'auto');
       important(left, 'height', '42px');
-      important(left, 'min-width', '0');
       important(left, 'display', 'flex');
       important(left, 'align-items', 'flex-start');
       important(left, 'justify-content', 'flex-start');
@@ -85,7 +82,6 @@
       important(right, 'bottom', 'auto');
       important(right, 'width', 'auto');
       important(right, 'height', '42px');
-      important(right, 'min-width', '0');
       important(right, 'display', 'grid');
       important(right, 'align-content', 'start');
       important(right, 'justify-items', 'end');
@@ -114,14 +110,24 @@
   }
 
   function schedule(delay = 0) {
-    window.setTimeout(() => requestAnimationFrame(apply), delay);
+    if (delay > 0) {
+      window.setTimeout(() => schedule(0), delay);
+      return;
+    }
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      apply();
+    });
   }
 
   function watch() {
-    const actions = document.querySelector('#home .home-hero-actions');
-    if (!actions || observer) return;
+    const root = document.querySelector('#home.home-view') || document.body;
+    if (!root) return;
+    observer?.disconnect();
     observer = new MutationObserver(() => schedule(0));
-    observer.observe(actions, { childList: true, subtree: true });
+    observer.observe(root, { childList: true, subtree: true });
   }
 
   document.addEventListener('click', event => {
@@ -132,8 +138,18 @@
     if (event.target.closest('#fixaWeekFolderFilter')) schedule(30);
   }, true);
 
+  window.addEventListener('fixa-cloud-data-loaded', () => {
+    watch();
+    schedule(0);
+    schedule(100);
+    schedule(400);
+  });
+
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) schedule(30);
+    if (!document.hidden) {
+      watch();
+      schedule(20);
+    }
   });
 
   window.addEventListener('resize', () => schedule(20));
@@ -142,12 +158,14 @@
     schedule(0);
     schedule(300);
     schedule(900);
+    schedule(1800);
   }, { once: true });
 
   let attempts = 0;
   const timer = window.setInterval(() => {
     attempts += 1;
     watch();
-    if (apply() || attempts >= 40) window.clearInterval(timer);
+    apply();
+    if (attempts >= 80) window.clearInterval(timer);
   }, 100);
 })();
