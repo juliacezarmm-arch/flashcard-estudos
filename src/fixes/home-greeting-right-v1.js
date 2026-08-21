@@ -188,3 +188,64 @@
     if (attempts >= 100) window.clearInterval(timer);
   }, 100);
 })();
+
+/* Ordem dos botões primários no desktop: Início — Competição | espaço | Questões — Teste. */
+(() => {
+  'use strict';
+  if (window.FixaPrimaryTopbarOrderV1) return;
+  window.FixaPrimaryTopbarOrderV1 = true;
+
+  let observer = null;
+  let applying = false;
+
+  function applyPrimaryOrder() {
+    if (applying || !window.matchMedia('(min-width: 761px)').matches) return false;
+    const tabs = document.querySelector('.topbar-right .tabs');
+    if (!tabs) return false;
+
+    const home = tabs.querySelector('[data-view="home"], #homeTopTab');
+    const competition = tabs.querySelector('[data-competition-view], [data-view="competition"]');
+    const questions = tabs.querySelector('[data-view="questions"]');
+    const test = tabs.querySelector('[data-view="test"]');
+    if (!home || !competition || !questions || !test) return false;
+
+    applying = true;
+    try {
+      [home, competition, questions, test].forEach(button => tabs.appendChild(button));
+      home.style.removeProperty('margin-left');
+      competition.style.removeProperty('margin-left');
+      test.style.removeProperty('margin-left');
+      questions.style.setProperty('margin-left', '28px', 'important');
+      return true;
+    } finally {
+      applying = false;
+    }
+  }
+
+  function watchTabs() {
+    const tabs = document.querySelector('.topbar-right .tabs');
+    if (!tabs) return;
+    observer?.disconnect();
+    observer = new MutationObserver(() => requestAnimationFrame(applyPrimaryOrder));
+    observer.observe(tabs, { childList: true });
+  }
+
+  window.addEventListener('load', () => {
+    watchTabs();
+    applyPrimaryOrder();
+    window.setTimeout(applyPrimaryOrder, 400);
+    window.setTimeout(applyPrimaryOrder, 1200);
+  }, { once: true });
+
+  window.addEventListener('resize', applyPrimaryOrder);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) applyPrimaryOrder();
+  });
+
+  let attempts = 0;
+  const timer = window.setInterval(() => {
+    attempts += 1;
+    watchTabs();
+    if (applyPrimaryOrder() || attempts >= 50) window.clearInterval(timer);
+  }, 100);
+})();
