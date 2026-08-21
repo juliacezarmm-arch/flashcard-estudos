@@ -10,17 +10,23 @@
   style.id = 'fixaHomeGreetingRightV2Style';
   style.textContent = `
     @media (min-width: 761px) {
+      #home .home-hero-head {
+        min-height: 50px !important;
+      }
+
       #home .fixa-home-header-row {
         width: 100% !important;
         grid-template-columns: auto minmax(0, 1fr) !important;
-        align-items: center !important;
+        align-items: start !important;
       }
 
       #home .fixa-home-header-left {
         min-width: 0 !important;
         display: flex !important;
-        align-items: center !important;
+        align-items: flex-start !important;
+        align-self: start !important;
         justify-content: flex-start !important;
+        padding-top: 0 !important;
       }
 
       #home .fixa-home-header-left .fixa-week-filters {
@@ -33,7 +39,8 @@
       #home .fixa-home-header-right {
         min-width: 0 !important;
         display: grid !important;
-        align-content: center !important;
+        align-content: start !important;
+        align-self: start !important;
         justify-items: end !important;
         justify-content: end !important;
         gap: 1px !important;
