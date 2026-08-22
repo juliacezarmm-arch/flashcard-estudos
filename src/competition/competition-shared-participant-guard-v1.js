@@ -33,6 +33,26 @@
     window.dispatchEvent(new CustomEvent('fixa-shared-question-flags-updated'));
   }
 
+  function showTestSignalFeedback(message,tone='success'){
+    const head=document.querySelector('#testRunningPanel:not([hidden]) .test-running-head');
+    const meta=head?.querySelector('.meta');
+    if(!head||!meta)return false;
+    let feedback=head.querySelector('.fixa-shared-signal-feedback');
+    if(!feedback){
+      feedback=document.createElement('div');
+      feedback.className='fixa-shared-signal-feedback';
+      feedback.setAttribute('role','status');
+      feedback.setAttribute('aria-live','polite');
+      meta.insertAdjacentElement('beforebegin',feedback);
+    }
+    feedback.dataset.tone=tone;
+    feedback.textContent=message;
+    feedback.hidden=false;
+    clearTimeout(showTestSignalFeedback.timer);
+    showTestSignalFeedback.timer=setTimeout(()=>{feedback.hidden=true;},3000);
+    return true;
+  }
+
   async function refreshFlags(force=false){
     const sb=client();if(!sb?.rpc||state.syncing)return;
     if(!force&&Date.now()-state.lastSync<15000)return;
@@ -56,15 +76,30 @@
   async function signalQuestion(subject,card){
     const sb=client(),competition=competitionForSubject(subject);if(!sb?.rpc||!competition||!subject||!card)return;
     const existing=flagFor(subject,card);
-    if(existing){alert(existing.reported_by_me?'Você já sinalizou esta questão.':'Esta questão já está sinalizada para o dono da pasta.');return;}
+    if(existing){
+      const message=existing.reported_by_me?'Você já sinalizou esta questão.':'Esta questão já está sinalizada para o dono da pasta.';
+      if(!showTestSignalFeedback(message,'info'))alert(message);
+      return;
+    }
     const {error}=await sb.rpc('flag_competition_question',{
       p_competition_id:competition.id,
       p_subject_source_id:sourceSubjectId(subject),
       p_question_key:questionKey(card),
       p_question_code:card.questionCode||null
     });
-    if(error)return alert(error.message||'Não foi possível sinalizar a questão.');
-    await refreshFlags(true);alert('Questão sinalizada para o dono da pasta.');
+    if(error){
+      const message=error.message||'Não foi possível sinalizar a questão.';
+      if(!showTestSignalFeedback(message,'error'))alert(message);
+      return;
+    }
+
+    const localMap=flagMap(competition.id);
+    localMap.set(flagId(subject,card),{reported_by_me:true,local:true});
+    state.flags.set(String(competition.id),localMap);
+    card.sharedModerationFrozen=true;
+    applyUi();
+    showTestSignalFeedback('Você sinalizou esta questão.','success');
+    await refreshFlags(true);
   }
 
   async function resolveQuestion(competitionId,subjectSourceId,key){
@@ -81,11 +116,20 @@
       body.fixa-shared-readonly-selected #manage .quick-delete,body.fixa-shared-readonly-selected #manage [data-edit],body.fixa-shared-readonly-selected #manage [data-move],body.fixa-shared-readonly-selected #manage [data-delete]{display:none!important}
       body.fixa-shared-readonly-selected #manage .card-menu-panel [data-freeze]{display:flex!important}
       .fixa-shared-signal-button{min-height:30px!important;padding:5px 9px!important;font-size:11px!important;white-space:nowrap}
+      .fixa-shared-signal-button:disabled{opacity:1!important;border-color:#bbf7d0!important;background:#f0fdf4!important;color:#166534!important;cursor:default!important}
+      .fixa-shared-signal-feedback{min-height:30px;border:1px solid #bbf7d0;border-radius:9px;padding:6px 10px;display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;color:#166534;font-size:11px;font-weight:800;line-height:1.25;white-space:nowrap;box-shadow:none}
+      .fixa-shared-signal-feedback::before{content:'✓';width:16px;height:16px;border-radius:50%;display:grid;place-items:center;background:#dcfce7;color:#15803d;font-size:10px;font-weight:900}
+      .fixa-shared-signal-feedback[data-tone="info"]{border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8}
+      .fixa-shared-signal-feedback[data-tone="info"]::before{content:'i';background:#dbeafe;color:#1d4ed8}
+      .fixa-shared-signal-feedback[data-tone="error"]{border-color:#fecaca;background:#fff1f2;color:#b91c1c}
+      .fixa-shared-signal-feedback[data-tone="error"]::before{content:'!';background:#fee2e2;color:#b91c1c}
+      .fixa-shared-signal-feedback[hidden]{display:none!important}
       .fixa-shared-flag-summary{width:100%;margin-top:9px;border:1px solid #fed7aa!important;border-radius:9px!important;padding:8px 10px!important;display:flex!important;align-items:center!important;gap:7px!important;justify-content:flex-start!important;background:#fff7ed!important;color:#c2410c!important;font-size:11px!important;font-weight:800!important;box-shadow:none!important}
       .fixa-shared-flags-body{padding:16px 20px 20px;display:grid;gap:9px;max-height:62vh;overflow:auto}
       .fixa-shared-flag-row{border:1px solid #e1e8f2;border-radius:11px;padding:12px 13px;display:grid;gap:7px;background:#fff}
       .fixa-shared-flag-row strong{font-size:13px;color:#172033}.fixa-shared-flag-row p{margin:0;color:#64748b;font-size:11px;line-height:1.45}
       .fixa-shared-flag-actions{display:flex;justify-content:flex-end;margin-top:2px}.fixa-shared-flag-row button{min-height:34px;padding:7px 11px;font-size:11px;font-weight:800}
+      @media(max-width:760px){.fixa-shared-signal-feedback{order:3;width:100%;justify-content:center;white-space:normal}.test-running-head .meta{width:100%}}
     `;document.head.appendChild(style);
   }
 
@@ -117,12 +161,12 @@
   function ensureTestSignalButton(){
     const meta=document.querySelector('#testRunningPanel .test-running-head .meta');if(!meta)return;
     let button=meta.querySelector('[data-shared-question-signal]');const context=currentTestContext();
-    if(!context){button?.remove();return;}
+    if(!context){button?.remove();meta.parentElement?.querySelector('.fixa-shared-signal-feedback')?.remove();return;}
     if(!button){
       button=document.createElement('button');button.type='button';button.className='secondary fixa-shared-signal-button';button.dataset.sharedQuestionSignal='1';meta.appendChild(button);
       button.addEventListener('click',async event=>{event.preventDefault();event.stopPropagation();const fresh=currentTestContext();if(fresh)await signalQuestion(fresh.subject,fresh.card);});
     }
-    const flagged=flagFor(context.subject,context.card);button.textContent=flagged?'Sinalizada':'Sinalizar questão';button.disabled=Boolean(flagged);
+    const flagged=flagFor(context.subject,context.card);button.textContent=flagged?'Sinalizada':'Sinalizar questão';button.disabled=Boolean(flagged);button.classList.toggle('is-flagged',Boolean(flagged));
   }
 
   function temporarilyFreezeModeratedCards(){
