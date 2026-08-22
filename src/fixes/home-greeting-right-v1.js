@@ -44,18 +44,18 @@
       if (greeting.parentElement !== right) right.appendChild(greeting);
       if (date.parentElement !== right) right.appendChild(date);
 
-      /* Elimina a faixa antiga que reservava espaço entre a navegação e os cards. */
-      important(hero, 'min-height', '42px');
-      important(hero, 'height', '42px');
-      important(hero, 'margin', '-12px 0 2px');
+      /* Desktop: filtros bem próximos da navegação principal, sem alterar o mobile. */
+      important(hero, 'min-height', '38px');
+      important(hero, 'height', '38px');
+      important(hero, 'margin', '-24px 0 3px');
       important(hero, 'padding', '0');
       important(hero, 'display', 'block');
       important(hero, 'overflow', 'visible');
 
       important(actions, 'position', 'relative');
       important(actions, 'width', '100%');
-      important(actions, 'height', '42px');
-      important(actions, 'min-height', '42px');
+      important(actions, 'height', '38px');
+      important(actions, 'min-height', '38px');
       important(actions, 'display', 'block');
       important(actions, 'margin', '0');
       important(actions, 'padding', '0');
@@ -74,8 +74,8 @@
 
       important(row, 'position', 'relative');
       important(row, 'width', '100%');
-      important(row, 'height', '42px');
-      important(row, 'min-height', '42px');
+      important(row, 'height', '38px');
+      important(row, 'min-height', '38px');
       important(row, 'display', 'block');
       important(row, 'margin', '0');
       important(row, 'padding', '0 2px');
@@ -84,7 +84,7 @@
       important(left, 'position', 'absolute');
       important(left, 'top', '0');
       important(left, 'left', '2px');
-      important(left, 'height', '42px');
+      important(left, 'height', '38px');
       important(left, 'display', 'flex');
       important(left, 'align-items', 'center');
       important(left, 'justify-content', 'flex-start');
@@ -99,14 +99,15 @@
       important(filters, 'padding', '0');
       important(filters, 'transform', 'none');
 
+      /* Saudação um pouco menor e mais baixa, como na referência aprovada. */
       important(right, 'position', 'absolute');
-      important(right, 'top', '0');
+      important(right, 'top', '6px');
       important(right, 'right', '2px');
-      important(right, 'height', '42px');
+      important(right, 'height', '32px');
       important(right, 'display', 'grid');
       important(right, 'align-content', 'start');
       important(right, 'justify-items', 'end');
-      important(right, 'gap', '1px');
+      important(right, 'gap', '0');
       important(right, 'margin', '0');
       important(right, 'padding', '0');
       important(right, 'text-align', 'right');
@@ -117,10 +118,17 @@
       important(greeting, 'justify-content', 'flex-end');
       important(greeting, 'text-align', 'right');
       important(greeting, 'white-space', 'nowrap');
+      important(greeting, 'font-size', '17px');
+      important(greeting, 'line-height', '19px');
+      const wave = greeting.querySelector('.home-greeting-wave');
+      important(wave, 'width', '17px');
+      important(wave, 'height', '17px');
 
       important(date, 'margin', '0');
       important(date, 'text-align', 'right');
       important(date, 'white-space', 'nowrap');
+      important(date, 'font-size', '9px');
+      important(date, 'line-height', '11px');
 
       return true;
     } finally {
