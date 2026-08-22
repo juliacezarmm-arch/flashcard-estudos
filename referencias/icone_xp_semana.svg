@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="XP da semana">
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <rect x="10" y="13" width="39" height="38" rx="7" fill="#F8FBFF" stroke="#60A5FA" stroke-width="2.4"/>
+    <path d="M10 24h39M19 9v9M40 9v9" fill="none" stroke="#2563EB" stroke-width="2.8"/>
+    <path d="M19 31h6M30 31h6M19 38h6M30 38h6" fill="none" stroke="#93C5FD" stroke-width="2.6"/>
+    <circle cx="47" cy="43" r="10" fill="#FFF8D9" stroke="#F4B740" stroke-width="2.1"/>
+    <path d="m47 36.8 1.9 3.8 4.2.6-3 3 .7 4.1-3.8-2-3.7 2 .7-4.1-3-3 4.2-.6z" fill="#F4B740" stroke="#E5A72E" stroke-width="1.1"/>
+  </g>
+</svg>
