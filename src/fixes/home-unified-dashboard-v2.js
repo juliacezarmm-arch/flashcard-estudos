@@ -1,20 +1,12 @@
 (() => {
   'use strict';
 
-  if (window.FixaHomeUnifiedDashboardV2) return;
-  window.FixaHomeUnifiedDashboardV2 = true;
+  if (window.FixaHomeUnifiedDashboardV2?.active) return;
+  const api = window.FixaHomeUnifiedDashboardV2 = { active: true, refresh: null };
 
   const STYLE_ID = 'fixaHomeUnifiedDashboardV2Style';
-  const SUMMARY_ART = Object.freeze({
-    'Coleções': 'icone_livros_colecoes.png',
-    'Questões': 'ChatGPT Image 31 de jul. de 2026, 23_14_35 (2).png',
-    'Dominadas': 'icone_trofeu_dominadas.png',
-    'Aproveitamento': 'ChatGPT Image 1 de ago. de 2026, 12_31_23.png'
-  });
-
   let applying = false;
   let firstTabApplied = false;
-  let refreshTimer = 0;
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -108,7 +100,6 @@
         .fixa-week-summary-card{height:66px!important;min-height:66px!important;grid-template-columns:40px minmax(0,1fr)!important;gap:9px!important}
         .fixa-week-summary-card .home-card-number{font-size:20px!important;line-height:21px!important}
         .fixa-week-summary-card strong{font-size:11px!important;line-height:13px!important}.fixa-week-summary-card small{font-size:9px!important;line-height:10px!important}
-        .fixa-week-summary-icon.fixa-original-summary-art{width:40px!important;height:40px!important;border-radius:0!important;background:transparent!important}.fixa-week-summary-icon.fixa-original-summary-art img{display:block!important;width:40px!important;height:40px!important;object-fit:contain!important}
       }
       @media(max-width:900px){
         #home .fixa-week-content-tabs button{padding:0 10px!important}
@@ -186,36 +177,6 @@
     if (!period || period.querySelector('[data-fixa-week-period="today"]')) return;
     const button = document.createElement('button'); button.type='button'; button.dataset.fixaWeekPeriod='today'; button.textContent='Hoje';
     period.insertBefore(button, period.firstChild);
-  }
-
-  function restoreSummaryIcons() {
-    document.querySelectorAll('#homeSummaryCards .fixa-week-summary-card').forEach(card => {
-      const label = card.querySelector('strong')?.textContent?.trim(), file = SUMMARY_ART[label]; if (!file) return;
-      const target = card.querySelector('.fixa-week-summary-icon'); if (!target) return;
-      if (target.querySelector('img')?.dataset?.fixaOriginalFile === file) return;
-      target.classList.add('fixa-original-summary-art');
-      target.innerHTML = `<img src="${encodeURI(`referencias/${file}`)}" data-fixa-original-file="${esc(file)}" alt="" aria-hidden="true">`;
-    });
-  }
-
-  function dateKey(date) { return date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}` : ''; }
-  function activityDays() {
-    const days = new Set();
-    completedTests().forEach(test => { const date=testDate(test); if(date) days.add(dateKey(date)); });
-    allSubjects().forEach(subject => cardsFor(subject).forEach(card => attemptsOf(card).forEach(attempt => { const date=attemptDate(attempt); if(date) days.add(dateKey(date)); })));
-    return days;
-  }
-  function correctedStreak(days) {
-    if (!days.size) return 0;
-    const cursor = new Date(); cursor.setHours(12,0,0,0); if (!days.has(dateKey(cursor))) cursor.setDate(cursor.getDate()-1);
-    let streak=0; while(days.has(dateKey(cursor))){streak+=1;cursor.setDate(cursor.getDate()-1);} return streak;
-  }
-  function patchSequence() {
-    const card = document.querySelector('#homeFooterStats .fixa-week-top-card:first-child'); if(!card) return;
-    const days=activityDays(), streak=correctedStreak(days), label=card.querySelector('.fixa-week-top-head>b');
-    if(label) label.textContent=`${streak} dia${streak===1?'':'s'} seguidos`;
-    const start=new Date(); start.setHours(0,0,0,0); start.setDate(start.getDate()-((start.getDay()+6)%7));
-    card.querySelectorAll('.fixa-week-day').forEach((node,index)=>{const date=new Date(start);date.setDate(date.getDate()+index);const active=days.has(dateKey(date));node.classList.toggle('active',active);const circle=node.querySelector('i');if(circle)circle.textContent=active?'✓':'';});
   }
 
   function subjectReviewRows() {
@@ -315,29 +276,41 @@
     if(!home||!today||!shell||!stage)return false;
     applying=true;
     try{
-      ensureStyle(); ensureTodayButton(); setTabs(shell); hideTestAnalysisButton();
-      const oldAnalysis=today.querySelector('.fixa-week-analysis-shell');if(oldAnalysis)oldAnalysis.style.setProperty('display','none','important');
+      ensureStyle();
+      ensureTodayButton();
+      setTabs(shell);
+      hideTestAnalysisButton();
+      const oldAnalysis=today.querySelector('.fixa-week-analysis-shell');
+      if(oldAnalysis)oldAnalysis.style.setProperty('display','none','important');
       ensureActivities(stage);
-      const priorities=ensurePanel(stage,'priorities'),status=ensurePanel(stage,'status'),chart=ensurePanel(stage,'chart');
-      renderReviewReference(); renderPriorities(priorities); renderQuestionStatus(status); renderChart(chart); renderActivities(); restoreSummaryIcons(); patchSequence();
-      if(!firstTabApplied){firstTabApplied=true;setTimeout(()=>shell.querySelector('[data-fixa-main-tab="performance-goals"]')?.click(),0);}
+      const priorities=ensurePanel(stage,'priorities');
+      const status=ensurePanel(stage,'status');
+      const chart=ensurePanel(stage,'chart');
+      renderReviewReference();
+      renderPriorities(priorities);
+      renderQuestionStatus(status);
+      renderChart(chart);
+      renderActivities();
+      if(!firstTabApplied){
+        firstTabApplied=true;
+        shell.querySelector('[data-fixa-main-tab="performance-goals"]')?.click();
+      }
       return true;
-    }finally{applying=false;}
-  }
-
-  function schedule(delay=0){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{refreshTimer=0;apply();},delay);}
-  function wrapDashboardRefresh(){
-    const api=window.FixaHomeWeeklyDashboardV2;if(!api||typeof api.refresh!=='function'||api.__unifiedDashboardV2Wrapped)return false;
-    const original=api.refresh.bind(api);api.refresh=(...args)=>{const result=original(...args);setTimeout(apply,0);return result;};Object.defineProperty(api,'__unifiedDashboardV2Wrapped',{value:true,configurable:false});return true;
+    }finally{
+      applying=false;
+    }
   }
 
   document.addEventListener('click',event=>{
-    if(event.target.closest('[data-view="home"],#homeTopTab,[data-fixa-main-tab],[data-fixa-week-period],[data-view="test"]')){apply();setTimeout(apply,0);hideTestAnalysisButton();}
+    if(event.target.closest('[data-view="home"],#homeTopTab,[data-view="test"]')){
+      apply();
+      hideTestAnalysisButton();
+    }
   });
-  document.addEventListener('change',event=>{if(event.target.closest('#fixaWeekFolderFilter')){apply();setTimeout(apply,0);}});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule(0);});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)apply();});
 
-  let tries=0;const boot=setInterval(()=>{tries+=1;wrapDashboardRefresh();hideTestAnalysisButton();const ready=apply();if((ready&&wrapDashboardRefresh()&&tries>=8)||tries>=40)clearInterval(boot);},200);
-  window.addEventListener('load',()=>{schedule(0);setTimeout(apply,250);},{once:true});
-  wrapDashboardRefresh();schedule(0);
+  api.refresh=apply;
+  const boot=()=>{hideTestAnalysisButton();apply();};
+  boot();
+  window.addEventListener('load',boot,{once:true});
 })();
