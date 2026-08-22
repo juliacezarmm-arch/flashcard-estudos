@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260822-home-stability-v3";
+    const FIXA_VERSION = "20260822-home-stability-v4";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "src/core/collections.js", "Não foi possível carregar as coleções."],
@@ -117,13 +117,6 @@ IMAGENS NA EXPLICAÇÃO
             safeCode = safeCode.replace(
               "function resolveStorageImage(img) {\n    const source = img.getAttribute('src') || '';",
               "function resolveStorageImage(img) {\n    if (window.FixaStorageLazyLoader?.observe) {\n      window.FixaStorageLazyLoader.observe(img);\n      return;\n    }\n    const source = img.getAttribute('src') || '';"
-            );
-          }
-
-          if (key === "homeEmptyStateArt") {
-            safeCode = safeCode.replace(
-              "(() => {\n  const STYLE_ID = 'homeEmptyStateArtStyle';",
-              "(() => {\n  if (window.FixaHomeWeeklyDashboardV2) return;\n  const STYLE_ID = 'homeEmptyStateArtStyle';"
             );
           }
 
