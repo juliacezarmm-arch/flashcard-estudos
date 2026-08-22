@@ -26,28 +26,22 @@
     const style = document.createElement('style');
     style.id = 'fixaTestHistoryLayoutV1Style';
     style.textContent = `
-      #testPanelHistory:not([hidden]) .test-history-card {
-        height: var(--fixa-test-history-height, auto);
-        min-height: 360px;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
+      #testPanelHistory .test-history-card {
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
       }
 
       #testPanelHistory .test-history-card > .section-heading {
-        flex: 0 0 auto;
-        margin-bottom: 10px;
+        margin-bottom: 9px;
       }
 
       #testPanelHistory .history-list {
         max-height: none !important;
         min-height: 0;
-        flex: 1 1 auto;
-        align-content: start;
-        gap: 6px !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        padding-right: 4px;
+        gap: 5px !important;
+        overflow: visible !important;
+        padding-right: 0 !important;
       }
 
       #testPanelHistory .history-item {
@@ -67,8 +61,7 @@
       }
 
       #testPanelHistory .history-date,
-      #testPanelHistory .history-result,
-      #testPanelHistory .fixa-history-secondary {
+      #testPanelHistory .history-result {
         font-size: 11px !important;
         line-height: 1.35;
       }
@@ -77,28 +70,12 @@
         color: #64748b;
       }
 
-      #testPanelHistory .fixa-history-secondary {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 5px;
-        min-height: 15px;
-        color: #7b879b;
-      }
-
-      #testPanelHistory .fixa-history-secondary .fixa-history-inline-xp {
+      #testPanelHistory .fixa-history-inline-xp {
         color: #2563eb;
         font-weight: 850;
       }
 
-      #testPanelHistory .history-item > .fixa-history-xp {
-        display: none !important;
-      }
-
       @media (max-width: 700px) {
-        #testPanelHistory:not([hidden]) .test-history-card {
-          min-height: 320px;
-        }
         #testPanelHistory .history-item-header {
           gap: 6px;
         }
@@ -119,80 +96,59 @@
       const item = items[index];
       if (!item) return;
 
+      row.querySelector('.fixa-history-secondary')?.remove();
+      row.querySelector(':scope > .fixa-history-xp')?.remove();
+
       const score = Math.max(0, Number(item.score || 0));
       const total = Math.max(0, Number(item.total || 0));
       const errors = Math.max(0, total - score);
       const percent = total ? Math.round((score / total) * 100) : 0;
-      const main = `${score} acertos · ${errors} erros · ${percent}% de aproveitamento`;
-
-      const result = row.querySelector('.history-result');
-      if (result && result.textContent !== main) result.textContent = main;
-
-      let secondary = row.querySelector('.fixa-history-secondary');
-      if (!secondary) {
-        secondary = document.createElement('span');
-        secondary.className = 'fixa-history-secondary';
-        if (result) result.insertAdjacentElement('afterend', secondary);
-        else row.appendChild(secondary);
-      }
-
       const duration = compactDuration(item.durationMs);
       const hasXp = Object.prototype.hasOwnProperty.call(item, 'xp');
-      const xp = hasXp ? Number(item.xp || 0) : null;
-      const parts = [];
-      if (duration) parts.push(`<span>${duration}</span>`);
-      if (duration && hasXp) parts.push('<span aria-hidden="true">·</span>');
-      if (hasXp) parts.push(`<span class="fixa-history-inline-xp">+${xp} XP</span>`);
-      const html = parts.join('');
-      if (secondary.innerHTML !== html) secondary.innerHTML = html;
+      const xp = Math.max(0, Number(item.xp || 0));
+
+      const parts = [
+        `${score} acertos`,
+        `${errors} erros`,
+        `${percent}% de aproveitamento`
+      ];
+      if (duration) parts.push(duration);
+
+      const result = row.querySelector('.history-result');
+      if (!result) return;
+
+      const prefix = parts.join(' · ');
+      const html = hasXp
+        ? `${prefix} · <span class="fixa-history-inline-xp">+${xp} XP</span>`
+        : prefix;
+      if (result.innerHTML !== html) result.innerHTML = html;
     });
-  }
-
-  function fitHistoryCard() {
-    const panel = document.querySelector('#testPanelHistory:not([hidden])');
-    const testView = document.querySelector('#test.view.active, #test.active');
-    const card = panel?.querySelector('.test-history-card');
-    if (!panel || !testView || !card) return;
-
-    const top = card.getBoundingClientRect().top;
-    if (!Number.isFinite(top) || top <= 0) return;
-    const bottomGap = 18;
-    const available = Math.max(360, Math.floor(window.innerHeight - top - bottomGap));
-    const next = `${available}px`;
-    if (card.style.getPropertyValue('--fixa-test-history-height') !== next) {
-      card.style.setProperty('--fixa-test-history-height', next);
-    }
   }
 
   function refresh() {
     enhanceRows();
-    fitHistoryCard();
   }
 
   ensureStyle();
 
   let queued = false;
-  const queueRefresh = () => {
+  function queueRefresh() {
     if (queued) return;
     queued = true;
     requestAnimationFrame(() => {
       queued = false;
       refresh();
     });
-  };
+  }
 
-  const observer = new MutationObserver(queueRefresh);
-  observer.observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['hidden', 'class']
-  });
+  const list = document.querySelector('#testHistory');
+  if (list) {
+    new MutationObserver(queueRefresh).observe(list, { childList: true });
+  }
 
   document.addEventListener('click', event => {
-    if (event.target.closest('[data-test-panel], .tab[data-view="test"]')) queueRefresh();
+    if (event.target.closest('[data-test-panel="history"], .tab[data-view="test"]')) queueRefresh();
   });
-  window.addEventListener('resize', queueRefresh);
   window.addEventListener('fixa-cloud-data-loaded', queueRefresh);
   window.addEventListener('load', queueRefresh, { once: true });
 
