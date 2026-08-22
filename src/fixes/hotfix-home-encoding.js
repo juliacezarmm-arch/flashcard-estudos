@@ -133,6 +133,15 @@
     document.head.appendChild(script);
   }
 
+  function loadHomeReferenceLayoutV3() {
+    if (window.FixaHomeReferenceLayoutV3?.active || document.getElementById('fixaHomeReferenceLayoutV3Loader')) return;
+    const script = document.createElement('script');
+    script.id = 'fixaHomeReferenceLayoutV3Loader';
+    script.src = 'src/fixes/home-reference-layout-v3.js?v=20260822-home-reference-compact-v3';
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
   function loadCompetitionSignalSkip() {
     if (window.FixaCompetitionSignalSkipV1 || document.getElementById('fixaCompetitionSignalSkipV1Loader')) return;
     const script = document.createElement('script');
@@ -212,6 +221,7 @@
     installHomeTodayBehavior();
     installHomeRefreshGuard();
     loadHomeReferenceLayout();
+    loadHomeReferenceLayoutV3();
     loadCompetitionSignalSkip();
     loadCompetitionOwnerFreezeSync();
     loadCompetitionFlagReview();
