@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260822-home-stability-v2";
+    const FIXA_VERSION = "20260822-home-stability-v3";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "src/core/collections.js", "Não foi possível carregar as coleções."],
@@ -110,21 +110,6 @@ IMAGENS NA EXPLICAÇÃO
             safeCode = safeCode.replace(
               "async function load(){if(!uid()||!sb())return;root.innerHTML=",
               "async function load(){if(!sb()){root.innerHTML=head()+'<div class=\"cv3-card\"><h3>Não foi possível conectar ao servidor</h3><p class=\"cv3-muted\">Atualize a página e tente novamente.</p></div>';bind();return;}root.innerHTML="
-            );
-          }
-
-          if (key === "competitionXpHomeV4") {
-            safeCode = safeCode.replace(
-              "  function renderXpUi() {\n    ensureHomeXpCard();\n    renderCollectionXp();\n    renderHistoryXp();\n  }",
-              "  function renderXpUi() {\n    renderHistoryXp();\n    window.FixaHomeWeeklyDashboardV2?.refresh?.();\n  }"
-            );
-            safeCode = safeCode.replace(
-              "  const observer = new MutationObserver(() => queueRenderXpUi(300));\n  observer.observe(document.body || document.documentElement, { childList: true, subtree: true });\n",
-              ""
-            );
-            safeCode = safeCode.replace(
-              "  setInterval(() => {\n    if (!document.hidden) syncAll(false);\n  }, 60000);\n",
-              ""
             );
           }
 
