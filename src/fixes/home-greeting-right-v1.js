@@ -189,63 +189,38 @@
   }, 100);
 })();
 
-/* Ordem dos botões primários no desktop: Início — Competição | espaço | Questões — Teste. */
+/* Ordem estável dos botões primários no desktop: Início — Competição | espaço | Questões — Teste.
+   Usa a ordem nativa do flex para evitar MutationObserver e movimentação tardia de elementos. */
 (() => {
   'use strict';
-  if (window.FixaPrimaryTopbarOrderV1) return;
-  window.FixaPrimaryTopbarOrderV1 = true;
+  if (document.getElementById('fixaPrimaryTopbarOrderStyleV2')) return;
 
-  let observer = null;
-  let applying = false;
+  const style = document.createElement('style');
+  style.id = 'fixaPrimaryTopbarOrderStyleV2';
+  style.textContent = `
+    @media (min-width: 761px) {
+      .topbar-right .tabs [data-view="home"],
+      .topbar-right .tabs #homeTopTab {
+        order: 1 !important;
+        margin-left: 0 !important;
+      }
 
-  function applyPrimaryOrder() {
-    if (applying || !window.matchMedia('(min-width: 761px)').matches) return false;
-    const tabs = document.querySelector('.topbar-right .tabs');
-    if (!tabs) return false;
+      .topbar-right .tabs [data-competition-view],
+      .topbar-right .tabs [data-view="competition"] {
+        order: 2 !important;
+        margin-left: 0 !important;
+      }
 
-    const home = tabs.querySelector('[data-view="home"], #homeTopTab');
-    const competition = tabs.querySelector('[data-competition-view], [data-view="competition"]');
-    const questions = tabs.querySelector('[data-view="questions"]');
-    const test = tabs.querySelector('[data-view="test"]');
-    if (!home || !competition || !questions || !test) return false;
+      .topbar-right .tabs [data-view="questions"] {
+        order: 3 !important;
+        margin-left: 28px !important;
+      }
 
-    applying = true;
-    try {
-      [home, competition, questions, test].forEach(button => tabs.appendChild(button));
-      home.style.removeProperty('margin-left');
-      competition.style.removeProperty('margin-left');
-      test.style.removeProperty('margin-left');
-      questions.style.setProperty('margin-left', '28px', 'important');
-      return true;
-    } finally {
-      applying = false;
+      .topbar-right .tabs [data-view="test"] {
+        order: 4 !important;
+        margin-left: 0 !important;
+      }
     }
-  }
-
-  function watchTabs() {
-    const tabs = document.querySelector('.topbar-right .tabs');
-    if (!tabs) return;
-    observer?.disconnect();
-    observer = new MutationObserver(() => requestAnimationFrame(applyPrimaryOrder));
-    observer.observe(tabs, { childList: true });
-  }
-
-  window.addEventListener('load', () => {
-    watchTabs();
-    applyPrimaryOrder();
-    window.setTimeout(applyPrimaryOrder, 400);
-    window.setTimeout(applyPrimaryOrder, 1200);
-  }, { once: true });
-
-  window.addEventListener('resize', applyPrimaryOrder);
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) applyPrimaryOrder();
-  });
-
-  let attempts = 0;
-  const timer = window.setInterval(() => {
-    attempts += 1;
-    watchTabs();
-    if (applyPrimaryOrder() || attempts >= 50) window.clearInterval(timer);
-  }, 100);
+  `;
+  document.head.appendChild(style);
 })();
