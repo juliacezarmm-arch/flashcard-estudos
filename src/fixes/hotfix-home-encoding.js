@@ -147,6 +147,15 @@
     document.head.appendChild(script);
   }
 
+  function loadCompetitionOwnerFreezeNotice() {
+    if (window.FixaCompetitionOwnerFreezeNoticeV1 || document.getElementById('fixaCompetitionOwnerFreezeNoticeV1Loader')) return;
+    const script = document.createElement('script');
+    script.id = 'fixaCompetitionOwnerFreezeNoticeV1Loader';
+    script.src = 'src/competition/competition-owner-freeze-notice-v1.js?v=20260822-owner-freeze-notice-v1';
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
   function repair() {
     repairAnalysisLabels();
     replaceObservedTestNote();
@@ -156,6 +165,7 @@
     loadCompetitionSignalSkip();
     loadCompetitionOwnerFreezeSync();
     loadCompetitionFlagReview();
+    loadCompetitionOwnerFreezeNotice();
   }
 
   if (document.documentElement.dataset[HOTFIX_FLAG] === 'true') return;
