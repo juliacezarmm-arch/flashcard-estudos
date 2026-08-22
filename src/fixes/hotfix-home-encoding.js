@@ -183,6 +183,15 @@
     document.head.appendChild(script);
   }
 
+  function loadTestHistoryLayout() {
+    if (window.FixaTestHistoryLayoutV1 || document.getElementById('fixaTestHistoryLayoutV1Loader')) return;
+    const script = document.createElement('script');
+    script.id = 'fixaTestHistoryLayoutV1Loader';
+    script.src = 'src/test/test-history-layout-v1.js?v=20260822-test-history-layout-v1';
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
   function repair() {
     repairAnalysisLabels();
     replaceObservedTestNote();
@@ -196,6 +205,7 @@
     loadCompetitionWeeklyHistory();
     loadCompetitionParticipantExportGuard();
     loadCompletedTestReset();
+    loadTestHistoryLayout();
   }
 
   if (document.documentElement.dataset[HOTFIX_FLAG] === 'true') return;
