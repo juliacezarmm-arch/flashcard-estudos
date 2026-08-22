@@ -135,6 +135,7 @@
 
   function loadHomeReferenceLayoutV3() {
     if (window.FixaHomeReferenceLayoutV3?.active || document.getElementById('fixaHomeReferenceLayoutV3Loader')) return;
+    if (!window.FixaHomeReferenceLayoutV2?.active) return;
     const script = document.createElement('script');
     script.id = 'fixaHomeReferenceLayoutV3Loader';
     script.src = 'src/fixes/home-reference-layout-v3.js?v=20260822-home-reference-compact-v3';
