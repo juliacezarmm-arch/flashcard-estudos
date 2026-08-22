@@ -95,11 +95,37 @@
     });
   }
 
+  function installHomeRefreshGuard() {
+    const dashboard = window.FixaHomeWeeklyDashboardV2;
+    if (!dashboard || typeof dashboard.refresh !== 'function' || dashboard.__fixaRefreshGuardInstalled) return;
+
+    const originalRefresh = dashboard.refresh.bind(dashboard);
+    let refreshTimer = 0;
+    let latestArgs = [];
+
+    dashboard.refresh = (...args) => {
+      latestArgs = args;
+      window.clearTimeout(refreshTimer);
+      refreshTimer = window.setTimeout(() => {
+        refreshTimer = 0;
+        const argsToUse = latestArgs;
+        latestArgs = [];
+        originalRefresh(...argsToUse);
+      }, 75);
+    };
+
+    Object.defineProperty(dashboard, '__fixaRefreshGuardInstalled', {
+      value: true,
+      configurable: false
+    });
+  }
+
   function repair() {
     repairAnalysisLabels();
     replaceObservedTestNote();
     formatTestStartNote();
     installHomeTodayBehavior();
+    installHomeRefreshGuard();
   }
 
   if (document.documentElement.dataset[HOTFIX_FLAG] === 'true') return;
