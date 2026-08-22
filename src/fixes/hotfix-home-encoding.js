@@ -138,6 +138,15 @@
     document.head.appendChild(script);
   }
 
+  function loadCompetitionFlagReview() {
+    if (window.FixaCompetitionFlagReviewV1 || document.getElementById('fixaCompetitionFlagReviewV1Loader')) return;
+    const script = document.createElement('script');
+    script.id = 'fixaCompetitionFlagReviewV1Loader';
+    script.src = 'src/competition/competition-flag-review-v1.js?v=20260822-flag-review-v1';
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
   function repair() {
     repairAnalysisLabels();
     replaceObservedTestNote();
@@ -146,6 +155,7 @@
     installHomeRefreshGuard();
     loadCompetitionSignalSkip();
     loadCompetitionOwnerFreezeSync();
+    loadCompetitionFlagReview();
   }
 
   if (document.documentElement.dataset[HOTFIX_FLAG] === 'true') return;
