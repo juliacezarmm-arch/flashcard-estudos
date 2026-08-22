@@ -156,6 +156,15 @@
     document.head.appendChild(script);
   }
 
+  function loadCompetitionWeeklyHistory() {
+    if (window.FixaCompetitionWeeklyHistoryV1 || document.getElementById('fixaCompetitionWeeklyHistoryV1Loader')) return;
+    const script = document.createElement('script');
+    script.id = 'fixaCompetitionWeeklyHistoryV1Loader';
+    script.src = 'src/competition/competition-weekly-history-v1.js?v=20260822-weekly-history-v1';
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
   function repair() {
     repairAnalysisLabels();
     replaceObservedTestNote();
@@ -166,6 +175,7 @@
     loadCompetitionOwnerFreezeSync();
     loadCompetitionFlagReview();
     loadCompetitionOwnerFreezeNotice();
+    loadCompetitionWeeklyHistory();
   }
 
   if (document.documentElement.dataset[HOTFIX_FLAG] === 'true') return;
