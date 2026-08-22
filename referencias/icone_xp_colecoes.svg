@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="XP das coleções">
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <rect x="9" y="34" width="29" height="9" rx="3" fill="#DBEAFE" stroke="#60A5FA" stroke-width="2.2"/>
+    <rect x="12" y="24" width="31" height="9" rx="3" fill="#EFF6FF" stroke="#2563EB" stroke-width="2.2"/>
+    <rect x="16" y="14" width="29" height="9" rx="3" fill="#F8FBFF" stroke="#93C5FD" stroke-width="2.2"/>
+    <path d="M19 18.5h15M16 28.5h17M13 38.5h16" fill="none" stroke="#2563EB" stroke-width="2.4"/>
+    <circle cx="46" cy="43" r="11" fill="#FFF8D9" stroke="#F4B740" stroke-width="2.2"/>
+    <path d="m46 36 2.1 4.3 4.8.7-3.5 3.4.8 4.8-4.2-2.2-4.3 2.2.8-4.8-3.5-3.4 4.8-.7z" fill="#F4B740" stroke="#E5A72E" stroke-width="1.2"/>
+  </g>
+</svg>
