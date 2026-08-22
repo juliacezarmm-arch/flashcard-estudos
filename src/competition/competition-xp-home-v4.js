@@ -37,34 +37,10 @@
   };
 
   /*
-   * Este módulo é a fonte/sincronizador dos dados de XP e do XP exibido
-   * no histórico de testes. Os cards da Home e o XP de cada coleção são
-   * renderizados exclusivamente por FixaHomeWeeklyDashboardV2 a partir de
-   * state.summary. Assim não existem dois módulos escrevendo nos mesmos nós.
+   * Responsabilidade deste módulo: sincronizar os dados de XP.
+   * A apresentação dos cards da Home pertence a FixaHomeWeeklyDashboardV2.
+   * A apresentação do Histórico pertence a FixaTestHistoryLayoutV1.
    */
-  const style = document.createElement('style');
-  style.id = 'fixaCompetitionXpHomeV4Style';
-  style.textContent = `
-    .fixa-history-xp {
-      display: inline-flex;
-      align-items: center;
-      width: max-content;
-      margin-top: 4px;
-      border-radius: 999px;
-      padding: 4px 8px;
-      color: #1d4ed8;
-      background: #eaf2ff;
-      font-size: 11px;
-      font-weight: 850;
-    }
-
-    .fixa-history-xp-detail {
-      margin-left: 5px;
-      color: #64748b;
-      font-weight: 650;
-    }
-  `;
-  document.head.appendChild(style);
 
   const dateKey = value => {
     const date = new Date(value || 0);
@@ -328,53 +304,11 @@
     const previousSignature = homeSummarySignature(state.summary);
     const { data: summary, error } = await rpc('get_user_xp_summary', {});
     if (!error && summary) state.summary = summary;
-    renderXpUi();
 
     const changed = !error && summary && homeSummarySignature(state.summary) !== previousSignature;
     if (changed && typeof window.FixaHomeWeeklyDashboardV2?.refresh === 'function') {
       requestAnimationFrame(() => window.FixaHomeWeeklyDashboardV2.refresh());
     }
-  }
-
-  function renderHistoryXp() {
-    const rows = document.querySelectorAll('#testHistory .history-item');
-    rows.forEach((row, index) => {
-      const item = history()[index];
-      if (!item) return;
-
-      let badge = row.querySelector('.fixa-history-xp');
-      if (!badge) {
-        badge = document.createElement('span');
-        badge.className = 'fixa-history-xp';
-        row.appendChild(badge);
-      }
-
-      const breakdown = item.xpBreakdown || {};
-      const details = [];
-      if (Number(breakdown.questions || 0)) details.push(`${breakdown.questions} por questões`);
-      if (Number(breakdown.mastery || 0)) details.push(`${breakdown.mastery} por domínio`);
-      if (Number(breakdown.review || 0)) details.push(`${breakdown.review} por revisão`);
-      const next = `+${Number(item.xp || 0)} XP${details.length ? `<span class="fixa-history-xp-detail">${details.join(' · ')}</span>` : ''}`;
-      if (badge.innerHTML !== next) badge.innerHTML = next;
-    });
-  }
-
-  function renderXpUi() {
-    renderHistoryXp();
-  }
-
-  let renderTimer = 0;
-  let renderFrame = 0;
-
-  function queueRenderXpUi(delay = 120) {
-    if (document.hidden || renderTimer || renderFrame) return;
-    renderTimer = window.setTimeout(() => {
-      renderTimer = 0;
-      renderFrame = requestAnimationFrame(() => {
-        renderFrame = 0;
-        renderXpUi();
-      });
-    }, delay);
   }
 
   function testXpAlreadySynced(item) {
@@ -384,10 +318,7 @@
   async function syncAll(force = false) {
     if (state.syncing || !getClient() || !getUserId() || !appData()) return;
     const signature = history().map(item => `${item.id}:${item.total}:${item.mode}:${item.date}`).join('|');
-    if (!force && signature === state.lastSignature) {
-      queueRenderXpUi(250);
-      return;
-    }
+    if (!force && signature === state.lastSignature) return;
 
     state.syncing = true;
     try {
@@ -408,7 +339,6 @@
 
       state.lastSignature = signature;
       await refreshSummary();
-      queueRenderXpUi(0);
     } finally {
       state.syncing = false;
     }
