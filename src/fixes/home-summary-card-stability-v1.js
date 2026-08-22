@@ -6,7 +6,9 @@
   const innerHtmlDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
   if (!innerHtmlDescriptor?.get || !innerHtmlDescriptor?.set) return;
 
+  const accuracyOriginalArt = 'ChatGPT Image 1 de ago. de 2026, 12_31_23.png';
   const accuracyIcon = `
+    <img hidden alt="" aria-hidden="true" data-fixa-original-file="${accuracyOriginalArt}">
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 19V5M4 19h16"></path>
@@ -31,6 +33,9 @@
         color: #9333ea !important;
         background: #f7efff !important;
         overflow: hidden !important;
+      }
+      #homeSummaryCards .fixa-week-summary-card.fixa-accuracy-summary-card .fixa-stable-accuracy-icon > img[hidden] {
+        display: none !important;
       }
       #homeSummaryCards .fixa-week-summary-card.fixa-accuracy-summary-card .fixa-stable-accuracy-icon svg {
         display: block !important;
@@ -63,7 +68,11 @@
       const target = card.querySelector('.fixa-week-summary-icon');
       if (!target) return;
 
-      const needsIcon = target.dataset.fixaStableAccuracy !== '1' || Boolean(target.querySelector('img'));
+      const originalMarker = target.querySelector('img[data-fixa-original-file]');
+      const hasExpectedMarker = originalMarker?.dataset?.fixaOriginalFile === accuracyOriginalArt && originalMarker.hidden;
+      const hasVisibleImage = [...target.querySelectorAll('img')].some(image => !image.hidden);
+      const needsIcon = target.dataset.fixaStableAccuracy !== '1' || !hasExpectedMarker || hasVisibleImage || !target.querySelector('svg');
+
       target.className = 'fixa-week-summary-icon purple fixa-stable-accuracy-icon';
       target.dataset.fixaStableAccuracy = '1';
       if (needsIcon) target.innerHTML = accuracyIcon;
