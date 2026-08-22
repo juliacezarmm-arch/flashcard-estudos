@@ -129,6 +129,15 @@
     document.head.appendChild(script);
   }
 
+  function loadCompetitionOwnerFreezeSync() {
+    if (window.FixaCompetitionOwnerFreezeSyncV1 || document.getElementById('fixaCompetitionOwnerFreezeSyncV1Loader')) return;
+    const script = document.createElement('script');
+    script.id = 'fixaCompetitionOwnerFreezeSyncV1Loader';
+    script.src = 'src/competition/competition-owner-freeze-sync-v1.js?v=20260822-owner-freeze-sync-v1';
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
   function repair() {
     repairAnalysisLabels();
     replaceObservedTestNote();
@@ -136,6 +145,7 @@
     installHomeTodayBehavior();
     installHomeRefreshGuard();
     loadCompetitionSignalSkip();
+    loadCompetitionOwnerFreezeSync();
   }
 
   if (document.documentElement.dataset[HOTFIX_FLAG] === 'true') return;
