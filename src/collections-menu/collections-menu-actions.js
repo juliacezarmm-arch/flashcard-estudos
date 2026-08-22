@@ -360,7 +360,7 @@
   }
 
   function normalizeGroups(folderId, groups) {
-    const validSubjects = new Set(subjectsInFolder(folderId).map(subject => subject.id));
+    const validSubjects = new Set(subjectsInFolder(folderId).map(subject => String(subject.id)));
     const usedSubjects = new Set();
     const usedNames = new Set();
     const normalized = [];
@@ -373,7 +373,7 @@
       normalized.push({
         id: String(group?.id || `grp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`),
         name,
-        subjectIds: (Array.isArray(group?.subjectIds) ? group.subjectIds : []).filter(subjectId => {
+        subjectIds: (Array.isArray(group?.subjectIds) ? group.subjectIds : []).map(String).filter(subjectId => {
           if (!validSubjects.has(subjectId) || usedSubjects.has(subjectId)) return false;
           usedSubjects.add(subjectId);
           return true;
@@ -393,19 +393,30 @@
   }
 
   function migrateLegacyGroups(folder) {
-    if (!folder || Array.isArray(folder.collectionGroups)) return false;
+    if (!folder) return false;
+
+    const current = normalizeGroups(folder.id, Array.isArray(folder.collectionGroups) ? folder.collectionGroups : []);
+    if (current.length) {
+      folder.collectionGroups = current;
+      return false;
+    }
+
     let legacyGroups = [];
     try {
       const key = `fixa:test-folder-config:${currentUserId()}`;
       const saved = JSON.parse(localStorage.getItem(key) || "{}");
       legacyGroups = saved?.[folder.id]?.groups || [];
     } catch (_) {}
-    folder.collectionGroups = normalizeGroups(folder.id, legacyGroups);
-    if (legacyGroups.length) {
-      try { if (typeof save === "function") save(); } catch (_) {}
-      return true;
+
+    const recovered = normalizeGroups(folder.id, legacyGroups);
+    if (!recovered.length) {
+      if (!Array.isArray(folder.collectionGroups)) folder.collectionGroups = [];
+      return false;
     }
-    return false;
+
+    folder.collectionGroups = recovered;
+    try { if (typeof save === "function") save(); } catch (_) {}
+    return true;
   }
 
   function groupsForFolder(folderId) {
@@ -518,7 +529,7 @@
         <p>Defina a qual grupo cada coleção pertence. Selecione “Sem grupo” para manter a coleção individual.</p>
         <div class="folder-group-assignments">
           ${subjects.length ? subjects.map(subject => {
-            const selectedGroup = groups.find(group => group.subjectIds.includes(subject.id))?.id || "";
+            const selectedGroup = groups.find(group => group.subjectIds.includes(String(subject.id)))?.id || "";
             return `
               <label class="folder-group-assignment">
                 <strong>${escapeHtml(subject.name)}</strong>
@@ -608,11 +619,12 @@
   }
 
   function assignWorkingSubject(subjectId, groupId) {
+    const normalizedSubjectId = String(subjectId || "");
     state.workingGroups.forEach(group => {
-      group.subjectIds = group.subjectIds.filter(id => id !== subjectId);
+      group.subjectIds = group.subjectIds.map(String).filter(id => id !== normalizedSubjectId);
     });
     const target = state.workingGroups.find(group => group.id === groupId);
-    if (target) target.subjectIds.push(subjectId);
+    if (target && normalizedSubjectId) target.subjectIds.push(normalizedSubjectId);
   }
 
   function validateWorkingGroups() {
