@@ -36,17 +36,15 @@
     lastSignature: ''
   };
 
+  /*
+   * Este módulo cuida dos dados de XP e dos badges de coleção/histórico.
+   * Os seis cards do topo da Home pertencem exclusivamente ao renderizador
+   * principal da Home (FixaHomeWeeklyDashboardV2). Não alterar #homeSummaryCards
+   * aqui evita disputa de DOM, mudança de colunas e piscadas no dashboard.
+   */
   const style = document.createElement('style');
   style.id = 'fixaCompetitionXpHomeV4Style';
   style.textContent = `
-    #homeSummaryCards.fixa-home-summary-with-xp {
-      grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    }
-
-    .fixa-xp-card .home-card-number {
-      color: #2563eb !important;
-    }
-
     .fixa-collection-xp {
       margin-left: auto;
       color: #2563eb;
@@ -71,18 +69,6 @@
       margin-left: 5px;
       color: #64748b;
       font-weight: 650;
-    }
-
-    @media (max-width: 1080px) {
-      #homeSummaryCards.fixa-home-summary-with-xp {
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-      }
-    }
-
-    @media (max-width: 720px) {
-      #homeSummaryCards.fixa-home-summary-with-xp {
-        grid-template-columns: 1fr !important;
-      }
     }
   `;
   document.head.appendChild(style);
@@ -332,29 +318,29 @@
     }
   }
 
+  function homeSummarySignature(summary) {
+    try {
+      return JSON.stringify({
+        total_xp: Number(summary?.total_xp || 0),
+        today_xp: Number(summary?.today_xp || 0),
+        by_folder: summary?.by_folder || {},
+        by_subject: summary?.by_subject || {}
+      });
+    } catch (_) {
+      return '';
+    }
+  }
+
   async function refreshSummary() {
+    const previousSignature = homeSummarySignature(state.summary);
     const { data: summary, error } = await rpc('get_user_xp_summary', {});
     if (!error && summary) state.summary = summary;
     renderXpUi();
-  }
 
-  function ensureHomeXpCard() {
-    const grid = document.querySelector('#homeSummaryCards');
-    if (!grid) return;
-    grid.classList.add('fixa-home-summary-with-xp');
-
-    let card = grid.querySelector('.fixa-xp-card');
-    if (!card) {
-      card = document.createElement('article');
-      card.className = 'home-card fixa-xp-card';
-      card.innerHTML = '<span><strong>XP</strong><span class="home-card-number">0</span><small class="home-muted">Total de todas as coleções</small></span>';
-      grid.appendChild(card);
-    } else if (card !== grid.lastElementChild) {
-      grid.appendChild(card);
+    const changed = !error && summary && homeSummarySignature(state.summary) !== previousSignature;
+    if (changed && typeof window.FixaHomeWeeklyDashboardV2?.refresh === 'function') {
+      requestAnimationFrame(() => window.FixaHomeWeeklyDashboardV2.refresh());
     }
-
-    const number = card.querySelector('.home-card-number');
-    if (number) number.textContent = String(Number(state.summary.total_xp || 0));
   }
 
   function renderCollectionXp() {
@@ -371,7 +357,8 @@
         xp.className = 'fixa-collection-xp';
         foot.appendChild(xp);
       }
-      xp.textContent = `${points} XP`;
+      const next = `${points} XP`;
+      if (xp.textContent !== next) xp.textContent = next;
     });
   }
 
@@ -393,12 +380,12 @@
       if (Number(breakdown.questions || 0)) details.push(`${breakdown.questions} por questões`);
       if (Number(breakdown.mastery || 0)) details.push(`${breakdown.mastery} por domínio`);
       if (Number(breakdown.review || 0)) details.push(`${breakdown.review} por revisão`);
-      badge.innerHTML = `+${Number(item.xp || 0)} XP${details.length ? `<span class="fixa-history-xp-detail">${details.join(' · ')}</span>` : ''}`;
+      const next = `+${Number(item.xp || 0)} XP${details.length ? `<span class="fixa-history-xp-detail">${details.join(' · ')}</span>` : ''}`;
+      if (badge.innerHTML !== next) badge.innerHTML = next;
     });
   }
 
   function renderXpUi() {
-    ensureHomeXpCard();
     renderCollectionXp();
     renderHistoryXp();
   }
@@ -454,6 +441,8 @@
     }
   }
 
+  /* Observa apenas para reanexar badges quando listas forem recriadas.
+     A rotina é idempotente e não toca mais nos cards-resumo da Home. */
   const observer = new MutationObserver(() => queueRenderXpUi(300));
   observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
 
@@ -468,7 +457,7 @@
   setInterval(() => {
     if (!document.hidden) syncAll(false);
   }, 60000);
-  document.addEventListener("visibilitychange", () => {
+  document.addEventListener('visibilitychange', () => {
     if (!document.hidden) setTimeout(() => syncAll(false), 500);
   });
   setTimeout(() => syncAll(true), 800);
