@@ -153,17 +153,6 @@
   apply();
 })();
 
-/* Carrega uma única vez o complemento de metas, XP e proteção de sequência. */
-(() => {
-  'use strict';
-  if (document.getElementById('fixaHomeGoalsStreakProtectionV1Loader')) return;
-  const script = document.createElement('script');
-  script.id = 'fixaHomeGoalsStreakProtectionV1Loader';
-  script.src = 'src/fixes/home-goals-streak-protection-v1.js?v=20260814-streak-goals-v3';
-  script.defer = true;
-  document.head.appendChild(script);
-})();
-
 /* Ajuste visual isolado: a proteção congelada copia exatamente o tamanho da sequência. */
 (() => {
   'use strict';
