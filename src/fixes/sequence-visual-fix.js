@@ -4,7 +4,7 @@
   const style = document.createElement('style');
   style.id = 'sequenceVisualFixStyle';
   style.textContent = `
-    /* Etapa 4A: altera somente a apresentação dos dias concluídos. */
+    /* Altera somente a apresentação dos dias concluídos. */
     [data-home-panel="progress"] .home-sequence-day.is-study i,
     .home-sequence-day.is-study i {
       border-color: #f59e0b !important;
@@ -97,7 +97,6 @@
       icon.textContent = '✓';
     });
 
-    /* O dashboard e o contador do topo sempre terminam a renderização sincronizados. */
     syncTopbarStreak();
   }
 
@@ -119,66 +118,4 @@
     refresh: syncTopbarStreak,
     count: studyStreak
   };
-})();
-
-(() => {
-  if (window.FixaHomeDevelopmentTrajectoryV1?.active || window.__fixaHomeDevelopmentTrajectoryLoading) return;
-  window.__fixaHomeDevelopmentTrajectoryLoading = true;
-  const script = document.createElement('script');
-  script.src = 'src/fixes/home-development-trajectory-layout-v1.js?v=20260819-2';
-  script.async = false;
-  script.onload = () => {
-    window.__fixaHomeDevelopmentTrajectoryLoading = false;
-
-    if (!document.querySelector('#fixaHomeCompactTopGapStyle')) {
-      const compactStyle = document.createElement('style');
-      compactStyle.id = 'fixaHomeCompactTopGapStyle';
-      compactStyle.textContent = `
-        @media (min-width: 761px) {
-          #home .home-hero-head {
-            min-height: 40px !important;
-            height: 40px !important;
-            margin: -7px 0 -2px !important;
-            padding: 0 2px !important;
-            align-items: flex-start !important;
-          }
-          #home .home-hero-actions {
-            width: 100% !important;
-            justify-content: flex-end !important;
-            align-items: flex-start !important;
-          }
-          #home .fixa-week-header-stack {
-            width: auto !important;
-            min-width: 340px !important;
-            justify-items: end !important;
-            gap: 0 !important;
-          }
-          #home .fixa-week-greeting-slot,
-          #home .fixa-week-date-slot {
-            text-align: right !important;
-          }
-          #home .fixa-week-greeting-slot #homeGreeting {
-            justify-content: flex-end !important;
-          }
-        }
-        @media (max-width: 760px) {
-          #home .home-hero-head {
-            height: auto !important;
-            min-height: 0 !important;
-          }
-          #home .fixa-week-header-stack {
-            width: 100% !important;
-            min-width: 0 !important;
-            justify-items: stretch !important;
-          }
-        }
-      `;
-      document.head.appendChild(compactStyle);
-    }
-  };
-  script.onerror = () => {
-    window.__fixaHomeDevelopmentTrajectoryLoading = false;
-    console.warn('[Fixa] Não foi possível carregar a reorganização da Home.');
-  };
-  document.head.appendChild(script);
 })();
