@@ -184,7 +184,8 @@
     const tests = subjectTests(subject);
     const totalAnswered = tests.reduce((sum, test) => sum + Number(test.total || 0), 0);
     const totalScore = tests.reduce((sum, test) => sum + Number(test.score || 0), 0);
-    const xp = tests.reduce((sum, test) => sum + Number(test.xp || 0), 0);
+    const xpBySubject = window.FixaCompetitionXpHomeV4?.summary?.by_subject || {};
+    const xp = Number(xpBySubject[String(subject.id)] || tests.reduce((sum, test) => sum + Number(test.xp || 0), 0));
     return {
       total: cards.length,
       ...counts,
@@ -199,6 +200,10 @@
       const date = testDate(test);
       return date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}` : '';
     }).filter(Boolean));
+    (window.FixaHomeGoalsStreakProtectionV1?.protection?.protected_days || []).forEach(value => {
+      const date = dateOf(value);
+      if (date) dates.add(`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`);
+    });
     if (!dates.size) return 0;
     const cursor = new Date();
     cursor.setHours(12, 0, 0, 0);
@@ -320,9 +325,14 @@
     const select = document.querySelector('#fixaWeekFolderFilter');
     if (!select) return;
     const previous = state.folderId;
-    select.innerHTML = '<option value="all">Todas as pastas</option>' + folders().map(folder => `<option value="${esc(folder.id)}">${esc(folder.name)}</option>`).join('');
-    state.folderId = folders().some(folder => String(folder.id) === String(previous)) ? String(previous) : 'all';
-    select.value = state.folderId;
+    const options = folders();
+    const expected = ['all', ...options.map(folder => String(folder.id))];
+    const current = [...select.options].map(option => option.value);
+    if (current.length !== expected.length || current.some((value, index) => value !== expected[index])) {
+      select.innerHTML = '<option value="all">Todas as pastas</option>' + options.map(folder => `<option value="${esc(folder.id)}">${esc(folder.name)}</option>`).join('');
+    }
+    state.folderId = options.some(folder => String(folder.id) === String(previous)) ? String(previous) : 'all';
+    if (select.value !== state.folderId) select.value = state.folderId;
   }
 
   function renderTopCards() {
@@ -363,12 +373,40 @@
       </article>
       <article class="home-panel fixa-week-top-card">
         <div class="fixa-week-top-head"><span class="fixa-week-symbol blue">${icon('flag')}</span><h3>${goalTitle}</h3></div>
-        <strong class="fixa-week-main-value">${goal.percent}%</strong><small>${goal.completed} de 3 metas concluídas</small>
+        <strong class="fixa-week-main-value">${goal.percent}%</strong><small>Progresso geral dos objetivos</small>
         <div class="home-progress"><span style="width:${goal.percent}%"></span></div>
       </article>`;
 
     const datePill = document.querySelector('#homeDatePill');
     if (datePill) datePill.textContent = rangeLabel();
+  }
+
+  function createSummaryCard([ico, label, value, caption, tone]) {
+    const card = document.createElement('article');
+    card.className = `home-card fixa-week-summary-card${label.startsWith('XP') ? ' fixa-xp-card' : ''}`;
+    card.dataset.fixaSummaryKey = label;
+    card.innerHTML = `<span class="fixa-week-summary-icon ${tone}">${icon(ico)}</span><span><strong></strong><span class="home-card-number"></span><small class="home-muted"></small></span>`;
+    updateSummaryCard(card, [ico, label, value, caption, tone]);
+    return card;
+  }
+
+  function updateSummaryCard(card, [ico, label, value, caption, tone]) {
+    card.className = `home-card fixa-week-summary-card${label.startsWith('XP') ? ' fixa-xp-card' : ''}`;
+    card.dataset.fixaSummaryKey = label;
+    const iconBox = card.querySelector('.fixa-week-summary-icon');
+    if (iconBox) {
+      iconBox.className = `fixa-week-summary-icon ${tone}`;
+      if (iconBox.dataset.fixaIcon !== ico) {
+        iconBox.dataset.fixaIcon = ico;
+        iconBox.innerHTML = icon(ico);
+      }
+    }
+    const title = card.querySelector('strong');
+    const number = card.querySelector('.home-card-number');
+    const small = card.querySelector('small');
+    if (title && title.textContent !== String(label)) title.textContent = label;
+    if (number && number.textContent !== String(value)) number.textContent = value;
+    if (small && small.textContent !== String(caption)) small.textContent = caption;
   }
 
   function renderSummaryCards() {
@@ -390,12 +428,20 @@
       ['target', 'XP Coleções', xp, '', 'blue'],
       ['target', 'XP Semana', weekXp, '', 'blue']
     ];
+
     grid.classList.add('fixa-week-summary');
-    grid.innerHTML = rows.map(([ico, label, value, caption, tone]) => `
-      <article class="home-card fixa-week-summary-card${label.startsWith('XP') ? ' fixa-xp-card' : ''}">
-        <span class="fixa-week-summary-icon ${tone}">${icon(ico)}</span>
-        <span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span>
-      </article>`).join('');
+    const current = [...grid.children];
+    const sameStructure = current.length === rows.length
+      && rows.every((row, index) => current[index]?.dataset?.fixaSummaryKey === row[1]);
+
+    if (!sameStructure) {
+      const fragment = document.createDocumentFragment();
+      rows.forEach(row => fragment.appendChild(createSummaryCard(row)));
+      grid.replaceChildren(fragment);
+      return;
+    }
+
+    rows.forEach((row, index) => updateSummaryCard(current[index], row));
   }
 
   function reviewItems() {
@@ -453,7 +499,29 @@
     const duration = tests.reduce((sum, test) => sum + Number(test.durationMs || 0), 0);
     const latest = tests[0] ? `${Number(tests[0].score || 0)} de ${Number(tests[0].total || 0)}` : 'Sem dados';
     const best = tests.reduce((max, test) => Math.max(max, Number(test.score || 0)), 0);
+    const range = currentRange();
+    const studyDays = new Set(tests.map(test => {
+      const date = testDate(test);
+      return date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}` : '';
+    }).filter(Boolean));
+    const span = range.end.getTime() - range.start.getTime() + 1;
+    const prevStart = new Date(range.start.getTime() - span);
+    const prevEnd = new Date(range.start.getTime() - 1);
+    const prevTests = completedTests().filter(test => {
+      const date = testDate(test);
+      return date && date >= prevStart && date <= prevEnd;
+    });
+    const prevTotal = prevTests.reduce((sum, test) => sum + Number(test.total || 0), 0);
+    const prevScore = prevTests.reduce((sum, test) => sum + Number(test.score || 0), 0);
+    const currentAccuracy = total ? percent(score, total) : 0;
+    const previousAccuracy = prevTotal ? percent(prevScore, prevTotal) : 0;
+    const evolution = prevTotal ? currentAccuracy - previousAccuracy : 0;
+    const maxDays = state.period === 'today' ? 1 : state.period === 'month' ? new Date(range.end).getDate() : 7;
     const rows = [
+      ['target', 'Média de acertos', total ? `${currentAccuracy}%` : 'Sem dados', 'blue'],
+      ['chart', 'Evolução em relação ao período anterior', prevTotal ? `${evolution > 0 ? '+' : ''}${evolution}%` : 'Sem dados', evolution >= 0 ? 'green' : 'orange'],
+      ['question', 'Questões respondidas', String(total), 'blue'],
+      ['calendar', 'Dias estudados', `${studyDays.size} de ${maxDays}`, 'blue'],
       ['chart', `Média dos testes de ${periodWord()}`, total ? `${percent(score, total)}%` : 'Sem dados', 'blue'],
       ['clock', 'Tempo médio por questão', total ? formatDuration(duration / total) : 'Sem dados', 'blue'],
       ['target', 'Melhor resultado', tests.length ? `${best} acertos` : 'Sem dados', 'orange'],
@@ -474,7 +542,7 @@
       ['target', `Dominar questões ${suffix}`, progress.values.mastered, progress.goals.mastered]
     ];
     list.className = 'home-goal-list fixa-week-goal-list';
-    list.innerHTML = rows.map(([ico, label, current, target]) => `<li class="fixa-week-goal"><div class="fixa-week-goal-head"><i>${icon(ico)}</i><span><strong>${label}</strong><small>${current} / ${target}</small></span></div><div class="home-progress"><span style="width:${Math.max(2, clamp(current / target * 100))}%"></span></div></li>`).join('');
+    list.innerHTML = rows.map(([ico, label, current, target], index) => `<li class="fixa-week-goal"><div class="fixa-week-goal-head"><i>${icon(ico)}</i><span><strong>${label}</strong><small>${current} / ${target}</small></span><b class="fixa-goal-reward">+${[20,25,40][index] || 20} XP</b></div><div class="home-progress"><span style="width:${Math.max(2, clamp(current / target * 100))}%"></span></div></li>`).join('');
 
     const title = document.querySelector('.fixa-week-goals-panel .home-panel-head h3');
     if (title) title.innerHTML = `${icon('target')}Objetivos de ${periodWord()}`;
@@ -644,36 +712,21 @@
     localStorage.setItem(goalsKey(), JSON.stringify(next));
     overlay.remove();
     renderWeeklyDashboard();
+    window.FixaHomeUnifiedDashboardV2?.refresh?.();
   }
 
   function ensureHeader(home) {
     const hero = home.querySelector('.home-hero-head');
     const actions = home.querySelector('.home-hero-actions');
-    const greeting = home.querySelector('#homeGreeting');
-    const date = home.querySelector('#homeDatePill');
-    if (!hero || !actions || !greeting || !date) return;
-
-    let stack = home.querySelector('.fixa-week-header-stack');
-    if (!stack) {
-      stack = document.createElement('div');
-      stack.className = 'fixa-week-header-stack';
-      stack.innerHTML = '<div class="fixa-week-greeting-slot"></div><div class="fixa-week-date-slot"></div><div class="fixa-week-control-slot"></div>';
-      actions.appendChild(stack);
-    }
-
-    const greetingSlot = stack.querySelector('.fixa-week-greeting-slot');
-    const dateSlot = stack.querySelector('.fixa-week-date-slot');
-    const controlSlot = stack.querySelector('.fixa-week-control-slot');
-    if (greeting.parentElement !== greetingSlot) greetingSlot.appendChild(greeting);
-    if (date.parentElement !== dateSlot) dateSlot.appendChild(date);
+    if (!hero || !actions) return;
 
     let filters = home.querySelector('.fixa-week-filters');
     if (!filters) {
       filters = document.createElement('div');
       filters.className = 'fixa-week-filters';
       filters.innerHTML = `<label class="fixa-week-folder-filter">${icon('folder')}<select id="fixaWeekFolderFilter" aria-label="Filtrar por pasta"></select></label><div class="fixa-week-period" role="group" aria-label="Período do painel"><button type="button" data-fixa-week-period="today">Hoje</button><button type="button" data-fixa-week-period="week" class="active">Semana</button><button type="button" data-fixa-week-period="month">Mês</button></div>`;
+      actions.appendChild(filters);
     }
-    if (filters.parentElement !== controlSlot) controlSlot.appendChild(filters);
 
     const oldTitle = hero.querySelector('.home-title');
     if (oldTitle) oldTitle.classList.add('fixa-week-title-empty');
@@ -812,13 +865,8 @@
     #home .home-subtabs{margin:-4px 0 -3px!important;gap:7px!important;min-height:32px!important}
     #home .home-subtab{min-height:32px!important;padding:6px 11px!important;display:inline-flex!important;align-items:center!important;gap:6px!important;font-size:11px!important}
     #home .home-subtab svg{width:14px;height:14px;fill:none;stroke:currentColor}
-    #home .home-hero-head{min-height:70px!important;margin:-7px 0 -2px!important;padding:0 2px!important;align-items:flex-start!important;justify-content:flex-end!important}
     #home .home-title.fixa-week-title-empty{display:none!important}
-    #home .home-hero-actions{width:100%!important;display:flex!important;justify-content:flex-end!important;align-items:flex-start!important;margin:0!important}
-    .fixa-week-header-stack{display:grid;justify-items:end;gap:1px;min-width:min(100%,540px)}
-    .fixa-week-greeting-slot{min-height:25px}.fixa-week-greeting-slot #homeGreeting{margin:0!important;font-size:20px!important;line-height:24px!important;justify-content:flex-end!important}.fixa-week-greeting-slot .home-greeting-wave{width:20px!important;height:20px!important}
-    .fixa-week-date-slot{min-height:13px}.fixa-week-date-slot .home-date-pill{border:0!important;background:transparent!important;color:#64748b!important;padding:0!important;font-size:9px!important;line-height:12px!important;white-space:nowrap!important}
-    .fixa-week-control-slot{display:flex;justify-content:flex-end;width:100%}.fixa-week-filters{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+    .fixa-week-filters{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
     .fixa-week-folder-filter{height:31px;min-width:184px;padding:0 8px 0 10px;border:1px solid #dbe5f4;border-radius:9px;background:#fff;display:flex;align-items:center;gap:7px;color:#53617a}
     .fixa-week-folder-filter svg{width:14px;height:14px;flex:0 0 auto}.fixa-week-folder-filter select{border:0!important;box-shadow:none!important;padding:0 22px 0 0!important;background:#fff!important;font-size:10px!important;font-weight:750!important;color:#26324b!important}
     .fixa-week-period{display:flex;gap:4px}.fixa-week-period button{height:31px;min-height:31px!important;padding:0 12px!important;border:1px solid #dbe5f4!important;border-radius:9px!important;color:#334155!important;background:#fff!important;font-size:10px!important;font-weight:800!important;box-shadow:none!important}.fixa-week-period button.active{border-color:#9fc1ff!important;color:#2563eb!important;background:#f2f7ff!important}
@@ -838,7 +886,7 @@
     .fixa-week-review-list{display:grid!important;gap:6px!important}.fixa-week-review{padding:7px 9px;border:1px solid #e2e9f3;border-radius:8px;background:#fff;cursor:pointer}.fixa-week-review-head,.fixa-week-review-meta{display:flex;justify-content:space-between;align-items:center;gap:8px}.fixa-week-review-head strong{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fixa-week-review-head span,.fixa-week-review-meta span,.fixa-week-review-meta b{font-size:8px;color:#687086;white-space:nowrap}.fixa-week-review-progress{height:4px;margin-top:4px;border-radius:999px;background:#e8edf4;overflow:hidden}.fixa-week-review-progress span{display:block;height:100%;border-radius:inherit;background:#2563eb}
     .fixa-week-main-pane .home-collection-scroll{height:207px!important;max-height:207px!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin!important;padding-right:4px!important}.home-collection-grid.fixa-week-collection-list{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}.fixa-week-collection{min-height:77px!important;height:auto!important;padding:7px 9px!important}.fixa-week-collection .home-collection-head{margin-bottom:3px!important}.fixa-week-collection .home-collection-name,.fixa-week-collection .home-collection-total{font-size:9px!important}.fixa-week-collection .home-collection-metrics{margin:3px 0!important}.fixa-week-collection .home-collection-metrics b{font-size:10.5px!important}.fixa-week-collection .home-collection-metrics small{font-size:7px!important}.fixa-week-folder-mini{width:14px;height:14px;color:#2563eb}.fixa-week-folder-mini svg{width:100%;height:100%}.fixa-week-collection .home-progress{height:3px!important}.fixa-week-collection .home-collection-foot{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:7px!important;margin-top:3px!important}.fixa-week-collection .home-collection-foot>span,.fixa-collection-xp{font-size:7.5px!important}.fixa-collection-xp{color:#2563eb!important;font-weight:850!important}
     .fixa-week-performance-list{display:grid!important;grid-template-columns:1fr!important;gap:5px!important;margin:0!important;padding:0!important}.fixa-week-performance-row{min-height:45px;padding:7px 9px;border:1px solid #e4eaf3;border-radius:9px;display:flex;align-items:center;justify-content:space-between;gap:8px}.fixa-week-performance-row>span{display:flex;align-items:center;gap:7px;min-width:0;font-size:9px;color:#53617a}.fixa-week-performance-row i{width:27px;height:27px;flex:0 0 27px;border-radius:8px;display:grid;place-items:center;background:#eef4ff;color:#2563eb}.fixa-week-performance-row i.orange{background:#fff4e7;color:#ea580c}.fixa-week-performance-row i.green{background:#eefbf2;color:#16a34a}.fixa-week-performance-row i svg{width:14px;height:14px}.fixa-week-performance-row>b{font-size:10.5px;white-space:nowrap}
-    .fixa-week-goals-panel .home-panel-head{display:flex!important;align-items:center!important;justify-content:space-between!important}.fixa-week-goals-panel .home-panel-head h3{display:flex;align-items:center;gap:6px}.fixa-week-goals-panel .home-panel-head h3 svg{width:14px;height:14px;color:#2563eb}.fixa-week-add-goals{height:27px!important;min-height:27px!important;padding:0 8px!important;display:inline-flex!important;align-items:center!important;gap:4px!important;font-size:8px!important;font-weight:800!important}.fixa-week-add-goals svg{width:10px;height:10px}.fixa-week-goal-list{display:grid!important;gap:6px!important;margin:0!important;padding:0!important}.fixa-week-goal{min-height:52px;padding:7px 9px;border:1px solid #e4eaf3;border-radius:9px;background:#fff}.fixa-week-goal-head{display:grid;grid-template-columns:25px minmax(0,1fr);gap:7px;align-items:center}.fixa-week-goal-head>i{width:25px;height:25px;border-radius:8px;display:grid;place-items:center;background:#eef4ff;color:#2563eb}.fixa-week-goal-head>i svg{width:13px;height:13px}.fixa-week-goal-head strong{display:block;font-size:9px;line-height:11px}.fixa-week-goal-head small{display:block;font-size:7.5px;color:#687086}.fixa-week-goal .home-progress{height:4px!important;margin-top:4px!important}
+    .fixa-week-goals-panel .home-panel-head{display:flex!important;align-items:center!important;justify-content:space-between!important}.fixa-week-goals-panel .home-panel-head h3{display:flex;align-items:center;gap:6px}.fixa-week-goals-panel .home-panel-head h3 svg{width:14px;height:14px;color:#2563eb}.fixa-week-add-goals{height:27px!important;min-height:27px!important;padding:0 8px!important;display:inline-flex!important;align-items:center!important;gap:4px!important;font-size:8px!important;font-weight:800!important}.fixa-week-add-goals svg{width:10px;height:10px}.fixa-week-goal-list{display:grid!important;gap:6px!important;margin:0!important;padding:0!important}.fixa-week-goal{min-height:52px;padding:7px 9px;border:1px solid #e4eaf3;border-radius:9px;background:#fff}.fixa-week-goal-head{display:grid;grid-template-columns:25px minmax(0,1fr) auto;gap:7px;align-items:center}.fixa-goal-reward{padding:3px 6px;border-radius:999px;color:#7c3aed;background:#f3e8ff;font-size:7px;font-weight:850;white-space:nowrap}.fixa-week-goal-head>i{width:25px;height:25px;border-radius:8px;display:grid;place-items:center;background:#eef4ff;color:#2563eb}.fixa-week-goal-head>i svg{width:13px;height:13px}.fixa-week-goal-head strong{display:block;font-size:9px;line-height:11px}.fixa-week-goal-head small{display:block;font-size:7.5px;color:#687086}.fixa-week-goal .home-progress{height:4px!important;margin-top:4px!important}
 
     .fixa-week-analysis-stage{height:260px;min-height:260px;padding:12px 14px;background:#fff}.fixa-week-analysis-pane{height:100%;min-height:0;overflow:hidden}.fixa-week-analysis-pane[hidden]{display:none!important}.fixa-week-analysis-pane .home-panel-head{margin:0 0 10px!important}.fixa-week-analysis-pane .home-panel-head h3{margin:0!important;font-size:13px!important;line-height:17px!important}.fixa-week-analysis-pane .home-panel-head p{margin:2px 0 0!important;font-size:9px!important}
     #fixaWeekPriorities{height:205px;overflow-y:auto;scrollbar-width:thin;display:grid;gap:7px;padding-right:4px}.fixa-week-priority-row{min-height:43px;display:grid;grid-template-columns:minmax(0,1fr) 58px 42px;align-items:center;gap:8px;padding:7px 9px;border:1px solid #e6ebf3;border-radius:8px}.fixa-week-priority-row>span{min-width:0}.fixa-week-priority-row>span>strong{display:block;font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fixa-week-priority-row>span>small{display:block;margin-top:2px;color:#7b879b;font-size:7.5px}.fixa-week-priority-row>b{padding:3px 5px;border-radius:999px;text-align:center;font-size:7.5px}.fixa-week-priority-row>b.high{color:#dc2626;background:#fff0f0}.fixa-week-priority-row>b.medium{color:#b45309;background:#fff7e6}.fixa-week-priority-row>b.low{color:#15803d;background:#effbf2}.fixa-week-priority-row>strong{text-align:right;font-size:9px;color:#53617a}
@@ -847,7 +895,7 @@
     .fixa-week-goals-overlay{position:fixed;inset:0;z-index:1300;padding:18px;background:rgba(15,23,42,.42);display:grid;place-items:center}.fixa-week-goals-modal{width:min(520px,100%);border:1px solid #dbe5f4;border-radius:16px;background:#fff;box-shadow:0 28px 70px rgba(15,23,42,.24);overflow:hidden}.fixa-week-goals-modal header{padding:18px 20px 14px;display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid #e6ecf5}.fixa-week-goals-modal h3{margin:0 0 5px;font-size:17px}.fixa-week-goals-modal p{margin:0;color:#687086;font-size:10px}.fixa-week-goals-modal header button{width:32px;height:32px;padding:0;color:#53617a;background:transparent;font-size:22px}.fixa-week-goals-fields{padding:18px 20px;display:grid;gap:11px}.fixa-week-goals-fields label{display:grid;grid-template-columns:minmax(0,1fr) 100px;align-items:center;gap:12px;font-size:11px;font-weight:750}.fixa-week-goals-fields input{height:38px;text-align:center}.fixa-week-goals-modal footer{padding:13px 20px;display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #e6ecf5}.fixa-week-goals-modal footer button{min-height:38px;font-size:11px;font-weight:800}.fixa-week-goals-modal footer .secondary{border:1px solid #dbe5f4;background:#fff}
 
     @media(max-width:1150px){#homeSummaryCards.fixa-week-summary{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
-    @media(max-width:760px){#home .home-hero-head{min-height:0!important;margin:0!important}.fixa-week-header-stack{width:100%;min-width:0;justify-items:stretch}.fixa-week-greeting-slot,.fixa-week-date-slot{text-align:right}.fixa-week-greeting-slot #homeGreeting{justify-content:flex-end!important;font-size:19px!important}.fixa-week-filters{width:100%;justify-content:stretch}.fixa-week-folder-filter{flex:1;min-width:170px}.fixa-week-period{width:100%}.fixa-week-period button{flex:1}#homeFooterStats,#homeSummaryCards.fixa-week-summary{grid-template-columns:1fr!important}.fixa-week-top-card,.fixa-week-summary-card{height:auto!important;min-height:82px!important}.fixa-week-main-stage,.fixa-week-analysis-stage{height:auto!important;min-height:280px!important}.fixa-week-main-pair{height:auto!important;grid-template-columns:1fr!important;gap:12px!important}.fixa-week-main-pair>.fixa-week-main-pane:first-child{padding-right:0!important;padding-bottom:12px!important;border-right:0!important;border-bottom:1px solid #edf1f6!important}.fixa-week-main-pair>.fixa-week-main-pane:last-child{padding-left:0!important}.fixa-week-main-pane{height:auto!important;min-height:250px!important}.home-study-card .home-focus-box,.fixa-week-main-pane .home-collection-scroll{height:240px!important;max-height:240px!important}.fixa-week-status{grid-template-columns:1fr!important;height:auto!important}.fixa-week-donut{margin:auto}.fixa-week-goals-fields label{grid-template-columns:1fr}}
+    @media(max-width:760px){.fixa-week-filters{width:100%;justify-content:stretch}.fixa-week-folder-filter{flex:1;min-width:170px}.fixa-week-period{width:100%}.fixa-week-period button{flex:1}#homeFooterStats,#homeSummaryCards.fixa-week-summary{grid-template-columns:1fr!important}.fixa-week-top-card,.fixa-week-summary-card{height:auto!important;min-height:82px!important}.fixa-week-main-stage,.fixa-week-analysis-stage{height:auto!important;min-height:280px!important}.fixa-week-main-pair{height:auto!important;grid-template-columns:1fr!important;gap:12px!important}.fixa-week-main-pair>.fixa-week-main-pane:first-child{padding-right:0!important;padding-bottom:12px!important;border-right:0!important;border-bottom:1px solid #edf1f6!important}.fixa-week-main-pair>.fixa-week-main-pane:last-child{padding-left:0!important}.fixa-week-main-pane{height:auto!important;min-height:250px!important}.home-study-card .home-focus-box,.fixa-week-main-pane .home-collection-scroll{height:240px!important;max-height:240px!important}.fixa-week-status{grid-template-columns:1fr!important;height:auto!important}.fixa-week-donut{margin:auto}.fixa-week-goals-fields label{grid-template-columns:1fr}}
   `;
   document.head.appendChild(style);
 
@@ -859,6 +907,7 @@
       requestAnimationFrame(() => {
         setupLayout();
         renderWeeklyDashboard();
+        window.FixaHomeUnifiedDashboardV2?.refresh?.();
       });
     }, delay);
   }
@@ -871,6 +920,7 @@
       if (!select) return;
       state.folderId = select.value || 'all';
       renderWeeklyDashboard();
+      window.FixaHomeUnifiedDashboardV2?.refresh?.();
     });
 
     document.addEventListener('click', event => {
@@ -878,6 +928,7 @@
       if (period) {
         state.period = ['today', 'week', 'month'].includes(period.dataset.fixaWeekPeriod) ? period.dataset.fixaWeekPeriod : 'week';
         renderWeeklyDashboard();
+        window.FixaHomeUnifiedDashboardV2?.refresh?.();
         return;
       }
       const mainTab = event.target.closest('[data-fixa-main-tab]');
@@ -912,16 +963,15 @@
     });
 
     renderWeeklyDashboard();
-    queueRefresh(80);
-    window.setTimeout(() => {
-      if (document.querySelector('#home.home-view')) {
-        setupLayout();
-        renderWeeklyDashboard();
-      }
-    }, 320);
     return true;
   }
 
-  api.refresh = () => queueRefresh(0);
+  api.refresh = () => {
+    if (!setupLayout()) return false;
+    renderWeeklyDashboard();
+    window.FixaHomeUnifiedDashboardV2?.refresh?.();
+    return true;
+  };
+
   if (!install()) document.addEventListener('DOMContentLoaded', () => install(), { once: true });
 })();
