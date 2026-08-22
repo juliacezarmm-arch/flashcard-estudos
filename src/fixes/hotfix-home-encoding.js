@@ -165,6 +165,15 @@
     document.head.appendChild(script);
   }
 
+  function loadCompetitionParticipantExportGuard() {
+    if (window.FixaCompetitionParticipantExportGuardV1 || document.getElementById('fixaCompetitionParticipantExportGuardV1Loader')) return;
+    const script = document.createElement('script');
+    script.id = 'fixaCompetitionParticipantExportGuardV1Loader';
+    script.src = 'src/competition/competition-participant-export-guard-v1.js?v=20260822-participant-export-guard-v1';
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
   function repair() {
     repairAnalysisLabels();
     replaceObservedTestNote();
@@ -176,6 +185,7 @@
     loadCompetitionFlagReview();
     loadCompetitionOwnerFreezeNotice();
     loadCompetitionWeeklyHistory();
+    loadCompetitionParticipantExportGuard();
   }
 
   if (document.documentElement.dataset[HOTFIX_FLAG] === 'true') return;
