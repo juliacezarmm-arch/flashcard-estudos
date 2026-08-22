@@ -211,7 +211,7 @@
         margin-left: 0 !important;
       }
 
-      .topbar-right .tabs [data-view="questions"] {
+      .topbar-right .tabs [data-view="manage"] {
         order: 3 !important;
         margin-left: 28px !important;
       }
