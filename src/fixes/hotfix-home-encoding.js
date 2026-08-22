@@ -3,6 +3,10 @@
 
   const HOTFIX_FLAG = 'fixaHomeEncodingHotfix';
 
+  /* A Home de referência assume estas duas responsabilidades. */
+  window.FixaHomeCompactHeaderRowV2 = true;
+  window.FixaHomeMainPanelFillViewportV1 = true;
+
   function setPlainButtonLabel(button, label) {
     if (!button) return;
     const svg = button.querySelector(':scope > svg');
@@ -120,6 +124,15 @@
     });
   }
 
+  function loadHomeReferenceLayout() {
+    if (window.FixaHomeReferenceLayoutV2?.active || document.getElementById('fixaHomeReferenceLayoutV2Loader')) return;
+    const script = document.createElement('script');
+    script.id = 'fixaHomeReferenceLayoutV2Loader';
+    script.src = 'src/fixes/home-reference-layout-v2.js?v=20260822-home-reference-layout-v2';
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
   function loadCompetitionSignalSkip() {
     if (window.FixaCompetitionSignalSkipV1 || document.getElementById('fixaCompetitionSignalSkipV1Loader')) return;
     const script = document.createElement('script');
@@ -198,6 +211,7 @@
     formatTestStartNote();
     installHomeTodayBehavior();
     installHomeRefreshGuard();
+    loadHomeReferenceLayout();
     loadCompetitionSignalSkip();
     loadCompetitionOwnerFreezeSync();
     loadCompetitionFlagReview();
