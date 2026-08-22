@@ -128,7 +128,7 @@
     if (window.FixaHomeReferenceLayoutV2?.active || document.getElementById('fixaHomeReferenceLayoutV2Loader')) return;
     const script = document.createElement('script');
     script.id = 'fixaHomeReferenceLayoutV2Loader';
-    script.src = 'src/fixes/home-reference-layout-v2.js?v=20260822-home-reference-layout-v2';
+    script.src = 'src/fixes/home-reference-layout-v2.js?v=20260822-home-reference-target-v1';
     script.defer = true;
     document.head.appendChild(script);
   }
