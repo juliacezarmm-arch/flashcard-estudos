@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260822-home-stability-v1";
+    const FIXA_VERSION = "20260822-home-stability-v2";
     const appFiles = [
       ["html", "index-base.html", "Não foi possível carregar a aplicação."],
       ["collections", "src/core/collections.js", "Não foi possível carregar as coleções."],
@@ -132,13 +132,6 @@ IMAGENS NA EXPLICAÇÃO
             safeCode = safeCode.replace(
               "function resolveStorageImage(img) {\n    const source = img.getAttribute('src') || '';",
               "function resolveStorageImage(img) {\n    if (window.FixaStorageLazyLoader?.observe) {\n      window.FixaStorageLazyLoader.observe(img);\n      return;\n    }\n    const source = img.getAttribute('src') || '';"
-            );
-          }
-
-          if (key === "homeArtCompetitionFix") {
-            safeCode = safeCode.replace(
-              "/* Carrega uma única vez o complemento de metas, XP e proteção de sequência. */\n(() => {\n  'use strict';\n  if (document.getElementById('fixaHomeGoalsStreakProtectionV1Loader')) return;\n  const script = document.createElement('script');\n  script.id = 'fixaHomeGoalsStreakProtectionV1Loader';\n  script.src = 'src/fixes/home-goals-streak-protection-v1.js?v=20260814-streak-goals-v3';\n  script.defer = true;\n  document.head.appendChild(script);\n})();\n\n",
-              ""
             );
           }
 
