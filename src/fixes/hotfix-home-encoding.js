@@ -120,12 +120,22 @@
     });
   }
 
+  function loadCompetitionSignalSkip() {
+    if (window.FixaCompetitionSignalSkipV1 || document.getElementById('fixaCompetitionSignalSkipV1Loader')) return;
+    const script = document.createElement('script');
+    script.id = 'fixaCompetitionSignalSkipV1Loader';
+    script.src = 'src/competition/competition-signal-skip-v1.js?v=20260822-signal-skip-v1';
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
   function repair() {
     repairAnalysisLabels();
     replaceObservedTestNote();
     formatTestStartNote();
     installHomeTodayBehavior();
     installHomeRefreshGuard();
+    loadCompetitionSignalSkip();
   }
 
   if (document.documentElement.dataset[HOTFIX_FLAG] === 'true') return;
