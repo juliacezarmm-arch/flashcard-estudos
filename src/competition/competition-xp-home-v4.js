@@ -37,21 +37,14 @@
   };
 
   /*
-   * Este módulo cuida dos dados de XP e dos badges de coleção/histórico.
-   * Os seis cards do topo da Home pertencem exclusivamente ao renderizador
-   * principal da Home (FixaHomeWeeklyDashboardV2). Não alterar #homeSummaryCards
-   * aqui evita disputa de DOM, mudança de colunas e piscadas no dashboard.
+   * Este módulo é a fonte/sincronizador dos dados de XP e do XP exibido
+   * no histórico de testes. Os cards da Home e o XP de cada coleção são
+   * renderizados exclusivamente por FixaHomeWeeklyDashboardV2 a partir de
+   * state.summary. Assim não existem dois módulos escrevendo nos mesmos nós.
    */
   const style = document.createElement('style');
   style.id = 'fixaCompetitionXpHomeV4Style';
   style.textContent = `
-    .fixa-collection-xp {
-      margin-left: auto;
-      color: #2563eb;
-      font-weight: 850;
-      white-space: nowrap;
-    }
-
     .fixa-history-xp {
       display: inline-flex;
       align-items: center;
@@ -343,25 +336,6 @@
     }
   }
 
-  function renderCollectionXp() {
-    const bySubject = state.summary.by_subject || {};
-    document.querySelectorAll('#homeCollectionSummary [data-home-subject]').forEach(card => {
-      const subjectId = card.dataset.homeSubject;
-      const points = Number(bySubject[subjectId] || 0);
-      const foot = card.querySelector('.home-collection-foot');
-      if (!foot) return;
-
-      let xp = foot.querySelector('.fixa-collection-xp');
-      if (!xp) {
-        xp = document.createElement('span');
-        xp.className = 'fixa-collection-xp';
-        foot.appendChild(xp);
-      }
-      const next = `${points} XP`;
-      if (xp.textContent !== next) xp.textContent = next;
-    });
-  }
-
   function renderHistoryXp() {
     const rows = document.querySelectorAll('#testHistory .history-item');
     rows.forEach((row, index) => {
@@ -386,7 +360,6 @@
   }
 
   function renderXpUi() {
-    renderCollectionXp();
     renderHistoryXp();
   }
 
@@ -441,11 +414,6 @@
     }
   }
 
-  /* Observa apenas para reanexar badges quando listas forem recriadas.
-     A rotina é idempotente e não toca mais nos cards-resumo da Home. */
-  const observer = new MutationObserver(() => queueRenderXpUi(300));
-  observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
-
   document.addEventListener('click', event => {
     if (event.target.closest('[data-view="home"], #homeTopTab, [data-test-panel="history"], [data-competition-view]')) {
       setTimeout(() => syncAll(true), 100);
@@ -454,9 +422,6 @@
 
   window.addEventListener('fixa-xp-updated', () => refreshSummary());
   window.addEventListener('load', () => setTimeout(() => syncAll(true), 600));
-  setInterval(() => {
-    if (!document.hidden) syncAll(false);
-  }, 60000);
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) setTimeout(() => syncAll(false), 500);
   });
