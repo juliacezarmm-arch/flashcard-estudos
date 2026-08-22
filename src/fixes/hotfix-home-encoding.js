@@ -174,6 +174,15 @@
     document.head.appendChild(script);
   }
 
+  function loadCompletedTestReset() {
+    if (window.FixaCompletedTestResetV1 || document.getElementById('fixaCompletedTestResetV1Loader')) return;
+    const script = document.createElement('script');
+    script.id = 'fixaCompletedTestResetV1Loader';
+    script.src = 'src/test/completed-test-reset-v1.js?v=20260822-completed-test-reset-v1';
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
   function repair() {
     repairAnalysisLabels();
     replaceObservedTestNote();
@@ -186,6 +195,7 @@
     loadCompetitionOwnerFreezeNotice();
     loadCompetitionWeeklyHistory();
     loadCompetitionParticipantExportGuard();
+    loadCompletedTestReset();
   }
 
   if (document.documentElement.dataset[HOTFIX_FLAG] === 'true') return;
