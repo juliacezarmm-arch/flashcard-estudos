@@ -47,7 +47,7 @@
       /* Elimina a faixa antiga que reservava espaço entre a navegação e os cards. */
       important(hero, 'min-height', '42px');
       important(hero, 'height', '42px');
-      important(hero, 'margin', '0 0 2px');
+      important(hero, 'margin', '-12px 0 2px');
       important(hero, 'padding', '0');
       important(hero, 'display', 'block');
       important(hero, 'overflow', 'visible');
