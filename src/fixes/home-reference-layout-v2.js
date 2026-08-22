@@ -3,24 +3,12 @@
 
   if (window.FixaHomeReferenceLayoutV2?.active) return;
 
-  /*
-   * Estes dois comportamentos antigos são deliberadamente desativados antes
-   * de home-art-and-competition-icon-fix.js rodar. O primeiro puxava os
-   * filtros para o cabeçalho; o segundo gravava altura fixa baseada no viewport.
-   */
+  // Estes comportamentos antigos não devem disputar o layout da Home.
   window.FixaHomeCompactHeaderRowV2 = true;
   window.FixaHomeMainPanelFillViewportV1 = true;
 
-  const state = {
-    folderId: 'all',
-    subjectId: 'all'
-  };
-
-  const api = window.FixaHomeReferenceLayoutV2 = {
-    active: true,
-    refresh: syncAll
-  };
-
+  const state = { subjectId: 'all' };
+  const api = window.FixaHomeReferenceLayoutV2 = { active: true, refresh: syncAll };
   const STYLE_ID = 'fixaHomeReferenceLayoutV2Style';
 
   function ensureStyle() {
@@ -28,96 +16,294 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      #home .fixa-reference-filter-row,
-      #home .fixa-reference-period-row{
+      /* Faixa superior da Home: filtros à esquerda, saudação à direita. */
+      #home.home-view .home-hero-head{
+        display:block!important;
+        min-height:0!important;
+        height:auto!important;
+        margin:0 0 12px!important;
+        padding:0!important;
+      }
+      #home.home-view .home-title,
+      #home.home-view .fixa-week-title-empty{display:none!important}
+      #home.home-view .home-hero-actions{
+        width:100%!important;
+        display:block!important;
+        margin:0!important;
+        padding:0!important;
+      }
+      #home.home-view .fixa-reference-header-row{
         width:100%;
+        min-height:52px;
+        display:grid;
+        grid-template-columns:minmax(0,1fr) auto;
+        align-items:center;
+        gap:24px;
+      }
+      #home.home-view .fixa-reference-header-left{
+        min-width:0;
         display:flex;
         align-items:center;
-        gap:8px;
-        flex-wrap:wrap;
-      }
-      #home .fixa-reference-filter-row{
-        margin:0 0 7px;
-        padding:0 1px;
         justify-content:flex-start;
       }
-      #home .fixa-reference-period-row{
-        margin:8px 0 7px;
-        padding:0 1px;
-        justify-content:flex-start;
+      #home.home-view .fixa-reference-header-right{
+        min-width:220px;
+        display:grid;
+        justify-items:end;
+        align-content:center;
+        gap:1px;
+        text-align:right;
       }
-      #home .fixa-reference-filter{
-        height:34px;
-        min-width:230px;
-        padding:0 9px 0 10px;
-        border:1px solid #dbe5f4;
-        border-radius:9px;
-        background:#fff;
-        display:flex;
-        align-items:center;
-        gap:7px;
-        color:#53617a;
+      #home.home-view .fixa-reference-header-right #homeGreeting{
+        margin:0!important;
+        display:flex!important;
+        align-items:center!important;
+        justify-content:flex-end!important;
+        gap:5px!important;
+        font-size:22px!important;
+        line-height:25px!important;
+        font-weight:850!important;
+        white-space:nowrap!important;
+        text-align:right!important;
       }
-      #home .fixa-reference-filter svg{
-        width:14px;
-        height:14px;
-        flex:0 0 auto;
-        fill:none;
-        stroke:currentColor;
-        stroke-width:1.9;
-        stroke-linecap:round;
-        stroke-linejoin:round;
+      #home.home-view .fixa-reference-header-right #homeGreeting .home-greeting-wave{
+        width:21px!important;
+        height:21px!important;
       }
-      #home .fixa-reference-filter select{
+      #home.home-view .fixa-reference-header-right #homeDatePill{
+        margin:0!important;
+        padding:0!important;
+        border:0!important;
+        background:transparent!important;
+        color:#64748b!important;
+        font-size:12px!important;
+        line-height:15px!important;
+        white-space:nowrap!important;
+        text-align:right!important;
+      }
+
+      /* Filtros exatamente na faixa superior, sem período misturado. */
+      #home.home-view .fixa-week-filters{
+        width:auto!important;
+        display:flex!important;
+        align-items:center!important;
+        justify-content:flex-start!important;
+        gap:14px!important;
+        flex-wrap:nowrap!important;
+        margin:0!important;
+      }
+      #home.home-view .fixa-week-folder-filter,
+      #home.home-view .fixa-reference-collection-filter{
+        height:43px!important;
+        padding:0 12px!important;
+        border:1px solid #dbe5f4!important;
+        border-radius:11px!important;
+        background:#fff!important;
+        display:flex!important;
+        align-items:center!important;
+        gap:9px!important;
+        color:#53617a!important;
+        box-shadow:none!important;
+      }
+      #home.home-view .fixa-week-folder-filter{width:274px!important;min-width:274px!important}
+      #home.home-view .fixa-reference-collection-filter{width:340px!important;min-width:340px!important}
+      #home.home-view .fixa-week-folder-filter svg,
+      #home.home-view .fixa-reference-collection-filter svg{
+        width:16px!important;
+        height:16px!important;
+        flex:0 0 16px!important;
+        fill:none!important;
+        stroke:currentColor!important;
+        stroke-width:1.9!important;
+        stroke-linecap:round!important;
+        stroke-linejoin:round!important;
+      }
+      #home.home-view .fixa-week-folder-filter select,
+      #home.home-view .fixa-reference-collection-filter select{
+        height:40px!important;
+        min-width:0!important;
         border:0!important;
         box-shadow:none!important;
-        min-width:0;
-        padding:0 22px 0 0!important;
+        padding:0 24px 0 0!important;
         background:#fff!important;
         color:#26324b!important;
-        font-size:11px!important;
-        font-weight:750!important;
+        font-size:13px!important;
+        font-weight:800!important;
       }
-      #home .fixa-week-folder-filter{display:none!important}
-      #home .fixa-week-filters:empty{display:none!important}
-      #home .fixa-reference-period-row .fixa-week-period{
-        display:flex!important;
-        justify-content:flex-start!important;
-        gap:4px!important;
-      }
-      #homeSummaryCards.fixa-week-summary{
+
+      /* 1ª linha: seis cards exatamente na mesma faixa. */
+      #home.home-view #homeSummaryCards.fixa-week-summary{
         width:100%!important;
         display:grid!important;
         grid-template-columns:repeat(6,minmax(0,1fr))!important;
-        gap:8px!important;
+        gap:12px!important;
         margin:0!important;
       }
-      #homeFooterStats{
+      #home.home-view #homeSummaryCards .fixa-week-summary-card{
+        height:92px!important;
+        min-height:92px!important;
+        padding:12px 14px!important;
+        grid-template-columns:54px minmax(0,1fr)!important;
+        gap:11px!important;
+        border-radius:14px!important;
+        align-items:center!important;
+      }
+      #home.home-view #homeSummaryCards .fixa-week-summary-icon{
+        width:54px!important;
+        height:54px!important;
+        border-radius:12px!important;
+      }
+      #home.home-view #homeSummaryCards .fixa-week-summary-icon svg{
+        width:31px!important;
+        height:31px!important;
+      }
+      #home.home-view #homeSummaryCards .fixa-week-summary-card strong{
+        display:block!important;
+        margin:0 0 1px!important;
+        font-size:14px!important;
+        line-height:17px!important;
+      }
+      #home.home-view #homeSummaryCards .fixa-week-summary-card .home-card-number{
+        display:block!important;
+        font-size:24px!important;
+        line-height:25px!important;
+        font-weight:900!important;
+      }
+      #home.home-view #homeSummaryCards .fixa-week-summary-card small{
+        display:block!important;
+        margin-top:2px!important;
+        font-size:11px!important;
+        line-height:13px!important;
+      }
+
+      /* Período em uma linha própria entre a 1ª e a 2ª linha. */
+      #home.home-view .fixa-reference-period-row{
+        width:100%;
+        min-height:42px;
+        margin:10px 0 10px;
+        display:flex;
+        align-items:center;
+        justify-content:flex-start;
+      }
+      #home.home-view .fixa-reference-period-row .fixa-week-period{
+        display:flex!important;
+        align-items:center!important;
+        justify-content:flex-start!important;
+        gap:4px!important;
+        margin:0!important;
+      }
+      #home.home-view .fixa-reference-period-row .fixa-week-period button{
+        min-height:40px!important;
+        height:40px!important;
+        padding:0 18px!important;
+        border-radius:9px!important;
+        font-size:12px!important;
+        font-weight:850!important;
+      }
+
+      /* 2ª linha: sequência, tempo e objetivo. */
+      #home.home-view #homeFooterStats{
         width:100%!important;
         display:grid!important;
         grid-template-columns:1.05fr 1fr 1.05fr!important;
-        gap:8px!important;
-        margin:0!important;
+        gap:12px!important;
+        margin:0 0 14px!important;
+        height:132px!important;
+        min-height:132px!important;
       }
-      #home .fixa-week-main-shell{
+      #home.home-view #homeFooterStats .fixa-week-top-card{
+        height:132px!important;
+        min-height:132px!important;
+        padding:15px 17px!important;
+        border-radius:14px!important;
+      }
+      #home.home-view #homeFooterStats .fixa-week-top-head{
+        gap:9px!important;
+      }
+      #home.home-view #homeFooterStats .fixa-week-top-head h3{
+        font-size:15px!important;
+        line-height:18px!important;
+      }
+      #home.home-view #homeFooterStats .fixa-week-top-head>b{
+        font-size:12px!important;
+      }
+      #home.home-view #homeFooterStats .fixa-week-symbol{
+        width:30px!important;
+        height:30px!important;
+        border-radius:9px!important;
+      }
+      #home.home-view #homeFooterStats .fixa-week-symbol svg{
+        width:17px!important;
+        height:17px!important;
+      }
+      #home.home-view #homeFooterStats .fixa-week-main-value{
+        margin-top:4px!important;
+        font-size:26px!important;
+        line-height:28px!important;
+      }
+      #home.home-view #homeFooterStats .fixa-week-top-card>small{
+        font-size:11px!important;
+        line-height:14px!important;
+      }
+      #home.home-view #homeFooterStats .fixa-week-days{
+        margin-top:8px!important;
+        gap:5px!important;
+      }
+      #home.home-view #homeFooterStats .fixa-week-day i{
+        width:31px!important;
+        height:31px!important;
+        font-size:12px!important;
+      }
+      #home.home-view #homeFooterStats .fixa-week-day b{
+        margin-top:2px!important;
+        font-size:10px!important;
+      }
+
+      /* Painel inferior: tamanho estável. Sem cálculo JS e sem caixa infinita. */
+      #home.home-view .fixa-week-main-shell{
+        width:100%!important;
         height:auto!important;
         min-height:0!important;
         max-height:none!important;
-        margin-bottom:20px!important;
+        margin:0 0 18px!important;
+        overflow:hidden!important;
+        border-radius:14px!important;
       }
-      #home .fixa-week-main-stage{
-        max-height:none!important;
+      #home.home-view .fixa-week-main-shell .fixa-week-main-stage{
+        height:clamp(300px,34vh,390px)!important;
+        min-height:300px!important;
+        max-height:390px!important;
+        overflow:hidden!important;
       }
-      @media(max-width:1050px){
-        #homeSummaryCards.fixa-week-summary{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+      #home.home-view .fixa-week-main-shell .fixa-week-main-pane,
+      #home.home-view .fixa-week-main-shell [data-fixa-main-panel]{
+        min-height:0!important;
+      }
+      #home.home-view .fixa-week-main-shell .home-activity-scroll,
+      #home.home-view .fixa-week-main-shell .home-collection-scroll,
+      #home.home-view .fixa-week-main-shell .home-focus-box,
+      #home.home-view .fixa-week-main-shell .fixa-unified-priority-list,
+      #home.home-view .fixa-week-main-shell .fixa-question-group-list{
+        overflow-y:auto!important;
+        overflow-x:hidden!important;
+        scrollbar-width:thin!important;
+      }
+
+      @media(max-width:1150px){
+        #home.home-view .fixa-reference-header-row{grid-template-columns:1fr;gap:8px}
+        #home.home-view .fixa-reference-header-right{justify-items:start;text-align:left}
+        #home.home-view .fixa-reference-header-right #homeGreeting{justify-content:flex-start!important;text-align:left!important}
+        #home.home-view .fixa-reference-header-right #homeDatePill{text-align:left!important}
+        #home.home-view #homeSummaryCards.fixa-week-summary{grid-template-columns:repeat(3,minmax(0,1fr))!important}
       }
       @media(max-width:760px){
-        #home .fixa-reference-filter-row{display:grid;grid-template-columns:1fr;gap:6px}
-        #home .fixa-reference-filter{width:100%;min-width:0}
-        #home .fixa-reference-period-row .fixa-week-period{width:100%}
-        #home .fixa-reference-period-row .fixa-week-period button{flex:1}
-        #homeSummaryCards.fixa-week-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-        #homeFooterStats{grid-template-columns:1fr!important}
+        #home.home-view .fixa-week-filters{width:100%!important;display:grid!important;grid-template-columns:1fr!important;gap:7px!important}
+        #home.home-view .fixa-week-folder-filter,
+        #home.home-view .fixa-reference-collection-filter{width:100%!important;min-width:0!important}
+        #home.home-view #homeSummaryCards.fixa-week-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+        #home.home-view #homeFooterStats{grid-template-columns:1fr!important;height:auto!important;min-height:0!important}
+        #home.home-view #homeFooterStats .fixa-week-top-card{height:auto!important;min-height:118px!important}
+        #home.home-view .fixa-week-main-shell .fixa-week-main-stage{height:auto!important;min-height:300px!important;max-height:none!important}
       }
     `;
     document.head.appendChild(style);
@@ -134,24 +320,23 @@
     }[char]));
   }
 
-  function folders() {
-    return Array.isArray(dataRef()?.folders) ? dataRef().folders : [];
-  }
-
   function allSubjects() {
     return Array.isArray(dataRef()?.subjects) ? dataRef().subjects : [];
   }
 
+  function folderId() {
+    return document.querySelector('#fixaWeekFolderFilter')?.value || 'all';
+  }
+
   function subjectsForFolder() {
+    const id = folderId();
     const list = allSubjects();
-    if (state.folderId === 'all') return list;
-    return list.filter(subject => String(subject?.folder || '') === String(state.folderId));
+    return id === 'all' ? list : list.filter(subject => String(subject?.folder || '') === String(id));
   }
 
   function selectedSubjects() {
     const list = subjectsForFolder();
-    if (state.subjectId === 'all') return list;
-    return list.filter(subject => String(subject?.id || '') === String(state.subjectId));
+    return state.subjectId === 'all' ? list : list.filter(subject => String(subject?.id || '') === String(state.subjectId));
   }
 
   function cardsFor(subject) {
@@ -199,12 +384,8 @@
     return document.querySelector('[data-fixa-week-period].active')?.dataset.fixaWeekPeriod || 'week';
   }
 
-  function periodWord() {
+  function periodBounds() {
     const period = activePeriod();
-    return period === 'today' ? 'hoje' : period === 'month' ? 'mês' : 'semana';
-  }
-
-  function periodBounds(period = activePeriod()) {
     const now = new Date();
     if (period === 'today') {
       const start = new Date(now); start.setHours(0,0,0,0);
@@ -213,8 +394,8 @@
     }
     if (period === 'month') {
       return {
-        start: new Date(now.getFullYear(), now.getMonth(), 1),
-        end: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+        start:new Date(now.getFullYear(),now.getMonth(),1),
+        end:new Date(now.getFullYear(),now.getMonth()+1,0,23,59,59,999)
       };
     }
     const start = new Date(now); start.setHours(0,0,0,0);
@@ -223,8 +404,8 @@
     return { start, end };
   }
 
-  function testsInPeriod(tests, period = activePeriod()) {
-    const { start, end } = periodBounds(period);
+  function testsInPeriod(tests) {
+    const { start, end } = periodBounds();
     return tests.filter(test => {
       const date = testDate(test);
       return date && date >= start && date <= end;
@@ -235,62 +416,62 @@
     return Number(total) > 0 ? Math.round(Number(value || 0) / Number(total) * 100) : 0;
   }
 
-  function filterIcon(type) {
-    if (type === 'collection') {
-      return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>';
-    }
-    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path></svg>';
+  function collectionIcon() {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>';
   }
 
-  function ensureFilterRow(todayShell, summary) {
-    let row = todayShell.querySelector('.fixa-reference-filter-row');
+  function ensureHeaderLayout() {
+    const home = document.querySelector('#home.home-view');
+    const actions = home?.querySelector('.home-hero-actions');
+    const filters = home?.querySelector('.fixa-week-filters');
+    const greeting = home?.querySelector('#homeGreeting');
+    const date = home?.querySelector('#homeDatePill');
+    if (!home || !actions || !filters || !greeting || !date) return false;
+
+    let row = actions.querySelector('.fixa-reference-header-row');
     if (!row) {
       row = document.createElement('div');
-      row.className = 'fixa-reference-filter-row';
-      row.setAttribute('aria-label', 'Filtros da página inicial');
-      row.innerHTML = `
-        <label class="fixa-reference-filter">${filterIcon('folder')}<select id="fixaReferenceFolderFilter" aria-label="Filtrar por pasta"></select></label>
-        <label class="fixa-reference-filter">${filterIcon('collection')}<select id="fixaReferenceCollectionFilter" aria-label="Filtrar por coleção"></select></label>`;
+      row.className = 'fixa-reference-header-row';
+      row.innerHTML = '<div class="fixa-reference-header-left"></div><div class="fixa-reference-header-right"></div>';
+      actions.prepend(row);
     }
-    if (row.parentElement !== todayShell || row.nextElementSibling !== summary) {
-      todayShell.insertBefore(row, summary || todayShell.firstChild);
+    const left = row.querySelector('.fixa-reference-header-left');
+    const right = row.querySelector('.fixa-reference-header-right');
+
+    const period = filters.querySelector('.fixa-week-period');
+    if (period) period.remove();
+
+    let collection = filters.querySelector('.fixa-reference-collection-filter');
+    if (!collection) {
+      collection = document.createElement('label');
+      collection.className = 'fixa-reference-collection-filter';
+      collection.innerHTML = `${collectionIcon()}<select id="fixaReferenceCollectionFilter" aria-label="Filtrar por coleção"></select>`;
+      filters.appendChild(collection);
     }
-    return row;
+
+    if (filters.parentElement !== left) left.appendChild(filters);
+    if (greeting.parentElement !== right) right.appendChild(greeting);
+    if (date.parentElement !== right) right.appendChild(date);
+    return true;
   }
 
-  function setSelectOptions(select, options, selectedValue) {
+  function fillCollectionFilter() {
+    const select = document.querySelector('#fixaReferenceCollectionFilter');
     if (!select) return;
+    const available = subjectsForFolder();
+    if (state.subjectId !== 'all' && !available.some(subject => String(subject.id) === String(state.subjectId))) {
+      state.subjectId = 'all';
+    }
+    const options = [
+      { value:'all', label:'Todas as coleções' },
+      ...available.map(subject => ({ value:String(subject.id), label:String(subject.name || 'Coleção') }))
+    ];
     const signature = options.map(item => `${item.value}:${item.label}`).join('|');
     if (select.dataset.optionsSignature !== signature) {
       select.innerHTML = options.map(item => `<option value="${esc(item.value)}">${esc(item.label)}</option>`).join('');
       select.dataset.optionsSignature = signature;
     }
-    select.value = selectedValue;
-  }
-
-  function fillFilters() {
-    const folderSelect = document.querySelector('#fixaReferenceFolderFilter');
-    const collectionSelect = document.querySelector('#fixaReferenceCollectionFilter');
-    if (!folderSelect || !collectionSelect) return;
-
-    const folderList = folders();
-    if (state.folderId !== 'all' && !folderList.some(folder => String(folder.id) === String(state.folderId))) {
-      state.folderId = 'all';
-      state.subjectId = 'all';
-    }
-    setSelectOptions(folderSelect, [
-      { value:'all', label:'Todas as pastas' },
-      ...folderList.map(folder => ({ value:String(folder.id), label:String(folder.name || 'Pasta') }))
-    ], state.folderId);
-
-    const available = subjectsForFolder();
-    if (state.subjectId !== 'all' && !available.some(subject => String(subject.id) === String(state.subjectId))) {
-      state.subjectId = 'all';
-    }
-    setSelectOptions(collectionSelect, [
-      { value:'all', label:'Todas as coleções' },
-      ...available.map(subject => ({ value:String(subject.id), label:String(subject.name || 'Coleção') }))
-    ], state.subjectId);
+    select.value = state.subjectId;
   }
 
   function ensurePeriodRow(todayShell, summary, footerStats) {
@@ -303,6 +484,15 @@
 
     const period = document.querySelector('.fixa-week-period');
     if (period && period.parentElement !== row) row.appendChild(period);
+    if (!period) {
+      const filters = document.querySelector('.fixa-week-filters');
+      const detached = filters?.querySelector('.fixa-week-period');
+      if (detached) row.appendChild(detached);
+    }
+
+    if (!row.querySelector('.fixa-week-period')) {
+      row.innerHTML = '<div class="fixa-week-period" role="group" aria-label="Período do painel"><button type="button" data-fixa-week-period="today">Hoje</button><button type="button" data-fixa-week-period="week" class="active">Semana</button><button type="button" data-fixa-week-period="month">Mês</button></div>';
+    }
 
     if (row.parentElement !== todayShell || row.previousElementSibling !== summary) {
       summary.insertAdjacentElement('afterend', row);
@@ -311,38 +501,32 @@
     return row;
   }
 
-  function clearForcedPanelHeight() {
+  function clearOldHeightControl() {
     document.querySelector('#fixaHomeMainPanelFillViewportStyle')?.remove();
     const shell = document.querySelector('#home .fixa-week-main-shell');
     if (!shell) return;
     ['height','min-height','max-height'].forEach(property => shell.style.removeProperty(property));
   }
 
-  function arrangeLayout() {
+  function arrangeBody() {
     const home = document.querySelector('#home.home-view');
     const today = home?.querySelector('[data-home-panel="today"]');
     const todayShell = today?.querySelector(':scope > .home-shell');
     const summary = document.querySelector('#homeSummaryCards');
     const footerStats = document.querySelector('#homeFooterStats');
-    if (!home || !todayShell || !summary || !footerStats) return false;
+    if (!todayShell || !summary || !footerStats) return false;
 
-    ensureStyle();
-    const filterRow = ensureFilterRow(todayShell, summary);
-    if (summary.previousElementSibling !== filterRow) filterRow.insertAdjacentElement('afterend', summary);
-    const periodRow = ensurePeriodRow(todayShell, summary, footerStats);
-    if (footerStats.previousElementSibling !== periodRow) periodRow.insertAdjacentElement('afterend', footerStats);
-
+    if (summary.parentElement !== todayShell) todayShell.prepend(summary);
+    ensurePeriodRow(todayShell, summary, footerStats);
     const mainShell = todayShell.querySelector('.fixa-week-main-shell');
     if (mainShell && mainShell.previousElementSibling !== footerStats) footerStats.insertAdjacentElement('afterend', mainShell);
-
-    clearForcedPanelHeight();
+    clearOldHeightControl();
     return true;
   }
 
   function summaryCard(label) {
     const grid = document.querySelector('#homeSummaryCards');
-    if (!grid) return null;
-    return [...grid.children].find(card => card.querySelector('strong')?.textContent?.trim() === label) || null;
+    return grid ? [...grid.children].find(card => card.querySelector('strong')?.textContent?.trim() === label) || null : null;
   }
 
   function setSummaryCard(label, value, caption) {
@@ -354,106 +538,71 @@
     if (small && caption !== undefined && small.textContent !== String(caption)) small.textContent = String(caption || '');
   }
 
-  function renderFilteredSummary() {
+  function renderCollectionSelection() {
+    if (state.subjectId === 'all') return;
     const selected = selectedSubjects();
-    const cards = selected
-      .flatMap(subject => cardsFor(subject).map(card => ({ subject, card })))
-      .filter(item => statusOf(item.card) !== 'frozen');
-    const mastered = cards.filter(item => statusOf(item.card) === 'mastered').length;
+    const cards = selected.flatMap(subject => cardsFor(subject)).filter(card => statusOf(card) !== 'frozen');
+    const mastered = cards.filter(card => statusOf(card) === 'mastered').length;
     const allTests = testsForSelection();
     const periodTests = testsInPeriod(allTests);
     const total = periodTests.reduce((sum, test) => sum + Number(test?.total || 0), 0);
     const score = periodTests.reduce((sum, test) => sum + Number(test?.score || 0), 0);
-
     const xpSummary = window.FixaCompetitionXpHomeV4?.summary || {};
     const bySubject = xpSummary.by_subject || {};
-    const subjectIds = selected.map(subject => String(subject.id));
-    const fallbackXp = allTests.reduce((sum, test) => sum + Number(test?.xp || 0), 0);
-    const summaryXp = subjectIds.reduce((sum, id) => sum + Number(bySubject[id] || 0), 0);
-    const totalXp = state.folderId === 'all' && state.subjectId === 'all'
-      ? (Number(xpSummary.total_xp || 0) || fallbackXp)
-      : (summaryXp || fallbackXp);
-
-    const weekTests = testsInPeriod(allTests, 'week');
-    const fallbackWeekXp = weekTests.reduce((sum, test) => sum + Number(test?.xp || 0), 0);
-    const weekXp = state.folderId === 'all' && state.subjectId === 'all'
-      ? (Number(window.FixaHomeGoalsStreakProtectionV1?.weekXp || 0) || fallbackWeekXp)
-      : fallbackWeekXp;
+    const subjectId = String(selected[0]?.id || '');
+    const xp = Number(bySubject[subjectId] || allTests.reduce((sum, test) => sum + Number(test?.xp || 0), 0));
+    const weekTests = (() => {
+      const previous = activePeriod();
+      const now = new Date();
+      const start = new Date(now); start.setHours(0,0,0,0); start.setDate(start.getDate() - ((start.getDay()+6)%7));
+      const end = new Date(start); end.setDate(end.getDate()+6); end.setHours(23,59,59,999);
+      return allTests.filter(test => { const date = testDate(test); return date && date >= start && date <= end; });
+    })();
+    const weekXp = weekTests.reduce((sum, test) => sum + Number(test?.xp || 0), 0);
 
     setSummaryCard('Coleções', selected.length, 'Total de coleções');
     setSummaryCard('Questões', cards.length, 'Total de questões');
     setSummaryCard('Dominadas', mastered, `${percent(mastered, cards.length)}% do total`);
-    setSummaryCard('Aproveitamento', `${percent(score, total)}%`, `Média de ${periodWord()}`);
-    setSummaryCard('XP Coleções', totalXp, '');
+    setSummaryCard('Aproveitamento', `${percent(score, total)}%`, 'Média dos testes');
+    setSummaryCard('XP Coleções', xp, '');
     setSummaryCard('XP Semana', weekXp, '');
   }
 
-  function syncLegacyFolderFilter() {
-    const legacy = document.querySelector('#fixaWeekFolderFilter');
-    if (!legacy) return;
-    const value = state.folderId || 'all';
-    if (legacy.value === value) return;
-    legacy.value = value;
-    legacy.dispatchEvent(new Event('change', { bubbles:true }));
-  }
-
   function syncAll() {
-    if (!arrangeLayout()) return false;
-    fillFilters();
-    renderFilteredSummary();
+    ensureStyle();
+    if (!ensureHeaderLayout()) return false;
+    fillCollectionFilter();
+    if (!arrangeBody()) return false;
+    renderCollectionSelection();
     return true;
   }
 
-  let queued = false;
   function queueSync() {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      syncAll();
-    });
+    requestAnimationFrame(() => syncAll());
   }
 
-  function bind() {
-    document.addEventListener('change', event => {
-      const folder = event.target.closest('#fixaReferenceFolderFilter');
-      if (folder) {
-        state.folderId = folder.value || 'all';
-        state.subjectId = 'all';
-        fillFilters();
-        syncLegacyFolderFilter();
-        queueSync();
-        return;
-      }
-      const collection = event.target.closest('#fixaReferenceCollectionFilter');
-      if (collection) {
-        state.subjectId = collection.value || 'all';
-        renderFilteredSummary();
-      }
-    });
-
-    document.addEventListener('click', event => {
-      if (event.target.closest('[data-fixa-week-period], [data-view="home"], #homeTopTab')) queueSync();
-    });
-
-    window.addEventListener('fixa-cloud-data-loaded', queueSync);
-    window.addEventListener('fixa-xp-updated', queueSync);
-    window.addEventListener('load', queueSync, { once:true });
-
-    const home = document.querySelector('#home');
-    if (home) {
-      new MutationObserver(queueSync).observe(home, { childList:true, subtree:true });
-    }
-  }
-
-  function boot() {
-    if (!syncAll()) {
-      requestAnimationFrame(boot);
+  document.addEventListener('change', event => {
+    if (event.target.closest('#fixaWeekFolderFilter')) {
+      state.subjectId = 'all';
+      setTimeout(syncAll, 0);
       return;
     }
-    bind();
-  }
+    const collection = event.target.closest('#fixaReferenceCollectionFilter');
+    if (collection) {
+      state.subjectId = collection.value || 'all';
+      if (state.subjectId === 'all') window.FixaHomeWeeklyDashboardV2?.refresh?.();
+      setTimeout(syncAll, 0);
+    }
+  });
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once:true });
-  else boot();
+  document.addEventListener('click', event => {
+    if (event.target.closest('[data-view="home"],#homeTopTab,[data-fixa-week-period],[data-home-tab="today"],[data-fixa-main-tab]')) {
+      setTimeout(syncAll, 0);
+    }
+  });
+
+  window.addEventListener('fixa-cloud-data-loaded', () => setTimeout(syncAll, 0));
+  window.addEventListener('load', queueSync, { once:true });
+  window.addEventListener('resize', queueSync);
+  queueSync();
 })();
