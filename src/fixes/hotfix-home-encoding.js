@@ -192,15 +192,6 @@
     document.head.appendChild(script);
   }
 
-  function loadHomeSummaryCardStability() {
-    if (window.FixaHomeSummaryCardStabilityV1 || document.getElementById('fixaHomeSummaryCardStabilityV1Loader')) return;
-    const script = document.createElement('script');
-    script.id = 'fixaHomeSummaryCardStabilityV1Loader';
-    script.src = 'src/fixes/home-summary-card-stability-v1.js?v=20260822-home-summary-card-stability-v1';
-    script.defer = true;
-    document.head.appendChild(script);
-  }
-
   function repair() {
     repairAnalysisLabels();
     replaceObservedTestNote();
@@ -215,7 +206,6 @@
     loadCompetitionParticipantExportGuard();
     loadCompletedTestReset();
     loadTestHistoryLayout();
-    loadHomeSummaryCardStability();
   }
 
   if (document.documentElement.dataset[HOTFIX_FLAG] === 'true') return;
