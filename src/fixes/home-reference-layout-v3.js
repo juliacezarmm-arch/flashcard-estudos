@@ -18,6 +18,7 @@
   let observedGrid = null;
   let gridObserver = null;
   let syncFrame = 0;
+  let fitFrame = 0;
   let syncing = false;
 
   const api = window.FixaHomeReferenceLayoutV3 = {
@@ -28,16 +29,77 @@
   function ensureStyle() {
     if (document.getElementById(STYLE_ID)) return;
 
+    document.getElementById('fixaHomeMainPanelFillViewportStyle')?.remove();
+    document.getElementById('fixaHomeCompactHeaderRowStyle')?.remove();
+
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      /* Código Fixa 9 — ajustes pontuais da Home. */
+      /* Código Fixa 9 — Home estabilizada. */
 
-      /* A antiga navegação Semana/Atividade não pertence à Home atual. */
       #home.home-view .home-subtabs{display:none!important}
-
-      /* ===== 1ª linha: seis cards ===== */
       #home.home-view #${LEGACY_STABLE_ID}{display:none!important}
+
+      /* Desktop: a página não rola. Quando necessário, só a 3ª linha rola. */
+      @media(min-width:861px){
+        body.home-active{overflow:hidden!important}
+        body.home-active #appShell.app:not(.locked)>main{
+          height:100dvh!important;
+          min-height:0!important;
+          max-height:100dvh!important;
+          overflow:hidden!important;
+          grid-template-rows:56px minmax(0,1fr)!important;
+          align-content:stretch!important;
+        }
+        body.home-active #home.home-view.active{
+          height:100%!important;
+          min-height:0!important;
+          overflow:hidden!important;
+        }
+      }
+
+      /* Filtros e saudação: ficam realmente abaixo da navegação principal. */
+      #home.home-view .home-hero-head{
+        margin-top:18px!important;
+        margin-bottom:4px!important;
+        padding-top:0!important;
+        min-height:44px!important;
+      }
+      #home.home-view .fixa-reference-header-row{
+        min-height:44px!important;
+        gap:18px!important;
+        align-items:center!important;
+      }
+      #home.home-view .fixa-week-filters{gap:8px!important}
+      #home.home-view .fixa-week-folder-filter,
+      #home.home-view .fixa-reference-collection-filter{
+        height:38px!important;
+        min-height:38px!important;
+        padding:0 10px!important;
+        border-radius:9px!important;
+        gap:7px!important;
+      }
+      #home.home-view .fixa-week-folder-filter{width:250px!important;min-width:250px!important}
+      #home.home-view .fixa-reference-collection-filter{width:315px!important;min-width:315px!important}
+      #home.home-view .fixa-week-folder-filter select,
+      #home.home-view .fixa-reference-collection-filter select{
+        height:36px!important;
+        font-size:12px!important;
+      }
+      #home.home-view .fixa-reference-header-right #homeGreeting{
+        font-size:20px!important;
+        line-height:22px!important;
+      }
+      #home.home-view .fixa-reference-header-right #homeGreeting .home-greeting-wave{
+        width:19px!important;
+        height:19px!important;
+      }
+      #home.home-view .fixa-reference-header-right #homeDatePill{
+        font-size:11px!important;
+        line-height:14px!important;
+      }
+
+      /* 1ª linha: mantém exatamente a escala compacta aprovada. */
       #home.home-view #homeSummaryCards.fixa-week-summary,
       #home.home-view #homeSummaryCards{
         width:100%!important;
@@ -66,12 +128,6 @@
         cursor:default!important;
         transform:none!important;
         animation:none!important;
-        transition:border-color .15s ease,background-color .15s ease!important;
-      }
-      #home.home-view #homeSummaryCards .fixa-week-summary-card:hover,
-      #home.home-view #homeSummaryCards .home-card:hover{
-        border-color:#cbd8ea!important;
-        transform:none!important;
       }
       #home.home-view #homeSummaryCards [data-fixa-visual-key="collections"]{background:linear-gradient(90deg,#ecf9f2 0%,#fff 72%)!important}
       #home.home-view #homeSummaryCards [data-fixa-visual-key="questions"]{background:linear-gradient(90deg,#eff6ff 0%,#fff 72%)!important}
@@ -95,7 +151,6 @@
         max-height:40px!important;
         display:block!important;
         object-fit:contain!important;
-        background:transparent!important;
       }
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-total"] .fixa-week-summary-icon,
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-week"] .fixa-week-summary-icon{
@@ -149,52 +204,12 @@
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-total"] .home-card-number,
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-week"] .home-card-number{color:#2563eb!important}
 
-      /* ===== Filtros + saudação =====
-       * Desce mais o conjunto inteiro e reduz o espaço até a 1ª linha.
-       */
-      #home.home-view .home-hero-head{
-        padding-top:14px!important;
-        margin-bottom:0!important;
-      }
-      #home.home-view .fixa-reference-header-row{min-height:44px!important;gap:18px!important}
-      #home.home-view .fixa-week-filters{gap:8px!important}
-      #home.home-view .fixa-week-folder-filter,
-      #home.home-view .fixa-reference-collection-filter{
-        height:38px!important;
-        min-height:38px!important;
-        padding:0 10px!important;
-        border-radius:9px!important;
-        gap:7px!important;
-      }
-      #home.home-view .fixa-week-folder-filter{width:250px!important;min-width:250px!important}
-      #home.home-view .fixa-reference-collection-filter{width:315px!important;min-width:315px!important}
-      #home.home-view .fixa-week-folder-filter select,
-      #home.home-view .fixa-reference-collection-filter select{
-        height:36px!important;
-        font-size:12px!important;
-      }
-      #home.home-view .fixa-reference-header-right #homeGreeting{
-        font-size:20px!important;
-        line-height:22px!important;
-      }
-      #home.home-view .fixa-reference-header-right #homeGreeting .home-greeting-wave{
-        width:19px!important;
-        height:19px!important;
-      }
-      #home.home-view .fixa-reference-header-right #homeDatePill{
-        font-size:11px!important;
-        line-height:14px!important;
-      }
-
       /* Hoje / Semana / Mês. */
       #home.home-view .fixa-reference-period-row{
         min-height:34px!important;
         margin:6px 0 7px!important;
       }
-      #home.home-view .fixa-reference-period-row .fixa-week-period{
-        display:flex!important;
-        gap:4px!important;
-      }
+      #home.home-view .fixa-reference-period-row .fixa-week-period{display:flex!important;gap:4px!important}
       #home.home-view .fixa-reference-period-row .fixa-week-period button{
         display:inline-flex!important;
         height:34px!important;
@@ -204,7 +219,7 @@
         font-size:11px!important;
       }
 
-      /* ===== 2ª linha ===== */
+      /* 2ª linha: não alterar. */
       #home.home-view #homeFooterStats{
         height:116px!important;
         min-height:116px!important;
@@ -223,38 +238,28 @@
       #home.home-view #homeFooterStats .fixa-week-days{margin-top:5px!important;gap:4px!important}
       #home.home-view #homeFooterStats .fixa-week-day i{width:27px!important;height:27px!important;font-size:11px!important}
 
-      /* ===== 3ª linha =====
-       * Altura calculada apenas pelo viewport, nunca pela posição atual do scroll.
-       * Portanto a caixa NÃO cresce quando a página é rolada.
-       */
+      /* 3ª linha: altura fixa para a janela. A rolagem fica DENTRO dela. */
       #home.home-view .fixa-week-main-shell{
-        height:clamp(300px,calc(100vh - 465px),440px)!important;
-        min-height:300px!important;
-        max-height:440px!important;
-        margin:0 0 10px!important;
+        height:var(--fixa-third-line-height,320px)!important;
+        min-height:180px!important;
+        max-height:none!important;
+        margin:0!important;
         border-radius:11px!important;
         overflow:hidden!important;
         display:flex!important;
         flex-direction:column!important;
       }
-
-      /* Barra horizontal somente na faixa das abas e somente quando faltar espaço. */
       #home.home-view .fixa-week-content-tabs{
         flex:0 0 auto!important;
         overflow-x:auto!important;
         overflow-y:hidden!important;
         scrollbar-width:thin!important;
         scrollbar-color:#b7c5da transparent!important;
-        scrollbar-gutter:auto!important;
       }
-      #home.home-view .fixa-week-content-tabs::-webkit-scrollbar{height:6px!important}
+      #home.home-view .fixa-week-content-tabs::-webkit-scrollbar{height:5px!important}
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-track{background:transparent!important}
-      #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-thumb{
-        background:#b7c5da!important;
-        border-radius:999px!important;
-      }
+      #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-thumb{background:#b7c5da!important;border-radius:999px!important}
 
-      /* Conteúdo da 3ª linha permanece rolável, mas sem barra vertical lateral visível. */
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage{
         flex:1 1 auto!important;
         height:auto!important;
@@ -263,13 +268,14 @@
         padding:9px 11px!important;
         overflow-y:auto!important;
         overflow-x:hidden!important;
-        scrollbar-width:none!important;
+        scrollbar-width:thin!important;
+        scrollbar-color:#aebbd0 transparent!important;
+        scrollbar-gutter:stable!important;
         overscroll-behavior:contain!important;
       }
-      #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar{
-        width:0!important;
-        height:0!important;
-      }
+      #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar{width:7px!important}
+      #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar-track{background:transparent!important}
+      #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar-thumb{background:#aebbd0!important;border-radius:999px!important}
       #home.home-view .fixa-week-main-stage [data-fixa-main-panel],
       #home.home-view .fixa-week-main-stage .fixa-week-main-pair{
         height:auto!important;
@@ -278,17 +284,9 @@
       }
 
       /* Dimensões internas já aprovadas. */
-      #home.home-view .fixa-week-main-pane .home-collection-scroll{
-        height:190px!important;
-        max-height:190px!important;
-      }
+      #home.home-view .fixa-week-main-pane .home-collection-scroll{height:190px!important;max-height:190px!important}
       #home.home-view .home-collection-grid.fixa-week-collection-list{gap:6px!important}
-      #home.home-view .fixa-week-collection{
-        height:96px!important;
-        min-height:96px!important;
-        padding:7px 8px!important;
-        border-radius:8px!important;
-      }
+      #home.home-view .fixa-week-collection{height:96px!important;min-height:96px!important;padding:7px 8px!important;border-radius:8px!important}
       #home.home-view .fixa-week-collection .home-collection-name,
       #home.home-view .fixa-week-collection .home-collection-total{font-size:8.5px!important}
       #home.home-view .fixa-week-collection .home-collection-metrics b{font-size:9.5px!important}
@@ -305,16 +303,14 @@
         #home.home-view .fixa-reference-collection-filter{width:100%!important;min-width:0!important}
       }
       @media(max-width:760px){
+        body.home-active{overflow:auto!important}
+        #home.home-view .home-hero-head{margin-top:10px!important}
         #home.home-view #homeSummaryCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
         #home.home-view #homeSummaryCards .fixa-week-summary-card,
         #home.home-view #homeSummaryCards .home-card{height:auto!important;min-height:62px!important}
         #home.home-view #homeFooterStats{height:auto!important;min-height:0!important}
         #home.home-view #homeFooterStats .fixa-week-top-card{height:auto!important;min-height:116px!important}
-        #home.home-view .fixa-week-main-shell{
-          height:clamp(260px,calc(100vh - 420px),380px)!important;
-          min-height:260px!important;
-          max-height:380px!important;
-        }
+        #home.home-view .fixa-week-main-shell{height:var(--fixa-third-line-height,280px)!important;min-height:180px!important}
       }
       @media(max-width:440px){
         #home.home-view #homeSummaryCards{grid-template-columns:1fr!important}
@@ -348,7 +344,6 @@
     syncing = true;
     try {
       document.getElementById(LEGACY_STABLE_ID)?.remove();
-
       const cards = Array.from(grid.children).filter(element => element.matches?.('.fixa-week-summary-card, .home-card'));
       const byLabel = new Map();
 
@@ -370,7 +365,6 @@
         const card = byLabel.get(label);
         if (card && card !== grid.lastElementChild) grid.appendChild(card);
       });
-
       return grid;
     } finally {
       syncing = false;
@@ -396,24 +390,48 @@
       button.setAttribute('aria-selected', String(active));
       button.tabIndex = active ? 0 : -1;
     });
-
     panels.forEach(panel => {
       const active = panel.dataset.fixaMainPanel === activeKey;
       panel.hidden = !active;
       panel.setAttribute('aria-hidden', String(!active));
     });
-
     return true;
   }
 
   function syncMainTabs() {
     const shell = document.querySelector('#home.home-view .fixa-week-main-shell');
     if (!shell) return false;
-
     const selected = shell.querySelector('[data-fixa-main-tab].active, [data-fixa-main-tab][aria-selected="true"]');
     const visible = Array.from(shell.querySelectorAll('[data-fixa-main-panel]')).find(panel => !panel.hidden);
-    const key = selected?.dataset.fixaMainTab || visible?.dataset.fixaMainPanel || 'performance-goals';
-    return activateMainTab(key);
+    return activateMainTab(selected?.dataset.fixaMainTab || visible?.dataset.fixaMainPanel || 'performance-goals');
+  }
+
+  function fitThirdLine() {
+    const shell = document.querySelector('#home.home-view .fixa-week-main-shell');
+    if (!shell || shell.offsetParent === null) return false;
+
+    const viewportHeight = Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 0);
+    if (!viewportHeight) return false;
+
+    /* documentTop é estável: scroll não altera este valor. */
+    const documentTop = Math.round(shell.getBoundingClientRect().top + window.scrollY);
+    const bottomGap = 12;
+    const target = Math.max(180, Math.floor(viewportHeight - documentTop - bottomGap));
+    shell.style.setProperty('--fixa-third-line-height', `${target}px`);
+    return true;
+  }
+
+  function scheduleFit() {
+    cancelAnimationFrame(fitFrame);
+    fitFrame = requestAnimationFrame(() => {
+      fitFrame = 0;
+      fitThirdLine();
+    });
+  }
+
+  function resetHomeScroll() {
+    if (!document.querySelector('#home.home-view.active')) return;
+    if (window.scrollY !== 0) window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }
 
   function observeGrid(grid) {
@@ -434,9 +452,11 @@
 
   function syncAll() {
     ensureStyle();
+    resetHomeScroll();
     const grid = normalizeSummaryGrid();
     observeGrid(grid);
     syncMainTabs();
+    scheduleFit();
     return Boolean(grid);
   }
 
@@ -444,12 +464,18 @@
     const mainTab = event.target.closest('#home.home-view [data-fixa-main-tab]');
     if (mainTab) {
       const key = mainTab.dataset.fixaMainTab;
-      requestAnimationFrame(() => activateMainTab(key));
+      requestAnimationFrame(() => {
+        activateMainTab(key);
+        scheduleFit();
+      });
       return;
     }
 
     if (event.target.closest('[data-view="home"], #homeTopTab, [data-fixa-week-period], #fixaWeekFolderFilter, #fixaReferenceCollectionFilter')) {
-      scheduleSync();
+      requestAnimationFrame(() => {
+        resetHomeScroll();
+        scheduleSync();
+      });
     }
   });
 
@@ -457,6 +483,8 @@
     if (event.target.closest('#fixaWeekFolderFilter, #fixaReferenceCollectionFilter')) scheduleSync();
   });
 
+  window.addEventListener('resize', scheduleFit, { passive: true });
+  window.visualViewport?.addEventListener('resize', scheduleFit, { passive: true });
   window.addEventListener('load', scheduleSync, { once: true });
 
   let tries = 0;
