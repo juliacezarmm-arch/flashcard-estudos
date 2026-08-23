@@ -12,7 +12,7 @@
     'Questões': { key: 'questions', asset: 'referencias/ChatGPT Image 31 de jul. de 2026, 23_14_35 (2).png' },
     'Dominadas': { key: 'mastered', asset: 'referencias/icone_trofeu_dominadas.png' },
     'Aproveitamento': { key: 'accuracy', asset: 'referencias/ChatGPT Image 1 de ago. de 2026, 12_31_23.png' },
-    'XP Coleções': { key: 'xp-total', asset: 'referencias/icone_xp_coleoes.svg' },
+    'XP Coleções': { key: 'xp-total', asset: 'referencias/icone_xp_colecoes.svg' },
     'XP Semana': { key: 'xp-week', asset: 'referencias/icone_xp_semana.svg' }
   });
 
