@@ -6,6 +6,7 @@
   const STYLE_ID = 'fixaHomeReferenceLayoutV3Style';
   const LEGACY_STABLE_ID = 'fixaStableSummaryCards';
   const BODY_CLASS = 'fixa-home-v3-active';
+  const LOADING_GUARD_ID = 'fixaHomeLayoutLoadingGuard';
   const SUMMARY_ORDER = ['Coleções', 'Questões', 'Dominadas', 'Aproveitamento', 'XP Coleções', 'XP Semana'];
   const SUMMARY_META = Object.freeze({
     'Coleções': { key: 'collections', asset: 'referencias/icone_livros_colecoes.png' },
@@ -16,6 +17,7 @@
     'XP Semana': { key: 'xp-week', asset: 'referencias/icone_xp_semana.svg' }
   });
 
+  const state = { subjectId: 'all' };
   let observedGrid = null;
   let gridObserver = null;
   let syncFrame = 0;
@@ -23,6 +25,10 @@
   let syncing = false;
 
   window.FixaHomeReferenceLayoutV3 = { active: true, refresh: syncAll };
+
+  // Bloqueia os controladores antigos embutidos em outros arquivos.
+  window.FixaHomeCompactHeaderRowV2 = true;
+  window.FixaHomeMainPanelFillViewportV1 = true;
 
   function ensureStyle() {
     if (document.getElementById(STYLE_ID)) return;
@@ -56,26 +62,42 @@
         }
       }
 
-      /* Cabeçalho: saudação e data alinhadas ao limite direito da Home. */
+      /* Cabeçalho: filtros à esquerda; saudação e data à direita. */
       #home.home-view .home-hero-head{
+        display:block!important;
         margin:0 0 4px!important;
         padding:0!important;
         min-height:38px!important;
+      }
+      #home.home-view .home-title,
+      #home.home-view .fixa-week-title-empty{display:none!important}
+      #home.home-view .home-hero-actions{
+        width:100%!important;
+        display:block!important;
+        margin:0!important;
+        padding:0!important;
       }
       #home.home-view .fixa-reference-header-row{
         width:100%!important;
         height:38px!important;
         min-height:38px!important;
+        display:grid!important;
+        grid-template-columns:minmax(0,1fr) auto!important;
         gap:18px!important;
         align-items:end!important;
         overflow:visible!important;
         transform:translateY(-8px)!important;
       }
       #home.home-view .fixa-reference-header-left{
+        min-width:0!important;
+        display:flex!important;
+        align-items:flex-end!important;
+        justify-content:flex-start!important;
         align-self:end!important;
       }
       #home.home-view .fixa-reference-header-right{
         position:relative!important;
+        min-width:220px!important;
         justify-self:end!important;
         align-self:end!important;
         height:38px!important;
@@ -85,34 +107,60 @@
         overflow:visible!important;
         text-align:right!important;
       }
-      #home.home-view .fixa-week-filters{gap:8px!important}
+      #home.home-view .fixa-week-filters{
+        width:auto!important;
+        display:flex!important;
+        align-items:center!important;
+        justify-content:flex-start!important;
+        flex-wrap:nowrap!important;
+        gap:8px!important;
+        margin:0!important;
+      }
       #home.home-view .fixa-week-folder-filter,
       #home.home-view .fixa-reference-collection-filter{
         height:38px!important;
         min-height:38px!important;
         padding:0 10px!important;
+        border:1px solid #dbe5f4!important;
         border-radius:9px!important;
+        background:#fff!important;
+        display:flex!important;
+        align-items:center!important;
         gap:7px!important;
+        color:#53617a!important;
+        box-shadow:none!important;
       }
       #home.home-view .fixa-week-folder-filter{width:250px!important;min-width:250px!important}
       #home.home-view .fixa-reference-collection-filter{width:315px!important;min-width:315px!important}
+      #home.home-view .fixa-week-folder-filter svg,
+      #home.home-view .fixa-reference-collection-filter svg{
+        width:16px!important;height:16px!important;flex:0 0 16px!important;
+        fill:none!important;stroke:currentColor!important;stroke-width:1.9!important;
+        stroke-linecap:round!important;stroke-linejoin:round!important;
+      }
       #home.home-view .fixa-week-folder-filter select,
       #home.home-view .fixa-reference-collection-filter select{
-        height:36px!important;
-        font-size:12px!important;
+        height:36px!important;min-width:0!important;border:0!important;box-shadow:none!important;
+        padding:0 24px 0 0!important;background:#fff!important;color:#26324b!important;
+        font-size:12px!important;font-weight:800!important;
       }
       #home.home-view .fixa-reference-header-right #homeGreeting{
         position:absolute!important;
         right:0!important;
         bottom:20px!important;
         margin:0!important;
+        display:flex!important;
+        align-items:center!important;
+        justify-content:flex-end!important;
+        gap:5px!important;
         font-size:23px!important;
         line-height:25px!important;
+        font-weight:850!important;
         white-space:nowrap!important;
+        text-align:right!important;
       }
       #home.home-view .fixa-reference-header-right #homeGreeting .home-greeting-wave{
-        width:21px!important;
-        height:21px!important;
+        width:21px!important;height:21px!important;
       }
       #home.home-view .fixa-reference-header-right #homeDatePill{
         position:absolute!important;
@@ -122,6 +170,7 @@
         padding:0!important;
         border:0!important;
         background:transparent!important;
+        color:#64748b!important;
         font-size:14px!important;
         line-height:17px!important;
         white-space:nowrap!important;
@@ -210,6 +259,7 @@
 
       /* Segunda linha */
       #home.home-view #homeFooterStats{
+        width:100%!important;display:grid!important;grid-template-columns:1.05fr 1fr 1.05fr!important;
         height:116px!important;min-height:116px!important;gap:9px!important;margin:0 0 9px!important;
       }
       #home.home-view #homeFooterStats .fixa-week-top-card{
@@ -221,61 +271,32 @@
       #home.home-view #homeFooterStats .fixa-week-days{margin-top:5px!important;gap:4px!important}
       #home.home-view #homeFooterStats .fixa-week-day i{width:27px!important;height:27px!important;font-size:11px!important}
 
-      /* Terceira linha: o fechamento é feito pela própria borda da caixa, sem sobreposição. */
+      /* Terceira linha */
       #home.home-view .fixa-week-main-shell{
-        position:relative!important;
-        isolation:isolate!important;
-        height:var(--fixa-third-line-height,300px)!important;
-        min-height:180px!important;
-        max-height:none!important;
-        margin:0!important;
-        box-sizing:border-box!important;
-        border:1px solid #dfe6f0!important;
-        border-radius:11px!important;
-        background:#fff!important;
-        box-shadow:0 1px 2px rgba(15,23,42,.025), inset 0 -1px 0 #dfe6f0!important;
-        overflow:hidden!important;
-        display:flex!important;
-        flex-direction:column!important;
+        position:relative!important;isolation:isolate!important;
+        height:var(--fixa-third-line-height,300px)!important;min-height:180px!important;max-height:none!important;
+        margin:0!important;box-sizing:border-box!important;border:1px solid #dfe6f0!important;border-radius:11px!important;
+        background:#fff!important;box-shadow:0 1px 2px rgba(15,23,42,.025), inset 0 -1px 0 #dfe6f0!important;
+        overflow:hidden!important;display:flex!important;flex-direction:column!important;
       }
-      #home.home-view .fixa-week-main-shell::after{
-        content:none!important;
-        display:none!important;
-      }
+      #home.home-view .fixa-week-main-shell::after{content:none!important;display:none!important}
       #home.home-view .fixa-week-content-tabs{
-        position:relative!important;
-        z-index:1!important;
-        flex:0 0 auto!important;
-        overflow-x:auto!important;
-        overflow-y:hidden!important;
-        scrollbar-width:thin!important;
-        scrollbar-color:#b7c5da transparent!important;
+        position:relative!important;z-index:1!important;flex:0 0 auto!important;
+        overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin!important;scrollbar-color:#b7c5da transparent!important;
       }
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar{height:5px!important}
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-track{background:transparent!important}
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-thumb{background:#b7c5da!important;border-radius:999px!important}
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage{
-        position:relative!important;
-        z-index:1!important;
-        flex:1 1 auto!important;
-        height:auto!important;
-        min-height:0!important;
-        max-height:none!important;
-        padding:9px 11px 24px!important;
-        overflow-y:auto!important;
-        overflow-x:hidden!important;
-        scrollbar-width:thin!important;
-        scrollbar-color:#aebbd0 transparent!important;
-        scrollbar-gutter:stable!important;
-        overscroll-behavior:contain!important;
+        position:relative!important;z-index:1!important;flex:1 1 auto!important;height:auto!important;min-height:0!important;max-height:none!important;
+        padding:9px 11px 24px!important;overflow-y:auto!important;overflow-x:hidden!important;
+        scrollbar-width:thin!important;scrollbar-color:#aebbd0 transparent!important;scrollbar-gutter:stable!important;overscroll-behavior:contain!important;
       }
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar{width:7px!important}
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar-track{background:transparent!important}
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar-thumb{background:#aebbd0!important;border-radius:999px!important}
       #home.home-view .fixa-week-main-stage [data-fixa-main-panel],
-      #home.home-view .fixa-week-main-stage .fixa-week-main-pair{
-        height:auto!important;min-height:0!important;max-height:none!important;
-      }
+      #home.home-view .fixa-week-main-stage .fixa-week-main-pair{height:auto!important;min-height:0!important;max-height:none!important}
       #home.home-view .fixa-week-main-pane .home-collection-scroll{height:190px!important;max-height:190px!important}
       #home.home-view .home-collection-grid.fixa-week-collection-list{gap:6px!important}
       #home.home-view .fixa-week-collection{height:96px!important;min-height:96px!important;padding:7px 8px!important;border-radius:8px!important}
@@ -294,23 +315,230 @@
       }
       @media(max-width:760px){
         body.${BODY_CLASS}{overflow:auto!important}
-        body.${BODY_CLASS} #home.home-view.active{
-          height:auto!important;overflow:visible!important;padding-top:10px!important;padding-bottom:10px!important;
-        }
-        #home.home-view .fixa-reference-header-row{height:auto!important;min-height:38px!important;transform:none!important}
-        #home.home-view .fixa-reference-header-right{position:static!important;height:auto!important;min-height:0!important;display:grid!important}
+        body.${BODY_CLASS} #home.home-view.active{height:auto!important;overflow:visible!important;padding-top:10px!important;padding-bottom:10px!important}
+        #home.home-view .fixa-reference-header-row{height:auto!important;min-height:38px!important;transform:none!important;grid-template-columns:1fr!important;gap:7px!important}
+        #home.home-view .fixa-reference-header-right{position:static!important;height:auto!important;min-height:0!important;display:grid!important;justify-self:start!important;text-align:left!important}
         #home.home-view .fixa-reference-header-right #homeGreeting,
-        #home.home-view .fixa-reference-header-right #homeDatePill{position:static!important}
+        #home.home-view .fixa-reference-header-right #homeDatePill{position:static!important;text-align:left!important;justify-content:flex-start!important}
+        #home.home-view .fixa-week-filters{width:100%!important;display:grid!important;grid-template-columns:1fr!important;gap:7px!important}
         #home.home-view #homeSummaryCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
         #home.home-view #homeSummaryCards .fixa-week-summary-card,
         #home.home-view #homeSummaryCards .home-card{height:auto!important;min-height:62px!important}
-        #home.home-view #homeFooterStats{height:auto!important;min-height:0!important}
+        #home.home-view #homeFooterStats{grid-template-columns:1fr!important;height:auto!important;min-height:0!important}
         #home.home-view #homeFooterStats .fixa-week-top-card{height:auto!important;min-height:116px!important}
         #home.home-view .fixa-week-main-shell{height:var(--fixa-third-line-height,280px)!important;min-height:180px!important}
       }
       @media(max-width:440px){#home.home-view #homeSummaryCards{grid-template-columns:1fr!important}}
     `;
     document.head.appendChild(style);
+  }
+
+  function dataRef() {
+    try { return typeof data !== 'undefined' ? data : window.data; }
+    catch (_) { return window.data || null; }
+  }
+
+  function esc(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[char]));
+  }
+
+  function allSubjects() {
+    return Array.isArray(dataRef()?.subjects) ? dataRef().subjects : [];
+  }
+
+  function folderId() {
+    return document.querySelector('#fixaWeekFolderFilter')?.value || 'all';
+  }
+
+  function subjectsForFolder() {
+    const id = folderId();
+    const list = allSubjects();
+    return id === 'all' ? list : list.filter(subject => String(subject?.folder || '') === String(id));
+  }
+
+  function selectedSubjects() {
+    const list = subjectsForFolder();
+    return state.subjectId === 'all' ? list : list.filter(subject => String(subject?.id || '') === String(state.subjectId));
+  }
+
+  function cardsFor(subject) {
+    return Array.isArray(subject?.cards) ? subject.cards : [];
+  }
+
+  function statusOf(card) {
+    if (!card) return 'unseen';
+    const raw = String(card.status || '').toLowerCase();
+    if (raw === 'frozen' || raw.includes('congel')) return 'frozen';
+    if (raw === 'mastered' || raw.includes('dominad')) return 'mastered';
+    try { if (typeof isMastered === 'function' && isMastered(card)) return 'mastered'; } catch (_) {}
+    return raw;
+  }
+
+  function dateOf(value) {
+    const date = new Date(value || 0);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  function testDate(test) {
+    return dateOf(test?.completedAt || test?.finishedAt || test?.date);
+  }
+
+  function completedTests() {
+    return (Array.isArray(dataRef()?.testHistory) ? dataRef().testHistory : [])
+      .filter(test => !test?.cancelled && !test?.canceled && !test?.interrupted && Number(test?.total || 0) > 0);
+  }
+
+  function testsForSelection() {
+    const selected = selectedSubjects();
+    if (!selected.length) return [];
+    const ids = new Set(selected.map(subject => String(subject.id)));
+    const names = new Set(selected.map(subject => String(subject.name || '')));
+    return completedTests().filter(test => {
+      const testIds = Array.isArray(test?.subjectIds) && test.subjectIds.length
+        ? test.subjectIds.map(String)
+        : [test?.subjectId].filter(Boolean).map(String);
+      if (testIds.some(id => ids.has(id))) return true;
+      return names.has(String(test?.subject || ''));
+    });
+  }
+
+  function activePeriod() {
+    return document.querySelector('[data-fixa-week-period].active')?.dataset.fixaWeekPeriod || 'week';
+  }
+
+  function periodBounds() {
+    const period = activePeriod();
+    const now = new Date();
+    if (period === 'today') {
+      const start = new Date(now); start.setHours(0,0,0,0);
+      const end = new Date(now); end.setHours(23,59,59,999);
+      return { start, end };
+    }
+    if (period === 'month') {
+      return {
+        start:new Date(now.getFullYear(),now.getMonth(),1),
+        end:new Date(now.getFullYear(),now.getMonth()+1,0,23,59,59,999)
+      };
+    }
+    const start = new Date(now); start.setHours(0,0,0,0);
+    start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+    const end = new Date(start); end.setDate(end.getDate() + 6); end.setHours(23,59,59,999);
+    return { start, end };
+  }
+
+  function testsInPeriod(tests) {
+    const { start, end } = periodBounds();
+    return tests.filter(test => {
+      const date = testDate(test);
+      return date && date >= start && date <= end;
+    });
+  }
+
+  function percent(value, total) {
+    return Number(total) > 0 ? Math.round(Number(value || 0) / Number(total) * 100) : 0;
+  }
+
+  function collectionIcon() {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>';
+  }
+
+  function ensureHeaderLayout() {
+    const home = document.querySelector('#home.home-view');
+    const actions = home?.querySelector('.home-hero-actions');
+    const filters = home?.querySelector('.fixa-week-filters');
+    const greeting = home?.querySelector('#homeGreeting');
+    const date = home?.querySelector('#homeDatePill');
+    if (!home || !actions || !filters || !greeting || !date) return false;
+
+    let row = actions.querySelector('.fixa-reference-header-row');
+    if (!row) {
+      row = document.createElement('div');
+      row.className = 'fixa-reference-header-row';
+      row.innerHTML = '<div class="fixa-reference-header-left"></div><div class="fixa-reference-header-right"></div>';
+      actions.prepend(row);
+    }
+    const left = row.querySelector('.fixa-reference-header-left');
+    const right = row.querySelector('.fixa-reference-header-right');
+
+    let collection = filters.querySelector('.fixa-reference-collection-filter');
+    if (!collection) {
+      collection = document.createElement('label');
+      collection.className = 'fixa-reference-collection-filter';
+      collection.innerHTML = `${collectionIcon()}<select id="fixaReferenceCollectionFilter" aria-label="Filtrar por coleção"></select>`;
+      filters.appendChild(collection);
+    }
+
+    if (filters.parentElement !== left) left.appendChild(filters);
+    if (greeting.parentElement !== right) right.appendChild(greeting);
+    if (date.parentElement !== right) right.appendChild(date);
+    return true;
+  }
+
+  function fillCollectionFilter() {
+    const select = document.querySelector('#fixaReferenceCollectionFilter');
+    if (!select) return;
+    const available = subjectsForFolder();
+    if (state.subjectId !== 'all' && !available.some(subject => String(subject.id) === String(state.subjectId))) {
+      state.subjectId = 'all';
+    }
+    const options = [
+      { value:'all', label:'Todas as coleções' },
+      ...available.map(subject => ({ value:String(subject.id), label:String(subject.name || 'Coleção') }))
+    ];
+    const signature = options.map(item => `${item.value}:${item.label}`).join('|');
+    if (select.dataset.optionsSignature !== signature) {
+      select.innerHTML = options.map(item => `<option value="${esc(item.value)}">${esc(item.label)}</option>`).join('');
+      select.dataset.optionsSignature = signature;
+    }
+    select.value = state.subjectId;
+  }
+
+  function ensurePeriodRow(todayShell, summary, footerStats) {
+    let row = todayShell.querySelector('.fixa-reference-period-row');
+    if (!row) {
+      row = document.createElement('div');
+      row.className = 'fixa-reference-period-row';
+      row.setAttribute('aria-label', 'Período da página inicial');
+    }
+
+    let period = document.querySelector('.fixa-week-period');
+    if (!period) {
+      period = document.createElement('div');
+      period.className = 'fixa-week-period';
+      period.setAttribute('role', 'group');
+      period.setAttribute('aria-label', 'Período do painel');
+      period.innerHTML = '<button type="button" data-fixa-week-period="today">Hoje</button><button type="button" data-fixa-week-period="week" class="active">Semana</button><button type="button" data-fixa-week-period="month">Mês</button>';
+    }
+    if (period.parentElement !== row) row.appendChild(period);
+
+    if (row.parentElement !== todayShell || row.previousElementSibling !== summary) summary.insertAdjacentElement('afterend', row);
+    if (footerStats.previousElementSibling !== row) row.insertAdjacentElement('afterend', footerStats);
+    return row;
+  }
+
+  function clearOldHeightControl() {
+    document.querySelector('#fixaHomeMainPanelFillViewportStyle')?.remove();
+    const shell = document.querySelector('#home .fixa-week-main-shell');
+    if (!shell) return;
+    ['height','min-height','max-height'].forEach(property => shell.style.removeProperty(property));
+  }
+
+  function arrangeBody() {
+    const home = document.querySelector('#home.home-view');
+    const today = home?.querySelector('[data-home-panel="today"]');
+    const todayShell = today?.querySelector(':scope > .home-shell');
+    const summary = document.querySelector('#homeSummaryCards');
+    const footerStats = document.querySelector('#homeFooterStats');
+    if (!todayShell || !summary || !footerStats) return false;
+
+    if (summary.parentElement !== todayShell) todayShell.prepend(summary);
+    ensurePeriodRow(todayShell, summary, footerStats);
+    const mainShell = todayShell.querySelector('.fixa-week-main-shell');
+    if (mainShell && mainShell.previousElementSibling !== footerStats) footerStats.insertAdjacentElement('afterend', mainShell);
+    clearOldHeightControl();
+    return true;
   }
 
   function syncHomeMode() {
@@ -360,6 +588,50 @@
     } finally {
       syncing = false;
     }
+  }
+
+  function summaryCard(label) {
+    const grid = document.querySelector('#homeSummaryCards');
+    return grid ? Array.from(grid.children).find(card => cardLabel(card) === label) || null : null;
+  }
+
+  function setSummaryCard(label, value, caption) {
+    const card = summaryCard(label);
+    if (!card) return;
+    const number = card.querySelector('.home-card-number');
+    const small = card.querySelector('small, .home-muted');
+    if (number && number.textContent !== String(value)) number.textContent = String(value);
+    if (small && caption !== undefined && small.textContent !== String(caption || '')) small.textContent = String(caption || '');
+  }
+
+  function renderCollectionSelection() {
+    if (state.subjectId === 'all') return;
+    const selected = selectedSubjects();
+    const cards = selected.flatMap(subject => cardsFor(subject)).filter(card => statusOf(card) !== 'frozen');
+    const mastered = cards.filter(card => statusOf(card) === 'mastered').length;
+    const allTests = testsForSelection();
+    const periodTests = testsInPeriod(allTests);
+    const total = periodTests.reduce((sum, test) => sum + Number(test?.total || 0), 0);
+    const score = periodTests.reduce((sum, test) => sum + Number(test?.score || 0), 0);
+    const xpSummary = window.FixaCompetitionXpHomeV4?.summary || {};
+    const bySubject = xpSummary.by_subject || {};
+    const subjectId = String(selected[0]?.id || '');
+    const xp = Number(bySubject[subjectId] || allTests.reduce((sum, test) => sum + Number(test?.xp || 0), 0));
+
+    const now = new Date();
+    const weekStart = new Date(now); weekStart.setHours(0,0,0,0); weekStart.setDate(weekStart.getDate() - ((weekStart.getDay()+6)%7));
+    const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+6); weekEnd.setHours(23,59,59,999);
+    const weekXp = allTests.filter(test => {
+      const date = testDate(test);
+      return date && date >= weekStart && date <= weekEnd;
+    }).reduce((sum, test) => sum + Number(test?.xp || 0), 0);
+
+    setSummaryCard('Coleções', selected.length, 'Total de coleções');
+    setSummaryCard('Questões', cards.length, 'Total de questões');
+    setSummaryCard('Dominadas', mastered, `${percent(mastered, cards.length)}% do total`);
+    setSummaryCard('Aproveitamento', `${percent(score, total)}%`, 'Média dos testes');
+    setSummaryCard('XP Coleções', xp, '');
+    setSummaryCard('XP Semana', weekXp, '');
   }
 
   function activateMainTab(key) {
@@ -422,6 +694,10 @@
     gridObserver.observe(grid, { childList:true });
   }
 
+  function finishLoadingGuard(success) {
+    if (success) document.getElementById(LOADING_GUARD_ID)?.remove();
+  }
+
   function scheduleSync() {
     if (syncFrame) return;
     syncFrame = requestAnimationFrame(() => {
@@ -433,11 +709,17 @@
   function syncAll() {
     ensureStyle();
     const homeActive = syncHomeMode();
+    const headerReady = ensureHeaderLayout();
+    if (headerReady) fillCollectionFilter();
+    const bodyReady = arrangeBody();
     const grid = normalizeSummaryGrid();
     observeGrid(grid);
+    renderCollectionSelection();
     syncMainTabs();
     if (homeActive) scheduleFit();
-    return Boolean(grid);
+    const ready = Boolean(headerReady && bodyReady && grid);
+    finishLoadingGuard(ready);
+    return ready;
   }
 
   document.addEventListener('click', event => {
@@ -460,9 +742,20 @@
   });
 
   document.addEventListener('change', event => {
-    if (event.target.closest('#fixaWeekFolderFilter, #fixaReferenceCollectionFilter')) scheduleSync();
+    if (event.target.closest('#fixaWeekFolderFilter')) {
+      state.subjectId = 'all';
+      setTimeout(scheduleSync, 0);
+      return;
+    }
+    const collection = event.target.closest('#fixaReferenceCollectionFilter');
+    if (collection) {
+      state.subjectId = collection.value || 'all';
+      if (state.subjectId === 'all') window.FixaHomeWeeklyDashboardV2?.refresh?.();
+      setTimeout(scheduleSync, 0);
+    }
   });
 
+  window.addEventListener('fixa-cloud-data-loaded', () => setTimeout(scheduleSync, 0));
   window.addEventListener('resize', scheduleFit, { passive:true });
   window.visualViewport?.addEventListener('resize', scheduleFit, { passive:true });
   window.addEventListener('load', scheduleSync, { once:true });
@@ -470,7 +763,11 @@
   let tries = 0;
   const boot = window.setInterval(() => {
     tries += 1;
-    if (syncAll() || tries >= 40) window.clearInterval(boot);
+    const ready = syncAll();
+    if (ready || tries >= 40) {
+      window.clearInterval(boot);
+      if (!ready) document.getElementById(LOADING_GUARD_ID)?.remove();
+    }
   }, 150);
 
   syncAll();
