@@ -49,32 +49,38 @@
         body.${BODY_CLASS} #home.home-view.active{
           height:100%!important;
           min-height:0!important;
+          box-sizing:border-box!important;
           overflow:hidden!important;
           padding-top:28px!important;
+          padding-bottom:20px!important;
         }
       }
 
-      /* Cabeçalho: filtros inteiros abaixo da barra principal. A DATA fecha na mesma linha dos filtros. */
+      /* Cabeçalho: a DATA termina exatamente na mesma base dos filtros. */
       #home.home-view .home-hero-head{
         margin:0 0 4px!important;
         padding:0!important;
         min-height:38px!important;
       }
       #home.home-view .fixa-reference-header-row{
+        height:38px!important;
         min-height:38px!important;
         gap:18px!important;
         align-items:end!important;
+        overflow:visible!important;
       }
-      #home.home-view .fixa-reference-header-left,
-      #home.home-view .fixa-reference-header-right{
+      #home.home-view .fixa-reference-header-left{
         align-self:end!important;
       }
       #home.home-view .fixa-reference-header-right{
+        position:relative!important;
+        align-self:end!important;
+        height:38px!important;
+        min-height:38px!important;
         transform:none!important;
-        display:grid!important;
-        justify-items:end!important;
-        align-content:end!important;
-        gap:0!important;
+        display:block!important;
+        overflow:visible!important;
+        text-align:right!important;
       }
       #home.home-view .fixa-week-filters{gap:8px!important}
       #home.home-view .fixa-week-folder-filter,
@@ -93,19 +99,30 @@
         font-size:12px!important;
       }
       #home.home-view .fixa-reference-header-right #homeGreeting{
+        position:absolute!important;
+        right:0!important;
+        bottom:20px!important;
         margin:0!important;
         font-size:20px!important;
         line-height:22px!important;
+        white-space:nowrap!important;
       }
       #home.home-view .fixa-reference-header-right #homeGreeting .home-greeting-wave{
         width:19px!important;
         height:19px!important;
       }
       #home.home-view .fixa-reference-header-right #homeDatePill{
+        position:absolute!important;
+        right:0!important;
+        bottom:0!important;
         margin:0!important;
         padding:0!important;
-        font-size:11px!important;
-        line-height:14px!important;
+        border:0!important;
+        background:transparent!important;
+        font-size:12.5px!important;
+        line-height:16px!important;
+        white-space:nowrap!important;
+        text-align:right!important;
       }
 
       /* Primeira linha */
@@ -201,7 +218,7 @@
       #home.home-view #homeFooterStats .fixa-week-days{margin-top:5px!important;gap:4px!important}
       #home.home-view #homeFooterStats .fixa-week-day i{width:27px!important;height:27px!important;font-size:11px!important}
 
-      /* Terceira linha: a caixa termina antes do fim da janela e só o conteúdo interno rola. */
+      /* Terceira linha: termina dentro da área útil e mostra a borda inferior completa. */
       #home.home-view .fixa-week-main-shell{
         height:var(--fixa-third-line-height,300px)!important;
         min-height:180px!important;
@@ -209,8 +226,10 @@
         margin:0!important;
         box-sizing:border-box!important;
         border:1px solid #dfe6f0!important;
+        border-bottom:1px solid #d6dfeb!important;
         border-radius:11px!important;
         background:#fff!important;
+        box-shadow:0 1px 2px rgba(15,23,42,.025)!important;
         overflow:hidden!important;
         display:flex!important;
         flex-direction:column!important;
@@ -230,7 +249,7 @@
         height:auto!important;
         min-height:0!important;
         max-height:none!important;
-        padding:9px 11px 18px!important;
+        padding:9px 11px 20px!important;
         overflow-y:auto!important;
         overflow-x:hidden!important;
         scrollbar-width:thin!important;
@@ -263,8 +282,13 @@
       }
       @media(max-width:760px){
         body.${BODY_CLASS}{overflow:auto!important}
-        body.${BODY_CLASS} #home.home-view.active{height:auto!important;overflow:visible!important;padding-top:10px!important}
-        #home.home-view .fixa-reference-header-right{transform:none!important}
+        body.${BODY_CLASS} #home.home-view.active{
+          height:auto!important;overflow:visible!important;padding-top:10px!important;padding-bottom:10px!important;
+        }
+        #home.home-view .fixa-reference-header-row{height:auto!important;min-height:38px!important}
+        #home.home-view .fixa-reference-header-right{position:static!important;height:auto!important;min-height:0!important;display:grid!important}
+        #home.home-view .fixa-reference-header-right #homeGreeting,
+        #home.home-view .fixa-reference-header-right #homeDatePill{position:static!important}
         #home.home-view #homeSummaryCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
         #home.home-view #homeSummaryCards .fixa-week-summary-card,
         #home.home-view #homeSummaryCards .home-card{height:auto!important;min-height:62px!important}
@@ -364,7 +388,7 @@
     const viewportHeight = Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 0);
     if (!viewportHeight) return false;
     const top = Math.round(shell.getBoundingClientRect().top);
-    const bottomGap = 18;
+    const bottomGap = 32;
     const target = Math.max(180, Math.floor(viewportHeight - top - bottomGap));
     shell.style.setProperty('--fixa-third-line-height', `${target}px`);
     return true;
