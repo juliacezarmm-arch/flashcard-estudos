@@ -19,7 +19,6 @@
   let gridObserver = null;
   let syncFrame = 0;
   let syncing = false;
-  let resizeFrame = 0;
 
   const api = window.FixaHomeReferenceLayoutV3 = {
     active: true,
@@ -32,14 +31,12 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      /* Código Fixa 9: correções pontuais da Home. Não amplia o layout global. */
+      /* Código Fixa 9 — ajustes pontuais da Home. */
 
-      /* A navegação antiga Semana/Atividade não faz parte da Home atual. */
-      #home.home-view .home-subtabs{
-        display:none!important;
-      }
+      /* A antiga navegação Semana/Atividade não pertence à Home atual. */
+      #home.home-view .home-subtabs{display:none!important}
 
-      /* Mantém somente a faixa oficial dos seis resumos. */
+      /* ===== 1ª linha: seis cards ===== */
       #home.home-view #${LEGACY_STABLE_ID}{display:none!important}
       #home.home-view #homeSummaryCards.fixa-week-summary,
       #home.home-view #homeSummaryCards{
@@ -51,7 +48,6 @@
         padding:0!important;
         align-items:stretch!important;
       }
-
       #home.home-view #homeSummaryCards .fixa-week-summary-card,
       #home.home-view #homeSummaryCards .home-card{
         height:66px!important;
@@ -72,27 +68,15 @@
         animation:none!important;
         transition:border-color .15s ease,background-color .15s ease!important;
       }
-
       #home.home-view #homeSummaryCards .fixa-week-summary-card:hover,
       #home.home-view #homeSummaryCards .home-card:hover{
         border-color:#cbd8ea!important;
         transform:none!important;
       }
-
-      /* Preserva a qualidade visual aprovada, sem aumentar os cards. */
-      #home.home-view #homeSummaryCards [data-fixa-visual-key="collections"]{
-        background:linear-gradient(90deg,#ecf9f2 0%,#ffffff 72%)!important;
-      }
-      #home.home-view #homeSummaryCards [data-fixa-visual-key="questions"]{
-        background:linear-gradient(90deg,#eff6ff 0%,#ffffff 72%)!important;
-      }
-      #home.home-view #homeSummaryCards [data-fixa-visual-key="mastered"]{
-        background:linear-gradient(90deg,#fff5e8 0%,#ffffff 72%)!important;
-      }
-      #home.home-view #homeSummaryCards [data-fixa-visual-key="accuracy"]{
-        background:linear-gradient(90deg,#f7f1ff 0%,#ffffff 72%)!important;
-      }
-
+      #home.home-view #homeSummaryCards [data-fixa-visual-key="collections"]{background:linear-gradient(90deg,#ecf9f2 0%,#fff 72%)!important}
+      #home.home-view #homeSummaryCards [data-fixa-visual-key="questions"]{background:linear-gradient(90deg,#eff6ff 0%,#fff 72%)!important}
+      #home.home-view #homeSummaryCards [data-fixa-visual-key="mastered"]{background:linear-gradient(90deg,#fff5e8 0%,#fff 72%)!important}
+      #home.home-view #homeSummaryCards [data-fixa-visual-key="accuracy"]{background:linear-gradient(90deg,#f7f1ff 0%,#fff 72%)!important}
       #home.home-view #homeSummaryCards .fixa-week-summary-icon{
         width:40px!important;
         height:40px!important;
@@ -123,7 +107,6 @@
         width:26px!important;
         height:26px!important;
       }
-
       #home.home-view #homeSummaryCards .fixa-week-summary-card strong,
       #home.home-view #homeSummaryCards .home-card strong{
         display:block!important;
@@ -166,10 +149,12 @@
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-total"] .home-card-number,
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-week"] .home-card-number{color:#2563eb!important}
 
-      /* Desce discretamente filtros e saudação e os aproxima da primeira linha. */
+      /* ===== Filtros + saudação =====
+       * Desce mais o conjunto inteiro e reduz o espaço até a 1ª linha.
+       */
       #home.home-view .home-hero-head{
-        padding-top:6px!important;
-        margin-bottom:2px!important;
+        padding-top:14px!important;
+        margin-bottom:0!important;
       }
       #home.home-view .fixa-reference-header-row{min-height:44px!important;gap:18px!important}
       #home.home-view .fixa-week-filters{gap:8px!important}
@@ -201,7 +186,7 @@
         line-height:14px!important;
       }
 
-      /* Hoje / Semana / Mês continuam existentes, mas em escala anterior. */
+      /* Hoje / Semana / Mês. */
       #home.home-view .fixa-reference-period-row{
         min-height:34px!important;
         margin:6px 0 7px!important;
@@ -219,7 +204,7 @@
         font-size:11px!important;
       }
 
-      /* Segunda linha permanece exatamente na escala aprovada. */
+      /* ===== 2ª linha ===== */
       #home.home-view #homeFooterStats{
         height:116px!important;
         min-height:116px!important;
@@ -238,24 +223,38 @@
       #home.home-view #homeFooterStats .fixa-week-days{margin-top:5px!important;gap:4px!important}
       #home.home-view #homeFooterStats .fixa-week-day i{width:27px!important;height:27px!important;font-size:11px!important}
 
-      /* Terceira linha ocupa a altura restante da janela. Só o conteúdo dela rola. */
+      /* ===== 3ª linha =====
+       * Altura calculada apenas pelo viewport, nunca pela posição atual do scroll.
+       * Portanto a caixa NÃO cresce quando a página é rolada.
+       */
       #home.home-view .fixa-week-main-shell{
-        height:var(--fixa-third-line-height,360px)!important;
-        min-height:180px!important;
-        max-height:none!important;
+        height:clamp(300px,calc(100vh - 465px),440px)!important;
+        min-height:300px!important;
+        max-height:440px!important;
         margin:0 0 10px!important;
         border-radius:11px!important;
         overflow:hidden!important;
         display:flex!important;
         flex-direction:column!important;
       }
+
+      /* Barra horizontal somente na faixa das abas e somente quando faltar espaço. */
       #home.home-view .fixa-week-content-tabs{
         flex:0 0 auto!important;
         overflow-x:auto!important;
         overflow-y:hidden!important;
-        scrollbar-width:none!important;
+        scrollbar-width:thin!important;
+        scrollbar-color:#b7c5da transparent!important;
+        scrollbar-gutter:auto!important;
       }
-      #home.home-view .fixa-week-content-tabs::-webkit-scrollbar{display:none!important}
+      #home.home-view .fixa-week-content-tabs::-webkit-scrollbar{height:6px!important}
+      #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-track{background:transparent!important}
+      #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-thumb{
+        background:#b7c5da!important;
+        border-radius:999px!important;
+      }
+
+      /* Conteúdo da 3ª linha permanece rolável, mas sem barra vertical lateral visível. */
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage{
         flex:1 1 auto!important;
         height:auto!important;
@@ -264,27 +263,21 @@
         padding:9px 11px!important;
         overflow-y:auto!important;
         overflow-x:hidden!important;
-        scrollbar-width:thin!important;
-        scrollbar-gutter:stable!important;
+        scrollbar-width:none!important;
         overscroll-behavior:contain!important;
       }
-
-      /* Deixa o conteúdo definir a altura real; se não couber, a rolagem fica no stage. */
+      #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar{
+        width:0!important;
+        height:0!important;
+      }
       #home.home-view .fixa-week-main-stage [data-fixa-main-panel],
       #home.home-view .fixa-week-main-stage .fixa-week-main-pair{
         height:auto!important;
         min-height:100%!important;
         max-height:none!important;
-        overflow:visible!important;
-      }
-      #home.home-view .fixa-week-main-stage .fixa-week-main-pane{
-        height:auto!important;
-        min-height:0!important;
-        max-height:none!important;
-        overflow:visible!important;
       }
 
-      /* Mantém as dimensões internas que já estavam aprovadas. */
+      /* Dimensões internas já aprovadas. */
       #home.home-view .fixa-week-main-pane .home-collection-scroll{
         height:190px!important;
         max-height:190px!important;
@@ -317,7 +310,11 @@
         #home.home-view #homeSummaryCards .home-card{height:auto!important;min-height:62px!important}
         #home.home-view #homeFooterStats{height:auto!important;min-height:0!important}
         #home.home-view #homeFooterStats .fixa-week-top-card{height:auto!important;min-height:116px!important}
-        #home.home-view .fixa-week-main-shell{min-height:150px!important}
+        #home.home-view .fixa-week-main-shell{
+          height:clamp(260px,calc(100vh - 420px),380px)!important;
+          min-height:260px!important;
+          max-height:380px!important;
+        }
       }
       @media(max-width:440px){
         #home.home-view #homeSummaryCards{grid-template-columns:1fr!important}
@@ -419,29 +416,6 @@
     return activateMainTab(key);
   }
 
-  function fitThirdLineToViewport() {
-    const shell = document.querySelector('#home.home-view .fixa-week-main-shell');
-    if (!shell) return false;
-
-    const viewportHeight = Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 0);
-    if (!viewportHeight) return false;
-
-    const top = Math.round(shell.getBoundingClientRect().top);
-    const bottomGap = 14;
-    const available = Math.floor(viewportHeight - top - bottomGap);
-    const target = Math.max(150, available);
-    shell.style.setProperty('--fixa-third-line-height', `${target}px`);
-    return true;
-  }
-
-  function scheduleViewportFit() {
-    if (resizeFrame) return;
-    resizeFrame = requestAnimationFrame(() => {
-      resizeFrame = 0;
-      fitThirdLineToViewport();
-    });
-  }
-
   function observeGrid(grid) {
     if (!grid || grid === observedGrid) return;
     gridObserver?.disconnect();
@@ -463,7 +437,6 @@
     const grid = normalizeSummaryGrid();
     observeGrid(grid);
     syncMainTabs();
-    fitThirdLineToViewport();
     return Boolean(grid);
   }
 
@@ -471,10 +444,7 @@
     const mainTab = event.target.closest('#home.home-view [data-fixa-main-tab]');
     if (mainTab) {
       const key = mainTab.dataset.fixaMainTab;
-      requestAnimationFrame(() => {
-        activateMainTab(key);
-        fitThirdLineToViewport();
-      });
+      requestAnimationFrame(() => activateMainTab(key));
       return;
     }
 
@@ -487,8 +457,6 @@
     if (event.target.closest('#fixaWeekFolderFilter, #fixaReferenceCollectionFilter')) scheduleSync();
   });
 
-  window.addEventListener('resize', scheduleViewportFit, { passive: true });
-  window.visualViewport?.addEventListener('resize', scheduleViewportFit, { passive: true });
   window.addEventListener('load', scheduleSync, { once: true });
 
   let tries = 0;
