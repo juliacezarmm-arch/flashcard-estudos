@@ -1,32 +1,65 @@
 # Arquivos não utilizados / versões antigas
 
-Esta pasta registra arquivos removidos da raiz durante a limpeza de agosto/2026.
+Esta pasta reúne código que não participa do carregamento atual do Fixa.
 
-A exclusão da raiz não apaga o histórico do Git: qualquer arquivo pode ser recuperado pelo commit anterior à limpeza ou pelo SHA indicado abaixo.
+Os arquivos guardados aqui não devem ser importados, carregados por `<script>` nem usados como base para novas correções sem uma revisão explícita. A intenção é manter o histórico acessível sem deixar versões antigas misturadas ao código ativo.
 
-## Removidos da raiz
+## Regra de organização
 
-- `competition-ui.js` — primeira implementação antiga da Competição; não é carregada pelo `index.html` atual. Blob anterior: `afb8921a0c4f4a63ff9e5856d99f805d9f7b26ef`.
-- `competition-ui-v2.js` — segunda implementação antiga completa da Competição; era carregada e logo depois substituída por `competition-update-v3.js`. Removida para evitar trabalho duplicado no navegador. Blob anterior: `0ce4b86e928e410666e23f0a544dee7f9b7b7c0f`.
-- `collections-overlay-outside-close.js` — implementação antiga do fechamento do menu; substituída por `collections-overlay-outside-click.js`. Blob anterior: `9e968a6393859dfc0df5f8e474092738d9dc9bde`.
-- `home-remove-study-summary-art.js` — correção antiga da Home, não carregada pelo `index.html` atual. Blob anterior: `276b80aa1153c66bdb29bb9544050c91eecf9953`.
-- `mobile-home-reference-style.js` — arquivo neutralizado de compatibilidade antiga, não carregado pelo `index.html`. Blob anterior: `e36097b2d71a5c87b0b064d66e9926ebead62dba`.
+- Código ativo permanece em `src/`.
+- Versões antigas, módulos substituídos, compatibilidades vazias e arquivos sem nenhuma referência ativa ficam em `arquivos-nao-utilizados/`.
+- A estrutura original de pastas é preservada dentro desta pasta para facilitar a identificação da origem.
+- Antes de criar um novo `v1`, `v2`, `v3` etc., deve-se verificar se a alteração pode ser incorporada ao módulo ativo existente.
+- Não manter simultaneamente várias versões ativas controlando a mesma região da interface.
 
-## Não carregado e pendente de exclusão manual
+## Arquivos antigos já retirados anteriormente
 
-- `competition-colors-invite-v8.js` — arquivo incompleto/truncado e substituído pelos módulos atuais da Competição. Já foi retirado do `index.html`, portanto não roda no Fixa. Blob atual: `a20b566c1bb8e34e539ef99f231fe1366411d2bf`.
+- `competition-ui.js` — primeira implementação antiga da Competição.
+- `competition-ui-v2.js` — segunda implementação antiga completa da Competição; substituída por módulos posteriores.
+- `collections-overlay-outside-close.js` — substituído por `collections-overlay-outside-click.js`.
+- `home-remove-study-summary-art.js` — correção antiga da Home.
+- `mobile-home-reference-style.js` — compatibilidade antiga neutralizada.
 
-## Ferramentas separadas da raiz
+Esses arquivos antigos continuam recuperáveis pelo histórico do Git.
 
-Os arquivos abaixo foram movidos para `ferramentas-diagnostico/` porque são páginas manuais de diagnóstico e não fazem parte do carregamento normal do Fixa:
+## Movidos para esta pasta em 23/08/2026
 
-- `diagnostico-login.html`
-- `diagnostico-storage-imagens.html`
+### Competição
 
-## Arquivos mantidos na raiz por segurança
+- `src/competition/competition-colors-invite-v8.js` → `arquivos-nao-utilizados/src/competition/competition-colors-invite-v8.js`
+  - Arquivo incompleto/truncado, sem referência ativa e já substituído pelos módulos atuais da Competição.
 
-- `supabase-schema.sql`: referência de banco; não é carregada pelo navegador.
+### Home / correções antigas
 
-## Regra para próximas alterações
+- `src/fixes/home-empty-state-illustrations.js` → `arquivos-nao-utilizados/src/fixes/home-empty-state-illustrations.js`
+  - Módulo antigo já marcado no próprio código como desativado e substituído por `home-empty-state-art.js`.
+- `src/fixes/home-greeting-right-v1.js` → `arquivos-nao-utilizados/src/fixes/home-greeting-right-v1.js`
+  - Implementação antiga de cabeçalho/Home, sem carregamento ou referência ativa.
+- `src/fixes/home-readable-layout-v1.js` → `arquivos-nao-utilizados/src/fixes/home-readable-layout-v1.js`
+  - Layout antigo da Home, sem carregamento ou referência ativa.
+- `src/fixes/home-study-insights-v1.js` → `arquivos-nao-utilizados/src/fixes/home-study-insights-v1.js`
+  - Implementação antiga de insights/Home, sem carregamento ou referência ativa.
+- `src/fixes/home-today-period-v1.js` → `arquivos-nao-utilizados/src/fixes/home-today-period-v1.js`
+  - Arquivo de compatibilidade vazio; a lógica já está consolidada em módulos atuais.
+- `src/fixes/home-unified-dashboard-v1.js` → `arquivos-nao-utilizados/src/fixes/home-unified-dashboard-v1.js`
+  - Versão anterior substituída pelo `home-unified-dashboard-v2.js`.
+- `src/fixes/load-home-goals-streak-v1.js` → `arquivos-nao-utilizados/src/fixes/load-home-goals-streak-v1.js`
+  - Loader redundante; o módulo alvo já é carregado diretamente pelo `index.html`.
+- `src/fixes/progress-objectives-summary-fix.js` → `arquivos-nao-utilizados/src/fixes/progress-objectives-summary-fix.js`
+  - Correção antiga do painel de progresso que não é carregada nem referenciada pelo Fixa atual.
 
-Antes de adicionar um novo arquivo de correção, verificar se a mudança pode ser incorporada a um módulo existente. Evitar manter várias versões ativas da mesma funcionalidade (`v1`, `v2`, `v3`...) ao mesmo tempo.
+### Notificações
+
+- `src/notifications/web-push-v1.js` → `arquivos-nao-utilizados/src/notifications/web-push-v1.js`
+  - Implementação de Web Push sem carregamento ou referência ativa no aplicativo atual.
+  - Como era o único arquivo de `src/notifications/`, essa pasta deixa de existir no código ativo.
+
+## Ferramentas separadas
+
+Os arquivos de diagnóstico permanecem em `ferramentas-diagnostico/`, pois são páginas manuais e não fazem parte do carregamento normal do Fixa.
+
+## Arquivos de referência que permanecem fora desta pasta
+
+- `referencias/`: imagens, ícones e desenhos usados pela interface. Não é código obsoleto.
+- `docs/`: documentação do projeto.
+- `supabase/` e `supabase-schema.sql`: banco de dados e funções do Supabase; não são código visual da Home.
