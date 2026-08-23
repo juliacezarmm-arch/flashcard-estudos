@@ -218,7 +218,7 @@
       #home.home-view #homeFooterStats .fixa-week-days{margin-top:5px!important;gap:4px!important}
       #home.home-view #homeFooterStats .fixa-week-day i{width:27px!important;height:27px!important;font-size:11px!important}
 
-      /* Terceira linha: termina dentro da área útil e mantém somente o acabamento inferior visível. */
+      /* Terceira linha: o fechamento é feito pela própria borda da caixa, sem sobreposição. */
       #home.home-view .fixa-week-main-shell{
         position:relative!important;
         isolation:isolate!important;
@@ -230,27 +230,14 @@
         border:1px solid #dfe6f0!important;
         border-radius:11px!important;
         background:#fff!important;
-        box-shadow:0 1px 2px rgba(15,23,42,.025)!important;
+        box-shadow:0 1px 2px rgba(15,23,42,.025), inset 0 -1px 0 #dfe6f0!important;
         overflow:hidden!important;
         display:flex!important;
         flex-direction:column!important;
       }
       #home.home-view .fixa-week-main-shell::after{
-        content:""!important;
-        position:absolute!important;
-        left:-1px!important;
-        right:-1px!important;
-        bottom:-1px!important;
-        height:14px!important;
-        z-index:20!important;
-        pointer-events:none!important;
-        box-sizing:border-box!important;
-        background:#fff!important;
-        border-left:1px solid #dfe6f0!important;
-        border-right:1px solid #dfe6f0!important;
-        border-bottom:1px solid #dfe6f0!important;
-        border-bottom-left-radius:11px!important;
-        border-bottom-right-radius:11px!important;
+        content:none!important;
+        display:none!important;
       }
       #home.home-view .fixa-week-content-tabs{
         position:relative!important;
