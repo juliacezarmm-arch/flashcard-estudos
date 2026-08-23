@@ -69,6 +69,7 @@
         gap:18px!important;
         align-items:end!important;
         overflow:visible!important;
+        transform:translateY(-8px)!important;
       }
       #home.home-view .fixa-reference-header-left{
         align-self:end!important;
@@ -296,7 +297,7 @@
         body.${BODY_CLASS} #home.home-view.active{
           height:auto!important;overflow:visible!important;padding-top:10px!important;padding-bottom:10px!important;
         }
-        #home.home-view .fixa-reference-header-row{height:auto!important;min-height:38px!important}
+        #home.home-view .fixa-reference-header-row{height:auto!important;min-height:38px!important;transform:none!important}
         #home.home-view .fixa-reference-header-right{position:static!important;height:auto!important;min-height:0!important;display:grid!important}
         #home.home-view .fixa-reference-header-right #homeGreeting,
         #home.home-view .fixa-reference-header-right #homeDatePill{position:static!important}
