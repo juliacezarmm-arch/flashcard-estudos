@@ -3,7 +3,6 @@
 
   const HOTFIX_FLAG = 'fixaHomeEncodingHotfix';
 
-  /* A Home de referência assume estas duas responsabilidades. */
   window.FixaHomeCompactHeaderRowV2 = true;
   window.FixaHomeMainPanelFillViewportV1 = true;
 
@@ -138,7 +137,7 @@
     if (!window.FixaHomeReferenceLayoutV2?.active) return;
     const script = document.createElement('script');
     script.id = 'fixaHomeReferenceLayoutV3Loader';
-    script.src = 'src/fixes/home-reference-layout-v3.js?v=20260823-home-alignment-v8';
+    script.src = `src/fixes/home-reference-layout-v3.js?v=${Date.now()}`;
     script.defer = true;
     document.head.appendChild(script);
   }
