@@ -5,6 +5,7 @@
 
   const STYLE_ID = 'fixaHomeReferenceLayoutV3Style';
   const LEGACY_STABLE_ID = 'fixaStableSummaryCards';
+  const BODY_CLASS = 'fixa-home-v3-active';
   const SUMMARY_ORDER = ['Coleções', 'Questões', 'Dominadas', 'Aproveitamento', 'XP Coleções', 'XP Semana'];
   const SUMMARY_META = Object.freeze({
     'Coleções': { key: 'collections', asset: 'referencias/icone_livros_colecoes.png' },
@@ -21,7 +22,7 @@
   let fitFrame = 0;
   let syncing = false;
 
-  const api = window.FixaHomeReferenceLayoutV3 = { active: true, refresh: syncAll };
+  window.FixaHomeReferenceLayoutV3 = { active: true, refresh: syncAll };
 
   function ensureStyle() {
     if (document.getElementById(STYLE_ID)) return;
@@ -36,8 +37,8 @@
       #home.home-view #${LEGACY_STABLE_ID}{display:none!important}
 
       @media(min-width:861px){
-        body.home-active{overflow:hidden!important}
-        body.home-active #appShell.app:not(.locked)>main{
+        body.${BODY_CLASS}{overflow:hidden!important}
+        body.${BODY_CLASS} #appShell.app:not(.locked)>main{
           height:100dvh!important;
           min-height:0!important;
           max-height:100dvh!important;
@@ -45,27 +46,35 @@
           grid-template-rows:56px minmax(0,1fr)!important;
           align-content:stretch!important;
         }
-        body.home-active #home.home-view.active{
+        body.${BODY_CLASS} #home.home-view.active{
           height:100%!important;
           min-height:0!important;
           overflow:hidden!important;
+          padding-top:28px!important;
         }
       }
 
-      /* Filtros à esquerda; saudação acima e DATA alinhada à faixa dos filtros. */
+      /* Cabeçalho: filtros inteiros abaixo da barra principal. A DATA fecha na mesma linha dos filtros. */
       #home.home-view .home-hero-head{
-        margin-top:18px!important;
-        margin-bottom:4px!important;
-        padding-top:0!important;
-        min-height:44px!important;
+        margin:0 0 4px!important;
+        padding:0!important;
+        min-height:38px!important;
       }
       #home.home-view .fixa-reference-header-row{
-        min-height:44px!important;
+        min-height:38px!important;
         gap:18px!important;
-        align-items:center!important;
+        align-items:end!important;
+      }
+      #home.home-view .fixa-reference-header-left,
+      #home.home-view .fixa-reference-header-right{
+        align-self:end!important;
       }
       #home.home-view .fixa-reference-header-right{
-        transform:translateY(-10px)!important;
+        transform:none!important;
+        display:grid!important;
+        justify-items:end!important;
+        align-content:end!important;
+        gap:0!important;
       }
       #home.home-view .fixa-week-filters{gap:8px!important}
       #home.home-view .fixa-week-folder-filter,
@@ -84,6 +93,7 @@
         font-size:12px!important;
       }
       #home.home-view .fixa-reference-header-right #homeGreeting{
+        margin:0!important;
         font-size:20px!important;
         line-height:22px!important;
       }
@@ -92,10 +102,13 @@
         height:19px!important;
       }
       #home.home-view .fixa-reference-header-right #homeDatePill{
+        margin:0!important;
+        padding:0!important;
         font-size:11px!important;
         line-height:14px!important;
       }
 
+      /* Primeira linha */
       #home.home-view #homeSummaryCards.fixa-week-summary,
       #home.home-view #homeSummaryCards{
         width:100%!important;
@@ -175,6 +188,7 @@
         border-radius:8px!important;font-size:11px!important;
       }
 
+      /* Segunda linha */
       #home.home-view #homeFooterStats{
         height:116px!important;min-height:116px!important;gap:9px!important;margin:0 0 9px!important;
       }
@@ -187,24 +201,42 @@
       #home.home-view #homeFooterStats .fixa-week-days{margin-top:5px!important;gap:4px!important}
       #home.home-view #homeFooterStats .fixa-week-day i{width:27px!important;height:27px!important;font-size:11px!important}
 
-      /* 3ª linha: altura estável; conteúdo nunca fica preso cortado. */
+      /* Terceira linha: a caixa termina antes do fim da janela e só o conteúdo interno rola. */
       #home.home-view .fixa-week-main-shell{
-        height:var(--fixa-third-line-height,320px)!important;
-        min-height:180px!important;max-height:none!important;margin:0!important;border-radius:11px!important;
-        overflow:hidden!important;display:flex!important;flex-direction:column!important;
+        height:var(--fixa-third-line-height,300px)!important;
+        min-height:180px!important;
+        max-height:none!important;
+        margin:0!important;
+        box-sizing:border-box!important;
+        border:1px solid #dfe6f0!important;
+        border-radius:11px!important;
+        background:#fff!important;
+        overflow:hidden!important;
+        display:flex!important;
+        flex-direction:column!important;
       }
       #home.home-view .fixa-week-content-tabs{
-        flex:0 0 auto!important;overflow-x:auto!important;overflow-y:hidden!important;
-        scrollbar-width:thin!important;scrollbar-color:#b7c5da transparent!important;
+        flex:0 0 auto!important;
+        overflow-x:auto!important;
+        overflow-y:hidden!important;
+        scrollbar-width:thin!important;
+        scrollbar-color:#b7c5da transparent!important;
       }
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar{height:5px!important}
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-track{background:transparent!important}
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-thumb{background:#b7c5da!important;border-radius:999px!important}
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage{
-        flex:1 1 auto!important;height:auto!important;min-height:0!important;max-height:none!important;
-        padding:9px 11px 14px!important;overflow-y:auto!important;overflow-x:hidden!important;
-        scrollbar-width:thin!important;scrollbar-color:#aebbd0 transparent!important;
-        scrollbar-gutter:stable!important;overscroll-behavior:contain!important;
+        flex:1 1 auto!important;
+        height:auto!important;
+        min-height:0!important;
+        max-height:none!important;
+        padding:9px 11px 18px!important;
+        overflow-y:auto!important;
+        overflow-x:hidden!important;
+        scrollbar-width:thin!important;
+        scrollbar-color:#aebbd0 transparent!important;
+        scrollbar-gutter:stable!important;
+        overscroll-behavior:contain!important;
       }
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar{width:7px!important}
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar-track{background:transparent!important}
@@ -230,8 +262,8 @@
         #home.home-view .fixa-reference-collection-filter{width:100%!important;min-width:0!important}
       }
       @media(max-width:760px){
-        body.home-active{overflow:auto!important}
-        #home.home-view .home-hero-head{margin-top:10px!important}
+        body.${BODY_CLASS}{overflow:auto!important}
+        body.${BODY_CLASS} #home.home-view.active{height:auto!important;overflow:visible!important;padding-top:10px!important}
         #home.home-view .fixa-reference-header-right{transform:none!important}
         #home.home-view #homeSummaryCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
         #home.home-view #homeSummaryCards .fixa-week-summary-card,
@@ -243,6 +275,13 @@
       @media(max-width:440px){#home.home-view #homeSummaryCards{grid-template-columns:1fr!important}}
     `;
     document.head.appendChild(style);
+  }
+
+  function syncHomeMode() {
+    const active = Boolean(document.querySelector('#home.home-view.active'));
+    document.body?.classList.toggle(BODY_CLASS, active);
+    if (active && window.scrollY !== 0) window.scrollTo({ top:0, left:0, behavior:'auto' });
+    return active;
   }
 
   function cardLabel(card) {
@@ -321,11 +360,12 @@
 
   function fitThirdLine() {
     const shell = document.querySelector('#home.home-view .fixa-week-main-shell');
-    if (!shell || shell.offsetParent === null) return false;
+    if (!shell || shell.offsetParent === null || !syncHomeMode()) return false;
     const viewportHeight = Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 0);
     if (!viewportHeight) return false;
-    const documentTop = Math.round(shell.getBoundingClientRect().top + window.scrollY);
-    const target = Math.max(180, Math.floor(viewportHeight - documentTop));
+    const top = Math.round(shell.getBoundingClientRect().top);
+    const bottomGap = 18;
+    const target = Math.max(180, Math.floor(viewportHeight - top - bottomGap));
     shell.style.setProperty('--fixa-third-line-height', `${target}px`);
     return true;
   }
@@ -338,17 +378,12 @@
     });
   }
 
-  function resetHomeScroll() {
-    if (!document.querySelector('#home.home-view.active')) return;
-    if (window.scrollY !== 0) window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  }
-
   function observeGrid(grid) {
     if (!grid || grid === observedGrid) return;
     gridObserver?.disconnect();
     observedGrid = grid;
     gridObserver = new MutationObserver(() => scheduleSync());
-    gridObserver.observe(grid, { childList: true });
+    gridObserver.observe(grid, { childList:true });
   }
 
   function scheduleSync() {
@@ -361,11 +396,11 @@
 
   function syncAll() {
     ensureStyle();
-    resetHomeScroll();
+    const homeActive = syncHomeMode();
     const grid = normalizeSummaryGrid();
     observeGrid(grid);
     syncMainTabs();
-    scheduleFit();
+    if (homeActive) scheduleFit();
     return Boolean(grid);
   }
 
@@ -379,9 +414,10 @@
       });
       return;
     }
-    if (event.target.closest('[data-view="home"], #homeTopTab, [data-fixa-week-period], #fixaWeekFolderFilter, #fixaReferenceCollectionFilter')) {
+
+    if (event.target.closest('[data-view], #homeTopTab, [data-fixa-week-period], #fixaWeekFolderFilter, #fixaReferenceCollectionFilter')) {
       requestAnimationFrame(() => {
-        resetHomeScroll();
+        syncHomeMode();
         scheduleSync();
       });
     }
@@ -391,9 +427,9 @@
     if (event.target.closest('#fixaWeekFolderFilter, #fixaReferenceCollectionFilter')) scheduleSync();
   });
 
-  window.addEventListener('resize', scheduleFit, { passive: true });
-  window.visualViewport?.addEventListener('resize', scheduleFit, { passive: true });
-  window.addEventListener('load', scheduleSync, { once: true });
+  window.addEventListener('resize', scheduleFit, { passive:true });
+  window.visualViewport?.addEventListener('resize', scheduleFit, { passive:true });
+  window.addEventListener('load', scheduleSync, { once:true });
 
   let tries = 0;
   const boot = window.setInterval(() => {
