@@ -142,7 +142,7 @@
         min-height:66px!important;
         box-sizing:border-box!important;
         display:grid!important;
-        grid-template-columns:40px minmax(0,1fr))!important;
+        grid-template-columns:40px minmax(0,1fr)!important;
         align-items:center!important;
         gap:9px!important;
         padding:7px 9px!important;
