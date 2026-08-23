@@ -25,6 +25,10 @@
   function apply() {
     if (applying || !window.matchMedia('(min-width: 761px)').matches) return false;
 
+    /* Quando o layout de referência está ativo, ele é o único dono do cabeçalho da Home.
+       Isso impede dois scripts de moverem filtros/saudação alternadamente. */
+    if (window.FixaHomeReferenceLayoutV2?.active) return false;
+
     const home = document.querySelector('#home.home-view');
     const hero = home?.querySelector('.home-hero-head');
     const actions = home?.querySelector('.home-hero-actions');
@@ -44,7 +48,6 @@
       if (greeting.parentElement !== right) right.appendChild(greeting);
       if (date.parentElement !== right) right.appendChild(date);
 
-      /* Desktop: filtros bem próximos da navegação principal, sem alterar o mobile. */
       important(hero, 'min-height', '38px');
       important(hero, 'height', '38px');
       important(hero, 'margin', '-24px 0 3px');
@@ -60,7 +63,6 @@
       important(actions, 'margin', '0');
       important(actions, 'padding', '0');
 
-      /* Qualquer estrutura antiga do cabeçalho deixa de participar do layout. */
       home.querySelectorAll('.fixa-home-header-row').forEach(oldRow => {
         if (oldRow !== row) important(oldRow, 'display', 'none');
       });
@@ -99,7 +101,6 @@
       important(filters, 'padding', '0');
       important(filters, 'transform', 'none');
 
-      /* Saudação um pouco menor e mais baixa, como na referência aprovada. */
       important(right, 'position', 'absolute');
       important(right, 'top', '6px');
       important(right, 'right', '2px');
@@ -151,7 +152,10 @@
 
   function watch() {
     const root = document.querySelector('#home.home-view');
-    if (!root) return;
+    if (!root || window.FixaHomeReferenceLayoutV2?.active) {
+      observer?.disconnect();
+      return;
+    }
     observer?.disconnect();
     observer = new MutationObserver(() => schedule(0));
     observer.observe(root, { childList: true, subtree: true });
@@ -193,12 +197,11 @@
     attempts += 1;
     watch();
     apply();
-    if (attempts >= 100) window.clearInterval(timer);
+    if (window.FixaHomeReferenceLayoutV2?.active || attempts >= 100) window.clearInterval(timer);
   }, 100);
 })();
 
-/* Ordem estável dos botões primários no desktop: Início — Competição | espaço | Questões — Teste.
-   Usa a ordem nativa do flex para evitar MutationObserver e movimentação tardia de elementos. */
+/* Ordem estável dos botões primários no desktop: Início — Competição | espaço | Questões — Teste. */
 (() => {
   'use strict';
   if (document.getElementById('fixaPrimaryTopbarOrderStyleV2')) return;
@@ -231,4 +234,210 @@
     }
   `;
   document.head.appendChild(style);
+})();
+
+/* Layout final aprovado da Home + estabilização dos indicadores.
+   A grade visível recebe somente um valor já estabilizado, evitando alternância
+   entre estados intermediários de carregamento de desempenho e XP. */
+(() => {
+  'use strict';
+  if (window.FixaHomeApprovedReferenceV1) return;
+  window.FixaHomeApprovedReferenceV1 = true;
+
+  const STYLE_ID = 'fixaHomeApprovedReferenceStyleV1';
+  const SOURCE_ID = 'homeSummaryCards';
+  const STABLE_ID = 'fixaStableSummaryCards';
+  const labels = ['Coleções', 'Questões', 'Dominadas', 'Aproveitamento', 'XP Coleções', 'XP Semana'];
+  let sourceObserver = null;
+  let sourceElement = null;
+  let timer = 0;
+  let lastSignature = '';
+
+  function ensureStyle() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = `
+      @media (min-width:861px) {
+        /* Filtros quase encostados na navegação principal, como na referência aprovada. */
+        #home.home-view .home-hero-head{
+          min-height:44px!important;
+          height:44px!important;
+          margin:-26px 0 4px!important;
+          padding:0!important;
+          overflow:visible!important;
+        }
+        #home.home-view .home-hero-actions{height:44px!important;min-height:44px!important;margin:0!important;padding:0!important}
+        #home.home-view .fixa-reference-header-row{
+          min-height:44px!important;
+          height:44px!important;
+          grid-template-columns:minmax(0,1fr) auto!important;
+          align-items:start!important;
+          gap:18px!important;
+          overflow:visible!important;
+        }
+        #home.home-view .fixa-reference-header-left{
+          align-items:flex-start!important;
+          transform:translateY(-2px)!important;
+        }
+        #home.home-view .fixa-week-filters{gap:10px!important;margin:0!important;transform:none!important}
+        #home.home-view .fixa-week-folder-filter,
+        #home.home-view .fixa-reference-collection-filter{
+          height:38px!important;
+          min-height:38px!important;
+          border-radius:9px!important;
+          padding:0 10px!important;
+        }
+        #home.home-view .fixa-week-folder-filter{width:272px!important;min-width:272px!important}
+        #home.home-view .fixa-reference-collection-filter{width:340px!important;min-width:340px!important}
+        #home.home-view .fixa-week-folder-filter select,
+        #home.home-view .fixa-reference-collection-filter select{height:36px!important;font-size:12px!important}
+
+        /* Saudação menor e um pouco mais baixa, aproximando-a dos cards de XP. */
+        #home.home-view .fixa-reference-header-right{
+          min-width:210px!important;
+          transform:translateY(10px)!important;
+          gap:0!important;
+        }
+        #home.home-view .fixa-reference-header-right #homeGreeting{
+          font-size:18px!important;
+          line-height:20px!important;
+        }
+        #home.home-view .fixa-reference-header-right #homeGreeting .home-greeting-wave{width:18px!important;height:18px!important}
+        #home.home-view .fixa-reference-header-right #homeDatePill{font-size:10px!important;line-height:12px!important}
+
+        /* Mantém as opções visíveis como na imagem aprovada. */
+        #home.home-view [data-fixa-week-period="week"]{display:inline-flex!important}
+        #home.home-view [data-fixa-main-tab="activities"]{display:inline-flex!important}
+
+        /* Resumo mais próximo dos filtros e sem qualquer animação/transição de valor. */
+        #home.home-view #${STABLE_ID}{margin:0!important;gap:8px!important}
+        #home.home-view #${STABLE_ID} .fixa-stable-summary-card{
+          height:68px!important;
+          min-height:68px!important;
+          animation:none!important;
+          transform:none!important;
+          transition:border-color .15s ease,background-color .15s ease!important;
+        }
+        #home.home-view #${STABLE_ID} .fixa-stable-summary-value,
+        #home.home-view #${STABLE_ID} .fixa-stable-summary-title,
+        #home.home-view #${STABLE_ID} .fixa-stable-summary-caption{
+          animation:none!important;
+          transition:none!important;
+        }
+        #home.home-view .fixa-reference-period-row{margin:7px 0 8px!important;min-height:34px!important}
+        #home.home-view .fixa-reference-period-row .fixa-week-period button{height:34px!important;min-height:34px!important}
+        #home.home-view #homeFooterStats{margin-bottom:9px!important}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function readSource() {
+    const source = document.getElementById(SOURCE_ID);
+    const data = {};
+    if (!source) return data;
+    source.querySelectorAll('.fixa-week-summary-card').forEach(card => {
+      const label = (card.querySelector('strong')?.textContent || card.dataset.fixaSummaryKey || '').trim();
+      if (!labels.includes(label)) return;
+      data[label] = {
+        value: (card.querySelector('.home-card-number')?.textContent || '').trim(),
+        caption: (card.querySelector('small')?.textContent || '').trim()
+      };
+    });
+    return data;
+  }
+
+  function signature(data) {
+    return labels.map(label => `${label}:${data[label]?.value ?? ''}:${data[label]?.caption ?? ''}`).join('|');
+  }
+
+  function applyStable(data) {
+    const stable = document.getElementById(STABLE_ID);
+    if (!stable) return false;
+    labels.forEach(label => {
+      const sourceValue = data[label];
+      if (!sourceValue || sourceValue.value === '') return;
+      const card = Array.from(stable.querySelectorAll('.fixa-stable-summary-card')).find(item =>
+        (item.querySelector('.fixa-stable-summary-title')?.textContent || '').trim() === label
+      );
+      if (!card) return;
+      const value = card.querySelector('.fixa-stable-summary-value');
+      const caption = card.querySelector('.fixa-stable-summary-caption');
+      if (value && value.textContent !== sourceValue.value) value.textContent = sourceValue.value;
+      if (caption && sourceValue.caption && caption.textContent !== sourceValue.caption) caption.textContent = sourceValue.caption;
+    });
+    return true;
+  }
+
+  function settleAndApply() {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      const first = readSource();
+      const firstSignature = signature(first);
+      window.setTimeout(() => {
+        const second = readSource();
+        const secondSignature = signature(second);
+        if (firstSignature !== secondSignature) {
+          settleAndApply();
+          return;
+        }
+        if (secondSignature !== lastSignature) {
+          lastSignature = secondSignature;
+          applyStable(second);
+        }
+      }, 120);
+    }, 180);
+  }
+
+  function detachOldSourceObserver() {
+    const current = document.getElementById(SOURCE_ID);
+    if (!current || current.dataset.fixaStableSource === 'true') return current;
+
+    /* O layout v3 observava diretamente a grade original. Ao substituí-la por um
+       clone idêntico, o observador antigo fica ligado ao nó destacado e deixa de
+       propagar cada estado intermediário para os cards visíveis. */
+    const clone = current.cloneNode(true);
+    clone.dataset.fixaStableSource = 'true';
+    current.replaceWith(clone);
+    return clone;
+  }
+
+  function watchSource() {
+    const source = detachOldSourceObserver() || document.getElementById(SOURCE_ID);
+    if (!source || source === sourceElement) return;
+    sourceObserver?.disconnect();
+    sourceElement = source;
+    sourceObserver = new MutationObserver(settleAndApply);
+    sourceObserver.observe(source, { childList:true, subtree:true, characterData:true });
+    settleAndApply();
+  }
+
+  function sync() {
+    ensureStyle();
+    watchSource();
+    settleAndApply();
+  }
+
+  window.addEventListener('load', () => {
+    sync();
+    window.setTimeout(sync, 350);
+    window.setTimeout(sync, 1000);
+  }, { once:true });
+  window.addEventListener('fixa-cloud-data-loaded', sync);
+  window.addEventListener('fixa-xp-updated', sync);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); });
+  document.addEventListener('click', event => {
+    if (event.target.closest('[data-view="home"],#homeTopTab,[data-fixa-week-period],[data-fixa-main-tab]')) window.setTimeout(sync, 40);
+  }, true);
+  document.addEventListener('change', event => {
+    if (event.target.closest('#fixaWeekFolderFilter,#fixaReferenceCollectionFilter')) window.setTimeout(sync, 40);
+  }, true);
+
+  let attempts = 0;
+  const boot = window.setInterval(() => {
+    attempts += 1;
+    sync();
+    if ((window.FixaHomeReferenceLayoutV2?.active && document.getElementById(STABLE_ID)) || attempts >= 80) window.clearInterval(boot);
+  }, 100);
 })();
