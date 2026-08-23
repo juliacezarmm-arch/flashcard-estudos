@@ -2,7 +2,9 @@
   'use strict';
 
   const HOTFIX_FLAG = 'fixaHomeEncodingHotfix';
+  const HOME_GUARD_ID = 'fixaHomeLayoutLoadingGuard';
 
+  // Mantém desativados os controladores antigos embutidos em outros módulos.
   window.FixaHomeCompactHeaderRowV2 = true;
   window.FixaHomeMainPanelFillViewportV1 = true;
 
@@ -123,22 +125,22 @@
     });
   }
 
-  function loadHomeReferenceLayout() {
-    if (window.FixaHomeReferenceLayoutV2?.active || document.getElementById('fixaHomeReferenceLayoutV2Loader')) return;
-    const script = document.createElement('script');
-    script.id = 'fixaHomeReferenceLayoutV2Loader';
-    script.src = 'src/fixes/home-reference-layout-v2.js?v=20260822-home-reference-target-v1';
-    script.defer = true;
-    document.head.appendChild(script);
+  function ensureHomeLayoutLoadingGuard() {
+    if (window.FixaHomeReferenceLayoutV3?.active || document.getElementById(HOME_GUARD_ID)) return;
+    const style = document.createElement('style');
+    style.id = HOME_GUARD_ID;
+    style.textContent = '#home.home-view{visibility:hidden!important}';
+    document.head.appendChild(style);
   }
 
   function loadHomeReferenceLayoutV3() {
     if (window.FixaHomeReferenceLayoutV3?.active || document.getElementById('fixaHomeReferenceLayoutV3Loader')) return;
-    if (!window.FixaHomeReferenceLayoutV2?.active) return;
+    ensureHomeLayoutLoadingGuard();
     const script = document.createElement('script');
     script.id = 'fixaHomeReferenceLayoutV3Loader';
     script.src = `src/fixes/home-reference-layout-v3.js?v=${Date.now()}`;
     script.defer = true;
+    script.addEventListener('error', () => document.getElementById(HOME_GUARD_ID)?.remove(), { once:true });
     document.head.appendChild(script);
   }
 
@@ -220,7 +222,6 @@
     formatTestStartNote();
     installHomeTodayBehavior();
     installHomeRefreshGuard();
-    loadHomeReferenceLayout();
     loadHomeReferenceLayoutV3();
     loadCompetitionSignalSkip();
     loadCompetitionOwnerFreezeSync();
@@ -235,6 +236,7 @@
   if (document.documentElement.dataset[HOTFIX_FLAG] === 'true') return;
   document.documentElement.dataset[HOTFIX_FLAG] = 'true';
 
+  ensureHomeLayoutLoadingGuard();
   repair();
   document.addEventListener('DOMContentLoaded', repair, { once: true });
   window.addEventListener('load', repair, { once: true });
