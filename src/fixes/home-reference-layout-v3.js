@@ -142,7 +142,7 @@
         min-height:66px!important;
         box-sizing:border-box!important;
         display:grid!important;
-        grid-template-columns:40px minmax(0,1fr)!important;
+        grid-template-columns:40px minmax(0,1fr))!important;
         align-items:center!important;
         gap:9px!important;
         padding:7px 9px!important;
@@ -218,15 +218,16 @@
       #home.home-view #homeFooterStats .fixa-week-days{margin-top:5px!important;gap:4px!important}
       #home.home-view #homeFooterStats .fixa-week-day i{width:27px!important;height:27px!important;font-size:11px!important}
 
-      /* Terceira linha: termina dentro da área útil e mostra a borda inferior completa. */
+      /* Terceira linha: termina dentro da área útil e o contorno fica sempre visível por cima da rolagem. */
       #home.home-view .fixa-week-main-shell{
+        position:relative!important;
+        isolation:isolate!important;
         height:var(--fixa-third-line-height,300px)!important;
         min-height:180px!important;
         max-height:none!important;
         margin:0!important;
         box-sizing:border-box!important;
         border:1px solid #dfe6f0!important;
-        border-bottom:1px solid #d6dfeb!important;
         border-radius:11px!important;
         background:#fff!important;
         box-shadow:0 1px 2px rgba(15,23,42,.025)!important;
@@ -234,7 +235,19 @@
         display:flex!important;
         flex-direction:column!important;
       }
+      #home.home-view .fixa-week-main-shell::after{
+        content:""!important;
+        position:absolute!important;
+        inset:0!important;
+        z-index:20!important;
+        pointer-events:none!important;
+        box-sizing:border-box!important;
+        border:1px solid #d6dfeb!important;
+        border-radius:11px!important;
+      }
       #home.home-view .fixa-week-content-tabs{
+        position:relative!important;
+        z-index:1!important;
         flex:0 0 auto!important;
         overflow-x:auto!important;
         overflow-y:hidden!important;
@@ -245,6 +258,8 @@
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-track{background:transparent!important}
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-thumb{background:#b7c5da!important;border-radius:999px!important}
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage{
+        position:relative!important;
+        z-index:1!important;
         flex:1 1 auto!important;
         height:auto!important;
         min-height:0!important;
