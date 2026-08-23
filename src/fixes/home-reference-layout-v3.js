@@ -268,10 +268,26 @@
         scrollbar-gutter:stable!important;
         overscroll-behavior:contain!important;
       }
-      #home.home-view .fixa-week-main-pane .home-collection-scroll{
+
+      /* Deixa o conteúdo definir a altura real; se não couber, a rolagem fica no stage. */
+      #home.home-view .fixa-week-main-stage [data-fixa-main-panel],
+      #home.home-view .fixa-week-main-stage .fixa-week-main-pair{
         height:auto!important;
+        min-height:100%!important;
         max-height:none!important;
-        overflow-y:visible!important;
+        overflow:visible!important;
+      }
+      #home.home-view .fixa-week-main-stage .fixa-week-main-pane{
+        height:auto!important;
+        min-height:0!important;
+        max-height:none!important;
+        overflow:visible!important;
+      }
+
+      /* Mantém as dimensões internas que já estavam aprovadas. */
+      #home.home-view .fixa-week-main-pane .home-collection-scroll{
+        height:190px!important;
+        max-height:190px!important;
       }
       #home.home-view .home-collection-grid.fixa-week-collection-list{gap:6px!important}
       #home.home-view .fixa-week-collection{
@@ -285,16 +301,8 @@
       #home.home-view .fixa-week-collection .home-collection-metrics b{font-size:9.5px!important}
       #home.home-view .fixa-week-collection .home-collection-metrics small{font-size:6.8px!important}
       #home.home-view .fixa-unified-priority-list,
-      #home.home-view .fixa-unified-question-status,
-      #home.home-view .fixa-unified-chart-box{
-        height:auto!important;
-        min-height:0!important;
-        max-height:none!important;
-      }
-      #home.home-view .fixa-week-main-pair,
-      #home.home-view [data-fixa-main-panel]{
-        min-height:100%!important;
-      }
+      #home.home-view .fixa-unified-question-status{height:187px!important}
+      #home.home-view .fixa-unified-chart-box{height:198px!important}
 
       @media(max-width:1159px){
         #home.home-view #homeSummaryCards{grid-template-columns:repeat(3,minmax(0,1fr))!important}
