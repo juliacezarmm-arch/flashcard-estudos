@@ -12,7 +12,7 @@
     'Questões': { key: 'questions', asset: 'referencias/ChatGPT Image 31 de jul. de 2026, 23_14_35 (2).png' },
     'Dominadas': { key: 'mastered', asset: 'referencias/icone_trofeu_dominadas.png' },
     'Aproveitamento': { key: 'accuracy', asset: 'referencias/ChatGPT Image 1 de ago. de 2026, 12_31_23.png' },
-    'XP Coleções': { key: 'xp-total', asset: 'referencias/icone_xp_colecoes.svg' },
+    'XP Coleções': { key: 'xp-total', asset: 'referencias/icone_xp_coleoes.svg' },
     'XP Semana': { key: 'xp-week', asset: 'referencias/icone_xp_semana.svg' }
   });
 
@@ -218,7 +218,7 @@
       #home.home-view #homeFooterStats .fixa-week-days{margin-top:5px!important;gap:4px!important}
       #home.home-view #homeFooterStats .fixa-week-day i{width:27px!important;height:27px!important;font-size:11px!important}
 
-      /* Terceira linha: termina dentro da área útil e o contorno fica sempre visível por cima da rolagem. */
+      /* Terceira linha: termina dentro da área útil e mantém somente o acabamento inferior visível. */
       #home.home-view .fixa-week-main-shell{
         position:relative!important;
         isolation:isolate!important;
@@ -238,12 +238,19 @@
       #home.home-view .fixa-week-main-shell::after{
         content:""!important;
         position:absolute!important;
-        inset:0!important;
+        left:-1px!important;
+        right:-1px!important;
+        bottom:-1px!important;
+        height:14px!important;
         z-index:20!important;
         pointer-events:none!important;
         box-sizing:border-box!important;
-        border:1px solid #d6dfeb!important;
-        border-radius:11px!important;
+        background:#fff!important;
+        border-left:1px solid #dfe6f0!important;
+        border-right:1px solid #dfe6f0!important;
+        border-bottom:1px solid #dfe6f0!important;
+        border-bottom-left-radius:11px!important;
+        border-bottom-right-radius:11px!important;
       }
       #home.home-view .fixa-week-content-tabs{
         position:relative!important;
@@ -264,7 +271,7 @@
         height:auto!important;
         min-height:0!important;
         max-height:none!important;
-        padding:9px 11px 20px!important;
+        padding:9px 11px 24px!important;
         overflow-y:auto!important;
         overflow-x:hidden!important;
         scrollbar-width:thin!important;
