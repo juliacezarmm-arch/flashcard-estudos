@@ -21,10 +21,7 @@
   let fitFrame = 0;
   let syncing = false;
 
-  const api = window.FixaHomeReferenceLayoutV3 = {
-    active: true,
-    refresh: syncAll
-  };
+  const api = window.FixaHomeReferenceLayoutV3 = { active: true, refresh: syncAll };
 
   function ensureStyle() {
     if (document.getElementById(STYLE_ID)) return;
@@ -35,12 +32,9 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      /* Código Fixa 9 — Home estabilizada. */
-
       #home.home-view .home-subtabs{display:none!important}
       #home.home-view #${LEGACY_STABLE_ID}{display:none!important}
 
-      /* Desktop: a página não rola. Quando necessário, só a 3ª linha rola. */
       @media(min-width:861px){
         body.home-active{overflow:hidden!important}
         body.home-active #appShell.app:not(.locked)>main{
@@ -58,7 +52,7 @@
         }
       }
 
-      /* Filtros e saudação: ficam realmente abaixo da navegação principal. */
+      /* Filtros à esquerda; saudação acima e DATA alinhada à faixa dos filtros. */
       #home.home-view .home-hero-head{
         margin-top:18px!important;
         margin-bottom:4px!important;
@@ -69,6 +63,9 @@
         min-height:44px!important;
         gap:18px!important;
         align-items:center!important;
+      }
+      #home.home-view .fixa-reference-header-right{
+        transform:translateY(-10px)!important;
       }
       #home.home-view .fixa-week-filters{gap:8px!important}
       #home.home-view .fixa-week-folder-filter,
@@ -99,7 +96,6 @@
         line-height:14px!important;
       }
 
-      /* 1ª linha: mantém exatamente a escala compacta aprovada. */
       #home.home-view #homeSummaryCards.fixa-week-summary,
       #home.home-view #homeSummaryCards{
         width:100%!important;
@@ -134,68 +130,36 @@
       #home.home-view #homeSummaryCards [data-fixa-visual-key="mastered"]{background:linear-gradient(90deg,#fff5e8 0%,#fff 72%)!important}
       #home.home-view #homeSummaryCards [data-fixa-visual-key="accuracy"]{background:linear-gradient(90deg,#f7f1ff 0%,#fff 72%)!important}
       #home.home-view #homeSummaryCards .fixa-week-summary-icon{
-        width:40px!important;
-        height:40px!important;
-        min-width:40px!important;
-        border:0!important;
-        border-radius:0!important;
-        display:grid!important;
-        place-items:center!important;
-        background:transparent!important;
-        overflow:visible!important;
+        width:40px!important;height:40px!important;min-width:40px!important;
+        border:0!important;border-radius:0!important;display:grid!important;place-items:center!important;
+        background:transparent!important;overflow:visible!important;
       }
       #home.home-view #homeSummaryCards .fixa-week-summary-icon img{
-        width:40px!important;
-        height:40px!important;
-        max-width:40px!important;
-        max-height:40px!important;
-        display:block!important;
-        object-fit:contain!important;
+        width:40px!important;height:40px!important;max-width:40px!important;max-height:40px!important;
+        display:block!important;object-fit:contain!important;
       }
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-total"] .fixa-week-summary-icon,
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-week"] .fixa-week-summary-icon{
-        border-radius:8px!important;
-        background:#eef5ff!important;
+        border-radius:8px!important;background:#eef5ff!important;
       }
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-total"] .fixa-week-summary-icon img,
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-week"] .fixa-week-summary-icon img{
-        width:26px!important;
-        height:26px!important;
+        width:26px!important;height:26px!important;
       }
       #home.home-view #homeSummaryCards .fixa-week-summary-card strong,
       #home.home-view #homeSummaryCards .home-card strong{
-        display:block!important;
-        min-width:0!important;
-        margin:0!important;
-        overflow:hidden!important;
-        text-overflow:ellipsis!important;
-        white-space:nowrap!important;
-        color:#172033!important;
-        font-size:11px!important;
-        line-height:13px!important;
-        font-weight:800!important;
+        display:block!important;min-width:0!important;margin:0!important;overflow:hidden!important;
+        text-overflow:ellipsis!important;white-space:nowrap!important;color:#172033!important;
+        font-size:11px!important;line-height:13px!important;font-weight:800!important;
       }
       #home.home-view #homeSummaryCards .home-card-number{
-        display:block!important;
-        margin:0!important;
-        font-size:20px!important;
-        line-height:21px!important;
-        font-weight:850!important;
-        white-space:nowrap!important;
-        animation:none!important;
-        transition:none!important;
+        display:block!important;margin:0!important;font-size:20px!important;line-height:21px!important;
+        font-weight:850!important;white-space:nowrap!important;animation:none!important;transition:none!important;
       }
       #home.home-view #homeSummaryCards small{
-        display:block!important;
-        min-width:0!important;
-        margin:0!important;
-        overflow:hidden!important;
-        text-overflow:ellipsis!important;
-        white-space:nowrap!important;
-        color:#64748b!important;
-        font-size:9px!important;
-        line-height:10px!important;
-        font-weight:550!important;
+        display:block!important;min-width:0!important;margin:0!important;overflow:hidden!important;
+        text-overflow:ellipsis!important;white-space:nowrap!important;color:#64748b!important;
+        font-size:9px!important;line-height:10px!important;font-weight:550!important;
       }
       #home.home-view #homeSummaryCards [data-fixa-visual-key="collections"] .home-card-number{color:#15803d!important}
       #home.home-view #homeSummaryCards [data-fixa-visual-key="questions"] .home-card-number{color:#0b69a3!important}
@@ -204,33 +168,18 @@
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-total"] .home-card-number,
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-week"] .home-card-number{color:#2563eb!important}
 
-      /* Hoje / Semana / Mês. */
-      #home.home-view .fixa-reference-period-row{
-        min-height:34px!important;
-        margin:6px 0 7px!important;
-      }
+      #home.home-view .fixa-reference-period-row{min-height:34px!important;margin:6px 0 7px!important}
       #home.home-view .fixa-reference-period-row .fixa-week-period{display:flex!important;gap:4px!important}
       #home.home-view .fixa-reference-period-row .fixa-week-period button{
-        display:inline-flex!important;
-        height:34px!important;
-        min-height:34px!important;
-        padding:0 14px!important;
-        border-radius:8px!important;
-        font-size:11px!important;
+        display:inline-flex!important;height:34px!important;min-height:34px!important;padding:0 14px!important;
+        border-radius:8px!important;font-size:11px!important;
       }
 
-      /* 2ª linha: não alterar. */
       #home.home-view #homeFooterStats{
-        height:116px!important;
-        min-height:116px!important;
-        gap:9px!important;
-        margin:0 0 9px!important;
+        height:116px!important;min-height:116px!important;gap:9px!important;margin:0 0 9px!important;
       }
       #home.home-view #homeFooterStats .fixa-week-top-card{
-        height:116px!important;
-        min-height:116px!important;
-        padding:11px 13px!important;
-        border-radius:10px!important;
+        height:116px!important;min-height:116px!important;padding:11px 13px!important;border-radius:10px!important;
       }
       #home.home-view #homeFooterStats .fixa-week-top-head h3{font-size:13px!important;line-height:16px!important}
       #home.home-view #homeFooterStats .fixa-week-main-value{font-size:23px!important;line-height:25px!important}
@@ -238,52 +187,32 @@
       #home.home-view #homeFooterStats .fixa-week-days{margin-top:5px!important;gap:4px!important}
       #home.home-view #homeFooterStats .fixa-week-day i{width:27px!important;height:27px!important;font-size:11px!important}
 
-      /* 3ª linha: altura fixa para a janela. A rolagem fica DENTRO dela. */
+      /* 3ª linha: altura estável; conteúdo nunca fica preso cortado. */
       #home.home-view .fixa-week-main-shell{
         height:var(--fixa-third-line-height,320px)!important;
-        min-height:180px!important;
-        max-height:none!important;
-        margin:0!important;
-        border-radius:11px!important;
-        overflow:hidden!important;
-        display:flex!important;
-        flex-direction:column!important;
+        min-height:180px!important;max-height:none!important;margin:0!important;border-radius:11px!important;
+        overflow:hidden!important;display:flex!important;flex-direction:column!important;
       }
       #home.home-view .fixa-week-content-tabs{
-        flex:0 0 auto!important;
-        overflow-x:auto!important;
-        overflow-y:hidden!important;
-        scrollbar-width:thin!important;
-        scrollbar-color:#b7c5da transparent!important;
+        flex:0 0 auto!important;overflow-x:auto!important;overflow-y:hidden!important;
+        scrollbar-width:thin!important;scrollbar-color:#b7c5da transparent!important;
       }
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar{height:5px!important}
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-track{background:transparent!important}
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-thumb{background:#b7c5da!important;border-radius:999px!important}
-
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage{
-        flex:1 1 auto!important;
-        height:auto!important;
-        min-height:0!important;
-        max-height:none!important;
-        padding:9px 11px!important;
-        overflow-y:auto!important;
-        overflow-x:hidden!important;
-        scrollbar-width:thin!important;
-        scrollbar-color:#aebbd0 transparent!important;
-        scrollbar-gutter:stable!important;
-        overscroll-behavior:contain!important;
+        flex:1 1 auto!important;height:auto!important;min-height:0!important;max-height:none!important;
+        padding:9px 11px 14px!important;overflow-y:auto!important;overflow-x:hidden!important;
+        scrollbar-width:thin!important;scrollbar-color:#aebbd0 transparent!important;
+        scrollbar-gutter:stable!important;overscroll-behavior:contain!important;
       }
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar{width:7px!important}
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar-track{background:transparent!important}
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar-thumb{background:#aebbd0!important;border-radius:999px!important}
       #home.home-view .fixa-week-main-stage [data-fixa-main-panel],
       #home.home-view .fixa-week-main-stage .fixa-week-main-pair{
-        height:auto!important;
-        min-height:100%!important;
-        max-height:none!important;
+        height:auto!important;min-height:0!important;max-height:none!important;
       }
-
-      /* Dimensões internas já aprovadas. */
       #home.home-view .fixa-week-main-pane .home-collection-scroll{height:190px!important;max-height:190px!important}
       #home.home-view .home-collection-grid.fixa-week-collection-list{gap:6px!important}
       #home.home-view .fixa-week-collection{height:96px!important;min-height:96px!important;padding:7px 8px!important;border-radius:8px!important}
@@ -295,9 +224,7 @@
       #home.home-view .fixa-unified-question-status{height:187px!important}
       #home.home-view .fixa-unified-chart-box{height:198px!important}
 
-      @media(max-width:1159px){
-        #home.home-view #homeSummaryCards{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-      }
+      @media(max-width:1159px){#home.home-view #homeSummaryCards{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
       @media(max-width:900px){
         #home.home-view .fixa-week-folder-filter,
         #home.home-view .fixa-reference-collection-filter{width:100%!important;min-width:0!important}
@@ -305,6 +232,7 @@
       @media(max-width:760px){
         body.home-active{overflow:auto!important}
         #home.home-view .home-hero-head{margin-top:10px!important}
+        #home.home-view .fixa-reference-header-right{transform:none!important}
         #home.home-view #homeSummaryCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
         #home.home-view #homeSummaryCards .fixa-week-summary-card,
         #home.home-view #homeSummaryCards .home-card{height:auto!important;min-height:62px!important}
@@ -312,9 +240,7 @@
         #home.home-view #homeFooterStats .fixa-week-top-card{height:auto!important;min-height:116px!important}
         #home.home-view .fixa-week-main-shell{height:var(--fixa-third-line-height,280px)!important;min-height:180px!important}
       }
-      @media(max-width:440px){
-        #home.home-view #homeSummaryCards{grid-template-columns:1fr!important}
-      }
+      @media(max-width:440px){#home.home-view #homeSummaryCards{grid-template-columns:1fr!important}}
     `;
     document.head.appendChild(style);
   }
@@ -326,41 +252,31 @@
   function applySummaryArtwork(card, label) {
     const meta = SUMMARY_META[label];
     if (!card || !meta) return;
-
     card.dataset.fixaVisualKey = meta.key;
     const iconBox = card.querySelector('.fixa-week-summary-icon');
     if (!iconBox) return;
-
     const current = iconBox.querySelector('img[data-fixa-reference-asset]');
     if (current?.dataset.fixaReferenceAsset === meta.asset) return;
-
     iconBox.innerHTML = `<img src="${encodeURI(meta.asset)}" data-fixa-reference-asset="${meta.asset}" alt="" aria-hidden="true">`;
   }
 
   function normalizeSummaryGrid() {
     const grid = document.querySelector('#homeSummaryCards');
     if (!grid || syncing) return grid;
-
     syncing = true;
     try {
       document.getElementById(LEGACY_STABLE_ID)?.remove();
-      const cards = Array.from(grid.children).filter(element => element.matches?.('.fixa-week-summary-card, .home-card'));
+      const cards = Array.from(grid.children).filter(el => el.matches?.('.fixa-week-summary-card, .home-card'));
       const byLabel = new Map();
-
       cards.forEach(card => {
         const label = cardLabel(card);
-        if (!SUMMARY_ORDER.includes(label)) {
-          card.remove();
-          return;
-        }
-        if (byLabel.has(label)) {
+        if (!SUMMARY_ORDER.includes(label) || byLabel.has(label)) {
           card.remove();
           return;
         }
         byLabel.set(label, card);
         applySummaryArtwork(card, label);
       });
-
       SUMMARY_ORDER.forEach(label => {
         const card = byLabel.get(label);
         if (card && card !== grid.lastElementChild) grid.appendChild(card);
@@ -374,16 +290,13 @@
   function activateMainTab(key) {
     const shell = document.querySelector('#home.home-view .fixa-week-main-shell');
     if (!shell) return false;
-
     const buttons = Array.from(shell.querySelectorAll('[data-fixa-main-tab]'));
     const panels = Array.from(shell.querySelectorAll('[data-fixa-main-panel]'));
     if (!buttons.length || !panels.length) return false;
-
     const available = new Set(panels.map(panel => panel.dataset.fixaMainPanel));
     const fallback = available.has('performance-goals') ? 'performance-goals' : panels[0]?.dataset.fixaMainPanel;
     const activeKey = available.has(key) ? key : fallback;
     if (!activeKey) return false;
-
     buttons.forEach(button => {
       const active = button.dataset.fixaMainTab === activeKey;
       button.classList.toggle('active', active);
@@ -409,14 +322,10 @@
   function fitThirdLine() {
     const shell = document.querySelector('#home.home-view .fixa-week-main-shell');
     if (!shell || shell.offsetParent === null) return false;
-
     const viewportHeight = Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 0);
     if (!viewportHeight) return false;
-
-    /* documentTop é estável: scroll não altera este valor. */
     const documentTop = Math.round(shell.getBoundingClientRect().top + window.scrollY);
-    const bottomGap = 12;
-    const target = Math.max(180, Math.floor(viewportHeight - documentTop - bottomGap));
+    const target = Math.max(180, Math.floor(viewportHeight - documentTop));
     shell.style.setProperty('--fixa-third-line-height', `${target}px`);
     return true;
   }
@@ -470,7 +379,6 @@
       });
       return;
     }
-
     if (event.target.closest('[data-view="home"], #homeTopTab, [data-fixa-week-period], #fixaWeekFolderFilter, #fixaReferenceCollectionFilter')) {
       requestAnimationFrame(() => {
         resetHomeScroll();
