@@ -56,13 +56,14 @@
         }
       }
 
-      /* Cabeçalho: a DATA termina exatamente na mesma base dos filtros. */
+      /* Cabeçalho: saudação e data alinhadas ao limite direito da Home. */
       #home.home-view .home-hero-head{
         margin:0 0 4px!important;
         padding:0!important;
         min-height:38px!important;
       }
       #home.home-view .fixa-reference-header-row{
+        width:100%!important;
         height:38px!important;
         min-height:38px!important;
         gap:18px!important;
@@ -74,6 +75,7 @@
       }
       #home.home-view .fixa-reference-header-right{
         position:relative!important;
+        justify-self:end!important;
         align-self:end!important;
         height:38px!important;
         min-height:38px!important;
@@ -103,13 +105,13 @@
         right:0!important;
         bottom:20px!important;
         margin:0!important;
-        font-size:20px!important;
-        line-height:22px!important;
+        font-size:23px!important;
+        line-height:25px!important;
         white-space:nowrap!important;
       }
       #home.home-view .fixa-reference-header-right #homeGreeting .home-greeting-wave{
-        width:19px!important;
-        height:19px!important;
+        width:21px!important;
+        height:21px!important;
       }
       #home.home-view .fixa-reference-header-right #homeDatePill{
         position:absolute!important;
@@ -119,8 +121,8 @@
         padding:0!important;
         border:0!important;
         background:transparent!important;
-        font-size:12.5px!important;
-        line-height:16px!important;
+        font-size:14px!important;
+        line-height:17px!important;
         white-space:nowrap!important;
         text-align:right!important;
       }
