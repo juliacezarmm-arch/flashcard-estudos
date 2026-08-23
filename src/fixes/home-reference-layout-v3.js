@@ -3,43 +3,44 @@
 
   if (window.FixaHomeReferenceLayoutV3?.active) return;
 
-  const api = window.FixaHomeReferenceLayoutV3 = { active: true, refresh: syncAll };
   const STYLE_ID = 'fixaHomeReferenceLayoutV3Style';
-  const STABLE_ID = 'fixaStableSummaryCards';
+  const LEGACY_STABLE_ID = 'fixaStableSummaryCards';
+  const SUMMARY_ORDER = ['Coleções', 'Questões', 'Dominadas', 'Aproveitamento', 'XP Coleções', 'XP Semana'];
+  let observedGrid = null;
+  let gridObserver = null;
+  let syncFrame = 0;
+  let syncing = false;
 
-  const SUMMARY = [
-    { key: 'collections', label: 'Coleções', asset: 'referencias/icone_livros_colecoes.png', tone: 'green', fallbackCaption: 'Total de coleções' },
-    { key: 'questions', label: 'Questões', asset: 'referencias/ChatGPT Image 31 de jul. de 2026, 23_14_35 (2).png', tone: 'cyan', fallbackCaption: 'Total de questões' },
-    { key: 'frozen', label: 'Congeladas', asset: 'referencias/icone_questoes_congeladas.svg', tone: 'blue', fallbackCaption: 'Questões congeladas' },
-    { key: 'mastered', label: 'Dominadas', asset: 'referencias/icone_trofeu_dominadas.png', tone: 'orange', fallbackCaption: 'Do total' },
-    { key: 'accuracy', label: 'Aproveitamento', asset: 'referencias/ChatGPT Image 1 de ago. de 2026, 12_31_23.png', tone: 'purple', fallbackCaption: 'Média do período' },
-    { key: 'xp-total', label: 'XP Coleções', asset: 'referencias/icone_xp_colecoes.svg', tone: 'blue', fallbackCaption: 'Total acumulado' },
-    { key: 'xp-week', label: 'XP Semana', asset: 'referencias/icone_xp_semana.svg', tone: 'blue', fallbackCaption: 'Esta semana' }
-  ];
-
-  let sourceObserver = null;
-  let observedSource = null;
-  let syncTimer = 0;
+  const api = window.FixaHomeReferenceLayoutV3 = {
+    active: true,
+    refresh: syncAll
+  };
 
   function ensureStyle() {
     if (document.getElementById(STYLE_ID)) return;
+
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      /* A grade original continua calculando os valores, mas não é exibida.
-         A faixa estável abaixo copia esses valores sem desmontar os cards visíveis. */
-      #home.home-view #homeSummaryCards{display:none!important}
-
-      #home.home-view #${STABLE_ID}{
+      /*
+       * A Home possui uma única faixa de resumo.
+       * O #homeSummaryCards é o renderizador oficial; o antigo espelho estável
+       * não participa mais do layout nem recebe valores em paralelo.
+       */
+      #home.home-view #${LEGACY_STABLE_ID}{display:none!important}
+      #home.home-view #homeSummaryCards.fixa-week-summary,
+      #home.home-view #homeSummaryCards{
         width:100%!important;
         display:grid!important;
-        grid-template-columns:repeat(7,minmax(0,1fr))!important;
+        grid-template-columns:repeat(6,minmax(0,1fr))!important;
         gap:7px!important;
         margin:0!important;
         padding:0!important;
         align-items:stretch!important;
       }
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-card{
+
+      #home.home-view #homeSummaryCards .fixa-week-summary-card,
+      #home.home-view #homeSummaryCards .home-card{
         height:66px!important;
         min-height:66px!important;
         box-sizing:border-box!important;
@@ -58,38 +59,28 @@
         animation:none!important;
         transition:border-color .15s ease,background-color .15s ease!important;
       }
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-card:hover{
+
+      #home.home-view #homeSummaryCards .fixa-week-summary-card:hover,
+      #home.home-view #homeSummaryCards .home-card:hover{
         border-color:#cbd8ea!important;
         background:#fbfdff!important;
         transform:none!important;
       }
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-icon{
+
+      #home.home-view #homeSummaryCards .fixa-week-summary-icon,
+      #home.home-view #homeSummaryCards .home-card-art{
         width:40px!important;
         height:40px!important;
         min-width:40px!important;
-        display:grid!important;
-        place-items:center!important;
-        border:0!important;
-        border-radius:0!important;
-        background:transparent!important;
-        overflow:visible!important;
-      }
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-icon img{
-        display:block!important;
-        width:40px!important;
-        height:40px!important;
         max-width:40px!important;
         max-height:40px!important;
         object-fit:contain!important;
+        border-radius:0!important;
         background:transparent!important;
       }
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-copy{
-        min-width:0!important;
-        display:grid!important;
-        align-content:center!important;
-        gap:0!important;
-      }
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-title{
+
+      #home.home-view #homeSummaryCards .fixa-week-summary-card strong,
+      #home.home-view #homeSummaryCards .home-card strong{
         display:block!important;
         min-width:0!important;
         margin:0!important;
@@ -101,7 +92,8 @@
         line-height:13px!important;
         font-weight:800!important;
       }
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-value{
+
+      #home.home-view #homeSummaryCards .home-card-number{
         display:block!important;
         margin:0!important;
         color:#172033!important;
@@ -112,14 +104,8 @@
         animation:none!important;
         transition:none!important;
       }
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-card[data-summary-key="collections"] .fixa-stable-summary-value{color:#15803d!important}
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-card[data-summary-key="questions"] .fixa-stable-summary-value{color:#0891b2!important}
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-card[data-summary-key="frozen"] .fixa-stable-summary-value,
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-card[data-summary-key="xp-total"] .fixa-stable-summary-value,
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-card[data-summary-key="xp-week"] .fixa-stable-summary-value{color:#2563eb!important}
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-card[data-summary-key="mastered"] .fixa-stable-summary-value{color:#d97706!important}
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-card[data-summary-key="accuracy"] .fixa-stable-summary-value{color:#7c3aed!important}
-      #home.home-view #${STABLE_ID} .fixa-stable-summary-caption{
+
+      #home.home-view #homeSummaryCards small{
         display:block!important;
         min-width:0!important;
         margin:0!important;
@@ -132,11 +118,17 @@
         font-weight:550!important;
       }
 
-      /* Remove somente as duas ações visuais solicitadas; a lógica de período e atividades permanece intacta. */
+      #home.home-view #homeSummaryCards [data-fixa-summary-key="collections"] .home-card-number{color:#15803d!important}
+      #home.home-view #homeSummaryCards [data-fixa-summary-key="questions"] .home-card-number{color:#0891b2!important}
+      #home.home-view #homeSummaryCards [data-fixa-summary-key="mastered"] .home-card-number{color:#d97706!important}
+      #home.home-view #homeSummaryCards [data-fixa-summary-key="accuracy"] .home-card-number{color:#7c3aed!important}
+      #home.home-view #homeSummaryCards [data-fixa-summary-key="xp-total"] .home-card-number,
+      #home.home-view #homeSummaryCards [data-fixa-summary-key="xp-week"] .home-card-number{color:#2563eb!important}
+
+      /* Mantém os ajustes compactos já aprovados na Home. */
       #home.home-view [data-fixa-week-period="week"],
       #home.home-view [data-fixa-main-tab="activities"]{display:none!important}
 
-      /* Cabeçalho mais próximo e compacto. */
       #home.home-view .home-hero-head{margin-bottom:8px!important}
       #home.home-view .fixa-reference-header-row{min-height:44px!important;gap:18px!important}
       #home.home-view .fixa-week-filters{gap:8px!important}
@@ -168,7 +160,6 @@
         line-height:14px!important;
       }
 
-      /* Período ocupa menos altura. */
       #home.home-view .fixa-reference-period-row{
         min-height:34px!important;
         margin:6px 0 7px!important;
@@ -182,7 +173,6 @@
         font-size:11px!important;
       }
 
-      /* Segunda faixa compacta sem alterar sequência, tempo ou objetivos. */
       #home.home-view #homeFooterStats{
         height:116px!important;
         min-height:116px!important;
@@ -201,7 +191,6 @@
       #home.home-view #homeFooterStats .fixa-week-days{margin-top:5px!important;gap:4px!important}
       #home.home-view #homeFooterStats .fixa-week-day i{width:27px!important;height:27px!important;font-size:11px!important}
 
-      /* Área de desenvolvimento: alvo de 235 px em desktop. */
       #home.home-view .fixa-week-main-shell{
         margin:0 0 12px!important;
         border-radius:11px!important;
@@ -236,187 +225,103 @@
       #home.home-view .fixa-unified-chart-box{height:198px!important}
 
       @media(max-width:1159px){
-        #home.home-view #${STABLE_ID}{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-      }
-      @media(max-width:900px){
-        #home.home-view #${STABLE_ID}{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-        #home.home-view .fixa-week-folder-filter,
-        #home.home-view .fixa-reference-collection-filter{width:100%!important;min-width:0!important}
+        #home.home-view #homeSummaryCards{grid-template-columns:repeat(3,minmax(0,1fr))!important}
       }
       @media(max-width:760px){
-        #home.home-view #${STABLE_ID}{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
-        #home.home-view #${STABLE_ID} .fixa-stable-summary-card{height:auto!important;min-height:62px!important}
+        #home.home-view .fixa-week-folder-filter,
+        #home.home-view .fixa-reference-collection-filter{width:100%!important;min-width:0!important}
+        #home.home-view #homeSummaryCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+        #home.home-view #homeSummaryCards .fixa-week-summary-card,
+        #home.home-view #homeSummaryCards .home-card{height:auto!important;min-height:62px!important}
         #home.home-view #homeFooterStats{height:auto!important;min-height:0!important}
         #home.home-view .fixa-week-main-shell .fixa-week-main-stage{height:auto!important;min-height:235px!important;max-height:none!important}
       }
       @media(max-width:440px){
-        #home.home-view #${STABLE_ID}{grid-template-columns:1fr!important}
+        #home.home-view #homeSummaryCards{grid-template-columns:1fr!important}
       }
     `;
     document.head.appendChild(style);
   }
 
-  function dataRef() {
-    try { return typeof data !== 'undefined' ? data : window.data; }
-    catch (_) { return window.data || null; }
+  function cardLabel(card) {
+    return card?.querySelector('strong')?.textContent?.trim() || '';
   }
 
-  function allSubjects() {
-    return Array.isArray(dataRef()?.subjects) ? dataRef().subjects : [];
-  }
-
-  function selectedSubjects() {
-    const folder = document.querySelector('#fixaWeekFolderFilter')?.value || 'all';
-    const subject = document.querySelector('#fixaReferenceCollectionFilter')?.value || 'all';
-    return allSubjects().filter(item => {
-      if (folder !== 'all' && String(item?.folder || '') !== String(folder)) return false;
-      if (subject !== 'all' && String(item?.id || '') !== String(subject)) return false;
-      return true;
-    });
-  }
-
-  function cardsFor(subject) {
-    return Array.isArray(subject?.cards) ? subject.cards : [];
-  }
-
-  function isFrozen(card) {
-    const raw = String(card?.status || '').trim().toLowerCase();
-    return raw === 'frozen' || raw.includes('congel');
-  }
-
-  function frozenCount() {
-    return selectedSubjects().reduce((sum, subject) => sum + cardsFor(subject).filter(isFrozen).length, 0);
-  }
-
-  function sourceCards() {
+  function normalizeSummaryGrid() {
     const grid = document.querySelector('#homeSummaryCards');
-    if (!grid) return new Map();
-    return new Map(Array.from(grid.querySelectorAll('.fixa-week-summary-card')).map(card => {
-      const label = card.querySelector('strong')?.textContent?.trim() || card.dataset.fixaSummaryKey || '';
-      return [label, {
-        value: card.querySelector('.home-card-number')?.textContent?.trim() || '',
-        caption: card.querySelector('small')?.textContent?.trim() || ''
-      }];
-    }).filter(([label]) => label));
-  }
+    if (!grid || syncing) return grid;
 
-  function createStableCard(item) {
-    const card = document.createElement('article');
-    card.className = 'fixa-stable-summary-card';
-    card.dataset.summaryKey = item.key;
-    card.setAttribute('aria-label', item.label);
-    card.innerHTML = `
-      <span class="fixa-stable-summary-icon ${item.tone}"><img src="${encodeURI(item.asset)}" alt="" aria-hidden="true"></span>
-      <span class="fixa-stable-summary-copy">
-        <strong class="fixa-stable-summary-title">${item.label}</strong>
-        <span class="fixa-stable-summary-value">0</span>
-        <small class="fixa-stable-summary-caption">${item.fallbackCaption}</small>
-      </span>`;
-    return card;
-  }
+    syncing = true;
+    try {
+      document.getElementById(LEGACY_STABLE_ID)?.remove();
 
-  function ensureStableGrid() {
-    const source = document.querySelector('#homeSummaryCards');
-    if (!source?.parentElement) return null;
+      const cards = Array.from(grid.children).filter(element => element.matches?.('.fixa-week-summary-card, .home-card'));
+      const byLabel = new Map();
 
-    let stable = document.getElementById(STABLE_ID);
-    if (!stable) {
-      stable = document.createElement('section');
-      stable.id = STABLE_ID;
-      stable.setAttribute('aria-label', 'Resumo do estudo');
-      const fragment = document.createDocumentFragment();
-      SUMMARY.forEach(item => fragment.appendChild(createStableCard(item)));
-      stable.appendChild(fragment);
-    }
-    if (stable.parentElement !== source.parentElement || stable.nextElementSibling !== source) {
-      source.parentElement.insertBefore(stable, source);
-    }
-    return stable;
-  }
-
-  function updateText(element, value) {
-    if (!element) return;
-    const next = String(value ?? '');
-    if (element.textContent !== next) element.textContent = next;
-  }
-
-  function syncSummary() {
-    const stable = ensureStableGrid();
-    if (!stable) return false;
-    const source = sourceCards();
-
-    SUMMARY.forEach(item => {
-      const card = stable.querySelector(`[data-summary-key="${item.key}"]`);
-      if (!card) return;
-      let value = '0';
-      let caption = item.fallbackCaption;
-
-      if (item.key === 'frozen') {
-        value = frozenCount();
-      } else {
-        const original = source.get(item.label);
-        if (original) {
-          if (original.value !== '') value = original.value;
-          if (original.caption !== '') caption = original.caption;
+      cards.forEach(card => {
+        const label = cardLabel(card);
+        if (!SUMMARY_ORDER.includes(label)) {
+          card.remove();
+          return;
         }
-      }
+        if (byLabel.has(label)) {
+          card.remove();
+          return;
+        }
+        byLabel.set(label, card);
+      });
 
-      updateText(card.querySelector('.fixa-stable-summary-value'), value);
-      updateText(card.querySelector('.fixa-stable-summary-caption'), caption);
+      SUMMARY_ORDER.forEach(label => {
+        const card = byLabel.get(label);
+        if (card && card !== grid.lastElementChild) grid.appendChild(card);
+      });
+
+      return grid;
+    } finally {
+      syncing = false;
+    }
+  }
+
+  function observeGrid(grid) {
+    if (!grid || grid === observedGrid) return;
+    gridObserver?.disconnect();
+    observedGrid = grid;
+    gridObserver = new MutationObserver(() => scheduleSync());
+    gridObserver.observe(grid, { childList: true });
+  }
+
+  function scheduleSync() {
+    if (syncFrame) return;
+    syncFrame = requestAnimationFrame(() => {
+      syncFrame = 0;
+      syncAll();
     });
-    return true;
-  }
-
-  function scheduleSummary(delay = 90) {
-    window.clearTimeout(syncTimer);
-    syncTimer = window.setTimeout(() => {
-      syncTimer = 0;
-      syncSummary();
-    }, delay);
-  }
-
-  function observeSource() {
-    const source = document.querySelector('#homeSummaryCards');
-    if (!source || source === observedSource) return;
-    sourceObserver?.disconnect();
-    observedSource = source;
-    sourceObserver = new MutationObserver(() => scheduleSummary(90));
-    sourceObserver.observe(source, { childList: true, subtree: true, characterData: true });
-  }
-
-  function keepActivitiesFromBeingHiddenActive() {
-    const activities = document.querySelector('#home [data-fixa-main-tab="activities"]');
-    if (!activities) return;
-    const selected = activities.classList.contains('active') || activities.getAttribute('aria-selected') === 'true';
-    if (!selected) return;
-    const fallback = document.querySelector('#home [data-fixa-main-tab="performance-goals"]') || document.querySelector('#home [data-fixa-main-tab="review-summary"]');
-    fallback?.click();
   }
 
   function syncAll() {
     ensureStyle();
-    observeSource();
-    keepActivitiesFromBeingHiddenActive();
-    syncSummary();
-    return true;
+    const grid = normalizeSummaryGrid();
+    observeGrid(grid);
+    return Boolean(grid);
   }
 
-  document.addEventListener('change', event => {
-    if (event.target.closest('#fixaWeekFolderFilter,#fixaReferenceCollectionFilter')) scheduleSummary(0);
-  });
   document.addEventListener('click', event => {
-    if (event.target.closest('[data-fixa-week-period],[data-fixa-main-tab],[data-view="home"],#homeTopTab')) scheduleSummary(100);
+    if (event.target.closest('[data-view="home"], #homeTopTab, [data-fixa-week-period], #fixaWeekFolderFilter, #fixaReferenceCollectionFilter')) {
+      scheduleSync();
+    }
   });
-  window.addEventListener('fixa-xp-updated', () => scheduleSummary(120));
-  window.addEventListener('load', () => scheduleSummary(0), { once: true });
 
-  const rootObserver = new MutationObserver(() => {
-    ensureStyle();
-    observeSource();
-    scheduleSummary(90);
+  document.addEventListener('change', event => {
+    if (event.target.closest('#fixaWeekFolderFilter, #fixaReferenceCollectionFilter')) scheduleSync();
   });
-  rootObserver.observe(document.documentElement, { childList: true, subtree: true });
 
-  ensureStyle();
+  window.addEventListener('load', scheduleSync, { once: true });
+
+  let tries = 0;
+  const boot = window.setInterval(() => {
+    tries += 1;
+    if (syncAll() || tries >= 40) window.clearInterval(boot);
+  }, 150);
+
   syncAll();
 })();
