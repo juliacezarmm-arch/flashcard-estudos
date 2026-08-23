@@ -19,6 +19,7 @@
   let gridObserver = null;
   let syncFrame = 0;
   let syncing = false;
+  let resizeFrame = 0;
 
   const api = window.FixaHomeReferenceLayoutV3 = {
     active: true,
@@ -165,8 +166,11 @@
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-total"] .home-card-number,
       #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-week"] .home-card-number{color:#2563eb!important}
 
-      /* Cabeçalho e filtros voltam à escala compacta anterior. */
-      #home.home-view .home-hero-head{margin-bottom:8px!important}
+      /* Desce discretamente filtros e saudação e os aproxima da primeira linha. */
+      #home.home-view .home-hero-head{
+        padding-top:6px!important;
+        margin-bottom:2px!important;
+      }
       #home.home-view .fixa-reference-header-row{min-height:44px!important;gap:18px!important}
       #home.home-view .fixa-week-filters{gap:8px!important}
       #home.home-view .fixa-week-folder-filter,
@@ -215,7 +219,7 @@
         font-size:11px!important;
       }
 
-      /* Segunda linha: restaura o tamanho anterior sem perder o conteúdo. */
+      /* Segunda linha permanece exatamente na escala aprovada. */
       #home.home-view #homeFooterStats{
         height:116px!important;
         min-height:116px!important;
@@ -234,27 +238,40 @@
       #home.home-view #homeFooterStats .fixa-week-days{margin-top:5px!important;gap:4px!important}
       #home.home-view #homeFooterStats .fixa-week-day i{width:27px!important;height:27px!important;font-size:11px!important}
 
-      /* Terceira linha: volta à altura anterior. As abas permanecem todas visíveis. */
+      /* Terceira linha ocupa a altura restante da janela. Só o conteúdo dela rola. */
       #home.home-view .fixa-week-main-shell{
-        margin:0 0 12px!important;
+        height:var(--fixa-third-line-height,360px)!important;
+        min-height:180px!important;
+        max-height:none!important;
+        margin:0 0 10px!important;
         border-radius:11px!important;
+        overflow:hidden!important;
+        display:flex!important;
+        flex-direction:column!important;
       }
       #home.home-view .fixa-week-content-tabs{
+        flex:0 0 auto!important;
         overflow-x:auto!important;
         overflow-y:hidden!important;
         scrollbar-width:none!important;
       }
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar{display:none!important}
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage{
-        height:235px!important;
-        min-height:235px!important;
-        max-height:235px!important;
+        flex:1 1 auto!important;
+        height:auto!important;
+        min-height:0!important;
+        max-height:none!important;
         padding:9px 11px!important;
-        overflow:hidden!important;
+        overflow-y:auto!important;
+        overflow-x:hidden!important;
+        scrollbar-width:thin!important;
+        scrollbar-gutter:stable!important;
+        overscroll-behavior:contain!important;
       }
       #home.home-view .fixa-week-main-pane .home-collection-scroll{
-        height:190px!important;
-        max-height:190px!important;
+        height:auto!important;
+        max-height:none!important;
+        overflow-y:visible!important;
       }
       #home.home-view .home-collection-grid.fixa-week-collection-list{gap:6px!important}
       #home.home-view .fixa-week-collection{
@@ -268,8 +285,16 @@
       #home.home-view .fixa-week-collection .home-collection-metrics b{font-size:9.5px!important}
       #home.home-view .fixa-week-collection .home-collection-metrics small{font-size:6.8px!important}
       #home.home-view .fixa-unified-priority-list,
-      #home.home-view .fixa-unified-question-status{height:187px!important}
-      #home.home-view .fixa-unified-chart-box{height:198px!important}
+      #home.home-view .fixa-unified-question-status,
+      #home.home-view .fixa-unified-chart-box{
+        height:auto!important;
+        min-height:0!important;
+        max-height:none!important;
+      }
+      #home.home-view .fixa-week-main-pair,
+      #home.home-view [data-fixa-main-panel]{
+        min-height:100%!important;
+      }
 
       @media(max-width:1159px){
         #home.home-view #homeSummaryCards{grid-template-columns:repeat(3,minmax(0,1fr))!important}
@@ -284,7 +309,7 @@
         #home.home-view #homeSummaryCards .home-card{height:auto!important;min-height:62px!important}
         #home.home-view #homeFooterStats{height:auto!important;min-height:0!important}
         #home.home-view #homeFooterStats .fixa-week-top-card{height:auto!important;min-height:116px!important}
-        #home.home-view .fixa-week-main-shell .fixa-week-main-stage{height:auto!important;min-height:235px!important;max-height:none!important}
+        #home.home-view .fixa-week-main-shell{min-height:150px!important}
       }
       @media(max-width:440px){
         #home.home-view #homeSummaryCards{grid-template-columns:1fr!important}
@@ -386,6 +411,29 @@
     return activateMainTab(key);
   }
 
+  function fitThirdLineToViewport() {
+    const shell = document.querySelector('#home.home-view .fixa-week-main-shell');
+    if (!shell) return false;
+
+    const viewportHeight = Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 0);
+    if (!viewportHeight) return false;
+
+    const top = Math.round(shell.getBoundingClientRect().top);
+    const bottomGap = 14;
+    const available = Math.floor(viewportHeight - top - bottomGap);
+    const target = Math.max(150, available);
+    shell.style.setProperty('--fixa-third-line-height', `${target}px`);
+    return true;
+  }
+
+  function scheduleViewportFit() {
+    if (resizeFrame) return;
+    resizeFrame = requestAnimationFrame(() => {
+      resizeFrame = 0;
+      fitThirdLineToViewport();
+    });
+  }
+
   function observeGrid(grid) {
     if (!grid || grid === observedGrid) return;
     gridObserver?.disconnect();
@@ -407,6 +455,7 @@
     const grid = normalizeSummaryGrid();
     observeGrid(grid);
     syncMainTabs();
+    fitThirdLineToViewport();
     return Boolean(grid);
   }
 
@@ -414,7 +463,10 @@
     const mainTab = event.target.closest('#home.home-view [data-fixa-main-tab]');
     if (mainTab) {
       const key = mainTab.dataset.fixaMainTab;
-      requestAnimationFrame(() => activateMainTab(key));
+      requestAnimationFrame(() => {
+        activateMainTab(key);
+        fitThirdLineToViewport();
+      });
       return;
     }
 
@@ -427,6 +479,8 @@
     if (event.target.closest('#fixaWeekFolderFilter, #fixaReferenceCollectionFilter')) scheduleSync();
   });
 
+  window.addEventListener('resize', scheduleViewportFit, { passive: true });
+  window.visualViewport?.addEventListener('resize', scheduleViewportFit, { passive: true });
   window.addEventListener('load', scheduleSync, { once: true });
 
   let tries = 0;
