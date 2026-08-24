@@ -2,7 +2,7 @@
   'use strict';
   if (window.FixaHomeGoalsStreakProtectionV1?.active) return;
 
-  const FROZEN_FIRE_SRC = 'referencias/fogo-congelado-sequencia.png';
+  const FROZEN_FIRE_SRC = 'assets/icons/frozen-fire-sequence.svg';
   const state = {
     protection: { available: 0, maximum: 3, protected_days: [] },
     weekXp: 0,
@@ -186,8 +186,10 @@
     if (!right) return null;
     return Array.from(right.querySelectorAll('button,div,span')).find(element => {
       if (element.classList.contains('fixa-streak-freeze-box')) return false;
+      if (element.classList.contains('fixa-streak-help') || element.classList.contains('fixa-streak-help-button')) return false;
+      if (element.closest?.('.fixa-streak-help')) return false;
       return /^\s*[^\d]*\d+\s+dias?\s*$/i.test((element.textContent || '').trim());
-    }) || right.querySelector('[class*=streak], [class*=sequence]');
+    }) || right.querySelector('#homeTopStreak, .home-top-streak, [class*=sequence]');
   }
 
   function matchFreezeToStreak(box, streakBox) {
@@ -196,13 +198,14 @@
     const css = getComputedStyle(streakBox);
     if (!rect.width || !rect.height) return;
 
-    box.style.setProperty('width', `${rect.width}px`, 'important');
-    box.style.setProperty('min-width', `${rect.width}px`, 'important');
-    box.style.setProperty('max-width', `${rect.width}px`, 'important');
+    const compactWidth = Math.max(52, Math.min(62, Math.round(rect.width - 12)));
+    box.style.setProperty('width', `${compactWidth}px`, 'important');
+    box.style.setProperty('min-width', `${compactWidth}px`, 'important');
+    box.style.setProperty('max-width', `${compactWidth}px`, 'important');
     box.style.setProperty('height', `${rect.height}px`, 'important');
     box.style.setProperty('min-height', `${rect.height}px`, 'important');
     box.style.setProperty('max-height', `${rect.height}px`, 'important');
-    box.style.setProperty('padding', css.padding, 'important');
+    box.style.setProperty('padding', '0 8px', 'important');
     box.style.setProperty('border-radius', css.borderRadius, 'important');
     box.style.setProperty('font-size', css.fontSize, 'important');
     box.style.setProperty('font-weight', css.fontWeight, 'important');
@@ -297,7 +300,7 @@
       return `<div class="fixa-panel-help-topic-head"><div class="fixa-panel-help-topic-icon">${HELP_ICONS.protection}</div><h4>Proteção</h4></div><div class="fixa-panel-help-copy"><ul><li>Você ganha <strong>1 proteção a cada 4 dias consecutivos</strong> estudando.</li><li>É possível acumular no máximo <strong>3 proteções</strong>.</li><li>Se perder um dia, <strong>1 proteção é usada automaticamente</strong> e sua sequência continua.</li><li>O dia salvo pela proteção aparece em <strong>azul</strong> no calendário.</li><li>Completar <strong>100% dos objetivos da semana</strong> também pode conceder +1 proteção, respeitando o limite de 3.</li></ul></div><div class="fixa-panel-help-tip"><strong>Dica:</strong> o número ao lado do fogo gelado mostra quantas proteções você tem disponíveis.</div>`;
     }
     if (topic === 'xp') {
-      return `<div class="fixa-panel-help-topic-head"><div class="fixa-panel-help-topic-icon">${HELP_ICONS.xp}</div><h4>XP</h4></div><div class="fixa-panel-help-copy"><p>XP são os pontos que registram seu progresso de estudo dentro do Fixa.</p><p><strong>XP Coleções</strong> mostra o total acumulado ligado às suas coleções, enquanto <strong>XP Semana</strong> mostra o que foi conquistado na semana atual.</p><p>Resolver testes, cumprir objetivos e outras atividades elegíveis podem acrescentar XP.</p></div><div class="fixa-panel-help-tip"><strong>Dica:</strong> use o XP semanal para acompanhar o ritmo da semana sem confundir com o acumulado geral.</div>`;
+      return `<div class="fixa-panel-help-topic-head"><div class="fixa-panel-help-topic-icon">${HELP_ICONS.xp}</div><h4>XP</h4></div><div class="fixa-panel-help-copy"><p>XP são os pontos que registram seu progresso de estudo dentro do Fixa.</p><p><strong>XP Coleções</strong> mostra o XP das coleções no período selecionado: hoje, semana ou mês.</p><p>Resolver testes, cumprir objetivos e outras atividades elegíveis podem acrescentar XP.</p></div><div class="fixa-panel-help-tip"><strong>Dica:</strong> alterne o período no topo da página inicial para comparar o ritmo de estudo.</div>`;
     }
     if (topic === 'goals') {
       return `<div class="fixa-panel-help-topic-head"><div class="fixa-panel-help-topic-icon">${HELP_ICONS.goals}</div><h4>Objetivos</h4></div><div class="fixa-panel-help-copy"><p>Os objetivos da semana acompanham metas como <strong>resolver questões</strong>, <strong>fazer testes</strong> e <strong>dominar questões</strong>.</p><p>Cada objetivo mostra o progresso atual e a recompensa de XP correspondente.</p><p>Ao completar <strong>100% dos objetivos da semana</strong>, você também pode ganhar +1 proteção, respeitando o limite máximo de 3.</p></div><div class="fixa-panel-help-tip"><strong>Dica:</strong> o card “Objetivo da semana” resume o progresso geral das metas semanais.</div>`;

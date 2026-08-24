@@ -25,6 +25,17 @@
   let baselineUserId = null;
   let integrityIssue = false;
 
+  function hasPendingLocalCloudSync() {
+    try {
+      const key = typeof pendingSyncKey !== 'undefined'
+        ? pendingSyncKey
+        : 'flashcard-estudos-v2-pending-cloud-sync';
+      return Boolean(localStorage.getItem(key));
+    } catch (_) {
+      return false;
+    }
+  }
+
   function isValidSubject(subject) {
     return Boolean(subject) && typeof subject === 'object' && !Array.isArray(subject);
   }
@@ -180,8 +191,9 @@
   if (originalScheduleCloudSave) {
     scheduleCloudSave = function safeScheduleCloudSave(...args) {
       if (integrityIssue) return;
-      if (!cloudHydrated) return;
-      if (typeof loadingCloud !== 'undefined' && loadingCloud) return;
+      const pendingLocalSync = hasPendingLocalCloudSync();
+      if (!cloudHydrated && !pendingLocalSync) return;
+      if (typeof loadingCloud !== 'undefined' && loadingCloud && !pendingLocalSync) return;
 
       const now = currentCounts();
       if (baselineUserId === currentUserId() && isMassiveReduction(baseline, now)) {

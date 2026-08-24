@@ -15,33 +15,47 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260822-home-stability-v4";
-    const appFiles = [
-      ["html", "index-base.html", "Não foi possível carregar a aplicação."],
+    const FIXA_VERSION = "20260824-import-save-fix-v18";
+    const appShellFile = ["html", "index-base.html", "Não foi possível carregar a aplicação."];
+    const appScripts = [
+      // Base da aplicação
       ["collections", "src/core/collections.js", "Não foi possível carregar as coleções."],
       ["questions", "src/core/questions-ui.js", "Não foi possível carregar os ajustes das questões."],
       ["importReview", "src/core/import-review.js", "Não foi possível carregar a revisão de importação."],
       ["analysis", "src/core/analysis-ui.js", "Não foi possível carregar a análise."],
       ["layout", "src/core/layout-ui.js", "Não foi possível carregar o layout."],
+
+      // Testes
       ["testFolder", "src/test/test-folder.js", "Não foi possível carregar o Teste pasta."],
+      ["completedTestResetV1", "src/test/completed-test-reset-v1.js", "Não foi possível carregar o reset dos testes concluídos."],
+      ["testHistoryLayoutV1", "src/test/test-history-layout-v1.js", "Não foi possível carregar o layout do histórico de testes."],
+
+      // Coleções e navegação
       ["collectionsOverlayStyle", "src/collections-menu/collections-overlay-style.js", "Não foi possível carregar o estilo do menu de coleções."],
       ["collectionsOverlayMenu", "src/collections-menu/collections-overlay-menu.js", "Não foi possível carregar o menu de coleções."],
       ["collectionsOverlayOutsideClick", "src/collections-menu/collections-overlay-outside-click.js", "Não foi possível carregar o fechamento do menu de coleções."],
       ["topbarHomeAlignment", "src/fixes/topbar-home-alignment.js", "Não foi possível alinhar o cabeçalho da página inicial."],
+
+      // Ajustes gerais e área Adicionar
       ["hotfix", "src/fixes/hotfix-home-encoding.js", "Não foi possível carregar a correção de textos."],
       ["secondaryTabsLayoutFix", "src/fixes/secondary-tabs-layout-fix.js", "Não foi possível carregar o ajuste das abas secundárias."],
       ["secondaryContentSpacingV1", "src/fixes/secondary-content-spacing-v1.js", "Não foi possível ajustar o espaçamento entre as abas secundárias e o conteúdo."],
       ["addSpacingFix", "src/fixes/add-spacing-fix.js", "Não foi possível carregar a correção de espaçamento."],
+      ["homeDataReadyRefreshV1", "src/home/home-data-ready-refresh-v1.js", "Não foi possível carregar a atualização inicial da Home."],
       ["addButtonsStyle", "src/fixes/add-buttons-style.js", "Não foi possível carregar o estilo dos botões de Adicionar."],
-      ["sequenceVisualFix", "src/fixes/sequence-visual-fix.js", "Não foi possível carregar o ajuste visual da sequência."],
+      ["sequenceVisualFix", "src/home/sequence-visual-fix.js", "Não foi possível carregar o ajuste visual da sequência."],
       ["reviewQuestionsUi", "src/core/review-questions-ui.js", "Não foi possível carregar a interface de revisão de questões."],
       ["questionsHub", "src/core/questions-hub.js", "Não foi possível unificar Questões e Adicionar."],
+
+      // Conta, autenticação e imagens
       ["authLoginRecovery", "src/auth/auth-login-recovery.js", "Não foi possível carregar o reforço do login."],
       ["dexBottomScrollFix", "src/fixes/dex-bottom-scroll-fix.js", "Não foi possível carregar a correção de rolagem do DeX."],
       ["storageImageLazyLoad", "src/storage/storage-image-lazy-load.js", "Não foi possível carregar as imagens sob demanda."],
       ["reviewStorageUpload", "src/storage/review-storage-upload.js", "Não foi possível carregar o envio das imagens ao Storage."],
       ["collectionOpenQuestions", "src/core/collection-open-questions.js", "Não foi possível carregar a navegação das coleções."],
       ["questionsHeightFix", "src/fixes/questions-height-fix.js", "Não foi possível carregar o ajuste de altura das questões."],
+
+      // Competição
       ["competitionUpdateV3", "src/competition/competition-update-v3.js", "Não foi possível carregar a atualização da competição."],
       ["competitionSecondaryTabsPlacement", "src/competition/competition-secondary-tabs-placement.js", "Não foi possível posicionar as ações secundárias da competição."],
       ["competitionPolishV6", "src/competition/competition-polish-v6.js", "Não foi possível refinar a interface da competição."],
@@ -50,16 +64,28 @@
       ["competitionPositionCardV1", "src/competition/competition-position-card-v1.js", "Não foi possível refinar o cartão Minha posição."],
       ["competitionLayoutBalanceV1", "src/competition/competition-layout-balance-v1.js", "Não foi possível alinhar os cartões da competição."],
       ["competitionInvitationsV9", "src/competition/competition-invitations-v9.js", "Não foi possível carregar os convites da competição."],
+      ["competitionScoringRulesV1", "src/competition/competition-scoring-rules-v1.js", "Não foi possível carregar as regras de pontuação da competição."],
+      ["competitionRulesModalV1", "src/competition/competition-rules-modal-v1.js", "Não foi possível carregar o modal de regras da competição."],
+      ["competitionSignalSkipV1", "src/competition/competition-signal-skip-v1.js", "Não foi possível carregar a sinalização de questões da competição."],
+      ["competitionOwnerFreezeSyncV1", "src/competition/competition-owner-freeze-sync-v1.js", "Não foi possível sincronizar questões congeladas da competição."],
+      ["competitionFlagReviewV1", "src/competition/competition-flag-review-v1.js", "Não foi possível carregar a revisão de sinalizações da competição."],
+      ["competitionOwnerFreezeNoticeV1", "src/competition/competition-owner-freeze-notice-v1.js", "Não foi possível carregar os avisos de congelamento da competição."],
+      ["competitionWeeklyHistoryV1", "src/competition/competition-weekly-history-v1.js", "Não foi possível carregar o histórico semanal da competição."],
+      ["competitionParticipantExportGuardV1", "src/competition/competition-participant-export-guard-v1.js", "Não foi possível carregar a proteção de exportação da competição."],
       ["competitionXpHomeV4", "src/competition/competition-xp-home-v4.js", "Não foi possível concluir a integração de XP."],
+
+      // Pós-carregamento e Home
       ["accountDataIsolation", "src/auth/account-data-isolation.js", "Não foi possível isolar os dados desta conta."],
       ["collectionsMenuActions", "src/collections-menu/collections-menu-actions.js", "Não foi possível carregar as ações dos menus de coleções."],
       ["collectionsFloatingMenuFix", "src/collections-menu/collections-floating-menu-fix.js", "Não foi possível restaurar o menu flutuante das coleções."],
-      ["homeTodayPolishNoScroll", "src/fixes/home-today-polish-no-scroll.js", "Não foi possível carregar a estrutura da página inicial."],
-      ["homeUnifiedDashboardV2", "src/fixes/home-unified-dashboard-v2.js", "Não foi possível carregar a página inicial consolidada."],
-      ["homeGoalsStreakProtectionV1", "src/fixes/home-goals-streak-protection-v1.js", "Não foi possível carregar XP e proteção da página inicial."],
-      ["homeArtCompetitionFix", "src/fixes/home-art-and-competition-icon-fix.js", "Não foi possível ajustar o cabeçalho e o ícone de competição."],
-      ["homeEmptyStateArt", "src/fixes/home-empty-state-art.js", "Não foi possível carregar os estados auxiliares da página inicial."]
+      ["homeTodayPolishNoScroll", "src/home/home-today-polish-no-scroll.js", "Não foi possível carregar a estrutura da página inicial."],
+      ["homeUnifiedDashboardV2", "src/home/home-unified-dashboard-v2.js", "Não foi possível carregar a página inicial consolidada."],
+      ["homeGoalsStreakProtectionV1", "src/home/home-goals-streak-protection-v1.js", "Não foi possível carregar XP e proteção da página inicial."],
+      ["homeReferenceLayoutV3", "src/home/home-reference-layout-v3.js", "Não foi possível carregar o layout de referência da página inicial."],
+      ["homeArtCompetitionFix", "src/home/home-art-and-competition-icon-fix.js", "Não foi possível ajustar o cabeçalho e o ícone de competição."],
+      ["homeEmptyStateArt", "src/home/home-empty-state-art.js", "Não foi possível carregar os estados auxiliares da página inicial."]
     ];
+    const appFiles = [appShellFile, ...appScripts];
 
     function loadFile([key, file, message]) {
       return fetch(`${file}?v=${FIXA_VERSION}`, { cache: "no-store" }).then(response => {
@@ -87,49 +113,22 @@ IMAGENS NA EXPLICAÇÃO
 - Ao preparar um ZIP, incluir também todos os arquivos citados em explanationImages junto com o JSON e as demais imagens da questão.</textarea>`
         );
         const closingScript = "</scr" + "ipt>";
-        const scriptFiles = ["collections", "questions", "importReview", "analysis", "layout", "testFolder", "collectionsOverlayStyle", "collectionsOverlayMenu", "collectionsOverlayOutsideClick", "topbarHomeAlignment", "hotfix", "secondaryTabsLayoutFix", "secondaryContentSpacingV1", "addSpacingFix", "addButtonsStyle", "sequenceVisualFix", "reviewQuestionsUi", "questionsHub", "authLoginRecovery", "dexBottomScrollFix", "storageImageLazyLoad", "reviewStorageUpload", "collectionOpenQuestions", "questionsHeightFix", "competitionUpdateV3", "competitionSecondaryTabsPlacement", "competitionPolishV6", "competitionActiveFlowV1", "competitionManagerV7", "competitionPositionCardV1", "competitionLayoutBalanceV1", "competitionInvitationsV9", "accountDataIsolation", "competitionXpHomeV4", "collectionsMenuActions", "collectionsFloatingMenuFix", "homeTodayPolishNoScroll", "homeUnifiedDashboardV2", "homeGoalsStreakProtectionV1", "homeArtCompetitionFix", "homeEmptyStateArt"];
+        const closingHead = "</he" + "ad>";
+        const closingBody = "</bo" + "dy>";
+        const scriptFiles = appScripts.map(([key]) => key);
         const scripts = scriptFiles.map(key => {
           let safeCode = assets[key];
-
-          if (key === "layout") {
-            safeCode = safeCode.replace(
-              "  const studyArt = homeView.querySelector('.home-study-head .home-icon');\n   if (studyArt) {\n    const image = document.createElement('img');\n    image.className = 'home-study-art';\n    image.src = homeAsset(HOME_ASSETS.clipboard);\n    image.alt = 'Prancheta com tarefas de estudo';\n     studyArt.replaceWith(image);\n   }",
-              "  const studyArt = homeView.querySelector('.home-study-head .home-icon');\n  if (studyArt) studyArt.remove();"
-            );
-            safeCode = safeCode.replace(
-              "   function renderHome() {\n",
-              "   function renderHome() {\n     if (window.FixaHomeWeeklyDashboardV2?.refresh) {\n       window.FixaHomeWeeklyDashboardV2.refresh();\n       return;\n     }\n"
-            );
-          }
-
-          if (key === "competitionUpdateV3") {
-            safeCode = safeCode.replace(
-              "const uid = () => window.currentUser?.id || null;",
-              "const uid = () => window.currentUser?.id || (typeof currentUser !== 'undefined' ? currentUser?.id : null) || null;"
-            );
-            safeCode = safeCode.replace(
-              "async function load(){if(!uid()||!sb())return;root.innerHTML=",
-              "async function load(){if(!sb()){root.innerHTML=head()+'<div class=\"cv3-card\"><h3>Não foi possível conectar ao servidor</h3><p class=\"cv3-muted\">Atualize a página e tente novamente.</p></div>';bind();return;}root.innerHTML="
-            );
-          }
-
-          if (key === "reviewStorageUpload") {
-            safeCode = safeCode.replace(
-              "function resolveStorageImage(img) {\n    const source = img.getAttribute('src') || '';",
-              "function resolveStorageImage(img) {\n    if (window.FixaStorageLazyLoader?.observe) {\n      window.FixaStorageLazyLoader.observe(img);\n      return;\n    }\n    const source = img.getAttribute('src') || '';"
-            );
-          }
 
           safeCode = safeCode.split(closingScript).join("<\\/scr" + "ipt>");
           return "<scr" + "ipt>" + safeCode + closingScript;
         }).join("");
 
         const faviconTag = '<link rel="icon" type="image/svg+xml" href="./favicon.svg">';
-        const htmlWithFavicon = assets.html.includes("</head>")
-          ? assets.html.replace("</head>", faviconTag + "</head>")
+        const htmlWithFavicon = assets.html.includes(closingHead)
+          ? assets.html.replace(closingHead, faviconTag + closingHead)
           : faviconTag + assets.html;
-        const completeHtml = htmlWithFavicon.includes("</body>")
-          ? htmlWithFavicon.replace("</body>", scripts + "</body>")
+        const completeHtml = htmlWithFavicon.includes(closingBody)
+          ? htmlWithFavicon.replace(closingBody, scripts + closingBody)
           : htmlWithFavicon + scripts;
         document.open();
         document.write(completeHtml);

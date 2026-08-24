@@ -4856,7 +4856,7 @@
               </button>
             </div>
 
-            <p class="add-info" id="addModeInfo">Crie uma coleção primeiro para liberar a adição e a importação de questões.</p>
+            <p class="add-info" id="addModeInfo" hidden></p>
 
             <div class="add-section active" id="createCollectionSection">
               <div class="collection-flow">
@@ -5364,6 +5364,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     const cloudTable = "flashcard_data";
 
     const storeKey = "flashcard-estudos-v2";
+    const pendingSyncKey = `${storeKey}-pending-cloud-sync`;
     const initialData = {
       selected: "",
       folders: [],
@@ -5372,6 +5373,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     };
 
     const MASTERY_TARGET = 4;
+    const TEST_HISTORY_LIMIT = 500;
     let data = load();
     let studyIndex = 0;
     let showingAnswer = false;
@@ -5589,10 +5591,22 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       return normalizeData(saved ? JSON.parse(saved) : structuredClone(initialData));
     }
 
+    function localDateKey(value = new Date()) {
+      const date = value instanceof Date ? value : new Date(value || 0);
+      if (Number.isNaN(date.getTime())) return "";
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    function normalizeHistoryItem(item) {
+      if (!item || typeof item !== "object") return item;
+      if (!item.completedOn) item.completedOn = localDateKey(item.date || item.completedAt || item.finishedAt || item.createdAt);
+      return item;
+    }
+
     function normalizeData(value) {
       const normalized = value && typeof value === "object" ? value : structuredClone(initialData);
       normalized.folders = Array.isArray(normalized.folders) ? normalized.folders : [];
-      normalized.testHistory = Array.isArray(normalized.testHistory) ? normalized.testHistory.slice(0, 10) : [];
+      normalized.testHistory = Array.isArray(normalized.testHistory) ? normalized.testHistory.slice(0, TEST_HISTORY_LIMIT).map(normalizeHistoryItem) : [];
       normalized.subjects = Array.isArray(normalized.subjects) ? normalized.subjects : [];
       normalized.subjects.forEach(subject => {
         subject.cards = Array.isArray(subject.cards) ? subject.cards.map(normalizeCard) : [];
@@ -5768,17 +5782,40 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     }
     function save() {
       localStorage.setItem(storeKey, JSON.stringify(data));
+      markPendingCloudSync();
       scheduleCloudSave();
+    }
+
+    function markPendingCloudSync() {
+      try {
+        localStorage.setItem(pendingSyncKey, String(Date.now()));
+      } catch (_) {}
+    }
+
+    function clearPendingCloudSync() {
+      try {
+        localStorage.removeItem(pendingSyncKey);
+      } catch (_) {}
+    }
+
+    function hasPendingCloudSync() {
+      try {
+        return Boolean(localStorage.getItem(pendingSyncKey));
+      } catch (_) {
+        return false;
+      }
     }
 
     function scheduleCloudSave() {
       if (!currentUser || !cloudReady || loadingCloud || !supabaseClient) return;
       clearTimeout(saveTimer);
-      saveTimer = setTimeout(saveCloudData, 350);
+      saveTimer = setTimeout(saveCloudData, 90);
     }
 
     async function saveCloudData() {
       if (!currentUser || !cloudReady || !supabaseClient) return;
+      clearTimeout(saveTimer);
+      saveTimer = null;
       const { error } = await supabaseClient
         .from(cloudTable)
         .upsert({
@@ -5790,12 +5827,20 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (error) {
         console.warn("Não consegui salvar no Supabase:", error.message);
         setAuthStatus("Conectado, mas não consegui salvar online agora.");
+      } else {
+        clearPendingCloudSync();
       }
+    }
+
+    async function saveNow() {
+      save();
+      await saveCloudData();
     }
 
     async function loadCloudData() {
       if (!currentUser || !supabaseClient) return;
       loadingCloud = true;
+      const localHasPendingChanges = hasPendingCloudSync();
       const { data: row, error } = await supabaseClient
         .from(cloudTable)
         .select("data")
@@ -5806,8 +5851,13 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         console.warn("Não consegui carregar do Supabase:", error.message);
         setAuthStatus("Conectado, mas não consegui carregar os dados online.");
       } else if (row?.data) {
-        data = normalizeData(row.data);
-        localStorage.setItem(storeKey, JSON.stringify(data));
+        if (localHasPendingChanges) {
+          data = normalizeData(data);
+          await saveCloudData();
+        } else {
+          data = normalizeData(row.data);
+          localStorage.setItem(storeKey, JSON.stringify(data));
+        }
       } else {
         data = normalizeData(data);
         await saveCloudData();
@@ -6197,7 +6247,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         button.setAttribute("aria-disabled", String(!hasCollections));
       });
       if (el.addModeInfo) {
-        el.addModeInfo.hidden = hasCollections;
+        el.addModeInfo.hidden = true;
+        el.addModeInfo.textContent = "";
       }
       if (!hasCollections && addMode !== "collection") showAddMode("collection");
       updateCreateCollectionState();
@@ -6458,16 +6509,40 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       ensureCollectionFolderSelection();
     }
 
+    function destinationSubjectsForActiveFolder() {
+      const subject = currentSubject();
+      const folderId = subject?.folder || "";
+      if (!folderId) return data.subjects;
+      const scoped = data.subjects.filter(item => item.folder === folderId);
+      return scoped.length ? scoped : data.subjects;
+    }
+
+    function setSelectToAvailableCollection(select, preferredId, subjects) {
+      if (!select) return;
+      const availableIds = new Set(subjects.map(subject => subject.id));
+      const previous = select.value;
+      const next = availableIds.has(preferredId)
+        ? preferredId
+        : availableIds.has(previous)
+          ? previous
+          : subjects[0]?.id || "";
+      select.value = next;
+    }
+
     function renderCollectionSelects() {
-      const options = data.subjects.length
-        ? data.subjects.map(subject => `<option value="${escapeHtml(subject.id)}">${escapeHtml(subject.name)}</option>`).join("")
+      const subjects = data.subjects.length ? destinationSubjectsForActiveFolder() : [];
+      const previousQuestionCollection = el.questionCollection?.value || "";
+      const previousImportCollection = el.importCollection?.value || "";
+      const options = subjects.length
+        ? subjects.map(subject => `<option value="${escapeHtml(subject.id)}">${escapeHtml(subject.name)}</option>`).join("")
         : `<option value="">Crie uma coleção primeiro</option>`;
       [el.questionCollection, el.importCollection].forEach(select => {
         if (!select) return;
         select.innerHTML = options;
-        select.disabled = !data.subjects.length;
-        select.value = data.selected || currentSubject()?.id || "";
+        select.disabled = !subjects.length;
       });
+      setSelectToAvailableCollection(el.questionCollection, data.selected || previousQuestionCollection || currentSubject()?.id || "", subjects);
+      setSelectToAvailableCollection(el.importCollection, previousImportCollection || data.selected || currentSubject()?.id || "", subjects);
     }
 
     function selectDestinationCollection(value) {
@@ -7044,9 +7119,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         durationMs: testDurationMs(),
         ratings: testState.ratings || defaultRatings(),
         mode: testState.mode || "quick",
+        completedOn: localDateKey(new Date()),
         date: new Date().toISOString()
       });
-      data.testHistory = data.testHistory.slice(0, 10);
+      data.testHistory = data.testHistory.slice(0, TEST_HISTORY_LIMIT);
       testState.recorded = true;
       save();
       renderTestHistory();
@@ -7714,7 +7790,6 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     el.showAddQuestion.addEventListener("click", () => showAddMode("question"));
     el.showImportQuestion.addEventListener("click", () => showAddMode("import"));
     el.questionCollection.addEventListener("change", event => selectDestinationCollection(event.target.value));
-    el.importCollection.addEventListener("change", event => selectDestinationCollection(event.target.value));
     el.collectionName.addEventListener("input", updateCreateCollectionState);
     el.collectionFolder.addEventListener("change", updateCreateCollectionState);
 
@@ -8110,7 +8185,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         : "Escreva a explicação da resposta, se tiver";
     });
 
-    el.createCollection.addEventListener("click", () => {
+    el.createCollection.addEventListener("click", async () => {
       const name = el.collectionName.value.trim();
       if (!name) {
         setMessage(el.collectionMessage, "Digite o nome da coleção.", "error");
@@ -8132,6 +8207,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       showingAnswer = false;
       resetTestState();
       setMessage(el.collectionMessage, "Coleção criada com sucesso.");
+      await saveNow();
       render();
       showView("add");
       showAddMode("collection");
@@ -8212,6 +8288,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       studyIndex = 0;
       showingAnswer = false;
       resetTestState();
+      await saveNow();
       render();
       showView("manage");
     });
@@ -8415,7 +8492,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         <button type="button" data-confirm-legacy-folders>Salvar organização</button>`
       );
     }
-    el.modalActions.addEventListener("click", event => {
+    el.modalActions.addEventListener("click", async event => {
       if (event.target.closest("[data-modal-close]")) {
         closeModal();
         return;
@@ -8456,6 +8533,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         collapsedFolders.delete(folderId);
         data.selected = subject.id;
         resetCollectionUi();
+        await saveNow();
         closeModal();
         setMessage(el.collectionMessage, "Coleção movida com sucesso.");
         render();
@@ -8938,8 +9016,8 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       };
     }
 
-    function importCards(cards) {
-  const targetId = el.importCollection?.value || data.selected;
+    function importCards(cards, destinationId = el.importCollection?.value || data.selected) {
+  const targetId = destinationId;
   const targetSubject = data.subjects.find(subject => subject.id === targetId);
 
   if (!targetSubject) {
@@ -8959,6 +9037,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
 
   targetSubject.cards.push(...validCards);
   data.selected = targetSubject.id;
+  ensureAllQuestionCodes(data);
   return validCards.length;
 }
 
@@ -9110,6 +9189,7 @@ function imageMimeFromName(name) {
     el.bulkImport.addEventListener("click", async () => {
       let imported = [];
       let source = "texto";
+      const destinationId = el.importCollection?.value || data.selected;
       try {
         if (pendingImportFile) {
           imported = await parseImportFile(pendingImportFile);
@@ -9127,7 +9207,7 @@ function imageMimeFromName(name) {
       }
       imported.forEach(card => normalizeCard(card));
       const recognizedAnswers = imported.filter(card => card.type !== "multiple" || Boolean(card.correctAnswerText)).length;
-      const total = importCards(imported);
+      const total = importCards(imported, destinationId);
       if (!total) return;
       el.bulkText.value = "";
       pendingImportFile = null;
@@ -9136,6 +9216,7 @@ function imageMimeFromName(name) {
       const pendingAnswers = Math.max(0, total - recognizedAnswers);
       setMessage(el.importMessage, `${total} questão${total === 1 ? "" : "ões"} importada${total === 1 ? "" : "s"} ${source === "arquivo" ? "do arquivo" : ""}. ${recognizedAnswers} resposta${recognizedAnswers === 1 ? "" : "s"} identificada${recognizedAnswers === 1 ? "" : "s"} e ${pendingAnswers} precisam de correção.`);
       showingAnswer = false;
+      await saveNow();
       render();
     });
 

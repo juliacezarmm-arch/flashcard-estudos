@@ -162,8 +162,10 @@
   function findStreakBox(right) {
     return Array.from(right.querySelectorAll('button,div,span')).find(el => {
       if (el.classList.contains('fixa-streak-freeze-box')) return false;
+      if (el.classList.contains('fixa-streak-help') || el.classList.contains('fixa-streak-help-button')) return false;
+      if (el.closest?.('.fixa-streak-help')) return false;
       return /^\s*[^\d]*\d+\s+dias?\s*$/i.test((el.textContent || '').trim());
-    }) || right.querySelector('[class*=streak], [class*=sequence]');
+    }) || right.querySelector('#homeTopStreak, .home-top-streak, [class*=sequence]');
   }
 
   function applyFrozenSize() {
@@ -176,13 +178,14 @@
     const css = getComputedStyle(streak);
     if (!rect.width || !rect.height) return false;
 
-    freeze.style.setProperty('width', `${rect.width}px`, 'important');
-    freeze.style.setProperty('min-width', `${rect.width}px`, 'important');
-    freeze.style.setProperty('max-width', `${rect.width}px`, 'important');
+    const compactWidth = Math.max(52, Math.min(62, Math.round(rect.width - 12)));
+    freeze.style.setProperty('width', `${compactWidth}px`, 'important');
+    freeze.style.setProperty('min-width', `${compactWidth}px`, 'important');
+    freeze.style.setProperty('max-width', `${compactWidth}px`, 'important');
     freeze.style.setProperty('height', `${rect.height}px`, 'important');
     freeze.style.setProperty('min-height', `${rect.height}px`, 'important');
     freeze.style.setProperty('max-height', `${rect.height}px`, 'important');
-    freeze.style.setProperty('padding', css.padding, 'important');
+    freeze.style.setProperty('padding', '0 8px', 'important');
     freeze.style.setProperty('border-radius', css.borderRadius, 'important');
     freeze.style.setProperty('font-size', css.fontSize, 'important');
     freeze.style.setProperty('font-weight', css.fontWeight, 'important');
@@ -362,26 +365,15 @@
   document.head.appendChild(style);
 })();
 
-/* Card XP semanal: somente o valor acompanha o visual do XP total. */
+/* Compatibilidade: remove qualquer sufixo textual antigo do valor de XP. */
 (() => {
   'use strict';
   if (window.FixaWeeklyXpValueMatchV1) return;
   window.FixaWeeklyXpValueMatchV1 = true;
 
   function apply() {
-    const cards = document.querySelectorAll('#homeSummaryCards .fixa-week-summary-card');
-    const totalCard = cards[4];
-    const weekCard = cards[5];
-    const totalValue = totalCard?.querySelector('.home-card-number');
-    const weekValue = weekCard?.querySelector('.home-card-number');
-    if (!totalValue || !weekValue) return;
-
-    weekValue.textContent = (weekValue.textContent || '').replace(/\s*XP\s*$/i, '');
-    const css = getComputedStyle(totalValue);
-    weekValue.style.setProperty('color', css.color, 'important');
-    weekValue.style.setProperty('font-size', css.fontSize, 'important');
-    weekValue.style.setProperty('line-height', css.lineHeight, 'important');
-    weekValue.style.setProperty('font-weight', css.fontWeight, 'important');
+    const value = document.querySelector('#homeSummaryCards [data-fixa-summary-key="XP Coleções"] .home-card-number');
+    if (value) value.textContent = (value.textContent || '').replace(/\s*XP\s*$/i, '');
   }
 
   document.addEventListener('click', event => {

@@ -494,6 +494,10 @@
   }
 
   function resolveStorageImage(img) {
+    if (window.FixaStorageLazyLoader?.observe) {
+      window.FixaStorageLazyLoader.observe(img);
+      return;
+    }
     const source = img.getAttribute('src') || '';
     if (!source.startsWith(PREFIX) || img.dataset.storageResolving === source) return;
     const path = source.slice(PREFIX.length).trim();

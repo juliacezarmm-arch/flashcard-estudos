@@ -133,104 +133,12 @@
     document.head.appendChild(style);
   }
 
-  function loadHomeReferenceLayoutV3() {
-    if (window.FixaHomeReferenceLayoutV3?.active || document.getElementById('fixaHomeReferenceLayoutV3Loader')) return;
-    ensureHomeLayoutLoadingGuard();
-    const script = document.createElement('script');
-    script.id = 'fixaHomeReferenceLayoutV3Loader';
-    script.src = `src/fixes/home-reference-layout-v3.js?v=${Date.now()}`;
-    script.defer = true;
-    script.addEventListener('error', () => document.getElementById(HOME_GUARD_ID)?.remove(), { once:true });
-    document.head.appendChild(script);
-  }
-
-  function loadCompetitionSignalSkip() {
-    if (window.FixaCompetitionSignalSkipV1 || document.getElementById('fixaCompetitionSignalSkipV1Loader')) return;
-    const script = document.createElement('script');
-    script.id = 'fixaCompetitionSignalSkipV1Loader';
-    script.src = 'src/competition/competition-signal-skip-v1.js?v=20260822-signal-skip-v1';
-    script.defer = true;
-    document.head.appendChild(script);
-  }
-
-  function loadCompetitionOwnerFreezeSync() {
-    if (window.FixaCompetitionOwnerFreezeSyncV1 || document.getElementById('fixaCompetitionOwnerFreezeSyncV1Loader')) return;
-    const script = document.createElement('script');
-    script.id = 'fixaCompetitionOwnerFreezeSyncV1Loader';
-    script.src = 'src/competition/competition-owner-freeze-sync-v1.js?v=20260822-owner-freeze-sync-v1';
-    script.defer = true;
-    document.head.appendChild(script);
-  }
-
-  function loadCompetitionFlagReview() {
-    if (window.FixaCompetitionFlagReviewV1 || document.getElementById('fixaCompetitionFlagReviewV1Loader')) return;
-    const script = document.createElement('script');
-    script.id = 'fixaCompetitionFlagReviewV1Loader';
-    script.src = 'src/competition/competition-flag-review-v1.js?v=20260822-flag-review-v1';
-    script.defer = true;
-    document.head.appendChild(script);
-  }
-
-  function loadCompetitionOwnerFreezeNotice() {
-    if (window.FixaCompetitionOwnerFreezeNoticeV1 || document.getElementById('fixaCompetitionOwnerFreezeNoticeV1Loader')) return;
-    const script = document.createElement('script');
-    script.id = 'fixaCompetitionOwnerFreezeNoticeV1Loader';
-    script.src = 'src/competition/competition-owner-freeze-notice-v1.js?v=20260822-owner-freeze-notice-v1';
-    script.defer = true;
-    document.head.appendChild(script);
-  }
-
-  function loadCompetitionWeeklyHistory() {
-    if (window.FixaCompetitionWeeklyHistoryV1 || document.getElementById('fixaCompetitionWeeklyHistoryV1Loader')) return;
-    const script = document.createElement('script');
-    script.id = 'fixaCompetitionWeeklyHistoryV1Loader';
-    script.src = 'src/competition/competition-weekly-history-v1.js?v=20260822-weekly-history-v1';
-    script.defer = true;
-    document.head.appendChild(script);
-  }
-
-  function loadCompetitionParticipantExportGuard() {
-    if (window.FixaCompetitionParticipantExportGuardV1 || document.getElementById('fixaCompetitionParticipantExportGuardV1Loader')) return;
-    const script = document.createElement('script');
-    script.id = 'fixaCompetitionParticipantExportGuardV1Loader';
-    script.src = 'src/competition/competition-participant-export-guard-v1.js?v=20260822-participant-export-guard-v1';
-    script.defer = true;
-    document.head.appendChild(script);
-  }
-
-  function loadCompletedTestReset() {
-    if (window.FixaCompletedTestResetV1 || document.getElementById('fixaCompletedTestResetV1Loader')) return;
-    const script = document.createElement('script');
-    script.id = 'fixaCompletedTestResetV1Loader';
-    script.src = 'src/test/completed-test-reset-v1.js?v=20260822-completed-test-reset-v1';
-    script.defer = true;
-    document.head.appendChild(script);
-  }
-
-  function loadTestHistoryLayout() {
-    if (window.FixaTestHistoryLayoutV1 || document.getElementById('fixaTestHistoryLayoutV1Loader')) return;
-    const script = document.createElement('script');
-    script.id = 'fixaTestHistoryLayoutV1Loader';
-    script.src = 'src/test/test-history-layout-v1.js?v=20260822-test-history-layout-v1';
-    script.defer = true;
-    document.head.appendChild(script);
-  }
-
   function repair() {
     repairAnalysisLabels();
     replaceObservedTestNote();
     formatTestStartNote();
     installHomeTodayBehavior();
     installHomeRefreshGuard();
-    loadHomeReferenceLayoutV3();
-    loadCompetitionSignalSkip();
-    loadCompetitionOwnerFreezeSync();
-    loadCompetitionFlagReview();
-    loadCompetitionOwnerFreezeNotice();
-    loadCompetitionWeeklyHistory();
-    loadCompetitionParticipantExportGuard();
-    loadCompletedTestReset();
-    loadTestHistoryLayout();
   }
 
   if (document.documentElement.dataset[HOTFIX_FLAG] === 'true') return;

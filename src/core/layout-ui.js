@@ -947,27 +947,21 @@
     analysisPanel.classList.add('active');
   }
 
-  const homeAsset = file => encodeURI(`referencias/${file}`);
+  const homeAsset = file => encodeURI(file);
   const HOME_ASSETS = Object.freeze({
-  books: 'ChatGPT Image 1 de ago. de 2026, 12_11_38 (1).png',
-     clipboard: 'icone_prancheta_revisao.png',
-    chart: 'ChatGPT Image 1 de ago. de 2026, 12_31_23.png',
-    questions: 'ChatGPT Image 31 de jul. de 2026, 23_14_35 (2).png',
-     trophy: 'icone_trofeu_dominadas.png',
-     target: 'icone_trofeu_dominadas.png',
-     booksOnly: 'icone_livros_colecoes.png',
-     fire: 'icone_fogo_sequencia.png',
-     wave: 'icone_maozinha_acenando.png'
+    books: 'assets/icons/home-collections.svg',
+    clipboard: 'assets/icons/home-clipboard-review.svg',
+    chart: 'assets/icons/home-accuracy.svg',
+    questions: 'assets/icons/home-questions.svg',
+    trophy: 'assets/icons/home-mastered.svg',
+    target: 'assets/icons/home-mastered.svg',
+    booksOnly: 'assets/icons/home-collections.svg',
+    fire: 'assets/icons/home-fire-sequence.svg',
+    wave: 'assets/icons/home-wave.svg'
   });
   const svgIcon = name => { const paths = { books: '<path d="M5 4h3v16H5zM10 4h3v16h-3zM15 6h4v14h-4z"></path><path d="M4 20h16"></path>', questions: '<rect x="6" y="4" width="12" height="16" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path>', target: '<circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3"></circle><path d="m17 7 3-3"></path>', chart: '<path d="M4 19V5M4 19h16"></path><path d="m7 15 4-4 3 2 5-7"></path>', folder: '<path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>', clock: '<circle cx="12" cy="12" r="8"></circle><path d="M12 8v5l3 2"></path>', calendar: '<rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 9h16"></path>', flag: '<path d="M5 21V4"></path><path d="M5 5c5-3 8 3 14 0v9c-6 3-9-3-14 0"></path>', snowflake: '<path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"></path><path d="m12 3-2 2m2-2 2 2m0 14-2 2-2-2M3 12l2-2m-2 2 2 2m14-2 2-2m-2 2 2 2"></path>' }; return `<svg class="home-svg" viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.chart}</svg>`; };
   const studyArt = homeView.querySelector('.home-study-head .home-icon');
-   if (studyArt) {
-    const image = document.createElement('img');
-    image.className = 'home-study-art';
-    image.src = homeAsset(HOME_ASSETS.clipboard);
-    image.alt = 'Prancheta com tarefas de estudo';
-     studyArt.replaceWith(image);
-   }
+  if (studyArt) studyArt.remove();
    const greetingWave = homeView.querySelector('#homeGreetingWave');
    if (greetingWave) greetingWave.src = homeAsset(HOME_ASSETS.wave);
   homeView.querySelector('.home-title p')?.remove();
@@ -1009,15 +1003,15 @@
   const subjects = () => Array.isArray(data?.subjects) ? data.subjects : [];
   const history = () => Array.isArray(data?.testHistory) ? data.testHistory : [];
   const allCards = () => subjects().flatMap(subject => cardsOf(subject).map(card => ({ subject, card })));
-  const todayKey = () => new Date().toISOString().slice(0, 10);
+  const todayKey = () => localDateKey(new Date());
   const duration = ms => { const s = Math.max(0, Math.round(Number(ms || 0) / 1000)); const m = Math.floor(s / 60); return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}min` : m ? `${m}min ${s % 60}s` : `${s}s`; };
   const userName = () => { const label = document.querySelector('#userDisplayName')?.textContent?.trim(); const normalized = label ? label.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : ''; return label && normalized !== 'usuario' ? label.split(/\s+/)[0] : 'Julia'; };
   const greeting = () => { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; };
   let homePanel = 'today';
 
 
-  function localDateKey(value) { const date = value instanceof Date ? value : new Date(value); if (Number.isNaN(date.getTime())) return ''; return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
-  function studyDateKey(item) { return localDateKey(item?.date || item?.created_at || item?.createdAt || item?.finishedAt || item?.completedAt); }
+  function localDateKey(value) { if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value.trim())) return value.trim(); const date = value instanceof Date ? value : new Date(value); if (Number.isNaN(date.getTime())) return ''; return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
+  function studyDateKey(item) { return localDateKey(item?.completedOn || item?.occurredOn || item?.occurred_on || item?.date || item?.created_at || item?.createdAt || item?.finishedAt || item?.completedAt); }
   function studyDates() { return new Set(history().map(studyDateKey).filter(Boolean)); }
   function studyStreak() { const set = studyDates(); const day = new Date(); day.setHours(0, 0, 0, 0); let count = 0; for (let i = 0; i < 365; i++) { const key = localDateKey(day); if (!set.has(key)) { if (i === 0) { day.setDate(day.getDate() - 1); continue; } break; } count += 1; day.setDate(day.getDate() - 1); } return count; }
   function renderStreakPopover() { const popover = document.querySelector('#homeStreakPopover'); if (!popover) return; const now = new Date(); const year = now.getFullYear(); const month = now.getMonth(); const first = new Date(year, month, 1); const daysInMonth = new Date(year, month + 1, 0).getDate(); const pad = first.getDay(); const studied = studyDates(); const monthLabel = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(now); const weekdays = ['D','S','T','Q','Q','S','S']; const cells = []; for (let i = 0; i < pad; i++) cells.push('<span class="home-streak-day is-empty"></span>'); for (let day = 1; day <= daysInMonth; day++) { const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; const classes = ['home-streak-day']; if (studied.has(key)) classes.push('is-study'); if (day === now.getDate()) classes.push('is-today'); cells.push(`<span class="${classes.join(' ')}">${day}</span>`); } popover.innerHTML = `<div class="home-streak-popover-head"><div><h4>Sequ&ecirc;ncia de estudos</h4><p>Dias em que voc&ecirc; concluiu um teste.</p></div><span class="home-streak-month">${monthLabel}</span></div><div class="home-streak-week">${weekdays.map(day => `<span>${day}</span>`).join('')}</div><div class="home-streak-days">${cells.join('')}</div>`; }
@@ -1092,8 +1086,8 @@
     const recentTotal = recent.reduce((sum,item) => sum + Number(item.total || 0), 0); const recentScore = recent.reduce((sum,item) => sum + Number(item.score || 0), 0); const recentDuration = recent.reduce((sum,item) => sum + Number(item.durationMs || 0), 0); const lastTest = recent[0] ? `${Number(recent[0].score || 0)} de ${Number(recent[0].total || 0)}` : 'Sem testes';
      document.querySelector('#homePerformance').innerHTML = [['chart','M&eacute;dia dos &uacute;ltimos testes',`${percent(recentScore,recentTotal)}%`,''],['clock','Tempo m&eacute;dio por quest&atilde;o',recentTotal ? duration(recentDuration / recentTotal) : '0s',''],['target','Melhor sequ&ecirc;ncia',`${recent.reduce((max,item) => Math.max(max,Number(item.score || 0)),0)} acertos`,'home-stat-icon-amber'],['target','Acertos recentes',lastTest,'home-stat-icon-green']].map(([icon,label,value,variant]) => `<li class="home-stat-row"><span class="home-stat-label"><i class="home-stat-icon ${variant}">${svgIcon(icon)}</i><span>${label}</span></span><b>${value}</b></li>`).join('');
     renderChart(recent.slice(0,6).reverse().map(item => clamp(percent(Number(item.score || 0),Number(item.total || 0)),0,100)));
-    document.querySelector('#homeGoals').innerHTML = [['Revisar 30 quest&otilde;es hoje',Math.min(reviewTotal,30),30],['Fazer dois testes',Math.min(tests.filter(item => String(item.date || '').slice(0,10) === todayKey()).length,2),2],['Dominar mais 20 quest&otilde;es',Math.min(masteredTotal,20),20]].map(([label,done,total]) => `<li class="home-goal-item"><div class="home-goal-head"><strong>${label}</strong><span>${done}/${total}</span></div><div class="home-progress"><span style="width:${clamp(percent(done,total),4,100)}%"></span></div></li>`).join('');
-    const todayTime = tests.filter(item => String(item.date || '').slice(0,10) === todayKey()).reduce((sum,item) => sum + Number(item.durationMs || 0), 0); document.querySelector('#homePeriodSummary').innerHTML = [[tests.length,'testes realizados'],[cards.length,'quest&otilde;es cadastradas'],[masteredTotal,'quest&otilde;es dominadas'],[duration(todayTime),'estudado hoje']].map(([value,label]) => `<div class="home-period-item"><b>${value}</b><span>${label}</span></div>`).join('');
+    document.querySelector('#homeGoals').innerHTML = [['Revisar 30 quest&otilde;es hoje',Math.min(reviewTotal,30),30],['Fazer dois testes',Math.min(tests.filter(item => studyDateKey(item) === todayKey()).length,2),2],['Dominar mais 20 quest&otilde;es',Math.min(masteredTotal,20),20]].map(([label,done,total]) => `<li class="home-goal-item"><div class="home-goal-head"><strong>${label}</strong><span>${done}/${total}</span></div><div class="home-progress"><span style="width:${clamp(percent(done,total),4,100)}%"></span></div></li>`).join('');
+    const todayTime = tests.filter(item => studyDateKey(item) === todayKey()).reduce((sum,item) => sum + Number(item.durationMs || 0), 0); document.querySelector('#homePeriodSummary').innerHTML = [[tests.length,'testes realizados'],[cards.length,'quest&otilde;es cadastradas'],[masteredTotal,'quest&otilde;es dominadas'],[duration(todayTime),'estudado hoje']].map(([value,label]) => `<div class="home-period-item"><b>${value}</b><span>${label}</span></div>`).join('');
     const priorities = sortedSubjects().filter(item => item.stats.review > 0).slice(0,10); document.querySelector('#homePriorities').innerHTML = priorities.length ? priorities.map(({subject,stats}) => `<article class="home-priority-item"><div class="home-priority-head"><strong>${esc(subject.name)}</strong><span>Revisar ${stats.review}</span></div><div class="home-progress"><span style="width:${clamp(percent(stats.review,stats.total || 1),8,100)}%"></span></div></article>`).join('') : '<article class="home-priority-item"><strong>Tudo em dia por aqui</strong><p class="home-muted">Quando houver revis&otilde;es, elas aparecer&atilde;o nesta lista.</p></article>';
     const activities = recent.slice(0,5).map(item => `<li class="home-activity-item"><span class="home-check">&#10003;</span><span>Finalizou teste em ${esc(item.subject || 'Cole&ccedil;&atilde;o')}<small>${Number(item.score || 0)} de ${Number(item.total || 0)} acertos</small></span></li>`); if (subjects().length) activities.push('<li class="home-activity-item"><span class="home-check">&#10003;</span><span>Organizou suas cole&ccedil;&otilde;es<small>Dados atualizados no Fixa</small></span></li>'); document.querySelector('#homeActivity').innerHTML = activities.length ? activities.join('') : '<li class="home-activity-item"><span class="home-check">&#10003;</span><span>Sua atividade aparecer&aacute; aqui.</span></li>';
     document.querySelector('#homeRecentContent').innerHTML = recent.length ? recent.slice(0,5).map(item => `<div class="home-recent-row"><span>${esc(item.subject || 'Cole&ccedil;&atilde;o')}</span><small>${Number(item.score || 0)} acertos</small></div>`).join('') : '<p class="home-muted">Nenhum conte&uacute;do estudado recentemente.</p>';
@@ -1104,6 +1098,10 @@
   }
 
    function renderHome() {
+     if (window.FixaHomeWeeklyDashboardV2?.refresh) {
+       window.FixaHomeWeeklyDashboardV2.refresh();
+       return;
+     }
      const cards = allCards();
      const tests = history();
      const recent = tests.slice(0, 7);
@@ -1161,7 +1159,7 @@
      document.querySelectorAll('[data-home-activity-icon]').forEach(icon => { icon.innerHTML = svgIcon(icon.dataset.homeActivityIcon); });
      document.querySelector('#homeActivity').innerHTML = activityRecords.length ? activityRecords.slice(0, 12).map(item => `<li class="home-activity-item home-activity-clickable"${activitySubjectAttr(item)}><span class="home-activity-time">${activityRelativeTime(item.date)}</span><span class="home-activity-timeline"><span class="home-activity-status" aria-hidden="true"></span></span><span class="home-activity-body"><span class="home-activity-title">Finalizou teste em ${esc(testSubjectName(item))}</span><small>${Number(item.score || 0)} de ${Number(item.total || 0)} acertos</small></span></li>`).join('') : '<li class="home-activity-item"><span></span><span class="home-activity-timeline"><span class="home-activity-status" aria-hidden="true"></span></span><span class="home-activity-body"><span class="home-activity-title">Sua atividade aparecer&aacute; aqui.</span></span></li>';
      document.querySelector('#homeRecentContent').innerHTML = activityRecords.length ? activityRecords.slice(0, 12).map(item => { const name = testSubjectName(item); return `<div class="home-recent-content-row"${activitySubjectAttr(item)}><span class="home-activity-avatar tone-${activityTone(name)}">${activityInitials(name)}</span><span class="home-activity-content-name">${esc(name)}</span><span class="home-activity-leader" aria-hidden="true"></span><span class="home-activity-result">${Number(item.score || 0)} acertos</span></div>`; }).join('') : '<p class="home-muted">Nenhum conte&uacute;do estudado recentemente.</p>';
-     const activityTodayRecords = tests.filter(item => String(item.date || '').slice(0, 10) === todayKey());
+     const activityTodayRecords = tests.filter(item => studyDateKey(item) === todayKey());
      const activityRecommendations = testedItems.filter(item => item.stats.review > 0).slice(0, 12);
      document.querySelector('#homeRecommendations').innerHTML = activityRecommendations.length ? activityRecommendations.map(({subject, stats}) => { const target = Math.min(10, Math.max(1, stats.review)); const done = Math.min(target, testRecordsFor(subject, activityTodayRecords).reduce((sum, item) => sum + Number(item.total || 0), 0)); const progress = target ? Math.round(done / target * 100) : 0; const reason = stats.wrong >= stats.hard && stats.wrong > 0 ? ['Mais erros recentes', 'reason-red'] : stats.review >= Math.max(5, Math.ceil(stats.total * .5)) ? ['Maior atraso', 'reason-amber'] : ['Menor aproveitamento', '']; return `<div class="home-recommendation-row" data-home-subject="${esc(subject.id)}" tabindex="0"><span class="home-activity-avatar tone-${activityTone(subject.name)}">${activityInitials(subject.name)}</span><span class="home-recommendation-copy"><span class="home-recommendation-name">${esc(subject.name)}</span><span class="home-recommendation-reason ${reason[1]}">${reason[0]}</span><span class="home-recommendation-meta"><span class="home-progress"><span style="width:${progress}%"></span></span><small>${done} de ${target} conclu&iacute;das</small></span></span><span class="home-recommendation-chevron" aria-hidden="true">&rsaquo;</span></div>`; }).join('') : '<p class="home-muted">Nenhuma revis&atilde;o recomendada agora.</p>';
      document.querySelector('#homeTests').innerHTML = activityRecords.length ? activityRecords.slice(0, 12).map(item => { const name = testSubjectName(item); const score = Number(item.score || 0); const total = Number(item.total || 0); const percentage = total ? score / total * 100 : 0; const resultClass = percentage >= 80 ? '' : percentage >= 60 ? ' is-warn' : ' is-bad'; return `<div class="home-test-row"${activitySubjectAttr(item)}><span class="home-activity-avatar tone-${activityTone(name)}">${activityInitials(name)}</span><span class="home-test-copy"><span class="home-test-name">${esc(name)}</span><span class="home-test-meta">${activityRelativeTime(item.date)}</span></span><span class="home-test-score${resultClass}">${score}/${total}</span></div>`; }).join('') : '<p class="home-muted">Nenhum teste realizado ainda.</p>';
@@ -1193,7 +1191,7 @@
         document.querySelector('#homeFooterStats').innerHTML = `<article class="home-panel home-progress-card home-sequence-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-fire"><img src="${homeAsset(HOME_ASSETS.fire)}" alt="" aria-hidden="true"></span><h3>Sequ&ecirc;ncia</h3><span class="home-sequence-summary"><strong>${streak}</strong> dias seguidos</span></div><div class="home-sequence-days">${sequenceDays}</div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-clock">${svgIcon('clock')}</span><h3>Tempo estudado hoje</h3></div><div class="home-progress-value"><strong>${duration(todayTime)}</strong></div><p>Meta di&aacute;ria: 2h</p><div class="home-progress"><span style="width:${Math.min(100, Math.round(todayTime / PROGRESS_DAILY_GOAL_MS * 100))}%"></span></div></article><article class="home-panel home-progress-card"><div class="home-progress-card-head"><span class="home-progress-symbol home-symbol-flag">${svgIcon('flag')}</span><h3>Objetivo da semana</h3></div><div class="home-progress-value"><strong>${weeklyGoals.percent}%</strong></div><p>${weeklyGoals.completed} de ${weeklyGoals.total} metas conclu&iacute;das</p><div class="home-progress"><span style="width:${weeklyGoals.percent}%"></span></div></article>`;
 
       const dailyTarget = item => Math.min(10, Math.max(0, item.stats.review));
-      const todayTestRecords = tests.filter(item => String(item.date || '').slice(0, 10) === todayKey());
+      const todayTestRecords = tests.filter(item => studyDateKey(item) === todayKey());
       const completedToday = subject => testRecordsFor(subject, todayTestRecords).reduce((sum, item) => sum + Number(item.score || 0), 0);
       document.querySelector('#homeSummaryCards').innerHTML = [['books','Cole&ccedil;&otilde;es',subjects().length,'Total de cole&ccedil;&otilde;es'],['questions','Quest&otilde;es',cards.length,'Total de quest&otilde;es'],['trophy','Dominadas',masteredTotal,`${percent(masteredTotal,cards.length)}% do total`],['chart','Aproveitamento',`${accuracy}%`,'M&eacute;dia dos testes']].map(([icon,label,value,caption]) => `<article class="home-card"><img class="home-card-art" src="${homeAsset(HOME_ASSETS[icon] || HOME_ASSETS.chart)}" alt="" aria-hidden="true"><span><strong>${label}</strong><span class="home-card-number">${value}</span><small class="home-muted">${caption}</small></span></article>`).join('');
       const plans = testedItems.filter(item => item.stats.review > 0).slice(0, 3);

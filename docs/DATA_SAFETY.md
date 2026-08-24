@@ -21,5 +21,5 @@ O estado da interface nunca é autoridade suficiente para apagar ou reduzir dras
 ## Proteções implementadas
 
 - Guard no frontend para bloquear writes durante renderização, antes da hidratação e em reduções massivas.
-- Trigger no Supabase `guard_flashcard_data_mass_overwrite` para rejeitar reduções destrutivas mesmo se um cliente antigo ou defeituoso tentar gravá-las.
+- Trigger no Supabase `guard_flashcard_data_mass_overwrite`, versionada em `supabase/migrations/20260823120000_guard_flashcard_data_mass_overwrite.sql`, para rejeitar reduções destrutivas mesmo se um cliente antigo ou defeituoso tentar gravá-las.
 - O bypass de emergência é exclusivamente administrativo via configuração de sessão SQL `fixa.allow_mass_flashcard_rewrite = 'on'` e não deve ser exposto ao cliente.

@@ -7,14 +7,14 @@
   const LEGACY_STABLE_ID = 'fixaStableSummaryCards';
   const BODY_CLASS = 'fixa-home-v3-active';
   const LOADING_GUARD_ID = 'fixaHomeLayoutLoadingGuard';
-  const SUMMARY_ORDER = ['Coleções', 'Questões', 'Dominadas', 'Aproveitamento', 'XP Coleções', 'XP Semana'];
+  const SUMMARY_ORDER = ['Coleções', 'Questões', 'Congeladas', 'Dominadas', 'Aproveitamento', 'XP Coleções'];
   const SUMMARY_META = Object.freeze({
-    'Coleções': { key: 'collections', asset: 'referencias/icone_livros_colecoes.png' },
-    'Questões': { key: 'questions', asset: 'referencias/ChatGPT Image 31 de jul. de 2026, 23_14_35 (2).png' },
-    'Dominadas': { key: 'mastered', asset: 'referencias/icone_trofeu_dominadas.png' },
-    'Aproveitamento': { key: 'accuracy', asset: 'referencias/ChatGPT Image 1 de ago. de 2026, 12_31_23.png' },
-    'XP Coleções': { key: 'xp-total', asset: 'referencias/icone_xp_colecoes.svg' },
-    'XP Semana': { key: 'xp-week', asset: 'referencias/icone_xp_semana.svg' }
+    'Coleções': { key: 'collections', asset: 'assets/icons/home-collections.svg' },
+    'Questões': { key: 'questions', asset: 'assets/icons/home-questions.svg' },
+    'Congeladas': { key: 'frozen', asset: 'assets/icons/home-frozen-questions.svg' },
+    'Dominadas': { key: 'mastered', asset: 'assets/icons/home-mastered.svg' },
+    'Aproveitamento': { key: 'accuracy', asset: 'assets/icons/home-accuracy.svg' },
+    'XP Coleções': { key: 'xp-total', asset: 'assets/icons/home-xp-collections.svg' }
   });
 
   const state = { subjectId: 'all' };
@@ -23,6 +23,9 @@
   let syncFrame = 0;
   let fitFrame = 0;
   let syncing = false;
+  let syncingActiveCollection = false;
+  let activeCollectionHintTimer = 0;
+  let primaryTabsObserver = null;
 
   window.FixaHomeReferenceLayoutV3 = { active: true, refresh: syncAll };
 
@@ -57,8 +60,8 @@
           min-height:0!important;
           box-sizing:border-box!important;
           overflow:hidden!important;
-          padding-top:28px!important;
-          padding-bottom:20px!important;
+          padding-top:18px!important;
+          padding-bottom:16px!important;
         }
       }
 
@@ -86,7 +89,7 @@
         gap:18px!important;
         align-items:end!important;
         overflow:visible!important;
-        transform:translateY(-8px)!important;
+        transform:translateY(0)!important;
       }
       #home.home-view .fixa-reference-header-left{
         min-width:0!important;
@@ -132,6 +135,67 @@
       }
       #home.home-view .fixa-week-folder-filter{width:250px!important;min-width:250px!important}
       #home.home-view .fixa-reference-collection-filter{width:315px!important;min-width:315px!important}
+      #appShell .topbar-right #homeTopTools .fixa-active-collection-chip,
+      #appShell .topbar-right > .fixa-active-collection-chip{
+        height:38px!important;min-height:38px!important;width:184px!important;max-width:184px!important;min-width:164px!important;
+        padding:0 11px!important;border:1px solid #bfdbfe!important;border-radius:9px!important;
+        display:grid!important;grid-template-columns:18px minmax(0,1fr)!important;align-items:center!important;column-gap:7px!important;
+        color:#1d4ed8!important;background:linear-gradient(90deg,#eff6ff 0%,#fff 88%)!important;
+        box-shadow:0 2px 8px rgba(37,99,235,.08)!important;box-sizing:border-box!important;flex:0 0 auto!important;
+      }
+      #appShell .topbar-right #homeTopTools .fixa-active-collection-chip svg,
+      #appShell .topbar-right > .fixa-active-collection-chip svg{
+        width:17px!important;height:17px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.9!important;
+        stroke-linecap:round!important;stroke-linejoin:round!important;
+      }
+      #appShell .topbar-right #homeTopTools .fixa-active-collection-chip span,
+      #appShell .topbar-right > .fixa-active-collection-chip span{min-width:0!important;display:grid!important;gap:0!important}
+      #appShell .topbar-right #homeTopTools .fixa-active-collection-chip small,
+      #appShell .topbar-right > .fixa-active-collection-chip small{
+        display:block!important;margin:0!important;color:#64748b!important;font-size:8px!important;line-height:9px!important;
+        font-weight:800!important;text-transform:uppercase!important;letter-spacing:.02em!important;white-space:nowrap!important;
+      }
+      #appShell .topbar-right #homeTopTools .fixa-active-collection-chip strong,
+      #appShell .topbar-right > .fixa-active-collection-chip strong{
+        display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+        color:#172033!important;font-size:11px!important;line-height:14px!important;font-weight:850!important;
+      }
+      #appShell .topbar-right #homeTopTools .fixa-active-collection-chip[data-fixa-active-mode="all"],
+      #appShell .topbar-right > .fixa-active-collection-chip[data-fixa-active-mode="all"]{
+        border-color:#bfdbfe!important;color:#1d4ed8!important;background:linear-gradient(90deg,#eff6ff 0%,#f8fbff 100%)!important;
+        box-shadow:0 2px 8px rgba(37,99,235,.06)!important;
+      }
+      #appShell .topbar-right #homeTopTools .fixa-active-collection-chip[data-fixa-active-mode="all"] small,
+      #appShell .topbar-right > .fixa-active-collection-chip[data-fixa-active-mode="all"] small{
+        color:#2563eb!important;
+      }
+      #appShell .topbar-right #homeTopTools .fixa-streak-help{
+        position:relative!important;width:38px!important;min-width:38px!important;max-width:38px!important;
+        height:38px!important;min-height:38px!important;max-height:38px!important;flex:0 0 38px!important;
+        display:grid!important;place-items:center!important;overflow:visible!important;
+      }
+      #appShell .topbar-right #homeTopTools .fixa-streak-help-button{
+        position:static!important;right:auto!important;top:auto!important;
+      }
+      #appShell .topbar-right .tabs > .tab.fixa-needs-active-collection{
+        opacity:.58!important;cursor:not-allowed!important;filter:saturate(.72)!important;
+      }
+      #appShell .topbar-right .tabs > .tab[data-view="home"]{order:1!important}
+      #appShell .topbar-right .tabs > .tab[data-competition-view],
+      #appShell .topbar-right .tabs > .tab[data-view="competition"]{order:2!important}
+      #appShell .topbar-right .tabs > .tab[data-view="manage"]{order:3!important}
+      #appShell .topbar-right .tabs > .tab[data-view="test"]{order:4!important}
+      #appShell .topbar-right .tabs > .tab[data-competition-view],
+      #appShell .topbar-right .tabs > .tab[data-view="competition"]{
+        margin-right:16px!important;
+      }
+      .fixa-active-collection-toast{
+        position:fixed!important;z-index:9999!important;top:66px!important;right:24px!important;
+        max-width:min(360px,calc(100vw - 32px))!important;padding:11px 13px!important;border:1px solid #bfdbfe!important;
+        border-radius:12px!important;background:#fff!important;color:#172033!important;box-shadow:0 18px 45px rgba(15,23,42,.18)!important;
+        font-size:12px!important;line-height:1.35!important;font-weight:750!important;
+      }
+      .fixa-active-collection-toast[hidden]{display:none!important}
       #home.home-view .fixa-week-folder-filter svg,
       #home.home-view .fixa-reference-collection-filter svg{
         width:16px!important;height:16px!important;flex:0 0 16px!important;
@@ -209,6 +273,7 @@
       }
       #home.home-view #homeSummaryCards [data-fixa-visual-key="collections"]{background:linear-gradient(90deg,#ecf9f2 0%,#fff 72%)!important}
       #home.home-view #homeSummaryCards [data-fixa-visual-key="questions"]{background:linear-gradient(90deg,#eff6ff 0%,#fff 72%)!important}
+      #home.home-view #homeSummaryCards [data-fixa-visual-key="frozen"]{background:linear-gradient(90deg,#eef8ff 0%,#fff 72%)!important}
       #home.home-view #homeSummaryCards [data-fixa-visual-key="mastered"]{background:linear-gradient(90deg,#fff5e8 0%,#fff 72%)!important}
       #home.home-view #homeSummaryCards [data-fixa-visual-key="accuracy"]{background:linear-gradient(90deg,#f7f1ff 0%,#fff 72%)!important}
       #home.home-view #homeSummaryCards .fixa-week-summary-icon{
@@ -219,14 +284,6 @@
       #home.home-view #homeSummaryCards .fixa-week-summary-icon img{
         width:40px!important;height:40px!important;max-width:40px!important;max-height:40px!important;
         display:block!important;object-fit:contain!important;
-      }
-      #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-total"] .fixa-week-summary-icon,
-      #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-week"] .fixa-week-summary-icon{
-        border-radius:8px!important;background:#eef5ff!important;
-      }
-      #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-total"] .fixa-week-summary-icon img,
-      #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-week"] .fixa-week-summary-icon img{
-        width:26px!important;height:26px!important;
       }
       #home.home-view #homeSummaryCards .fixa-week-summary-card strong,
       #home.home-view #homeSummaryCards .home-card strong{
@@ -245,14 +302,13 @@
       }
       #home.home-view #homeSummaryCards [data-fixa-visual-key="collections"] .home-card-number{color:#15803d!important}
       #home.home-view #homeSummaryCards [data-fixa-visual-key="questions"] .home-card-number{color:#0b69a3!important}
+      #home.home-view #homeSummaryCards [data-fixa-visual-key="frozen"] .home-card-number{color:#0f75bc!important}
       #home.home-view #homeSummaryCards [data-fixa-visual-key="mastered"] .home-card-number{color:#d97706!important}
       #home.home-view #homeSummaryCards [data-fixa-visual-key="accuracy"] .home-card-number{color:#7c3aed!important}
-      #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-total"] .home-card-number,
-      #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-week"] .home-card-number{color:#2563eb!important}
+      #home.home-view #homeSummaryCards [data-fixa-visual-key="xp-total"] .home-card-number{color:#2563eb!important}
 
-      #home.home-view .fixa-reference-period-row{min-height:34px!important;margin:6px 0 7px!important}
-      #home.home-view .fixa-reference-period-row .fixa-week-period{display:flex!important;gap:4px!important}
-      #home.home-view .fixa-reference-period-row .fixa-week-period button{
+      #home.home-view .fixa-week-filters .fixa-week-period{display:flex!important;gap:4px!important;flex:0 0 auto!important}
+      #home.home-view .fixa-week-filters .fixa-week-period button{
         display:inline-flex!important;height:34px!important;min-height:34px!important;padding:0 14px!important;
         border-radius:8px!important;font-size:11px!important;
       }
@@ -275,13 +331,19 @@
       #home.home-view .fixa-week-main-shell{
         position:relative!important;isolation:isolate!important;
         height:var(--fixa-third-line-height,300px)!important;min-height:180px!important;max-height:none!important;
-        margin:0!important;box-sizing:border-box!important;border:1px solid #dfe6f0!important;border-radius:11px!important;
-        background:#fff!important;box-shadow:0 1px 2px rgba(15,23,42,.025), inset 0 -1px 0 #dfe6f0!important;
+        margin:0!important;box-sizing:border-box!important;border:0!important;border-radius:11px!important;
+        background:#fff!important;box-shadow:0 1px 3px rgba(15,23,42,.045),0 8px 18px rgba(15,23,42,.035)!important;
         overflow:hidden!important;display:flex!important;flex-direction:column!important;
       }
-      #home.home-view .fixa-week-main-shell::after{content:none!important;display:none!important}
+      #home.home-view .fixa-week-main-shell::after{
+        content:""!important;display:block!important;position:absolute!important;inset:0!important;
+        pointer-events:none!important;border:1px solid #d3ddec!important;border-radius:11px!important;
+        box-shadow:inset 0 0 0 1px rgba(255,255,255,.65)!important;
+        z-index:5!important;box-sizing:border-box!important;
+      }
       #home.home-view .fixa-week-content-tabs{
         position:relative!important;z-index:1!important;flex:0 0 auto!important;
+        border-radius:11px 11px 0 0!important;
         overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin!important;scrollbar-color:#b7c5da transparent!important;
       }
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar{height:5px!important}
@@ -289,12 +351,15 @@
       #home.home-view .fixa-week-content-tabs::-webkit-scrollbar-thumb{background:#b7c5da!important;border-radius:999px!important}
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage{
         position:relative!important;z-index:1!important;flex:1 1 auto!important;height:auto!important;min-height:0!important;max-height:none!important;
+        margin-right:3px!important;margin-bottom:3px!important;border-radius:0 0 9px 9px!important;
         padding:9px 11px 24px!important;overflow-y:auto!important;overflow-x:hidden!important;
         scrollbar-width:thin!important;scrollbar-color:#aebbd0 transparent!important;scrollbar-gutter:stable!important;overscroll-behavior:contain!important;
       }
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar{width:7px!important}
       #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar-track{background:transparent!important}
-      #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar-thumb{background:#aebbd0!important;border-radius:999px!important}
+      #home.home-view .fixa-week-main-shell .fixa-week-main-stage::-webkit-scrollbar-thumb{
+        background:#aebbd0!important;border:2px solid transparent!important;border-radius:999px!important;background-clip:content-box!important;
+      }
       #home.home-view .fixa-week-main-stage [data-fixa-main-panel],
       #home.home-view .fixa-week-main-stage .fixa-week-main-pair{height:auto!important;min-height:0!important;max-height:none!important}
       #home.home-view .fixa-week-main-pane .home-collection-scroll{height:190px!important;max-height:190px!important}
@@ -348,6 +413,10 @@
     return Array.isArray(dataRef()?.subjects) ? dataRef().subjects : [];
   }
 
+  function allFolders() {
+    return Array.isArray(dataRef()?.folders) ? dataRef().folders : [];
+  }
+
   function folderId() {
     return document.querySelector('#fixaWeekFolderFilter')?.value || 'all';
   }
@@ -377,12 +446,16 @@
   }
 
   function dateOf(value) {
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value.trim())) {
+      const [year, month, day] = value.trim().split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
     const date = new Date(value || 0);
     return Number.isNaN(date.getTime()) ? null : date;
   }
 
   function testDate(test) {
-    return dateOf(test?.completedAt || test?.finishedAt || test?.date);
+    return dateOf(test?.completedOn || test?.occurredOn || test?.occurred_on || test?.completedAt || test?.finishedAt || test?.date);
   }
 
   function completedTests() {
@@ -436,12 +509,275 @@
     });
   }
 
+  function activePeriodWord() {
+    const period = activePeriod();
+    return period === 'today' ? 'hoje' : period === 'month' ? 'mês' : 'semana';
+  }
+
+  function periodXpCaption() {
+    const period = activePeriod();
+    return period === 'today' ? 'XP de hoje' : period === 'month' ? 'XP do mês' : 'XP da semana';
+  }
+
+  function testXp(test) {
+    return Math.max(0, Number(test?.xp ?? test?.xpBreakdown?.total ?? test?.points ?? 0) || 0);
+  }
+
   function percent(value, total) {
     return Number(total) > 0 ? Math.round(Number(value || 0) / Number(total) * 100) : 0;
   }
 
   function collectionIcon() {
     return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>';
+  }
+
+  function activeCollectionIcon() {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2-2h5l2 2h5a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path><path d="m9 13 2 2 4-5"></path></svg>';
+  }
+
+  function subjectById(id) {
+    const key = String(id || '');
+    if (!key) return null;
+    return allSubjects().find(subject => String(subject?.id || '') === key) || null;
+  }
+
+  function folderNameForSubject(subject) {
+    const key = String(subject?.folder || '');
+    if (!key) return '';
+    return allFolders().find(folder => String(folder?.id || '') === key)?.name || '';
+  }
+
+  function currentSubjectSafe() {
+    try {
+      if (typeof currentSubject === 'function') return currentSubject();
+      if (typeof window.currentSubject === 'function') return window.currentSubject();
+    } catch (_) {}
+    return null;
+  }
+
+  function activeCollectionSubject() {
+    return state.subjectId !== 'all'
+      ? subjectById(state.subjectId)
+      : null;
+  }
+
+  function selectHasValue(select, value) {
+    if (!select) return false;
+    const key = String(value || '');
+    return Array.from(select.options || []).some(option => option.value === key);
+  }
+
+  function setSelectValue(selector, value) {
+    const select = document.querySelector(selector);
+    if (!select || !selectHasValue(select, value)) return false;
+    select.value = String(value || '');
+    return true;
+  }
+
+  function syncVisibleCollectionRows(subjectId) {
+    const key = String(subjectId || '');
+    document.querySelectorAll('#subjects .subject[data-id], #collectionsSidebar .subject[data-id]').forEach(row => {
+      row.classList.toggle('active', row.dataset.id === key);
+    });
+  }
+
+  function renderAppSelectionSoon() {
+    requestAnimationFrame(() => {
+      try {
+        if (typeof render === 'function') render();
+        else if (typeof window.render === 'function') window.render();
+      } catch (_) {}
+    });
+  }
+
+  function createActiveCollectionChip() {
+    const chip = document.createElement('div');
+    chip.id = 'fixaActiveCollectionChip';
+    chip.className = 'fixa-active-collection-chip';
+    chip.setAttribute('aria-live', 'polite');
+    chip.innerHTML = `${activeCollectionIcon()}<span><small>Coleção atual</small><strong>Todas as coleções</strong></span>`;
+    return chip;
+  }
+
+  function directChild(container, selector) {
+    return Array.from(container?.children || []).find(child => child.matches?.(selector)) || null;
+  }
+
+  function ensureTopbarActiveCollectionChip() {
+    const tools = document.querySelector('#homeTopTools');
+    const right = document.querySelector('.topbar-right');
+    const container = tools || right;
+    if (!container) return null;
+
+    let chip = document.querySelector('#fixaActiveCollectionChip');
+    if (!chip) chip = createActiveCollectionChip();
+
+    const help = container.querySelector('.fixa-streak-help');
+    const anchor = container === tools
+      ? tools.querySelector('.fixa-streak-freeze-box, #homeTopStreak, .home-top-streak, .home-top-bell')
+      : directChild(container, '.fixa-streak-help, .fixa-streak-freeze-box, #homeTopTools, .auth-panel');
+
+    if (container === tools && help && chip.previousElementSibling !== help) {
+      help.insertAdjacentElement('afterend', chip);
+    } else if (anchor && anchor !== chip && chip.nextElementSibling !== anchor) {
+      container.insertBefore(chip, anchor);
+    } else if (chip.parentElement !== container) {
+      container.appendChild(chip);
+    }
+    return chip;
+  }
+
+  function restoreTopbarActiveView() {
+    const activeView = Array.from(document.querySelectorAll('main > section, .view')).find(section =>
+      section?.id && section.classList?.contains('active')
+    );
+    const key = activeView?.id || 'home';
+    document.querySelectorAll('.topbar-right .tabs > .tab[data-view]').forEach(button => {
+      const selected = button.dataset.view === key;
+      button.classList.toggle('active', selected);
+      button.classList.remove('fixa-nav-pending', 'fixa-nav-forced-inactive');
+      if (selected) button.setAttribute('aria-current', 'page');
+      else button.removeAttribute('aria-current');
+    });
+  }
+
+  function showActiveCollectionHint() {
+    let toast = document.querySelector('#fixaActiveCollectionToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'fixaActiveCollectionToast';
+      toast.className = 'fixa-active-collection-toast';
+      toast.setAttribute('role', 'status');
+      document.body.appendChild(toast);
+    }
+    toast.textContent = 'Escolha uma coleção em Minhas coleções antes de abrir Questões ou Teste.';
+    toast.hidden = false;
+    window.clearTimeout(activeCollectionHintTimer);
+    activeCollectionHintTimer = window.setTimeout(() => { toast.hidden = true; }, 2800);
+  }
+
+  function setNavigationGuardState(isOverview) {
+    document.querySelectorAll('.topbar-right .tabs > .tab[data-view="manage"], .topbar-right .tabs > .tab[data-view="test"]').forEach(button => {
+      button.classList.toggle('fixa-needs-active-collection', Boolean(isOverview));
+      if (isOverview) {
+        button.setAttribute('aria-disabled', 'true');
+        button.title = 'Escolha uma coleção antes de abrir esta área.';
+      } else {
+        button.removeAttribute('aria-disabled');
+        if (button.title === 'Escolha uma coleção antes de abrir esta área.') button.removeAttribute('title');
+      }
+    });
+  }
+
+  function shouldBlockCollectionViewNavigation(target) {
+    const button = target?.closest?.('.topbar-right .tabs > .tab[data-view="manage"], .topbar-right .tabs > .tab[data-view="test"]');
+    return Boolean(button && !activeCollectionSubject());
+  }
+
+  function blockCollectionViewNavigation(event) {
+    if (!shouldBlockCollectionViewNavigation(event.target)) return false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    showActiveCollectionHint();
+    requestAnimationFrame(restoreTopbarActiveView);
+    return true;
+  }
+
+  function reorderPrimaryTabs() {
+    const tabs = document.querySelector('.topbar-right .tabs');
+    if (!tabs) return false;
+    const home = tabs.querySelector(':scope > .tab[data-view="home"], :scope > #homeTopTab');
+    const competition = tabs.querySelector(':scope > .tab[data-competition-view], :scope > .tab[data-view="competition"]');
+    const manage = tabs.querySelector(':scope > .tab[data-view="manage"]');
+    const test = tabs.querySelector(':scope > .tab[data-view="test"]');
+    const desired = [home, competition, manage, test].filter(Boolean);
+    if (desired.length < 2) return false;
+    [
+      [home, '1', '0'],
+      [competition, '2', '16px'],
+      [manage, '3', '0'],
+      [test, '4', '0']
+    ].forEach(([button, order, marginRight]) => {
+      if (!button) return;
+      button.style.setProperty('order', order, 'important');
+      button.style.setProperty('margin-right', marginRight, 'important');
+    });
+    const currentPrimary = Array.from(tabs.children).filter(child => desired.includes(child));
+    if (currentPrimary.length === desired.length && currentPrimary.every((child, index) => child === desired[index])) {
+      return true;
+    }
+    const firstPrimary = Array.from(tabs.children).find(child => desired.includes(child));
+    if (!firstPrimary) return false;
+    const marker = document.createComment('fixa-primary-tabs-order');
+    tabs.insertBefore(marker, firstPrimary);
+    desired.forEach(button => tabs.insertBefore(button, marker));
+    marker.remove();
+    return true;
+  }
+
+  function observePrimaryTabs() {
+    const tabs = document.querySelector('.topbar-right .tabs');
+    if (!tabs || primaryTabsObserver) return;
+    primaryTabsObserver = new MutationObserver(() => requestAnimationFrame(reorderPrimaryTabs));
+    primaryTabsObserver.observe(tabs, { childList:true, subtree:false });
+  }
+
+  function syncActiveCollectionChip() {
+    const chip = ensureTopbarActiveCollectionChip();
+    if (!chip) return;
+    const subject = activeCollectionSubject();
+    const folderName = folderNameForSubject(subject);
+    const text = subject ? [subject.name || 'Coleção', folderName].filter(Boolean).join(' · ') : 'Todas as coleções';
+    const title = subject
+      ? `Coleção ativa: ${subject.name || 'Coleção'}${folderName ? ` — Pasta: ${folderName}` : ''}`
+      : 'Visão geral: todas as coleções. Escolha uma coleção para abrir Questões ou Teste.';
+    chip.dataset.fixaActiveMode = subject ? 'collection' : 'all';
+    chip.setAttribute('aria-disabled', subject ? 'false' : 'true');
+    chip.title = title;
+    const label = chip.querySelector('small');
+    const value = chip.querySelector('strong');
+    if (label) label.textContent = subject ? 'Coleção ativa' : 'Coleção atual';
+    if (value) {
+      value.textContent = text;
+      value.title = title;
+    }
+    setNavigationGuardState(!subject);
+  }
+
+  function setActiveCollection(id, options = {}) {
+    const subject = subjectById(id);
+    if (!subject) return false;
+    if (syncingActiveCollection) return true;
+
+    syncingActiveCollection = true;
+    try {
+      const subjectId = String(subject.id);
+      const appData = dataRef();
+      const previousSelected = String(appData?.selected || '');
+      state.subjectId = subjectId;
+
+      if (appData) appData.selected = subjectId;
+
+      const folderSelect = document.querySelector('#fixaWeekFolderFilter');
+      const subjectFolder = String(subject.folder || '');
+      if (folderSelect && subjectFolder && selectHasValue(folderSelect, subjectFolder)) {
+        folderSelect.value = subjectFolder;
+      }
+
+      fillCollectionFilter();
+      setSelectValue('#fixaReferenceCollectionFilter', subjectId);
+      setSelectValue('#questionCollection', subjectId);
+      setSelectValue('#importCollection', subjectId);
+      syncVisibleCollectionRows(subjectId);
+      syncActiveCollectionChip();
+
+      window.FixaHomeWeeklyDashboardV2?.refresh?.();
+      if (options.renderApp !== false && previousSelected !== subjectId) renderAppSelectionSoon();
+      scheduleSync();
+    } finally {
+      syncingActiveCollection = false;
+    }
+    return true;
   }
 
   function ensureHeaderLayout() {
@@ -469,10 +805,22 @@
       collection.innerHTML = `${collectionIcon()}<select id="fixaReferenceCollectionFilter" aria-label="Filtrar por coleção"></select>`;
       filters.appendChild(collection);
     }
+    let period = document.querySelector('.fixa-week-period');
+    if (!period) {
+      period = document.createElement('div');
+      period.className = 'fixa-week-period';
+      period.setAttribute('role', 'group');
+      period.setAttribute('aria-label', 'Período do painel');
+      period.innerHTML = '<button type="button" data-fixa-week-period="today">Hoje</button><button type="button" data-fixa-week-period="week" class="active">Semana</button><button type="button" data-fixa-week-period="month">Mês</button>';
+    }
+    if (period.parentElement !== filters || period.previousElementSibling !== collection) {
+      collection.insertAdjacentElement('afterend', period);
+    }
 
     if (filters.parentElement !== left) left.appendChild(filters);
     if (greeting.parentElement !== right) right.appendChild(greeting);
     if (date.parentElement !== right) right.appendChild(date);
+    syncActiveCollectionChip();
     return true;
   }
 
@@ -493,29 +841,11 @@
       select.dataset.optionsSignature = signature;
     }
     select.value = state.subjectId;
+    syncActiveCollectionChip();
   }
 
-  function ensurePeriodRow(todayShell, summary, footerStats) {
-    let row = todayShell.querySelector('.fixa-reference-period-row');
-    if (!row) {
-      row = document.createElement('div');
-      row.className = 'fixa-reference-period-row';
-      row.setAttribute('aria-label', 'Período da página inicial');
-    }
-
-    let period = document.querySelector('.fixa-week-period');
-    if (!period) {
-      period = document.createElement('div');
-      period.className = 'fixa-week-period';
-      period.setAttribute('role', 'group');
-      period.setAttribute('aria-label', 'Período do painel');
-      period.innerHTML = '<button type="button" data-fixa-week-period="today">Hoje</button><button type="button" data-fixa-week-period="week" class="active">Semana</button><button type="button" data-fixa-week-period="month">Mês</button>';
-    }
-    if (period.parentElement !== row) row.appendChild(period);
-
-    if (row.parentElement !== todayShell || row.previousElementSibling !== summary) summary.insertAdjacentElement('afterend', row);
-    if (footerStats.previousElementSibling !== row) row.insertAdjacentElement('afterend', footerStats);
-    return row;
+  function removeLegacyPeriodRow(todayShell) {
+    todayShell?.querySelector('.fixa-reference-period-row')?.remove();
   }
 
   function clearOldHeightControl() {
@@ -534,7 +864,8 @@
     if (!todayShell || !summary || !footerStats) return false;
 
     if (summary.parentElement !== todayShell) todayShell.prepend(summary);
-    ensurePeriodRow(todayShell, summary, footerStats);
+    removeLegacyPeriodRow(todayShell);
+    if (footerStats.previousElementSibling !== summary) summary.insertAdjacentElement('afterend', footerStats);
     const mainShell = todayShell.querySelector('.fixa-week-main-shell');
     if (mainShell && mainShell.previousElementSibling !== footerStats) footerStats.insertAdjacentElement('afterend', mainShell);
     clearOldHeightControl();
@@ -563,6 +894,17 @@
     iconBox.innerHTML = `<img src="${encodeURI(meta.asset)}" data-fixa-reference-asset="${meta.asset}" alt="" aria-hidden="true">`;
   }
 
+  function createSummaryCard(label) {
+    const card = document.createElement('article');
+    card.className = `home-card fixa-week-summary-card${label.startsWith('XP') ? ' fixa-xp-card' : ''}`;
+    card.dataset.fixaSummaryKey = label;
+    card.innerHTML = '<span class="fixa-week-summary-icon"></span><span><strong></strong><span class="home-card-number">0</span><small class="home-muted"></small></span>';
+    const title = card.querySelector('strong');
+    if (title) title.textContent = label;
+    applySummaryArtwork(card, label);
+    return card;
+  }
+
   function normalizeSummaryGrid() {
     const grid = document.querySelector('#homeSummaryCards');
     if (!grid || syncing) return grid;
@@ -581,7 +923,7 @@
         applySummaryArtwork(card, label);
       });
       SUMMARY_ORDER.forEach(label => {
-        const card = byLabel.get(label);
+        const card = byLabel.get(label) || createSummaryCard(label);
         if (card && card !== grid.lastElementChild) grid.appendChild(card);
       });
       return grid;
@@ -607,31 +949,22 @@
   function renderCollectionSelection() {
     if (state.subjectId === 'all') return;
     const selected = selectedSubjects();
-    const cards = selected.flatMap(subject => cardsFor(subject)).filter(card => statusOf(card) !== 'frozen');
+    const allSelectedCards = selected.flatMap(subject => cardsFor(subject));
+    const frozen = allSelectedCards.filter(card => statusOf(card) === 'frozen').length;
+    const cards = allSelectedCards.filter(card => statusOf(card) !== 'frozen');
     const mastered = cards.filter(card => statusOf(card) === 'mastered').length;
     const allTests = testsForSelection();
     const periodTests = testsInPeriod(allTests);
     const total = periodTests.reduce((sum, test) => sum + Number(test?.total || 0), 0);
     const score = periodTests.reduce((sum, test) => sum + Number(test?.score || 0), 0);
-    const xpSummary = window.FixaCompetitionXpHomeV4?.summary || {};
-    const bySubject = xpSummary.by_subject || {};
-    const subjectId = String(selected[0]?.id || '');
-    const xp = Number(bySubject[subjectId] || allTests.reduce((sum, test) => sum + Number(test?.xp || 0), 0));
-
-    const now = new Date();
-    const weekStart = new Date(now); weekStart.setHours(0,0,0,0); weekStart.setDate(weekStart.getDate() - ((weekStart.getDay()+6)%7));
-    const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+6); weekEnd.setHours(23,59,59,999);
-    const weekXp = allTests.filter(test => {
-      const date = testDate(test);
-      return date && date >= weekStart && date <= weekEnd;
-    }).reduce((sum, test) => sum + Number(test?.xp || 0), 0);
+    const xp = periodTests.reduce((sum, test) => sum + testXp(test), 0);
 
     setSummaryCard('Coleções', selected.length, 'Total de coleções');
     setSummaryCard('Questões', cards.length, 'Total de questões');
+    setSummaryCard('Congeladas', frozen, 'Questões congeladas');
     setSummaryCard('Dominadas', mastered, `${percent(mastered, cards.length)}% do total`);
-    setSummaryCard('Aproveitamento', `${percent(score, total)}%`, 'Média dos testes');
-    setSummaryCard('XP Coleções', xp, '');
-    setSummaryCard('XP Semana', weekXp, '');
+    setSummaryCard('Aproveitamento', `${percent(score, total)}%`, `Média de ${activePeriodWord()}`);
+    setSummaryCard('XP Coleções', xp, periodXpCaption());
   }
 
   function activateMainTab(key) {
@@ -706,8 +1039,26 @@
     });
   }
 
+  function collectionIdFromClick(event) {
+    if (event.target.closest?.('[data-subject-menu], [data-folder-menu], .collection-favorite, .subject-options')) return '';
+    const row = event.target.closest?.('.subject[data-id], [data-home-subject]');
+    if (!row) return '';
+    if (!row.closest?.('#subjects, #collectionsSidebar, #home')) return '';
+    return row.dataset.id || row.dataset.homeSubject || '';
+  }
+
+  function handleCollectionSelectionClick(event) {
+    const id = collectionIdFromClick(event);
+    if (!id) return;
+    setActiveCollection(id, { renderApp:false });
+    setTimeout(() => setActiveCollection(id, { renderApp:false }), 0);
+    setTimeout(() => setActiveCollection(id, { renderApp:false }), 120);
+  }
+
   function syncAll() {
     ensureStyle();
+    observePrimaryTabs();
+    reorderPrimaryTabs();
     const homeActive = syncHomeMode();
     const headerReady = ensureHeaderLayout();
     if (headerReady) fillCollectionFilter();
@@ -715,6 +1066,7 @@
     const grid = normalizeSummaryGrid();
     observeGrid(grid);
     renderCollectionSelection();
+    syncActiveCollectionChip();
     syncMainTabs();
     if (homeActive) scheduleFit();
     const ready = Boolean(headerReady && bodyReady && grid);
@@ -722,7 +1074,17 @@
     return ready;
   }
 
+  document.addEventListener('pointerdown', blockCollectionViewNavigation, true);
+  document.addEventListener('click', blockCollectionViewNavigation, true);
+  document.addEventListener('click', handleCollectionSelectionClick, true);
+
   document.addEventListener('click', event => {
+    const id = collectionIdFromClick(event);
+    if (id) {
+      setTimeout(() => setActiveCollection(id), 0);
+      setTimeout(() => setActiveCollection(id), 80);
+    }
+
     const mainTab = event.target.closest('#home.home-view [data-fixa-main-tab]');
     if (mainTab) {
       const key = mainTab.dataset.fixaMainTab;
@@ -744,14 +1106,23 @@
   document.addEventListener('change', event => {
     if (event.target.closest('#fixaWeekFolderFilter')) {
       state.subjectId = 'all';
+      syncActiveCollectionChip();
       setTimeout(scheduleSync, 0);
       return;
     }
     const collection = event.target.closest('#fixaReferenceCollectionFilter');
     if (collection) {
-      state.subjectId = collection.value || 'all';
-      if (state.subjectId === 'all') window.FixaHomeWeeklyDashboardV2?.refresh?.();
+      const value = collection.value || 'all';
+      if (value !== 'all' && setActiveCollection(value)) return;
+      state.subjectId = 'all';
+      window.FixaHomeWeeklyDashboardV2?.refresh?.();
+      syncActiveCollectionChip();
       setTimeout(scheduleSync, 0);
+      return;
+    }
+    const appCollection = event.target.closest('#questionCollection');
+    if (appCollection) {
+      setActiveCollection(appCollection.value);
     }
   });
 

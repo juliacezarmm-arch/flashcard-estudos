@@ -22,6 +22,7 @@
       trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"></path><path d="M8 6H4v2a4 4 0 0 0 4 4M16 6h4v2a4 4 0 0 1-4 4M12 13v4M8 21h8M9 17h6"></path>',
       chart: '<path d="M4 19V5M4 19h16"></path><path d="m7 15 4-4 3 2 5-7"></path>',
       target: '<circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>',
+      snow: '<path d="M12 3v18M5.6 6.5l12.8 11M18.4 6.5l-12.8 11"></path><path d="m9 4.8 3 3 3-3M9 19.2l3-3 3 3M4.8 9l4.1 1.1-1.1-4.1M19.2 15l-4.1-1.1 1.1 4.1M19.2 9l-4.1 1.1 1.1-4.1M4.8 15l4.1-1.1-1.1 4.1"></path>',
       list: '<path d="M9 6h11M9 12h11M9 18h11"></path><circle cx="4" cy="6" r="1"></circle><circle cx="4" cy="12" r="1"></circle><circle cx="4" cy="18" r="1"></circle>',
       star: '<path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path>',
       plus: '<path d="M12 5v14M5 12h14"></path>'
@@ -60,12 +61,22 @@
   }
 
   function dateOf(value) {
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value.trim())) {
+      const [year, month, day] = value.trim().split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
     const date = new Date(value || 0);
     return Number.isNaN(date.getTime()) ? null : date;
   }
 
   function testDate(test) {
-    return dateOf(test?.completedAt || test?.finishedAt || test?.date);
+    return dateOf(test?.completedOn || test?.occurredOn || test?.occurred_on || test?.completedAt || test?.finishedAt || test?.date);
+  }
+
+  function localDateKey(value) {
+    const date = value instanceof Date ? value : dateOf(value);
+    if (!date) return '';
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
 
   function startOfDay(base = new Date()) {
@@ -113,6 +124,10 @@
     return state.period === 'today' ? 'Hoje' : state.period === 'month' ? 'Mês' : 'Semana';
   }
 
+  function periodXpCaption() {
+    return state.period === 'today' ? 'XP de hoje' : state.period === 'month' ? 'XP do mês' : 'XP da semana';
+  }
+
   function testBelongs(test) {
     if (state.folderId === 'all') return true;
     const ids = selectedSubjectIds();
@@ -137,6 +152,10 @@
       const date = testDate(test);
       return date && date >= start && date <= end;
     });
+  }
+
+  function testXp(test) {
+    return Math.max(0, Number(test?.xp ?? test?.xpBreakdown?.total ?? test?.points ?? 0) || 0);
   }
 
   function clamp(value, min = 0, max = 100) {
@@ -184,8 +203,11 @@
     const tests = subjectTests(subject);
     const totalAnswered = tests.reduce((sum, test) => sum + Number(test.total || 0), 0);
     const totalScore = tests.reduce((sum, test) => sum + Number(test.score || 0), 0);
-    const xpBySubject = window.FixaCompetitionXpHomeV4?.summary?.by_subject || {};
-    const xp = Number(xpBySubject[String(subject.id)] || tests.reduce((sum, test) => sum + Number(test.xp || 0), 0));
+    const xpApi = window.FixaCompetitionXpHomeV4;
+    const xpBySubject = xpApi?.summaryReady ? xpApi.summary?.by_subject || {} : {};
+    const xp = xpApi?.summaryReady
+      ? Number(xpBySubject[String(subject.id)] || 0)
+      : tests.reduce((sum, test) => sum + Number(test.xp || 0), 0);
     return {
       total: cards.length,
       ...counts,
@@ -198,20 +220,20 @@
   function consecutiveStreak() {
     const dates = new Set(completedTests().map(test => {
       const date = testDate(test);
-      return date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}` : '';
+      return date ? localDateKey(date) : '';
     }).filter(Boolean));
     (window.FixaHomeGoalsStreakProtectionV1?.protection?.protected_days || []).forEach(value => {
       const date = dateOf(value);
-      if (date) dates.add(`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`);
+      if (date) dates.add(localDateKey(date));
     });
     if (!dates.size) return 0;
     const cursor = new Date();
     cursor.setHours(12, 0, 0, 0);
-    const todayKey = `${cursor.getFullYear()}-${cursor.getMonth()}-${cursor.getDate()}`;
+    const todayKey = localDateKey(cursor);
     if (!dates.has(todayKey)) cursor.setDate(cursor.getDate() - 1);
     let streak = 0;
     while (true) {
-      const key = `${cursor.getFullYear()}-${cursor.getMonth()}-${cursor.getDate()}`;
+      const key = localDateKey(cursor);
       if (!dates.has(key)) break;
       streak += 1;
       cursor.setDate(cursor.getDate() - 1);
@@ -345,13 +367,13 @@
     const weekStart = startOfWeek(new Date());
     const studiedDays = new Set(completedTests().map(test => {
       const date = testDate(test);
-      return date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}` : '';
+      return date ? localDateKey(date) : '';
     }));
     const letters = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
     const days = Array.from({ length: 7 }, (_, index) => {
       const date = new Date(weekStart);
       date.setDate(date.getDate() + index);
-      const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+      const key = localDateKey(date);
       const active = studiedDays.has(key);
       return `<span class="fixa-week-day${active ? ' active' : ''}"><i>${active ? '✓' : ''}</i><b>${letters[index]}</b></span>`;
     }).join('');
@@ -412,21 +434,21 @@
   function renderSummaryCards() {
     const grid = document.querySelector('#homeSummaryCards');
     if (!grid) return;
-    const cards = allCards().filter(item => statusOf(item.card) !== 'frozen');
+    const all = allCards();
+    const frozen = all.filter(item => statusOf(item.card) === 'frozen').length;
+    const cards = all.filter(item => statusOf(item.card) !== 'frozen');
     const mastered = cards.filter(item => statusOf(item.card) === 'mastered').length;
     const tests = testsInRange();
     const total = tests.reduce((sum, test) => sum + Number(test.total || 0), 0);
     const score = tests.reduce((sum, test) => sum + Number(test.score || 0), 0);
-    const xpSummary = window.FixaCompetitionXpHomeV4?.summary || {};
-    const xp = Number(xpSummary.total_xp || completedTests().reduce((sum, test) => sum + Number(test.xp || 0), 0));
-    const weekXp = Number(window.FixaHomeGoalsStreakProtectionV1?.weekXp || 0);
+    const xp = tests.reduce((sum, test) => sum + testXp(test), 0);
     const rows = [
       ['books', 'Coleções', subjects().length, 'Total de coleções', 'green'],
       ['question', 'Questões', cards.length, 'Total de questões', 'cyan'],
+      ['snow', 'Congeladas', frozen, 'Questões congeladas', 'ice'],
       ['trophy', 'Dominadas', mastered, `${percent(mastered, cards.length)}% do total`, 'orange'],
       ['chart', 'Aproveitamento', `${percent(score, total)}%`, `Média de ${periodWord()}`, 'purple'],
-      ['target', 'XP Coleções', xp, '', 'blue'],
-      ['target', 'XP Semana', weekXp, '', 'blue']
+      ['target', 'XP Coleções', xp, periodXpCaption(), 'blue']
     ];
 
     grid.classList.add('fixa-week-summary');
@@ -878,7 +900,7 @@
     .fixa-week-main-value{font-size:22px;line-height:24px;color:#172033}.fixa-week-top-card>small{font-size:8.5px;line-height:10px;color:#687086}.fixa-week-top-card>.home-progress{height:4px!important;margin-top:2px!important}.fixa-week-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:3px}.fixa-week-day{display:grid;place-items:center;gap:1px;color:#64748b}.fixa-week-day i{width:22px;height:22px;border:1px solid #dde5ef;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:9px;background:#fff}.fixa-week-day.active i{border-color:#f5b071;color:#8a4300;background:#f7b373}.fixa-week-day b{font-size:8px;color:#26324b}
 
     #homeSummaryCards.fixa-week-summary{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:8px!important}
-    .fixa-week-summary-card{height:70px!important;min-height:70px!important;padding:8px 10px!important;display:grid!important;grid-template-columns:38px minmax(0,1fr)!important;align-items:center!important;gap:8px!important}.fixa-week-summary-card .home-card-number{font-size:19px!important;line-height:21px!important}.fixa-week-summary-card strong{font-size:10px!important;line-height:12px!important;margin-bottom:1px!important}.fixa-week-summary-card small{font-size:8px!important;line-height:9px!important}.fixa-week-summary-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center}.fixa-week-summary-icon svg{width:21px;height:21px}.fixa-week-summary-icon.green{color:#15803d;background:#effbf3}.fixa-week-summary-icon.cyan{color:#0284c7;background:#ecf8ff}.fixa-week-summary-icon.orange{color:#ea580c;background:#fff3e8}.fixa-week-summary-icon.purple{color:#9333ea;background:#f7efff}.fixa-week-summary-icon.blue{color:#2563eb;background:#eef4ff}
+    .fixa-week-summary-card{height:70px!important;min-height:70px!important;padding:8px 10px!important;display:grid!important;grid-template-columns:38px minmax(0,1fr)!important;align-items:center!important;gap:8px!important}.fixa-week-summary-card .home-card-number{font-size:19px!important;line-height:21px!important}.fixa-week-summary-card strong{font-size:10px!important;line-height:12px!important;margin-bottom:1px!important}.fixa-week-summary-card small{font-size:8px!important;line-height:9px!important}.fixa-week-summary-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center}.fixa-week-summary-icon svg{width:21px;height:21px}.fixa-week-summary-icon.green{color:#15803d;background:#effbf3}.fixa-week-summary-icon.cyan{color:#0284c7;background:#ecf8ff}.fixa-week-summary-icon.ice{color:#0f75bc;background:#eef8ff}.fixa-week-summary-icon.orange{color:#ea580c;background:#fff3e8}.fixa-week-summary-icon.purple{color:#9333ea;background:#f7efff}.fixa-week-summary-icon.blue{color:#2563eb;background:#eef4ff}
 
     .fixa-week-main-shell,.fixa-week-analysis-shell{width:100%!important;padding:0!important;overflow:hidden!important;border-radius:14px!important}
     .fixa-week-content-tabs{display:flex;align-items:center;gap:3px;min-height:42px;padding:4px 7px;border-bottom:1px solid #e7edf5;background:#f8faff;overflow-x:auto;scrollbar-width:none}.fixa-week-content-tabs::-webkit-scrollbar{display:none}.fixa-week-content-tabs button{min-height:33px!important;padding:0 15px!important;border:0!important;border-radius:8px!important;background:transparent!important;color:#64748b!important;font-size:10px!important;font-weight:800!important;box-shadow:none!important;white-space:nowrap}.fixa-week-content-tabs button:hover{background:#eef4ff!important;color:#2563eb!important}.fixa-week-content-tabs button.active{background:#fff!important;color:#2563eb!important;box-shadow:0 1px 4px rgba(30,64,175,.09)!important}.fixa-week-content-tabs button svg{width:14px;height:14px}

@@ -28,10 +28,57 @@
   const folders = () => Array.isArray(appData()?.folders) ? appData().folders : [];
   const subjects = () => Array.isArray(appData()?.subjects) ? appData().subjects : [];
   const history = () => Array.isArray(appData()?.testHistory) ? appData().testHistory : [];
+  const emptySummary = () => ({ total_xp: 0, today_xp: 0, by_folder: {}, by_subject: {} });
+
+  function summaryCacheKey() {
+    const userId = getUserId();
+    return userId ? `fixa-xp-summary:${userId}` : '';
+  }
+
+  function normalizedSummary(summary) {
+    return {
+      total_xp: Number(summary?.total_xp || 0),
+      today_xp: Number(summary?.today_xp || 0),
+      by_folder: summary?.by_folder || {},
+      by_subject: summary?.by_subject || {}
+    };
+  }
+
+  function readCachedSummary() {
+    try {
+      const key = summaryCacheKey();
+      if (!key) return null;
+      const cached = JSON.parse(localStorage.getItem(key) || 'null');
+      return cached?.summary ? normalizedSummary(cached.summary) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeCachedSummary(summary) {
+    try {
+      const key = summaryCacheKey();
+      if (!key) return;
+      localStorage.setItem(key, JSON.stringify({
+        summary: normalizedSummary(summary),
+        savedAt: Date.now()
+      }));
+    } catch (_) {}
+  }
+
+  function applyCachedSummary() {
+    if (state.summaryReady) return true;
+    const cached = readCachedSummary();
+    if (!cached) return false;
+    state.summary = cached;
+    state.summaryReady = true;
+    return true;
+  }
 
   const state = {
     competitions: [],
-    summary: { total_xp: 0, today_xp: 0, by_folder: {}, by_subject: {} },
+    summary: emptySummary(),
+    summaryReady: false,
     syncing: false,
     lastSignature: ''
   };
@@ -43,10 +90,13 @@
    */
 
   const dateKey = value => {
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value.trim())) return value.trim();
     const date = new Date(value || 0);
     if (Number.isNaN(date.getTime())) return '';
     return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
   };
+
+  const testDay = item => dateKey(item?.completedOn || item?.occurredOn || item?.occurred_on || item?.date || item?.finishedAt || item?.completedAt);
 
   const subjectById = id => subjects().find(item => String(item.id) === String(id));
   const folderById = id => folders().find(item => String(item.id) === String(id));
@@ -130,7 +180,7 @@
 
   async function recordTest(item) {
     const context = testContext(item);
-    const day = dateKey(item.date);
+    const day = testDay(item);
     if (!context || !day || !item.id) return;
 
     const meta = {
@@ -202,7 +252,7 @@
   function groupedByDay(items) {
     const map = new Map();
     items.forEach(item => {
-      const day = dateKey(item.date);
+      const day = testDay(item);
       if (!day) return;
       if (!map.has(day)) map.set(day, []);
       map.get(day).push(item);
@@ -303,7 +353,11 @@
   async function refreshSummary() {
     const previousSignature = homeSummarySignature(state.summary);
     const { data: summary, error } = await rpc('get_user_xp_summary', {});
-    if (!error && summary) state.summary = summary;
+    if (!error && summary) {
+      state.summary = normalizedSummary(summary);
+      state.summaryReady = true;
+      writeCachedSummary(state.summary);
+    }
 
     const changed = !error && summary && homeSummarySignature(state.summary) !== previousSignature;
     if (changed && typeof window.FixaHomeWeeklyDashboardV2?.refresh === 'function') {
@@ -317,7 +371,8 @@
 
   async function syncAll(force = false) {
     if (state.syncing || !getClient() || !getUserId() || !appData()) return;
-    const signature = history().map(item => `${item.id}:${item.total}:${item.mode}:${item.date}`).join('|');
+    applyCachedSummary();
+    const signature = history().map(item => `${item.id}:${item.total}:${item.mode}:${testDay(item)}`).join('|');
     if (!force && signature === state.lastSignature) return;
 
     state.syncing = true;
@@ -360,6 +415,13 @@
   window.FixaCompetitionXpHomeV4 = {
     sync: () => syncAll(true),
     refresh: refreshSummary,
-    get summary() { return state.summary; }
+    get summary() {
+      applyCachedSummary();
+      return state.summary;
+    },
+    get summaryReady() {
+      applyCachedSummary();
+      return state.summaryReady;
+    }
   };
 })();

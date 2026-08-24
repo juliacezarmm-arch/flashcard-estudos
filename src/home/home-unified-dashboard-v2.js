@@ -124,9 +124,9 @@
   }
   function cardsFor(subject) { return Array.isArray(subject?.cards) ? subject.cards : []; }
   function attemptsOf(card) { return Array.isArray(card?.attemptHistory) ? card.attemptHistory : []; }
-  function dateOf(value) { const date = new Date(value || 0); return Number.isNaN(date.getTime()) ? null : date; }
+  function dateOf(value) { if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value.trim())) { const [year, month, day] = value.trim().split('-').map(Number); return new Date(year, month - 1, day); } const date = new Date(value || 0); return Number.isNaN(date.getTime()) ? null : date; }
   function attemptDate(attempt) { return dateOf(attempt?.date || attempt?.created_at || attempt?.createdAt || attempt?.answeredAt); }
-  function testDate(test) { return dateOf(test?.completedAt || test?.finishedAt || test?.date); }
+  function testDate(test) { return dateOf(test?.completedOn || test?.occurredOn || test?.occurred_on || test?.completedAt || test?.finishedAt || test?.date); }
   function attemptCorrect(attempt) {
     if (typeof attempt?.correct === 'boolean') return attempt.correct;
     return ['true','1','sim','yes'].includes(String(attempt?.correct ?? '').toLowerCase());
