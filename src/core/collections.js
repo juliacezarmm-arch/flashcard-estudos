@@ -282,14 +282,14 @@
   };
 
   const originalImportCards = importCards;
-  importCards = function importCardsWithCategories(cards) {
-    const targetId = document.querySelector("#importCollection")?.value || data.selected;
+  importCards = function importCardsWithCategories(cards, destinationId) {
+    const targetId = destinationId || document.querySelector("#importCollection")?.value || data.selected;
     const target = subjectById(targetId);
     (cards || []).forEach(card => {
       card.category = cleanCategoryName(card.category || card.categoria || "");
       if (target && card.category) card.category = ensureSubjectCategory(target, card.category);
     });
-    const total = originalImportCards(cards);
+    const total = originalImportCards(cards, targetId);
     if (total) renderCategoryControls(target || currentSubject());
     return total;
   };
@@ -802,7 +802,7 @@
     requestAnimationFrame(() => document.querySelector(`[data-order-row="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "nearest" }));
   }
 
-  function saveOrder() {
+  async function saveOrder() {
     if (!state.folderId || !state.workingOrder.length) {
       closeOrderManager();
       return;
@@ -815,9 +815,10 @@
       if (subject.folder !== state.folderId) return subject;
       return orderedSubjects[cursor++] || subject;
     });
+    if (typeof saveNow === "function") await saveNow();
+    else if (typeof save === "function") save();
     closeOrderManager();
     if (typeof render === "function") render();
-    else if (typeof save === "function") save();
   }
 
   function augmentFolderMenu(menu) {
@@ -884,7 +885,7 @@
     }
     if (event.target.closest("[data-order-save]")) {
       event.preventDefault();
-      saveOrder();
+      void saveOrder();
     }
   }
 
