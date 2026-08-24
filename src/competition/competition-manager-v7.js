@@ -10,6 +10,7 @@
   const plusSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
   const hashSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3 8 21M16 3l-2 18M4 9h16M3 15h16"/></svg>';
   const mailSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
+  const editSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>';
 
   const style = document.createElement('style');
   style.id = 'competitionManagerV7Style';
@@ -40,6 +41,10 @@
     .cv7-open { min-height:38px; padding:8px 13px; border:1px solid #d7e2f2; border-radius:9px; background:#fff; color:#172033; font-size:12px; font-weight:800; }
     .cv7-open.primary { border-color:#2563eb; background:#2563eb; color:#fff; box-shadow:0 6px 14px rgba(37,99,235,.14); }
     .cv7-delete { min-height:38px; padding:8px 12px; border:1px solid #fecaca; border-radius:9px; background:#fff7f7; color:#dc2626; font-size:12px; font-weight:800; }
+    .cv7-edit { min-height:38px; padding:8px 12px; border:1px solid #bfdbfe; border-radius:9px; display:inline-flex; align-items:center; gap:6px; background:#eff6ff; color:#1d4ed8; font-size:12px; font-weight:800; }
+    .cv7-edit svg { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+    .cv7-edit-note { margin:-2px 0 0; color:#64748b; font-size:11px; line-height:1.45; }
+    .cv7-readonly { min-height:42px; border:1px solid #e2e8f0; border-radius:9px; padding:10px 12px; background:#f8fafc; color:#475569; font-size:13px; font-weight:700; }
     .cv7-empty { min-height:300px; display:grid; place-items:center; align-content:center; gap:10px; padding:34px 28px; border:1px solid #e3e9f2; border-radius:15px; background:#fff; text-align:center; }
     .cv7-empty-mark { width:76px; height:76px; border-radius:50%; display:grid; place-items:center; background:#eef4ff; color:#2563eb; border:1px solid #dce8ff; }
     .cv7-empty-mark svg { width:40px; height:40px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
@@ -126,7 +131,7 @@
     const status = c.effective_status || 'active';
     const period = c.ends_at ? `${fmt(c.starts_at)} a ${fmt(c.ends_at)}` : `Desde ${fmt(c.starts_at)} · tempo indeterminado`;
     const actionLabel = status === 'completed' ? 'Ver resultado' : status === 'upcoming' ? 'Ver detalhes' : 'Abrir competição';
-    return `<article class="cv7-card"><div class="cv7-card-main"><div class="cv7-card-title"><h3>${esc(c.name)}</h3><span class="cv7-status ${status}">${statusLabel(status)}</span></div><div class="cv7-meta"><span>${esc(period)}</span><span><b>${Number(c.my_xp||0)} XP</b></span><span>${Number(c.member_count||0)} participante${Number(c.member_count||0)===1?'':'s'}</span>${c.daily_xp_limit?`<span>limite diário ${Number(c.daily_xp_limit)} XP</span>`:''}</div></div><div class="cv7-actions"><button class="cv7-open ${status==='active'?'primary':''}" data-cv7-open="${c.id}" data-cv7-status="${status}">${actionLabel}</button>${c.is_owner?`<button class="cv7-delete" data-cv7-delete="${c.id}">Excluir</button>`:`<button class="cv7-open" data-cv7-leave="${c.id}">Sair</button>`}</div></article>`;
+    return `<article class="cv7-card"><div class="cv7-card-main"><div class="cv7-card-title"><h3>${esc(c.name)}</h3><span class="cv7-status ${status}">${statusLabel(status)}</span></div><div class="cv7-meta"><span>${esc(period)}</span><span><b>${Number(c.my_xp||0)} XP</b></span><span>${Number(c.member_count||0)} participante${Number(c.member_count||0)===1?'':'s'}</span>${c.daily_xp_limit?`<span>limite diário ${Number(c.daily_xp_limit)} XP</span>`:''}</div></div><div class="cv7-actions"><button class="cv7-open ${status==='active'?'primary':''}" data-cv7-open="${c.id}" data-cv7-status="${status}">${actionLabel}</button>${c.is_owner&&status!=='completed'?`<button class="cv7-edit" data-cv7-edit="${c.id}">${editSvg} Editar</button>`:''}${c.is_owner?`<button class="cv7-delete" data-cv7-delete="${c.id}">Excluir</button>`:`<button class="cv7-open" data-cv7-leave="${c.id}">Sair</button>`}</div></article>`;
   }
 
   function generalEmptyState() {
@@ -247,12 +252,79 @@
     danger.onclick=async()=>{danger.disabled=true;danger.textContent='Aguarde...';try{const result=await onConfirm();if(result?.error)throw result.error;bg.remove();}catch(err){error.textContent=err?.message||String(err);error.classList.add('show');danger.disabled=false;danger.textContent=confirmText;}};
   }
 
+  function showEditMessage(element, text, error = false) {
+    element.textContent = text;
+    element.className = `cv3-msg show${error ? ' err' : ''}`;
+  }
+
+  async function openEditCompetition(competitionId) {
+    const client = sb();
+    const source = state.list.find(item => String(item.id) === String(competitionId));
+    if (!client || !source?.is_owner || source.effective_status === 'completed') return;
+
+    const { data:dashboard, error } = await client.rpc('get_competition_dashboard', { p_competition_id:competitionId });
+    if (error) return window.alert(error.message);
+    const competition = dashboard?.competition || source;
+    if (!competition?.is_owner || competition.effective_status === 'completed') return;
+
+    const today = new Date().toISOString().slice(0,10);
+    const started = competition.effective_status === 'active' || String(competition.starts_at || '') <= today;
+    const noEndDate = !competition.ends_at;
+    const bg = document.createElement('div');
+    bg.className = 'cv3-modal-bg';
+    bg.innerHTML = `<div class="cv3-modal" role="dialog" aria-modal="true" aria-labelledby="cv7EditTitle"><div class="cv3-modal-head"><div><h3 id="cv7EditTitle">Editar competição</h3><p>Atualize as informações. A pasta compartilhada não pode ser trocada.</p></div><button class="cv3-close" type="button" data-cv7-edit-close aria-label="Fechar">×</button></div><form class="cv3-form"><label>Nome da competição<input name="name" maxlength="60" minlength="3" required value="${esc(competition.name)}"></label><label>Pasta escolhida<div class="cv7-readonly">${esc(competition.folder_name || 'Pasta da competição')}</div><span class="cv7-edit-note">A pasta não pode ser alterada depois da criação.</span></label><div class="cv3-form-grid"><label>Início<input name="start" type="date" value="${esc(competition.starts_at || '')}" required ${started?'disabled':''}></label><label data-cv7-end-label>Término<input name="end" type="date" value="${esc(competition.ends_at || '')}" ${noEndDate?'disabled':'required'}></label></div>${started?'<p class="cv7-edit-note">A data inicial não pode ser alterada porque a competição já começou.</p>':''}<div class="cv3-check-row"><div class="cv3-check-left"><input id="cv7EditIndefinite" name="indefinite" type="checkbox" ${noEndDate?'checked':''}><label for="cv7EditIndefinite">Tempo indeterminado<span class="cv3-helper">A competição não terá data de término.</span></label></div></div><label>Limite diário de XP<input name="limit" type="number" min="50" max="2000" step="50" value="${Number(competition.daily_xp_limit || 300)}" required></label><div class="cv3-toggle-row"><div><b>Ranking semanal</b><span class="cv3-helper">Mostra também o ranking da semana atual.</span></div><label class="cv3-toggle"><input name="weekly" type="checkbox" ${competition.weekly_ranking_enabled===false?'':'checked'}><span></span></label></div><div class="cv3-toggle-row"><div><b>Competição privada</b><span class="cv3-helper">Apenas convidados ou quem tiver o código poderá entrar.</span></div><label class="cv3-toggle"><input name="private" type="checkbox" ${competition.visibility==='public'?'':'checked'}><span></span></label></div><div class="cv3-msg"></div><div class="cv3-row-actions" style="justify-content:space-between"><button class="tab" type="button" data-cv7-edit-close>Cancelar</button><button class="cv3-primary" type="submit">Salvar alterações</button></div></form></div>`;
+    document.body.appendChild(bg);
+
+    const close = () => bg.remove();
+    const form = bg.querySelector('form');
+    const endInput = form.elements.end;
+    const endLabel = bg.querySelector('[data-cv7-end-label]');
+    const indefiniteInput = form.elements.indefinite;
+    bg.querySelectorAll('[data-cv7-edit-close]').forEach(button => button.onclick = close);
+    bg.addEventListener('click', event => { if (event.target === bg) close(); });
+    indefiniteInput.onchange = () => {
+      endInput.disabled = indefiniteInput.checked;
+      endInput.required = !indefiniteInput.checked;
+      endLabel.style.opacity = indefiniteInput.checked ? '.45' : '1';
+    };
+    indefiniteInput.onchange();
+
+    form.onsubmit = async event => {
+      event.preventDefault();
+      const message = form.querySelector('.cv3-msg');
+      const startValue = started ? competition.starts_at : form.elements.start.value;
+      const endValue = indefiniteInput.checked ? null : endInput.value;
+      if (endValue && endValue < startValue) return showEditMessage(message, 'A data final deve ser posterior à inicial.', true);
+      const submit = form.querySelector('[type="submit"]');
+      submit.disabled = true;
+      submit.textContent = 'Salvando...';
+      const result = await client.rpc('update_owned_competition', {
+        p_competition_id:competition.id,
+        p_name:form.elements.name.value,
+        p_starts_at:startValue,
+        p_ends_at:endValue,
+        p_daily_xp_limit:Number(form.elements.limit.value),
+        p_weekly_ranking_enabled:form.elements.weekly.checked,
+        p_visibility:form.elements.private.checked ? 'private' : 'public'
+      });
+      if (result.error) {
+        submit.disabled = false;
+        submit.textContent = 'Salvar alterações';
+        return showEditMessage(message, result.error.message, true);
+      }
+      close();
+      await loadManager(state.tab);
+      try { await window.FixaCompetitionV3?.load?.(); } catch {}
+    };
+  }
+
   function bindManager() {
     document.querySelectorAll('[data-cv7-tab]').forEach(b => b.onclick = () => { state.tab = b.dataset.cv7Tab; render(); });
     document.querySelectorAll('[data-cv7-open]').forEach(b => b.onclick = () => openCompetition(b.dataset.cv7Open, b.dataset.cv7Status));
     document.querySelector('[data-cv7-create]')?.addEventListener('click', () => clickSecondary('[data-create]'));
     document.querySelector('[data-cv7-join]')?.addEventListener('click', () => clickSecondary('[data-join]'));
     document.querySelector('[data-cv7-invitations]')?.addEventListener('click', openInvitationsFromEmpty);
+    document.querySelectorAll('[data-cv7-edit]').forEach(b => b.onclick = () => openEditCompetition(b.dataset.cv7Edit));
     document.querySelectorAll('[data-cv7-delete]').forEach(b => b.onclick = () => customConfirm({ title:'Excluir competição?', text:'Essa ação é definitiva. Se você quer apenas finalizar e manter o resultado, use Encerrar competição.', confirmText:'Excluir', onConfirm:async()=>{const client=sb();if(!client)return{error:new Error('Não foi possível conectar ao servidor.')};const result=await client.rpc('delete_competition',{p_competition_id:b.dataset.cv7Delete});if(!result.error)await loadManager(state.tab);return result;} }));
     document.querySelectorAll('[data-cv7-leave]').forEach(b => b.onclick = () => customConfirm({ title:'Sair da competição?', text:'Você deixará de participar desta competição.', confirmText:'Sair', onConfirm:async()=>{const client=sb();if(!client)return{error:new Error('Não foi possível conectar ao servidor.')};const result=await client.rpc('leave_competition',{p_competition_id:b.dataset.cv7Leave});if(!result.error)await loadManager(state.tab);return result;} }));
   }
