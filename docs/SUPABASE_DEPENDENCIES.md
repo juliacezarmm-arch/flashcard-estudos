@@ -39,6 +39,7 @@ O app grava imagens em caminhos prefixados pelo `currentUser.id` e resolve leitu
 - `record_user_xp`
 - `resolve_competition_question_flag`
 - `sync_competition_folder`
+- `update_owned_competition`
 
 ## Edge Function `fixa-push-worker`
 
