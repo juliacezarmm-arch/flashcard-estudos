@@ -24,6 +24,7 @@
   let baseline = { subjects: 0, cards: 0 };
   let baselineUserId = null;
   let integrityIssue = false;
+  let lastCloudRefreshAt = 0;
 
   function hasPendingLocalCloudSync() {
     try {
@@ -103,9 +104,9 @@
     } catch (_) {}
   }
 
-  function finishHydratedUi(uid, { renderNow = false, reason = '' } = {}) {
+  function finishHydratedUi(uid, { renderNow = false, reason = '', allowEmpty = false } = {}) {
     const now = currentCounts();
-    if (now.subjects === 0 && now.cards === 0) return false;
+    if (!allowEmpty && now.subjects === 0 && now.cards === 0) return false;
 
     try {
       if (typeof loadingCloud !== 'undefined') loadingCloud = false;
@@ -249,7 +250,11 @@
       loadPromise = (async () => {
         try {
           const result = await originalLoadCloudData.apply(this, args);
-          finishHydratedUi(uid);
+          if (result?.loadError) return result;
+          finishHydratedUi(uid, { allowEmpty: true });
+          if (result?.needsCloudUpload && originalSaveCloudData) {
+            await originalSaveCloudData();
+          }
           return result;
         } catch (error) {
           if (finishHydratedUi(uid, { renderNow: true, reason: error?.message || String(error) })) return;
@@ -263,6 +268,21 @@
 
       return loadPromise;
     };
+
+    const refreshFromCloud = () => {
+      const now = Date.now();
+      if (!currentUserId() || now - lastCloudRefreshAt < 1500) return;
+      lastCloudRefreshAt = now;
+      loadCloudData().catch(error => {
+        console.warn('[Fixa Sync] Não foi possível atualizar os dados online:', error);
+      });
+    };
+
+    window.addEventListener('focus', refreshFromCloud);
+    window.addEventListener('online', refreshFromCloud);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') refreshFromCloud();
+    });
   }
 
   window.FixaDataSafetyGuard = {

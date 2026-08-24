@@ -5850,21 +5850,28 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (error) {
         console.warn("Não consegui carregar do Supabase:", error.message);
         setAuthStatus("Conectado, mas não consegui carregar os dados online.");
+        loadingCloud = false;
+        return { loadError: error };
       } else if (row?.data) {
         if (localHasPendingChanges) {
           data = normalizeData(data);
-          await saveCloudData();
+          loadingCloud = false;
+          render();
+          return { needsCloudUpload: true };
         } else {
           data = normalizeData(row.data);
           localStorage.setItem(storeKey, JSON.stringify(data));
         }
       } else {
         data = normalizeData(data);
-        await saveCloudData();
+        loadingCloud = false;
+        render();
+        return { needsCloudUpload: true };
       }
 
       loadingCloud = false;
       render();
+      return { needsCloudUpload: false };
     }
 
     async function initCloudSync() {

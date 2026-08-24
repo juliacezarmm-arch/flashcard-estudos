@@ -292,7 +292,12 @@
     return typeof normalizeCard === "function" ? normalizeCard(replacement) : replacement;
   }
 
-  function finishReview() {
+  async function persistImport() {
+    if (typeof saveNow === "function") await saveNow();
+    else if (typeof save === "function") save();
+  }
+
+  async function finishReview() {
     const session = state.session;
     if (!session || session.pending.some(item => !item.decision)) return;
     const subject = data.subjects.find(item => item.id === session.subjectId);
@@ -316,6 +321,7 @@
     });
     if (typeof ensureAllQuestionCodes === "function") ensureAllQuestionCodes(data);
     const added = session.newCount + kept;
+    await persistImport();
     closeReview();
     clearInputs();
     if (typeof setMessage === "function") {
@@ -333,8 +339,9 @@
     if (panel) panel.hidden = true;
   }
 
-  function cancelReview() {
+  async function cancelReview() {
     const imported = state.session?.newCount || 0;
+    await persistImport();
     closeReview();
     clearInputs();
     if (typeof setMessage === "function") {
@@ -343,7 +350,7 @@
     if (typeof render === "function") render();
   }
 
-  function handleReviewClick(event) {
+  async function handleReviewClick(event) {
     const panel = event.target.closest?.("#fixaImportReview");
     if (!panel || !state.session) return;
 
@@ -388,11 +395,11 @@
     }
 
     if (finishButton) {
-      finishReview();
+      await finishReview();
       return;
     }
 
-    if (backButton) cancelReview();
+    if (backButton) await cancelReview();
   }
 
   async function handleImport(event) {
@@ -412,8 +419,10 @@
       cards.forEach(card => normalizeCard(card));
       const result = analyzeAndImport(cards);
       if (result.pending.length) {
+        await persistImport();
         beginReview(result);
       } else {
+        await persistImport();
         clearInputs();
         if (typeof setMessage === "function") setMessage(el.importMessage, `${result.total} questão${result.total === 1 ? "" : "ões"} importada${result.total === 1 ? "" : "s"}. Nenhuma repetida foi encontrada.`);
         if (typeof render === "function") render();
