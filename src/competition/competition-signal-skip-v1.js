@@ -34,21 +34,28 @@
     style.id='fixaCompetitionSignalSkipV1Style';
     style.textContent=`
       .fixa-signal-skip-button{min-height:30px!important;padding:5px 9px!important;font-size:11px!important;white-space:nowrap}
-      .fixa-signal-skip-button:disabled{opacity:.72!important;cursor:wait!important}
-      .fixa-signal-skip-toast{position:fixed;z-index:1200;top:18px;left:50%;transform:translateX(-50%);max-width:min(92vw,520px);padding:10px 14px;border:1px solid #bfdbfe;border-radius:10px;background:#eff6ff;color:#1d4ed8;box-shadow:0 12px 32px rgba(15,23,42,.16);font-size:12px;font-weight:800;text-align:center}
-      .fixa-signal-skip-toast.is-error{border-color:#fecaca;background:#fff1f2;color:#b91c1c}
+      .fixa-signal-skip-button:disabled{opacity:.72!important;cursor:default!important}
+      .fixa-signal-skip-feedback{display:inline-flex;align-items:center;min-height:28px;margin-left:7px;padding:5px 9px;border:1px solid #bfdbfe;border-radius:9px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:800;line-height:1.2;white-space:nowrap;box-shadow:0 3px 10px rgba(37,99,235,.08)}
+      .fixa-signal-skip-feedback.is-error{border-color:#fecaca;background:#fff1f2;color:#b91c1c}
+      @media(max-width:760px){.fixa-signal-skip-feedback{width:100%;margin:6px 0 0;justify-content:center;white-space:normal;text-align:center}}
     `;
     document.head.appendChild(style);
   }
 
+  function feedbackAnchor(){
+    return document.querySelector('#testRunningPanel:not([hidden]) .test-running-head .meta');
+  }
+
   function toast(message,error=false){
-    document.querySelector('.fixa-signal-skip-toast')?.remove();
-    const item=document.createElement('div');
-    item.className=`fixa-signal-skip-toast${error?' is-error':''}`;
+    document.querySelector('.fixa-signal-skip-feedback')?.remove();
+    const item=document.createElement('span');
+    item.className=`fixa-signal-skip-feedback${error?' is-error':''}`;
     item.setAttribute('role','status');
     item.textContent=message;
-    document.body.appendChild(item);
-    setTimeout(()=>item.remove(),2200);
+    const anchor=feedbackAnchor();
+    if(anchor)anchor.appendChild(item);
+    else document.body.appendChild(item);
+    setTimeout(()=>item.remove(),2600);
   }
 
   async function refreshFlags(){
@@ -125,8 +132,9 @@
 
     if(isFlagged(subject,card)){
       card.sharedModerationFrozen=true;
-      toast('Questão já estava sinalizada. Pulando para a próxima.');
-      advanceAfterSignal(subject,card);
+      button.disabled=true;
+      button.textContent='Sinalizada';
+      toast('Esta questão já está sinalizada.');
       return;
     }
 
@@ -150,8 +158,9 @@
     map.set(flagId(subject,card),{reported_by_me:true,local:true});
     state.flags.set(String(competition.id),map);
     card.sharedModerationFrozen=true;
-    toast('Questão sinalizada e congelada. Indo para a próxima.');
-    advanceAfterSignal(subject,card);
+    button.textContent='Sinalizada';
+    toast('Você sinalizou esta questão.');
+    window.setTimeout(()=>advanceAfterSignal(subject,card),450);
     refreshFlags();
   }
 
@@ -160,7 +169,7 @@
     if(!meta)return;
     const context=currentTestContext();
     let button=meta.querySelector('[data-fixa-signal-skip]');
-    if(!context){button?.remove();return;}
+    if(!context){button?.remove();document.querySelector('.fixa-signal-skip-feedback')?.remove();return;}
     if(!button){
       button=document.createElement('button');
       button.type='button';
@@ -172,6 +181,7 @@
     }
     if(isFlagged(context.subject,context.card)){
       button.textContent='Sinalizada';
+      button.disabled=true;
     }else if(!button.disabled){
       button.textContent='Sinalizar questão';
     }
