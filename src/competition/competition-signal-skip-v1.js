@@ -23,6 +23,7 @@
     return [...state.competitions.values()].find(item=>item?.is_owner&&String(item.folder_id||'')===folderId)||null;
   }
   function flagId(subject,card){return `${sourceSubjectId(subject)}::${questionKey(card)}`;}
+  function contextKey(context){return `${context.competition.id}::${flagId(context.subject,context.card)}`;}
   function isFlagged(subject,card){
     const competition=competitionForSubject(subject);
     return Boolean(competition&&state.flags.get(String(competition.id))?.has(flagId(subject,card)));
@@ -129,8 +130,10 @@
   async function signalCurrentQuestion(button){
     const context=currentTestContext();if(!context)return;
     const {subject,card,competition}=context;
+    button.dataset.fixaSignalContext=contextKey(context);
 
     if(isFlagged(subject,card)){
+      delete button.dataset.fixaSignalBusy;
       card.sharedModerationFrozen=true;
       button.disabled=true;
       button.textContent='Sinalizada';
@@ -139,6 +142,7 @@
     }
 
     const sb=client();if(!sb?.rpc)return toast('Não foi possível conectar para sinalizar a questão.',true);
+    button.dataset.fixaSignalBusy='1';
     button.disabled=true;
     button.textContent='Sinalizando...';
     const {error}=await sb.rpc('flag_competition_question',{
@@ -148,6 +152,7 @@
       p_question_code:card.questionCode||null
     });
     if(error){
+      delete button.dataset.fixaSignalBusy;
       button.disabled=false;
       button.textContent='Sinalizar questão';
       toast(error.message||'Não foi possível sinalizar a questão.',true);
@@ -158,6 +163,7 @@
     map.set(flagId(subject,card),{reported_by_me:true,local:true});
     state.flags.set(String(competition.id),map);
     card.sharedModerationFrozen=true;
+    delete button.dataset.fixaSignalBusy;
     button.textContent='Sinalizada';
     toast('Você sinalizou esta questão.');
     window.setTimeout(()=>advanceAfterSignal(subject,card),450);
@@ -179,10 +185,23 @@
       button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();signalCurrentQuestion(button);});
       meta.appendChild(button);
     }
+    const nextContextKey=contextKey(context);
+    if(button.dataset.fixaSignalContext!==nextContextKey){
+      button.dataset.fixaSignalContext=nextContextKey;
+      delete button.dataset.fixaSignalBusy;
+      button.disabled=false;
+    }
     if(isFlagged(context.subject,context.card)){
+      delete button.dataset.fixaSignalBusy;
       button.textContent='Sinalizada';
       button.disabled=true;
+    }else if(button.dataset.fixaSignalBusy==='1'){
+      button.textContent='Sinalizando...';
+      button.disabled=true;
     }else if(!button.disabled){
+      button.textContent='Sinalizar questão';
+    }else{
+      button.disabled=false;
       button.textContent='Sinalizar questão';
     }
   }
