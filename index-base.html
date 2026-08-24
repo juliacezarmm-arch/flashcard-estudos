@@ -5806,6 +5806,23 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       }
     }
 
+    function pendingCloudSyncAt() {
+      try {
+        const value = Number(localStorage.getItem(pendingSyncKey));
+        return Number.isFinite(value) ? value : 0;
+      } catch (_) {
+        return 0;
+      }
+    }
+
+    function syncDataCounts(value) {
+      const subjects = Array.isArray(value?.subjects) ? value.subjects : [];
+      return {
+        subjects: subjects.length,
+        cards: subjects.reduce((sum, subject) => sum + (Array.isArray(subject?.cards) ? subject.cards.length : 0), 0)
+      };
+    }
+
     function scheduleCloudSave() {
       if (!currentUser || !cloudReady || loadingCloud || !supabaseClient) return;
       clearTimeout(saveTimer);
@@ -5841,30 +5858,55 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (!currentUser || !supabaseClient) return;
       loadingCloud = true;
       const localHasPendingChanges = hasPendingCloudSync();
+      const localPendingAt = pendingCloudSyncAt();
       const { data: row, error } = await supabaseClient
         .from(cloudTable)
-        .select("data")
+        .select("data, updated_at")
         .eq("user_id", currentUser.id)
         .maybeSingle();
 
       if (error) {
         console.warn("Não consegui carregar do Supabase:", error.message);
         setAuthStatus("Conectado, mas não consegui carregar os dados online.");
+        loadingCloud = false;
+        return { loadError: error };
       } else if (row?.data) {
         if (localHasPendingChanges) {
-          data = normalizeData(data);
-          await saveCloudData();
+          const localCounts = syncDataCounts(data);
+          const cloudCounts = syncDataCounts(row.data);
+          const cloudUpdatedAt = Date.parse(row.updated_at || "") || 0;
+          const localIsEmpty = localCounts.subjects === 0 && localCounts.cards === 0;
+          const cloudHasContent = cloudCounts.subjects > 0 || cloudCounts.cards > 0;
+          const cloudIsNewer = cloudUpdatedAt > localPendingAt;
+
+          if (!localIsEmpty && !cloudIsNewer) {
+            data = normalizeData(data);
+            loadingCloud = false;
+            render();
+            return { needsCloudUpload: true };
+          }
+
+          // Um navegador vazio ou desatualizado nunca deve apagar dados mais novos da nuvem.
+          data = normalizeData(row.data);
+          localStorage.setItem(storeKey, JSON.stringify(data));
+          clearPendingCloudSync();
+          if (localIsEmpty && cloudHasContent) {
+            setAuthStatus("Dados online carregados neste navegador.");
+          }
         } else {
           data = normalizeData(row.data);
           localStorage.setItem(storeKey, JSON.stringify(data));
         }
       } else {
         data = normalizeData(data);
-        await saveCloudData();
+        loadingCloud = false;
+        render();
+        return { needsCloudUpload: true };
       }
 
       loadingCloud = false;
       render();
+      return { needsCloudUpload: false };
     }
 
     async function initCloudSync() {
