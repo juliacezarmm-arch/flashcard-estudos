@@ -40,7 +40,7 @@
 
   /* Mesma origem/regra usada pelo calendário "Sequência de estudos". */
   function studyDateKey(item) {
-    return localDateKey(item?.date || item?.created_at || item?.createdAt || item?.finishedAt || item?.completedAt);
+    return localDateKey(item?.completedOn || item?.occurredOn || item?.occurred_on || item?.date || item?.created_at || item?.createdAt || item?.finishedAt || item?.completedAt);
   }
 
   function studyDates() {

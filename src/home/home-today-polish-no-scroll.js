@@ -155,7 +155,39 @@
   }
 
   function testXp(test) {
-    return Math.max(0, Number(test?.xp ?? test?.xpBreakdown?.total ?? test?.points ?? 0) || 0);
+    const direct = Number(test?.xp ?? test?.xpBreakdown?.total ?? test?.points);
+    if (Number.isFinite(direct) && direct > 0) return Math.max(0, direct);
+    return Math.max(0, Number(test?.total || test?.question_count || 0) || 0);
+  }
+
+  function periodXpSummary() {
+    const api = window.FixaCompetitionXpHomeV4;
+    const range = currentRange();
+    const snapshot = api?.periodSummary?.(localDateKey(range.start), localDateKey(range.end));
+    return snapshot?.ready ? snapshot.summary || null : null;
+  }
+
+  function mapNumber(map, key) {
+    const id = String(key || '');
+    if (!map || !Object.prototype.hasOwnProperty.call(map, id)) return null;
+    const value = Number(map[id]);
+    return Number.isFinite(value) ? Math.max(0, value) : null;
+  }
+
+  function scopedPeriodXp(fallback, subjectId = '') {
+    const summary = periodXpSummary();
+    const local = Math.max(0, Number(fallback || 0));
+    if (!summary) return local;
+    if (subjectId) {
+      const subjectValue = mapNumber(summary.by_subject, subjectId);
+      return subjectValue === null ? local : subjectValue;
+    }
+    if (state.folderId !== 'all') {
+      const folderValue = mapNumber(summary.by_folder, state.folderId);
+      return folderValue === null ? local : Math.max(local, folderValue);
+    }
+    const total = Number(summary.total_xp);
+    return Number.isFinite(total) ? Math.max(local, total) : local;
   }
 
   function clamp(value, min = 0, max = 100) {
@@ -203,11 +235,8 @@
     const tests = subjectTests(subject);
     const totalAnswered = tests.reduce((sum, test) => sum + Number(test.total || 0), 0);
     const totalScore = tests.reduce((sum, test) => sum + Number(test.score || 0), 0);
-    const xpApi = window.FixaCompetitionXpHomeV4;
-    const xpBySubject = xpApi?.summaryReady ? xpApi.summary?.by_subject || {} : {};
-    const xp = xpApi?.summaryReady
-      ? Number(xpBySubject[String(subject.id)] || 0)
-      : tests.reduce((sum, test) => sum + Number(test.xp || 0), 0);
+    const fallbackXp = tests.reduce((sum, test) => sum + testXp(test), 0);
+    const xp = scopedPeriodXp(fallbackXp, subject.id);
     return {
       total: cards.length,
       ...counts,
@@ -441,7 +470,8 @@
     const tests = testsInRange();
     const total = tests.reduce((sum, test) => sum + Number(test.total || 0), 0);
     const score = tests.reduce((sum, test) => sum + Number(test.score || 0), 0);
-    const xp = tests.reduce((sum, test) => sum + testXp(test), 0);
+    const fallbackXp = tests.reduce((sum, test) => sum + testXp(test), 0);
+    const xp = scopedPeriodXp(fallbackXp);
     const rows = [
       ['books', 'Coleções', subjects().length, 'Total de coleções', 'green'],
       ['question', 'Questões', cards.length, 'Total de questões', 'cyan'],

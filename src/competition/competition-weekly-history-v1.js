@@ -34,7 +34,7 @@
     const style = document.createElement('style');
     style.id = 'fixaCompetitionWeeklyHistoryV1Style';
     style.textContent = `
-      .cv3-history-button{min-height:42px;border:1px solid #d7e2f2!important;border-radius:9px!important;padding:9px 14px!important;display:inline-flex!important;align-items:center!important;gap:7px!important;background:#fff!important;color:#334155!important;font-weight:800!important;box-shadow:none!important}
+      .cv3-history-button{width:100%!important;min-height:46px;border:1px solid #d7e2f2!important;border-radius:9px!important;padding:9px 14px!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:7px!important;background:#fff!important;color:#334155!important;font-weight:800!important;box-shadow:none!important}
       .cv3-history-button:hover{border-color:#bfdbfe!important;background:#eff6ff!important;color:#1d4ed8!important}
       .fixa-week-history-bg{position:fixed;inset:0;z-index:1320;display:grid;place-items:center;padding:18px;background:rgba(15,23,42,.42);backdrop-filter:blur(2px)}
       .fixa-week-history-modal{width:min(650px,calc(100vw - 28px));max-height:min(86vh,780px);overflow:hidden;border:1px solid #dbe3ef;border-radius:16px;background:#fff;box-shadow:0 28px 80px rgba(15,23,42,.25);display:grid;grid-template-rows:auto minmax(0,1fr)}

@@ -34,8 +34,8 @@
       .competition-v3 .cv3-rank-list { margin-top:8px !important; }
       .competition-v3 .cv3-rank { min-height:46px !important; padding:6px 9px !important; }
       .competition-v3 .cv3-avatar { width:32px !important; height:32px !important; }
-      .competition-v3 .cv3-rank-tabs { gap:20px !important; }
-      .competition-v3 .cv3-rank-tab { font-size:12px !important; padding-bottom:8px !important; }
+      .competition-v3 .cv3-rank-tabs { gap:4px !important; justify-content:center !important; align-items:center !important; }
+      .competition-v3 .cv3-rank-tab { min-width:62px !important; font-size:11px !important; padding:0 9px !important; display:inline-flex !important; align-items:center !important; justify-content:center !important; }
       .competition-v3 .cv3-stats,
       .competition-v3 .cv3-rule-row { gap:8px !important; }
       .competition-v3 .cv3-stat { min-height:78px !important; padding:8px 6px !important; }

@@ -66,6 +66,117 @@
     } catch (_) {}
   }
 
+  function periodCacheKey(startKey, endKey) {
+    const userId = getUserId();
+    return userId && startKey && endKey ? `fixa-xp-period-summary-v2:${userId}:${startKey}:${endKey}` : '';
+  }
+
+  function normalizePeriodSummary(summary) {
+    return {
+      total_xp: Number(summary?.total_xp || 0),
+      general_xp: Number(summary?.general_xp || 0),
+      competition_xp: Number(summary?.competition_xp || 0),
+      by_folder: summary?.by_folder || {},
+      by_subject: summary?.by_subject || {}
+    };
+  }
+
+  function readCachedPeriodSummary(startKey, endKey) {
+    try {
+      const key = periodCacheKey(startKey, endKey);
+      if (!key) return null;
+      const cached = JSON.parse(localStorage.getItem(key) || 'null');
+      return cached?.summary ? normalizePeriodSummary(cached.summary) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeCachedPeriodSummary(startKey, endKey, summary) {
+    try {
+      const key = periodCacheKey(startKey, endKey);
+      if (!key) return;
+      localStorage.setItem(key, JSON.stringify({
+        summary: normalizePeriodSummary(summary),
+        savedAt: Date.now()
+      }));
+    } catch (_) {}
+  }
+
+  function addMapValue(map, key, value) {
+    const id = String(key || '').trim();
+    const points = Math.max(0, Number(value || 0));
+    if (!id || !points) return;
+    map[id] = Number(map[id] || 0) + points;
+  }
+
+  function maxMapValue(map, key, value) {
+    const id = String(key || '').trim();
+    const points = Math.max(0, Number(value || 0));
+    if (!id || !points) return;
+    map[id] = Math.max(Number(map[id] || 0), points);
+  }
+
+  function subjectPointsFromMetadata(row) {
+    const raw = row?.metadata?.subject_points;
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    return raw;
+  }
+
+  function summarizeXpRows(rows) {
+    const summary = { total_xp: 0, by_folder: {}, by_subject: {} };
+    (Array.isArray(rows) ? rows : []).forEach(row => {
+      const points = Math.max(0, Number(row?.points || 0));
+      if (!points) return;
+      summary.total_xp += points;
+      addMapValue(summary.by_folder, row?.folder_id, points);
+
+      const explicitSubjects = subjectPointsFromMetadata(row);
+      if (explicitSubjects) {
+        Object.entries(explicitSubjects).forEach(([subjectId, value]) => addMapValue(summary.by_subject, subjectId, value));
+        return;
+      }
+
+      const subjectIds = Array.isArray(row?.subject_ids) ? row.subject_ids.map(String).filter(Boolean) : [];
+      if (!subjectIds.length) return;
+      const split = Math.round(points / subjectIds.length);
+      subjectIds.forEach(subjectId => addMapValue(summary.by_subject, subjectId, split));
+    });
+    return summary;
+  }
+
+  function competitionInPeriod(competition, startKey, endKey) {
+    const start = dateKey(competition?.starts_at || competition?.start_date || competition?.created_at) || '0000-01-01';
+    const end = dateKey(competition?.ends_at || competition?.end_date) || '9999-12-31';
+    return start <= endKey && end >= startKey;
+  }
+
+  function summarizeCompetitionXpRows(rows, competitionById) {
+    const summary = { total_xp: 0, by_folder: {}, by_subject: {} };
+    (Array.isArray(rows) ? rows : []).forEach(row => {
+      const points = Math.max(0, Number(row?.points || 0));
+      const competition = competitionById.get(String(row?.competition_id || ''));
+      if (!points || !competition) return;
+      summary.total_xp += points;
+      addMapValue(summary.by_folder, competition.folder_id, points);
+    });
+    return summary;
+  }
+
+  function mergePeriodSummaries(general, competition) {
+    const byFolder = { ...(general?.by_folder || {}) };
+    Object.entries(competition?.by_folder || {}).forEach(([folderId, points]) => {
+      maxMapValue(byFolder, folderId, points);
+    });
+    return normalizePeriodSummary({
+      total_xp: Math.max(Number(general?.total_xp || 0), Number(competition?.total_xp || 0)),
+      general_xp: Number(general?.total_xp || 0),
+      competition_xp: Number(competition?.total_xp || 0),
+      by_folder: byFolder,
+      by_subject: general?.by_subject || {}
+    });
+  }
+
   function applyCachedSummary() {
     if (state.summaryReady) return true;
     const cached = readCachedSummary();
@@ -80,7 +191,9 @@
     summary: emptySummary(),
     summaryReady: false,
     syncing: false,
-    lastSignature: ''
+    lastSignature: '',
+    periodSummaries: {},
+    periodLoading: {}
   };
 
   /*
@@ -350,6 +463,83 @@
     }
   }
 
+  function refreshHomeXpViews() {
+    requestAnimationFrame(() => {
+      if (typeof window.FixaHomeWeeklyDashboardV2?.refresh === 'function') window.FixaHomeWeeklyDashboardV2.refresh();
+      if (typeof window.FixaHomeReferenceLayoutV3?.refresh === 'function') window.FixaHomeReferenceLayoutV3.refresh();
+    });
+  }
+
+  async function loadPeriodSummary(startKey, endKey) {
+    const start = dateKey(startKey);
+    const end = dateKey(endKey);
+    const cacheKey = `${start}:${end}`;
+    const client = getClient();
+    if (!start || !end || !client?.from || !getUserId()) return null;
+    if (state.periodLoading[cacheKey]) return state.periodLoading[cacheKey];
+
+    state.periodLoading[cacheKey] = (async () => {
+      try {
+        const { data: rows, error } = await client
+          .from('user_xp_events')
+          .select('points,folder_id,subject_ids,metadata,occurred_on')
+          .gte('occurred_on', start)
+          .lte('occurred_on', end);
+        if (error) return null;
+
+        await loadCompetitions();
+        const competitionsInRange = state.competitions.filter(item => competitionInPeriod(item, start, end));
+        const competitionById = new Map(competitionsInRange.map(item => [String(item.id || ''), item]).filter(([id]) => Boolean(id)));
+        let competitionRows = [];
+        const competitionIds = [...competitionById.keys()];
+        if (competitionIds.length) {
+          try {
+            const { data: xpRows, error: xpError } = await client
+              .from('competition_xp_events')
+              .select('points,competition_id,event_type,occurred_on,metadata')
+              .in('competition_id', competitionIds)
+              .gte('occurred_on', start)
+              .lte('occurred_on', end);
+            if (!xpError && Array.isArray(xpRows)) competitionRows = xpRows;
+          } catch (_) {}
+        }
+
+        const generalSummary = normalizePeriodSummary(summarizeXpRows(rows));
+        const competitionSummary = normalizePeriodSummary(summarizeCompetitionXpRows(competitionRows, competitionById));
+        const summary = mergePeriodSummaries(generalSummary, competitionSummary);
+        state.periodSummaries[cacheKey] = summary;
+        writeCachedPeriodSummary(start, end, summary);
+        refreshHomeXpViews();
+        return summary;
+      } catch (_) {
+        return null;
+      } finally {
+        delete state.periodLoading[cacheKey];
+      }
+    })();
+
+    return state.periodLoading[cacheKey];
+  }
+
+  function periodSummary(startKey, endKey) {
+    const start = dateKey(startKey);
+    const end = dateKey(endKey);
+    const key = `${start}:${end}`;
+    if (!start || !end) return { ready: false, summary: normalizePeriodSummary(null) };
+
+    if (!state.periodSummaries[key]) {
+      const cached = readCachedPeriodSummary(start, end);
+      if (cached) state.periodSummaries[key] = cached;
+    }
+
+    if (!state.periodSummaries[key]) loadPeriodSummary(start, end);
+
+    return {
+      ready: Boolean(state.periodSummaries[key]),
+      summary: state.periodSummaries[key] || normalizePeriodSummary(null)
+    };
+  }
+
   async function refreshSummary() {
     const previousSignature = homeSummarySignature(state.summary);
     const { data: summary, error } = await rpc('get_user_xp_summary', {});
@@ -360,9 +550,7 @@
     }
 
     const changed = !error && summary && homeSummarySignature(state.summary) !== previousSignature;
-    if (changed && typeof window.FixaHomeWeeklyDashboardV2?.refresh === 'function') {
-      requestAnimationFrame(() => window.FixaHomeWeeklyDashboardV2.refresh());
-    }
+    if (changed) refreshHomeXpViews();
   }
 
   function testXpAlreadySynced(item) {
@@ -422,6 +610,7 @@
     get summaryReady() {
       applyCachedSummary();
       return state.summaryReady;
-    }
+    },
+    periodSummary
   };
 })();

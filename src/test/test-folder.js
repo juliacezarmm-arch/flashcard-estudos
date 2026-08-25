@@ -14,7 +14,6 @@
   const iconUsers = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 1 3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path></svg>';
   const iconList = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path></svg>';
   const iconShuffle = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>';
-  const iconGrid = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h.01M10 7h.01M16 7h.01M4 12h.01M10 12h.01M16 12h.01M4 17h.01M10 17h.01M16 17h.01"></path></svg>';
   const iconDrag = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="6" r="1"></circle><circle cx="16" cy="6" r="1"></circle><circle cx="8" cy="12" r="1"></circle><circle cx="16" cy="12" r="1"></circle><circle cx="8" cy="18" r="1"></circle><circle cx="16" cy="18" r="1"></circle></svg>';
 
   function esc(value) {
@@ -164,7 +163,7 @@
   function testableForSubject(subject) {
     if (!subject) return [];
     return (subject.cards || [])
-      .map((card, index) => ({ ...card, originalIndex: index, subjectId: subject.id }))
+      .map((card, index) => ({ ...card, originalIndex: index, subjectId: subject.id, subjectName: subject.name || "" }))
       .filter(card => card.status !== 'frozen')
       .filter(card => {
         if (card.type === 'select-list') return (card.listItems || []).length > 0;
@@ -181,41 +180,16 @@
   }
 
   function baseDistributionItems() {
-    const subjects = subjectsForFolder();
-    const groups = normalizedGroups().filter(group => group.subjectIds.length);
-    const groupBySubject = new Map();
-    groups.forEach(group => group.subjectIds.forEach(subjectId => groupBySubject.set(subjectId, group)));
-
-    const emittedGroups = new Set();
-    const items = [];
-
-    subjects.forEach(subject => {
-      const group = groupBySubject.get(subject.id);
-      if (group) {
-        if (emittedGroups.has(group.id)) return;
-        emittedGroups.add(group.id);
-        items.push({
-          key: `g:${group.id}`,
-          type: 'group',
-          id: group.id,
-          name: group.name,
-          available: availableForGroup(group),
-          detail: `${group.subjectIds.length} coleç${group.subjectIds.length === 1 ? 'ão' : 'ões'}`
-        });
-        return;
-      }
-
-      items.push({
-        key: `s:${subject.id}`,
-        type: 'subject',
-        id: subject.id,
-        name: subject.name,
-        available: testableForSubject(subject).length,
-        detail: 'Coleção individual'
-      });
-    });
-
-    return items;
+    return normalizedGroups()
+      .filter(group => group.subjectIds.length)
+      .map(group => ({
+        key: `g:${group.id}`,
+        type: 'group',
+        id: group.id,
+        name: group.name,
+        available: availableForGroup(group),
+        detail: `${group.subjectIds.length} coleç${group.subjectIds.length === 1 ? 'ão' : 'ões'}`
+      }));
   }
 
   function distributionItems() {
@@ -265,9 +239,9 @@
     if (!state.folderId) return { valid: false, message: 'Selecione uma pasta para configurar o teste.' };
     const items = distributionItems();
     if (!subjectsForFolder().length) return { valid: false, message: 'Esta pasta ainda não possui coleções.' };
-    if (!items.length) return { valid: false, message: 'Esta pasta ainda não possui coleções disponíveis para teste.' };
+    if (!items.length) return { valid: false, message: 'Crie um grupo nesta pasta para montar o Teste pasta.' };
     const total = totalRequested();
-    if (!total) return { valid: false, message: 'Defina a quantidade de questões de pelo menos uma coleção ou grupo.' };
+    if (!total) return { valid: false, message: 'Defina a quantidade de questões de pelo menos um grupo.' };
     for (const item of items) {
       const requested = Math.max(0, Number(state.allocations[item.key]) || 0);
       if (requested > item.available) return { valid: false, message: `${item.name} possui apenas ${item.available} questão${item.available === 1 ? '' : 'ões'} disponível${item.available === 1 ? '' : 'is'}.` };
@@ -301,6 +275,10 @@
       .test-folder-controls{grid-column:2/4;display:flex;flex-wrap:wrap;align-items:center;gap:9px}
       .test-folder-control{min-height:38px;border:1px solid #bfd5ff;border-radius:9px;padding:0 12px;display:inline-flex;align-items:center;gap:8px;color:#334155;background:#fff;font-size:12px;font-weight:750}
       .test-folder-control svg{width:17px;height:17px;fill:none;stroke:#2563eb;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+      button.test-folder-control{cursor:pointer}
+      button.test-folder-control:hover,button.test-folder-control:focus-visible{border-color:#2563eb;background:#eef4ff;color:#1d4ed8}
+      .test-folder-group-prompt{border:1px dashed #bfdbfe;border-radius:11px;background:#f8fbff;padding:13px;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#475569;font-size:12px}
+      .test-folder-group-prompt strong{display:block;color:#172033;font-size:13px}.test-folder-group-prompt button{min-height:34px;border-radius:8px;white-space:nowrap}
       .test-folder-select{min-width:220px;max-width:320px;padding-right:8px;background:#fff !important;border-color:#9fc1ff !important;box-shadow:none !important}
       .test-folder-select span{color:#334155}
       .test-folder-select select{border:0!important;box-shadow:none!important;padding:0 28px 0 2px;font-size:12px;font-weight:800;background:#fff!important;color:#172033!important;min-width:145px}
@@ -345,13 +323,13 @@
         <div class="test-folder-body">
           <div class="test-folder-head">
             <div class="test-folder-icon">${iconFolder}</div>
-            <div class="test-folder-copy"><h3>Teste pasta</h3><p>Monte um teste usando as coleções de uma pasta, com distribuição personalizada por coleção ou grupo.</p></div>
+            <div class="test-folder-copy"><h3>Teste pasta</h3><p>Monte um teste usando os grupos configurados dentro da pasta.</p></div>
             <button type="button" class="test-folder-start" data-folder-test-start>▷ &nbsp; Começar teste</button>
             <div class="test-folder-controls">
               <label class="test-folder-control test-folder-select">${iconFolder}<span>Pasta:</span><select data-folder-test-select aria-label="Pasta do teste"></select></label>
               <span class="test-folder-control test-folder-total">${iconList}Até <strong data-folder-test-total>0</strong> questões</span>
+              <button type="button" class="test-folder-control" data-folder-groups-open>${iconUsers}<span>Gerenciar grupos</span></button>
               <span class="test-folder-control">${iconShuffle}Sem repetição</span>
-              <span class="test-folder-control">${iconGrid}Alternativas embaralhadas</span>
             </div>
           </div>
           <div class="test-folder-distribution" data-folder-distribution></div>
@@ -468,11 +446,20 @@
     cleanConfigForCurrentStructure();
     const items = distributionItems();
 
+    const groups = normalizedGroups().filter(group => group.subjectIds.length);
+    const groupPrompt = groups.length ? '' : `
+      <div class="test-folder-group-prompt">
+        <span><strong>Essa pasta ainda não tem grupos.</strong><small>Crie grupos para escolher quais áreas entram no Teste pasta.</small></span>
+        <button type="button" class="secondary" data-folder-groups-open>Criar grupos</button>
+      </div>`;
+    const orderHint = items.length > 1 ? '<small>Arraste pelo ícone à esquerda para ordenar a sequência.</small>' : '';
+
     distribution.innerHTML = `
       <div class="test-folder-distribution-head">
         <h4>Distribuição das questões</h4>
-        <small>Arraste pelo ícone à esquerda para ordenar a sequência.</small>
+        ${orderHint}
       </div>
+      ${groupPrompt}
       ${items.map((item, index) => `
         <div class="test-folder-row" data-folder-order-key="${esc(item.key)}">
           <div class="test-folder-row-main">
@@ -486,7 +473,7 @@
             <label class="test-folder-weight">Peso <input type="number" min="1" max="99" value="${weightForKey(item.key)}" inputmode="numeric" data-folder-weight="${esc(item.key)}"></label>
           </div>
         </div>`).join('')}
-      <div class="test-folder-summary"><span>${ungroupedSubjects().length} coleç${ungroupedSubjects().length === 1 ? 'ão individual' : 'ões individuais'} · ${normalizedGroups().filter(group => group.subjectIds.length).length} grupo${normalizedGroups().filter(group => group.subjectIds.length).length === 1 ? '' : 's'}</span><p class="test-folder-message" data-folder-test-message></p></div>`;
+      <div class="test-folder-summary"><span>${groups.length ? `${groups.length} grupo${groups.length === 1 ? '' : 's'} configurado${groups.length === 1 ? '' : 's'}` : 'Nenhum grupo configurado'}</span><p class="test-folder-message" data-folder-test-message></p></div>`;
     updateSummary();
   }
 
@@ -514,12 +501,6 @@
       if (!amount) return;
       const weight = weightForKey(item.key);
 
-      if (item.type === 'subject') {
-        const subject = subjectsForFolder().find(subjectItem => subjectItem.id === item.id);
-        selected.push(...shuffle(testableForSubject(subject)).slice(0, amount).map(card => ({ ...card, testWeight: weight, testDistributionKey: item.key })));
-        return;
-      }
-
       const group = normalizedGroups().find(groupItem => groupItem.id === item.id);
       if (!group) return;
       const pool = group.subjectIds.flatMap(subjectId => {
@@ -534,6 +515,9 @@
     return shuffle([...unique.values()]);
   }
 
+  function buildFolderQuestion(card) {
+    return typeof buildTestQuestion === 'function' ? buildTestQuestion(card) : { ...card };
+  }
   function startFolderTest() {
     const check = validation();
     if (!check.valid) { updateSummary(); return; }
@@ -547,7 +531,7 @@
     try {
       testState = {
         active: true,
-        questions: selectedCards.map(card => ({ ...buildTestQuestion(card), weight: Math.max(1, Number(card.testWeight) || 1), distributionKey: card.testDistributionKey || '' })),
+        questions: selectedCards.map(card => ({ ...buildFolderQuestion(card), weight: Math.max(1, Number(card.testWeight) || 1), distributionKey: card.testDistributionKey || '' })),
         index: 0,
         selected: null,
         answered: false,
@@ -556,13 +540,17 @@
         subjectName: folder?.name || 'Teste pasta',
         startedAt: Date.now(),
         finishedAt: null,
+        pausedAt: null,
+        pausedMs: 0,
+        paused: false,
         id: Date.now().toString(36),
         attempts: {},
         ratings: typeof defaultRatings === 'function' ? defaultRatings() : { again:0, hard:0, good:0, easy:0 },
         mode: 'folder',
         subjectIds: [...new Set(selectedCards.map(card => card.subjectId).filter(Boolean))],
         weightedMaxPoints: totalPoints(),
-        skipped: 0
+        skipped: 0,
+        skipActions: 0
       };
       showFolderEngine();
       renderTest();
@@ -581,6 +569,12 @@
         document.querySelector('#testPanelFolder')?.classList.remove('active');
         const panel = document.querySelector('#testPanelFolder');
         if (panel) panel.hidden = true;
+      }
+
+      if (event.target.closest('[data-folder-groups-open]')) {
+        event.preventDefault();
+        if (state.folderId && window.FixaFolderGroups?.open) window.FixaFolderGroups.open(state.folderId);
+        return;
       }
 
       if (event.target.closest('[data-folder-test-start]')) { startFolderTest(); return; }

@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260824-competition-edit-v21";
+    const FIXA_VERSION = "20260825-competition-sequence-fire-v45";
     const appShellFile = ["html", "index-base.html", "Não foi possível carregar a aplicação."];
     const appScripts = [
       // Base da aplicação
@@ -40,6 +40,7 @@
       ["hotfix", "src/fixes/hotfix-home-encoding.js", "Não foi possível carregar a correção de textos."],
       ["secondaryTabsLayoutFix", "src/fixes/secondary-tabs-layout-fix.js", "Não foi possível carregar o ajuste das abas secundárias."],
       ["secondaryContentSpacingV1", "src/fixes/secondary-content-spacing-v1.js", "Não foi possível ajustar o espaçamento entre as abas secundárias e o conteúdo."],
+      ["testTopbarAlignmentV1", "src/fixes/test-topbar-alignment-v1.js", "Não foi possível alinhar a barra do teste."],
       ["addSpacingFix", "src/fixes/add-spacing-fix.js", "Não foi possível carregar a correção de espaçamento."],
       ["homeDataReadyRefreshV1", "src/home/home-data-ready-refresh-v1.js", "Não foi possível carregar a atualização inicial da Home."],
       ["addButtonsStyle", "src/fixes/add-buttons-style.js", "Não foi possível carregar o estilo dos botões de Adicionar."],
@@ -49,6 +50,7 @@
 
       // Conta, autenticação e imagens
       ["authLoginRecovery", "src/auth/auth-login-recovery.js", "Não foi possível carregar o reforço do login."],
+      ["accountDataIsolation", "src/auth/account-data-isolation.js", "Não foi possível isolar os dados desta conta."],
       ["dexBottomScrollFix", "src/fixes/dex-bottom-scroll-fix.js", "Não foi possível carregar a correção de rolagem do DeX."],
       ["storageImageLazyLoad", "src/storage/storage-image-lazy-load.js", "Não foi possível carregar as imagens sob demanda."],
       ["reviewStorageUpload", "src/storage/review-storage-upload.js", "Não foi possível carregar o envio das imagens ao Storage."],
@@ -69,13 +71,13 @@
       ["competitionSignalSkipV1", "src/competition/competition-signal-skip-v1.js", "Não foi possível carregar a sinalização de questões da competição."],
       ["competitionOwnerFreezeSyncV1", "src/competition/competition-owner-freeze-sync-v1.js", "Não foi possível sincronizar questões congeladas da competição."],
       ["competitionFlagReviewV1", "src/competition/competition-flag-review-v1.js", "Não foi possível carregar a revisão de sinalizações da competição."],
+      ["competitionFlagReviewV2", "src/competition/competition-flag-review-v2.js", "Não foi possível carregar a lista de questões sinalizadas."],
       ["competitionOwnerFreezeNoticeV1", "src/competition/competition-owner-freeze-notice-v1.js", "Não foi possível carregar os avisos de congelamento da competição."],
       ["competitionWeeklyHistoryV1", "src/competition/competition-weekly-history-v1.js", "Não foi possível carregar o histórico semanal da competição."],
       ["competitionParticipantExportGuardV1", "src/competition/competition-participant-export-guard-v1.js", "Não foi possível carregar a proteção de exportação da competição."],
       ["competitionXpHomeV4", "src/competition/competition-xp-home-v4.js", "Não foi possível concluir a integração de XP."],
 
       // Pós-carregamento e Home
-      ["accountDataIsolation", "src/auth/account-data-isolation.js", "Não foi possível isolar os dados desta conta."],
       ["collectionsMenuActions", "src/collections-menu/collections-menu-actions.js", "Não foi possível carregar as ações dos menus de coleções."],
       ["collectionsFloatingMenuFix", "src/collections-menu/collections-floating-menu-fix.js", "Não foi possível restaurar o menu flutuante das coleções."],
       ["homeTodayPolishNoScroll", "src/home/home-today-polish-no-scroll.js", "Não foi possível carregar a estrutura da página inicial."],

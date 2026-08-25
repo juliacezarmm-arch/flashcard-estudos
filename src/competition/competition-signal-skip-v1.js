@@ -38,6 +38,11 @@
       .fixa-signal-skip-button:disabled{opacity:.72!important;cursor:default!important}
       .fixa-signal-skip-feedback{display:inline-flex;align-items:center;min-height:28px;margin-left:7px;padding:5px 9px;border:1px solid #bfdbfe;border-radius:9px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:800;line-height:1.2;white-space:nowrap;box-shadow:0 3px 10px rgba(37,99,235,.08)}
       .fixa-signal-skip-feedback.is-error{border-color:#fecaca;background:#fff1f2;color:#b91c1c}
+      .fixa-signal-modal{position:fixed;inset:0;z-index:1320;display:grid;place-items:center;padding:18px;background:rgba(15,23,42,.42);backdrop-filter:blur(2px)}
+      .fixa-signal-dialog{width:min(460px,calc(100vw - 28px));border:1px solid #dbe3ef;border-radius:16px;background:#fff;box-shadow:0 24px 70px rgba(15,23,42,.24);padding:18px;display:grid;gap:12px}
+      .fixa-signal-dialog h3{margin:0;color:#172033;font-size:17px}.fixa-signal-dialog p{margin:0;color:#64748b;font-size:12px;line-height:1.45}
+      .fixa-signal-dialog textarea{width:100%;min-height:96px;resize:vertical;border:1px solid #d7e2f2;border-radius:10px;padding:10px 11px;font-size:12px;line-height:1.45;box-sizing:border-box}
+      .fixa-signal-actions{display:flex;justify-content:flex-end;gap:9px}.fixa-signal-actions button{min-height:36px;padding:7px 12px;font-size:11px;font-weight:850}.fixa-signal-primary{background:#2563eb!important;color:#fff!important}
       @media(max-width:760px){.fixa-signal-skip-feedback{width:100%;margin:6px 0 0;justify-content:center;white-space:normal;text-align:center}}
     `;
     document.head.appendChild(style);
@@ -57,6 +62,20 @@
     if(anchor)anchor.appendChild(item);
     else document.body.appendChild(item);
     setTimeout(()=>item.remove(),2600);
+  }
+
+  function askSignalComment(){
+    return new Promise(resolve=>{
+      const bg=document.createElement('div');
+      bg.className='fixa-signal-modal';
+      bg.innerHTML='<section class="fixa-signal-dialog" role="dialog" aria-modal="true"><h3>Sinalizar questão</h3><p>Se quiser, descreva o problema. Esse comentário aparecerá para a administradora revisar.</p><textarea maxlength="1200" placeholder="Ex.: alternativa correta errada, enunciado confuso, erro de digitação..."></textarea><div class="fixa-signal-actions"><button type="button" data-cancel>Cancelar</button><button type="button" class="fixa-signal-primary" data-send>Sinalizar</button></div></section>';
+      document.body.appendChild(bg);
+      const close=value=>{bg.remove();resolve(value);};
+      bg.querySelector('[data-cancel]')?.addEventListener('click',()=>close(null));
+      bg.querySelector('[data-send]')?.addEventListener('click',()=>close(bg.querySelector('textarea')?.value||''));
+      bg.addEventListener('click',event=>{if(event.target===bg)close(null);});
+      bg.querySelector('textarea')?.focus();
+    });
   }
 
   async function refreshFlags(){
@@ -116,6 +135,7 @@
       }
       question.signaled=true;
       testState.skipped=Number(testState.skipped||0)+1;
+      testState.skipActions=Number(testState.skipActions||0)+1;
       testState.index+=1;
       testState.selected=null;
       testState.answered=false;
@@ -141,16 +161,33 @@
       return;
     }
 
+    const note=await askSignalComment();
+    if(note===null)return;
     const sb=client();if(!sb?.rpc)return toast('Não foi possível conectar para sinalizar a questão.',true);
     button.dataset.fixaSignalBusy='1';
     button.disabled=true;
     button.textContent='Sinalizando...';
-    const {error}=await sb.rpc('flag_competition_question',{
+    const payload={
       p_competition_id:competition.id,
       p_subject_source_id:sourceSubjectId(subject),
       p_question_key:questionKey(card),
-      p_question_code:card.questionCode||null
-    });
+      p_question_code:card.questionCode||null,
+      p_note:note
+    };
+    const timeout=new Promise(resolve=>setTimeout(()=>resolve({error:new Error('Tempo esgotado ao sinalizar. Tente novamente.')}),12000));
+    let result;
+    try{
+      result=await Promise.race([sb.rpc('flag_competition_question_v2',payload),timeout]);
+      if(result?.error&&/flag_competition_question_v2/i.test(result.error.message||'')){
+        result=await Promise.race([sb.rpc('flag_competition_question',{
+          p_competition_id:competition.id,
+          p_subject_source_id:sourceSubjectId(subject),
+          p_question_key:questionKey(card),
+          p_question_code:card.questionCode||null
+        }),timeout]);
+      }
+    }catch(error){result={error};}
+    const {error}=result||{};
     if(error){
       delete button.dataset.fixaSignalBusy;
       button.disabled=false;
@@ -160,12 +197,13 @@
     }
 
     const map=state.flags.get(String(competition.id))||new Map();
-    map.set(flagId(subject,card),{reported_by_me:true,local:true});
+    map.set(flagId(subject,card),{reported_by_me:true,note,local:true});
     state.flags.set(String(competition.id),map);
     card.sharedModerationFrozen=true;
     delete button.dataset.fixaSignalBusy;
     button.textContent='Sinalizada';
     toast('Você sinalizou esta questão.');
+    window.dispatchEvent(new CustomEvent('fixa-competition-flags-updated',{detail:{competitionId:competition.id}}));
     window.setTimeout(()=>advanceAfterSignal(subject,card),450);
     refreshFlags();
   }
@@ -183,6 +221,11 @@
       button.dataset.fixaSignalSkip='1';
       button.textContent='Sinalizar questão';
       button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();signalCurrentQuestion(button);});
+    }
+    const skipButton=meta.querySelector('#skipTestQuestion');
+    if(skipButton&&button.nextElementSibling!==skipButton){
+      meta.insertBefore(button,skipButton);
+    }else if(!skipButton&&!button.parentElement){
       meta.appendChild(button);
     }
     const nextContextKey=contextKey(context);
@@ -191,12 +234,16 @@
       delete button.dataset.fixaSignalBusy;
       button.disabled=false;
     }
+    const paused=Boolean(typeof testState!=='undefined'&&testState?.paused);
     if(isFlagged(context.subject,context.card)){
       delete button.dataset.fixaSignalBusy;
       button.textContent='Sinalizada';
       button.disabled=true;
     }else if(button.dataset.fixaSignalBusy==='1'){
       button.textContent='Sinalizando...';
+      button.disabled=true;
+    }else if(paused){
+      button.textContent='Sinalizar questão';
       button.disabled=true;
     }else if(!button.disabled){
       button.textContent='Sinalizar questão';

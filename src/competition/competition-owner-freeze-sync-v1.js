@@ -60,7 +60,7 @@
     style.textContent = `
       .fixa-owner-freeze-toast{position:fixed;z-index:1210;top:18px;left:50%;transform:translateX(-50%);max-width:min(92vw,540px);padding:10px 14px;border:1px solid #bfdbfe;border-radius:10px;background:#eff6ff;color:#1d4ed8;box-shadow:0 12px 32px rgba(15,23,42,.16);font-size:12px;font-weight:800;text-align:center}
       .fixa-owner-freeze-toast.is-error{border-color:#fecaca;background:#fff1f2;color:#b91c1c}
-      .fixa-shared-frozen-badge{display:inline-flex;align-items:center;gap:5px;margin-right:5px;padding:4px 7px;border:1px solid #bfdbfe;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:10px;font-weight:850;white-space:nowrap}
+      .fixa-shared-frozen-badge{display:none!important}
       body.fixa-shared-participant-selected #manage [data-freeze][hidden]{display:none!important}
       body.fixa-shared-participant-selected #manage [data-freeze]:disabled{opacity:1!important;cursor:default!important;color:#1d4ed8!important;background:#eff6ff!important}
     `;
@@ -107,7 +107,6 @@
       (subject.cards || []).forEach(card => {
         const frozen = map.has(flagId(subject, card));
         card.sharedModerationFrozen = frozen;
-        if (!competition.is_owner) return;
 
         if (frozen && card.status !== 'frozen') {
           freezeOwnerCard(card);
@@ -184,17 +183,7 @@
         button.hidden = !frozen;
         button.textContent = 'Congelada pelo administrador';
       }
-
-      if (frozen && menu?.parentElement) {
-        if (!badge) {
-          badge = document.createElement('span');
-          badge.className = 'fixa-shared-frozen-badge';
-          menu.insertAdjacentElement('beforebegin', badge);
-        }
-        badge.textContent = competition.is_owner ? '🔒 Congelada na competição' : '🔒 Congelada';
-      } else {
-        badge?.remove();
-      }
+      badge?.remove();
     });
   }
 
@@ -336,6 +325,7 @@
 
   window.addEventListener('fixa-cloud-data-loaded', () => refresh(true));
   window.addEventListener('fixa-competition-detail-rendered', () => refresh(true));
+  window.addEventListener('fixa-competition-flags-updated', () => refresh(true));
   window.addEventListener('focus', () => refresh(false));
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(false); });
   window.addEventListener('load', () => setTimeout(() => refresh(true), 650), { once: true });

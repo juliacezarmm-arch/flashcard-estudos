@@ -458,6 +458,12 @@
     return dateOf(test?.completedOn || test?.occurredOn || test?.occurred_on || test?.completedAt || test?.finishedAt || test?.date);
   }
 
+  function localDateKey(value) {
+    const date = value instanceof Date ? value : dateOf(value);
+    if (!date) return '';
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
   function completedTests() {
     return (Array.isArray(dataRef()?.testHistory) ? dataRef().testHistory : [])
       .filter(test => !test?.cancelled && !test?.canceled && !test?.interrupted && Number(test?.total || 0) > 0);
@@ -520,7 +526,51 @@
   }
 
   function testXp(test) {
-    return Math.max(0, Number(test?.xp ?? test?.xpBreakdown?.total ?? test?.points ?? 0) || 0);
+    const direct = Number(test?.xp ?? test?.xpBreakdown?.total ?? test?.points);
+    if (Number.isFinite(direct) && direct > 0) return Math.max(0, direct);
+    return Math.max(0, Number(test?.total || test?.question_count || 0) || 0);
+  }
+
+  function periodXpSummary() {
+    const api = window.FixaCompetitionXpHomeV4;
+    const { start, end } = periodBounds();
+    const snapshot = api?.periodSummary?.(localDateKey(start), localDateKey(end));
+    return snapshot?.ready ? snapshot.summary || null : null;
+  }
+
+  function mapNumber(map, key) {
+    const id = String(key || '');
+    if (!map || !Object.prototype.hasOwnProperty.call(map, id)) return null;
+    const value = Number(map[id]);
+    return Number.isFinite(value) ? Math.max(0, value) : null;
+  }
+
+  function selectedPeriodXp(fallback, selected) {
+    const summary = periodXpSummary();
+    const local = Math.max(0, Number(fallback || 0));
+    if (!summary) return local;
+
+    if (state.subjectId !== 'all') {
+      let found = false;
+      const total = selected.reduce((sum, subject) => {
+        const value = mapNumber(summary.by_subject, subject?.id);
+        if (value === null) return sum;
+        found = true;
+        return sum + value;
+      }, 0);
+      const subjectXp = found ? total : local;
+      const selectedFolderIds = [...new Set(selected.map(subject => String(subject?.folder || '')).filter(Boolean))];
+      const folderValue = selectedFolderIds.length === 1 ? mapNumber(summary.by_folder, selectedFolderIds[0]) : null;
+      return folderValue === null ? subjectXp : Math.max(subjectXp, folderValue);
+    }
+
+    if (folderId() !== 'all') {
+      const folderValue = mapNumber(summary.by_folder, folderId());
+      return folderValue === null ? local : folderValue;
+    }
+
+    const total = Number(summary.total_xp);
+    return Number.isFinite(total) ? Math.max(0, total) : local;
   }
 
   function percent(value, total) {
@@ -629,7 +679,7 @@
 
   function restoreTopbarActiveView() {
     const activeView = Array.from(document.querySelectorAll('main > section, .view')).find(section =>
-      section?.id && section.classList?.contains('active')
+      section?.id && section.classList?.contains('active') && (section.id !== 'home' || document.body?.classList.contains(BODY_CLASS))
     );
     const key = activeView?.id || 'home';
     document.querySelectorAll('.topbar-right .tabs > .tab[data-view]').forEach(button => {
@@ -957,7 +1007,8 @@
     const periodTests = testsInPeriod(allTests);
     const total = periodTests.reduce((sum, test) => sum + Number(test?.total || 0), 0);
     const score = periodTests.reduce((sum, test) => sum + Number(test?.score || 0), 0);
-    const xp = periodTests.reduce((sum, test) => sum + testXp(test), 0);
+    const fallbackXp = periodTests.reduce((sum, test) => sum + testXp(test), 0);
+    const xp = selectedPeriodXp(fallbackXp, selected);
 
     setSummaryCard('Coleções', selected.length, 'Total de coleções');
     setSummaryCard('Questões', cards.length, 'Total de questões');
