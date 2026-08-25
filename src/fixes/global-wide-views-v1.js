@@ -12,7 +12,7 @@
     style.textContent = `
       @media (min-width: 861px) {
         #appShell.app:not(.locked) {
-          width: calc(100vw - clamp(80px, 18vw, 300px)) !important;
+          width: calc(100vw - clamp(40px, 9vw, 150px)) !important;
           max-width: none !important;
           margin-left: auto !important;
           margin-right: auto !important;
