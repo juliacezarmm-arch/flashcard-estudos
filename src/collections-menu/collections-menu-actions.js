@@ -163,10 +163,18 @@
       align-items: center;
     }
 
-    .folder-group-create input {
-      min-height: 40px;
-      border-color: #cfdcf0;
+    .folder-group-create textarea {
+      width: 100%;
+      min-height: 48px;
+      padding: 8px 10px;
+      border: 1px solid #cfdcf0;
+      border-radius: 8px;
+      resize: vertical;
+      color: #172033;
+      background: #fff;
       font-size: 12px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
     }
 
     .folder-group-create button {
@@ -193,17 +201,26 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 9px;
-      align-items: center;
+      align-items: start;
       padding: 9px;
       border: 1px solid #dbe5f4;
       border-radius: 10px;
       background: #ffffff;
     }
 
-    .folder-group-row input {
-      min-height: 36px;
+    .folder-group-row textarea {
+      width: 100%;
+      min-height: 48px;
+      padding: 8px 10px;
+      border: 1px solid #cfdcf0;
+      border-radius: 8px;
+      resize: vertical;
+      color: #172033;
+      background: #fff;
       font-size: 11px;
       font-weight: 750;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
     }
 
     .folder-group-delete {
@@ -319,7 +336,7 @@
       </svg>
     </span>`;
 
-  const GROUP_NAME_MAX_LENGTH = 120;
+  const GROUP_NAME_MAX_LENGTH = 180;
 
   const state = {
     folderId: "",
@@ -509,7 +526,7 @@
         <h4>Criar grupo</h4>
         <p>Crie primeiro os grupos que serão usados para organizar as coleções desta pasta. Nomes grandes são aceitos.</p>
         <div class="folder-group-create">
-          <input data-folder-group-new-name maxlength="${GROUP_NAME_MAX_LENGTH}" placeholder="Ex.: Conhecimentos Específicos" aria-label="Nome do novo grupo">
+          <textarea data-folder-group-new-name maxlength="${GROUP_NAME_MAX_LENGTH}" placeholder="Ex.: Conhecimentos Específicos" aria-label="Nome do novo grupo"></textarea>
           <button type="button" data-folder-group-create>+ Criar grupo</button>
         </div>
         <p class="folder-groups-notice" data-folder-groups-notice></p>
@@ -520,7 +537,7 @@
         <div class="folder-groups-created">
           ${groups.length ? groups.map(group => `
             <div class="folder-group-row">
-              <input value="${escapeHtml(group.name)}" maxlength="${GROUP_NAME_MAX_LENGTH}" data-folder-group-name="${escapeHtml(group.id)}" aria-label="Nome do grupo ${escapeHtml(group.name)}">
+              <textarea maxlength="${GROUP_NAME_MAX_LENGTH}" data-folder-group-name="${escapeHtml(group.id)}" aria-label="Nome do grupo ${escapeHtml(group.name)}">${escapeHtml(group.name)}</textarea>
               <button type="button" class="folder-group-delete" data-folder-group-delete="${escapeHtml(group.id)}">Excluir</button>
             </div>`).join("") : '<p class="folder-groups-empty">Nenhum grupo criado. As coleções continuam individuais.</p>'}
         </div>
