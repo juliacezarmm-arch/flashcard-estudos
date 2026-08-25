@@ -181,6 +181,7 @@
       overflow-wrap: anywhere;
       word-break: break-word;
       white-space: pre-wrap;
+      text-align: center;
     }
 
     .folder-group-create button {
@@ -207,7 +208,7 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 9px;
-      align-items: start;
+      align-items: center;
       padding: 9px;
       border: 1px solid #dbe5f4;
       border-radius: 10px;
@@ -233,6 +234,7 @@
       overflow-wrap: anywhere;
       word-break: break-word;
       white-space: pre-wrap;
+      text-align: center;
     }
 
     .folder-group-delete {
