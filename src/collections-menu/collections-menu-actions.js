@@ -166,15 +166,18 @@
     .folder-group-create textarea {
       width: 100%;
       min-height: 48px;
+      max-height: 160px;
       padding: 8px 10px;
       border: 1px solid #cfdcf0;
       border-radius: 8px;
-      resize: vertical;
+      resize: none;
       color: #172033;
       background: #fff;
       font-size: 12px;
       line-height: 1.35;
+      overflow-y: hidden;
       overflow-wrap: anywhere;
+      white-space: pre-wrap;
     }
 
     .folder-group-create button {
@@ -211,16 +214,19 @@
     .folder-group-row textarea {
       width: 100%;
       min-height: 48px;
+      max-height: 160px;
       padding: 8px 10px;
       border: 1px solid #cfdcf0;
       border-radius: 8px;
-      resize: vertical;
+      resize: none;
       color: #172033;
       background: #fff;
       font-size: 11px;
       font-weight: 750;
       line-height: 1.35;
+      overflow-y: hidden;
       overflow-wrap: anywhere;
+      white-space: pre-wrap;
     }
 
     .folder-group-delete {
@@ -526,7 +532,7 @@
         <h4>Criar grupo</h4>
         <p>Crie primeiro os grupos que serão usados para organizar as coleções desta pasta. Nomes grandes são aceitos.</p>
         <div class="folder-group-create">
-          <textarea data-folder-group-new-name maxlength="${GROUP_NAME_MAX_LENGTH}" placeholder="Ex.: Conhecimentos Específicos" aria-label="Nome do novo grupo"></textarea>
+          <textarea data-folder-group-new-name maxlength="${GROUP_NAME_MAX_LENGTH}" wrap="soft" rows="2" placeholder="Ex.: Conhecimentos Específicos" aria-label="Nome do novo grupo"></textarea>
           <button type="button" data-folder-group-create>+ Criar grupo</button>
         </div>
         <p class="folder-groups-notice" data-folder-groups-notice></p>
@@ -537,7 +543,7 @@
         <div class="folder-groups-created">
           ${groups.length ? groups.map(group => `
             <div class="folder-group-row">
-              <textarea maxlength="${GROUP_NAME_MAX_LENGTH}" data-folder-group-name="${escapeHtml(group.id)}" aria-label="Nome do grupo ${escapeHtml(group.name)}">${escapeHtml(group.name)}</textarea>
+              <textarea maxlength="${GROUP_NAME_MAX_LENGTH}" wrap="soft" rows="2" data-folder-group-name="${escapeHtml(group.id)}" aria-label="Nome do grupo ${escapeHtml(group.name)}">${escapeHtml(group.name)}</textarea>
               <button type="button" class="folder-group-delete" data-folder-group-delete="${escapeHtml(group.id)}">Excluir</button>
             </div>`).join("") : '<p class="folder-groups-empty">Nenhum grupo criado. As coleções continuam individuais.</p>'}
         </div>
@@ -602,7 +608,21 @@
     document.body.appendChild(overlay);
     document.body.style.overflow = "hidden";
     renderGroupModalBody();
-    requestAnimationFrame(() => overlay.querySelector("[data-folder-group-new-name]")?.focus({ preventScroll: true }));
+    requestAnimationFrame(() => {
+      autoGrowGroupTextareas(overlay);
+      overlay.querySelector("[data-folder-group-new-name]")?.focus({ preventScroll: true });
+    });
+  }
+
+  function autoGrowGroupTextarea(textarea) {
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = Math.min(160, Math.max(48, textarea.scrollHeight)) + "px";
+    textarea.style.overflowY = textarea.scrollHeight > 160 ? "auto" : "hidden";
+  }
+
+  function autoGrowGroupTextareas(root = document) {
+    root.querySelectorAll?.("[data-folder-group-new-name], [data-folder-group-name]").forEach(autoGrowGroupTextarea);
   }
 
   function showGroupNotice(message) {
@@ -732,8 +752,14 @@
   });
 
   document.addEventListener("input", event => {
+    const newNameInput = event.target.closest?.("[data-folder-group-new-name]");
+    if (newNameInput) {
+      autoGrowGroupTextarea(newNameInput);
+      return;
+    }
     const nameInput = event.target.closest?.("[data-folder-group-name]");
     if (!nameInput) return;
+    autoGrowGroupTextarea(nameInput);
     const group = state.workingGroups.find(item => item.id === nameInput.dataset.folderGroupName);
     if (!group) return;
     group.name = nameInput.value;
