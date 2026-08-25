@@ -692,6 +692,11 @@
   }
 
   function showActiveCollectionHint() {
+    const message = 'Escolha uma coleção em Minhas coleções antes de abrir Questões ou Teste.';
+    if (window.FixaToast?.show) {
+      window.FixaToast.show(message, { id: 'active-collection-required', type: 'info' });
+      return;
+    }
     let toast = document.querySelector('#fixaActiveCollectionToast');
     if (!toast) {
       toast = document.createElement('div');
@@ -700,7 +705,7 @@
       toast.setAttribute('role', 'status');
       document.body.appendChild(toast);
     }
-    toast.textContent = 'Escolha uma coleção em Minhas coleções antes de abrir Questões ou Teste.';
+    toast.textContent = message;
     toast.hidden = false;
     window.clearTimeout(activeCollectionHintTimer);
     activeCollectionHintTimer = window.setTimeout(() => { toast.hidden = true; }, 2800);

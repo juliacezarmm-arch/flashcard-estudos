@@ -18,7 +18,7 @@
     try { return String(window.currentUser?.id || (typeof currentUser !== 'undefined' ? currentUser?.id : '') || ''); }
     catch (_) { return ''; }
   };
-  const selectedCompetitionId = () => String(document.querySelector('.competition-v3.active #cv3select')?.value || localStorage.getItem('fixa-selected-competition') || '');
+  const selectedCompetitionId = () => String(document.querySelector('.competition-v3.active #cv3select')?.value || window.FixaCompetitionSelection?.get?.() || '');
   const selectedCompetition = () => state.competitions.get(selectedCompetitionId()) || null;
   const folderCard = () => document.querySelector('.competition-v3.active .cv3-area-folder');
   const itemsFor = id => state.items.get(String(id || '')) || [];

@@ -516,7 +516,17 @@
   }
 
   function buildFolderQuestion(card) {
-    return typeof buildTestQuestion === 'function' ? buildTestQuestion(card) : { ...card };
+    const built = typeof buildTestQuestion === 'function' ? buildTestQuestion(card) : { ...card };
+    if (built.type === 'multiple' && Array.isArray(card.options)) {
+      const correctText = card.correctAnswerText || '';
+      built.testOptions = card.options.map(text => ({
+        text,
+        isCorrect: typeof normalizeAnswerText === 'function'
+          ? normalizeAnswerText(text) === normalizeAnswerText(correctText)
+          : String(text || '').trim().toLowerCase() === String(correctText || '').trim().toLowerCase()
+      }));
+    }
+    return built;
   }
   function startFolderTest() {
     const check = validation();

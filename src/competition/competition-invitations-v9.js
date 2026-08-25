@@ -42,7 +42,7 @@
   async function copyCurrentCode(button){
     const code=document.querySelector('.competition-v3 .cv3-area-invite .cv3-code strong')?.textContent?.trim().replace(/^\S+\s+/,'') || document.querySelector('.competition-v3 .cv3-area-invite .cv3-code strong')?.textContent?.trim();
     if(!code) return;
-    try{ await navigator.clipboard.writeText(code); const old=button.innerHTML; button.textContent='Código copiado ✓'; setTimeout(()=>{button.innerHTML=old;},1600); }
+    try{ await navigator.clipboard.writeText(code); window.FixaToast?.show?.('Código copiado.',{type:'success',id:'competition-code-copied'}); const old=button.innerHTML; button.textContent='Código copiado ✓'; setTimeout(()=>{button.innerHTML=old;},1600); }
     catch{ button.textContent='Não foi possível copiar'; }
   }
 
@@ -133,7 +133,7 @@
       if(type==='received'){
         const {data,error}=await sb().rpc('list_my_competition_invitations'); if(error){content.innerHTML=`<div class="cv9-msg error">${esc(error.message)}</div>`;return;} const rows=Array.isArray(data)?data:[];
         content.innerHTML=rows.length?`<div class="cv9-list">${rows.map(i=>`<div class="cv9-item"><div><h4>${esc(i.competition_name)}</h4><p>Convidada por ${esc(i.invited_by_name)} · ${esc(i.folder_name||'Pasta compartilhada')}</p><p>${i.ends_at?`${esc(i.starts_at)} a ${esc(i.ends_at)}`:'Tempo indeterminado'}</p></div><div class="cv9-actions"><button class="cv9-btn secondary" data-cv9-decline="${i.id}">Recusar</button><button class="cv9-btn primary" data-cv9-accept="${i.id}">Aceitar convite</button></div></div>`).join('')}</div>`:'<div class="cv9-empty">Você não tem convites pendentes.</div>';
-        content.querySelectorAll('[data-cv9-accept]').forEach(b=>b.onclick=async()=>{b.disabled=true;const {data:id,error:e}=await sb().rpc('accept_competition_invitation',{p_invitation_id:b.dataset.cv9Accept});if(e){b.disabled=false;content.insertAdjacentHTML('afterbegin',`<div class="cv9-msg error">${esc(e.message)}</div>`);return;}localStorage.setItem('fixa-selected-competition',id);await refreshBadge(true);close();await window.FixaCompetitionManagerV7?.loadManager?.('active');});
+        content.querySelectorAll('[data-cv9-accept]').forEach(b=>b.onclick=async()=>{b.disabled=true;const {data:id,error:e}=await sb().rpc('accept_competition_invitation',{p_invitation_id:b.dataset.cv9Accept});if(e){b.disabled=false;content.insertAdjacentHTML('afterbegin',`<div class="cv9-msg error">${esc(e.message)}</div>`);return;}(window.FixaCompetitionSelection?.set ? window.FixaCompetitionSelection.set(id) : localStorage.setItem('fixa-selected-competition', id));await refreshBadge(true);close();await window.FixaCompetitionManagerV7?.loadManager?.('active');});
         content.querySelectorAll('[data-cv9-decline]').forEach(b=>b.onclick=async()=>{b.disabled=true;const {error:e}=await sb().rpc('decline_competition_invitation',{p_invitation_id:b.dataset.cv9Decline});if(e){b.disabled=false;content.insertAdjacentHTML('afterbegin',`<div class="cv9-msg error">${esc(e.message)}</div>`);return;}await show('received');refreshBadge(true);});
       } else {
         const {data,error}=await sb().rpc('list_sent_competition_invitations',{p_competition_id:null});if(error){content.innerHTML=`<div class="cv9-msg error">${esc(error.message)}</div>`;return;}const rows=Array.isArray(data)?data:[]; const labels={pending:'Pendente',accepted:'Aceito',declined:'Recusado',cancelled:'Cancelado'};

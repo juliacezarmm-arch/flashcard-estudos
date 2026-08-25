@@ -44,6 +44,10 @@
   }
 
   function toast(message, error = false) {
+    if (window.FixaToast?.show) {
+      window.FixaToast.show(message, { type: error ? 'error' : 'info' });
+      return;
+    }
     document.querySelector('.fixa-owner-freeze-toast')?.remove();
     const item = document.createElement('div');
     item.className = `fixa-owner-freeze-toast${error ? ' is-error' : ''}`;

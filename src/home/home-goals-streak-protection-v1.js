@@ -400,6 +400,10 @@
 
   function queueProtectionToast(message) {
     if (!message) return;
+    if (window.FixaToast?.show) {
+      window.FixaToast.show(message, { type: 'success' });
+      return;
+    }
     state.toastQueue.push(message);
     runProtectionToastQueue();
   }

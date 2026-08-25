@@ -15,7 +15,7 @@
 <body>
   <div class="loading"><span class="spinner" aria-hidden="true"></span><strong>Carregando o Fixa...</strong></div>
   <script>
-    const FIXA_VERSION = "20260825-competition-sequence-fire-v45";
+    const FIXA_VERSION = "20260825-toast-standard-v47";
     const appShellFile = ["html", "index-base.html", "Não foi possível carregar a aplicação."];
     const appScripts = [
       // Base da aplicação
@@ -24,6 +24,7 @@
       ["importReview", "src/core/import-review.js", "Não foi possível carregar a revisão de importação."],
       ["analysis", "src/core/analysis-ui.js", "Não foi possível carregar a análise."],
       ["layout", "src/core/layout-ui.js", "Não foi possível carregar o layout."],
+      ["toastUiV1", "src/core/toast-ui-v1.js", "Não foi possível carregar as notificações."],
 
       // Testes
       ["testFolder", "src/test/test-folder.js", "Não foi possível carregar o Teste pasta."],
@@ -58,6 +59,7 @@
       ["questionsHeightFix", "src/fixes/questions-height-fix.js", "Não foi possível carregar o ajuste de altura das questões."],
 
       // Competição
+      ["competitionSelectionStorageV1", "src/competition/competition-selection-storage-v1.js", "Não foi possível preparar a seleção da competição."],
       ["competitionUpdateV3", "src/competition/competition-update-v3.js", "Não foi possível carregar a atualização da competição."],
       ["competitionSecondaryTabsPlacement", "src/competition/competition-secondary-tabs-placement.js", "Não foi possível posicionar as ações secundárias da competição."],
       ["competitionPolishV6", "src/competition/competition-polish-v6.js", "Não foi possível refinar a interface da competição."],
@@ -70,7 +72,6 @@
       ["competitionRulesModalV1", "src/competition/competition-rules-modal-v1.js", "Não foi possível carregar o modal de regras da competição."],
       ["competitionSignalSkipV1", "src/competition/competition-signal-skip-v1.js", "Não foi possível carregar a sinalização de questões da competição."],
       ["competitionOwnerFreezeSyncV1", "src/competition/competition-owner-freeze-sync-v1.js", "Não foi possível sincronizar questões congeladas da competição."],
-      ["competitionFlagReviewV1", "src/competition/competition-flag-review-v1.js", "Não foi possível carregar a revisão de sinalizações da competição."],
       ["competitionFlagReviewV2", "src/competition/competition-flag-review-v2.js", "Não foi possível carregar a lista de questões sinalizadas."],
       ["competitionOwnerFreezeNoticeV1", "src/competition/competition-owner-freeze-notice-v1.js", "Não foi possível carregar os avisos de congelamento da competição."],
       ["competitionWeeklyHistoryV1", "src/competition/competition-weekly-history-v1.js", "Não foi possível carregar o histórico semanal da competição."],

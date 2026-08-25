@@ -49,7 +49,7 @@
     const root = view?.querySelector('#cv3');
     if (!view || !root) return false;
 
-    localStorage.setItem('fixa-selected-competition', id);
+    (window.FixaCompetitionSelection?.set ? window.FixaCompetitionSelection.set(id) : localStorage.setItem('fixa-selected-competition', id));
     sessionStorage.removeItem('fixa-open-competition-on-load');
     sessionStorage.removeItem('fixa-open-competition-detail');
     if (button.dataset.cv7Status === 'completed') sessionStorage.setItem('fixa-open-completed-result', '1');
@@ -92,7 +92,7 @@
 
     if (active) {
       if (!selected || selected.effective_status === 'completed') {
-        localStorage.setItem('fixa-selected-competition', active.id);
+        (window.FixaCompetitionSelection?.set ? window.FixaCompetitionSelection.set(active.id) : localStorage.setItem('fixa-selected-competition', active.id));
         if (window.FixaCompetitionV3?.load && !managerOwnsHome(view)) {
           await window.FixaCompetitionV3.load();
         }
@@ -101,7 +101,7 @@
     }
 
     if (!selected || selected.effective_status === 'completed') {
-      localStorage.removeItem('fixa-selected-competition');
+      (window.FixaCompetitionSelection?.remove ? window.FixaCompetitionSelection.remove() : localStorage.removeItem('fixa-selected-competition'));
       renderNoActiveCompetition();
     }
   }

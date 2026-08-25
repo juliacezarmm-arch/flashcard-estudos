@@ -53,6 +53,10 @@
   }
 
   function toast(message,error=false){
+    if(window.FixaToast?.show){
+      window.FixaToast.show(message,{type:error?'error':'info'});
+      return;
+    }
     document.querySelector('.fixa-signal-skip-feedback')?.remove();
     const item=document.createElement('span');
     item.className=`fixa-signal-skip-feedback${error?' is-error':''}`;

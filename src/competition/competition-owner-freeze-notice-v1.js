@@ -13,7 +13,7 @@
   function selectedCompetitionId() {
     return String(
       document.querySelector('.competition-v3.active #cv3select')?.value ||
-      localStorage.getItem('fixa-selected-competition') ||
+      window.FixaCompetitionSelection?.get?.() ||
       ''
     );
   }

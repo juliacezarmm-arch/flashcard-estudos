@@ -173,7 +173,7 @@
   }
 
   async function refreshAfterChange() {
-    localStorage.removeItem('fixa-selected-competition');
+    (window.FixaCompetitionSelection?.remove ? window.FixaCompetitionSelection.remove() : localStorage.removeItem('fixa-selected-competition'));
     if (window.FixaCompetitionV3?.load) await window.FixaCompetitionV3.load();
     setTimeout(() => {
       decorateEmptyState();

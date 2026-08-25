@@ -268,7 +268,7 @@
         return;
       }
 
-      localStorage.setItem('fixa-selected-competition', competitionId);
+      (window.FixaCompetitionSelection?.set ? window.FixaCompetitionSelection.set(competitionId) : localStorage.setItem('fixa-selected-competition', competitionId));
       await syncNewCompetitionFolder(competitionId, folder);
       close();
       await refreshCompetitionHome();
@@ -297,7 +297,7 @@
         message.className = 'cv3-msg show err';
         return;
       }
-      localStorage.setItem('fixa-selected-competition', competitionId);
+      (window.FixaCompetitionSelection?.set ? window.FixaCompetitionSelection.set(competitionId) : localStorage.setItem('fixa-selected-competition', competitionId));
       close();
       await refreshCompetitionHome();
     };

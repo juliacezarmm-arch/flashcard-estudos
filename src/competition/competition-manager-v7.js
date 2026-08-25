@@ -226,7 +226,7 @@
 
   function openCompetition(id, status) {
     setManagerActive(false);
-    localStorage.setItem('fixa-selected-competition', id);
+    (window.FixaCompetitionSelection?.set ? window.FixaCompetitionSelection.set(id) : localStorage.setItem('fixa-selected-competition', id));
     sessionStorage.removeItem('fixa-open-competition-on-load');
     sessionStorage.removeItem('fixa-open-competition-detail');
     if (status === 'completed') sessionStorage.setItem('fixa-open-completed-result', '1');
@@ -334,7 +334,7 @@
     if (!client) return { error:new Error('Não foi possível conectar ao servidor.') };
     const result = await client.rpc('end_competition', { p_competition_id:id });
     if (!result.error) {
-      localStorage.removeItem('fixa-selected-competition');
+      (window.FixaCompetitionSelection?.remove ? window.FixaCompetitionSelection.remove() : localStorage.removeItem('fixa-selected-competition'));
       sessionStorage.removeItem('fixa-open-competition-detail');
       await loadManager();
       const c = counts();
