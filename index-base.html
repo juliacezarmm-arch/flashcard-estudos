@@ -58,7 +58,7 @@
       display: grid;
       grid-template-columns: 300px 1fr;
       min-height: 100vh;
-      width: calc(100vw - 20px);
+      width: calc(100vw - clamp(28px, 8vw, 120px));
       max-width: none;
       margin: 0 auto;
       background: var(--bg);
@@ -2325,7 +2325,7 @@
 
     .app {
       grid-template-columns: 280px minmax(0, 1fr);
-      width: calc(100vw - 20px);
+      width: calc(100vw - clamp(28px, 8vw, 120px));
       max-width: none;
       background: transparent;
     }
