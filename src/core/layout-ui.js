@@ -590,7 +590,7 @@
     body.home-active .app,
     body.home-active main,
     body.home-active .home-view { background: var(--bg); }
-     body.home-active main { width: min(100%, 1680px); padding: 18px 14px 28px; overflow-x: hidden; }
+     body.home-active main { width: 100%; padding: 18px 14px 28px; overflow-x: hidden; }
      body.home-active .topbar-title { display: none; }
      body.home-active.home-activity-active { overflow: hidden; }
      body.home-active.home-activity-active main { height: 100vh; min-height: 0; overflow: hidden; grid-template-rows: 52px minmax(0, 1fr); }
@@ -598,7 +598,7 @@
      body.home-active.home-activity-active .home-view.active > .home-shell { height: 100%; min-height: 0; grid-template-rows: auto auto minmax(0, 1fr); overflow: hidden; }
      body.home-active.home-activity-active .home-view.active > .home-shell > section[data-home-panel="activity"] { min-height: 0; height: 100%; overflow: hidden; }
      body.home-active.home-activity-active .home-view.active > .home-shell > section[data-home-panel="activity"] > .home-shell { height: 100%; min-height: 0; overflow: hidden; }
-    .home-view { display: none; width: 100%; max-width: 1680px; margin: 0 auto; padding: 0; color: #172033; background: var(--bg); overflow-x: hidden; }
+    .home-view { display: none; width: 100%; max-width: none; margin: 0 auto; padding: 0; color: #172033; background: var(--bg); overflow-x: hidden; }
     .home-view.active { display: block; }
     .home-view *, .home-view *::before, .home-view *::after { box-sizing: border-box; }
     .home-view [hidden] { display: none !important; }

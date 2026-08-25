@@ -58,7 +58,8 @@
       display: grid;
       grid-template-columns: 300px 1fr;
       min-height: 100vh;
-      max-width: 1880px;
+      width: calc(100vw - 20px);
+      max-width: none;
       margin: 0 auto;
       background: var(--bg);
     }
@@ -625,7 +626,7 @@
     }
 
     main {
-      width: min(100%, 1680px);
+      width: 100%;
       margin: 0 0 0 6px;
       padding: 14px;
       display: grid;
@@ -2324,7 +2325,8 @@
 
     .app {
       grid-template-columns: 280px minmax(0, 1fr);
-      max-width: 1920px;
+      width: calc(100vw - 20px);
+      max-width: none;
       background: transparent;
     }
 
