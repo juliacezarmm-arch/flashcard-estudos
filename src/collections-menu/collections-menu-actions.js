@@ -319,13 +319,15 @@
       </svg>
     </span>`;
 
+  const GROUP_NAME_MAX_LENGTH = 120;
+
   const state = {
     folderId: "",
     workingGroups: []
   };
 
   function cleanName(value) {
-    return String(value || "").replace(/\s+/g, " ").trim().slice(0, 60);
+    return String(value || "").replace(/\s+/g, " ").trim().slice(0, GROUP_NAME_MAX_LENGTH);
   }
 
   function nameKey(value) {
@@ -505,9 +507,9 @@
     body.innerHTML = `
       <section class="folder-groups-section">
         <h4>Criar grupo</h4>
-        <p>Crie primeiro os grupos que serão usados para organizar as coleções desta pasta.</p>
+        <p>Crie primeiro os grupos que serão usados para organizar as coleções desta pasta. Nomes grandes são aceitos.</p>
         <div class="folder-group-create">
-          <input data-folder-group-new-name maxlength="60" placeholder="Ex.: Conhecimentos Específicos" aria-label="Nome do novo grupo">
+          <input data-folder-group-new-name maxlength="${GROUP_NAME_MAX_LENGTH}" placeholder="Ex.: Conhecimentos Específicos" aria-label="Nome do novo grupo">
           <button type="button" data-folder-group-create>+ Criar grupo</button>
         </div>
         <p class="folder-groups-notice" data-folder-groups-notice></p>
@@ -518,7 +520,7 @@
         <div class="folder-groups-created">
           ${groups.length ? groups.map(group => `
             <div class="folder-group-row">
-              <input value="${escapeHtml(group.name)}" maxlength="60" data-folder-group-name="${escapeHtml(group.id)}" aria-label="Nome do grupo ${escapeHtml(group.name)}">
+              <input value="${escapeHtml(group.name)}" maxlength="${GROUP_NAME_MAX_LENGTH}" data-folder-group-name="${escapeHtml(group.id)}" aria-label="Nome do grupo ${escapeHtml(group.name)}">
               <button type="button" class="folder-group-delete" data-folder-group-delete="${escapeHtml(group.id)}">Excluir</button>
             </div>`).join("") : '<p class="folder-groups-empty">Nenhum grupo criado. As coleções continuam individuais.</p>'}
         </div>
