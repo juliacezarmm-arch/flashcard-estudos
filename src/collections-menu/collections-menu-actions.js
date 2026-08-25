@@ -165,6 +165,7 @@
 
     .folder-group-create textarea {
       width: 100%;
+      box-sizing: border-box;
       min-height: 48px;
       max-height: 160px;
       padding: 8px 10px;
@@ -175,8 +176,10 @@
       background: #fff;
       font-size: 12px;
       line-height: 1.35;
+      overflow-x: hidden;
       overflow-y: hidden;
       overflow-wrap: anywhere;
+      word-break: break-word;
       white-space: pre-wrap;
     }
 
@@ -213,6 +216,7 @@
 
     .folder-group-row textarea {
       width: 100%;
+      box-sizing: border-box;
       min-height: 48px;
       max-height: 160px;
       padding: 8px 10px;
@@ -224,8 +228,10 @@
       font-size: 11px;
       font-weight: 750;
       line-height: 1.35;
+      overflow-x: hidden;
       overflow-y: hidden;
       overflow-wrap: anywhere;
+      word-break: break-word;
       white-space: pre-wrap;
     }
 
