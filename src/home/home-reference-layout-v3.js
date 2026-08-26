@@ -784,14 +784,14 @@
     const folderName = folderNameForSubject(subject);
     const text = subject ? [subject.name || 'Coleção', folderName].filter(Boolean).join(' · ') : 'Todas as coleções';
     const title = subject
-      ? `Coleção ativa: ${subject.name || 'Coleção'}${folderName ? ` — Pasta: ${folderName}` : ''}`
+      ? `Coleção atual: ${subject.name || 'Coleção'}${folderName ? ` — Pasta: ${folderName}` : ''}`
       : 'Visão geral: todas as coleções. Escolha uma coleção para abrir Questões ou Teste.';
     chip.dataset.fixaActiveMode = subject ? 'collection' : 'all';
     chip.setAttribute('aria-disabled', subject ? 'false' : 'true');
     chip.title = title;
     const label = chip.querySelector('small');
     const value = chip.querySelector('strong');
-    if (label) label.textContent = subject ? 'Coleção ativa' : 'Coleção atual';
+    if (label) label.textContent = 'Coleção atual';
     if (value) {
       value.textContent = text;
       value.title = title;

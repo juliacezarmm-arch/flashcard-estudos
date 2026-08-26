@@ -650,24 +650,26 @@
     const tests = testsInRange();
     const range = currentRange();
     if (state.period === 'today') {
-      const buckets = Array.from({ length: 6 }, (_, index) => ({ label: `${index * 4}h`, score: 0, total: 0 }));
+      const buckets = Array.from({ length: 24 }, (_, hour) => ({ label: `${String(hour).padStart(2, '0')}h`, score: 0, total: 0 }));
       tests.forEach(test => {
         const date = testDate(test);
         if (!date) return;
-        const bucket = Math.min(5, Math.floor(date.getHours() / 4));
-        buckets[bucket].score += Number(test.score || 0);
-        buckets[bucket].total += Number(test.total || 0);
+        const bucket = buckets[date.getHours()];
+        bucket.score += Number(test.score || 0);
+        bucket.total += Number(test.total || 0);
       });
       return buckets.map(bucket => ({ label: bucket.label, value: percent(bucket.score, bucket.total) }));
     }
     if (state.period === 'month') {
-      const buckets = Array.from({ length: 5 }, (_, index) => ({ label: `Sem ${index + 1}`, score: 0, total: 0 }));
+      const totalDays = new Date(range.end.getFullYear(), range.end.getMonth() + 1, 0).getDate();
+      const buckets = Array.from({ length: totalDays }, (_, index) => ({ label: String(index + 1), score: 0, total: 0 }));
       tests.forEach(test => {
         const date = testDate(test);
         if (!date) return;
-        const bucket = Math.min(4, Math.floor((date.getDate() - 1) / 7));
-        buckets[bucket].score += Number(test.score || 0);
-        buckets[bucket].total += Number(test.total || 0);
+        const bucket = buckets[date.getDate() - 1];
+        if (!bucket) return;
+        bucket.score += Number(test.score || 0);
+        bucket.total += Number(test.total || 0);
       });
       return buckets.map(bucket => ({ label: bucket.label, value: percent(bucket.score, bucket.total) }));
     }
