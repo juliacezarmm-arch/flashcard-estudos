@@ -58,8 +58,7 @@
       display: grid;
       grid-template-columns: 300px 1fr;
       min-height: 100vh;
-      width: calc(100vw - clamp(40px, 9vw, 150px));
-      max-width: none;
+      max-width: 1260px;
       margin: 0 auto;
       background: var(--bg);
     }
@@ -626,7 +625,7 @@
     }
 
     main {
-      width: 100%;
+      width: min(100%, 1120px);
       margin: 0 0 0 6px;
       padding: 14px;
       display: grid;
@@ -2324,9 +2323,8 @@
     }
 
     .app {
-      grid-template-columns: 280px minmax(0, 1fr);
-      width: calc(100vw - clamp(40px, 9vw, 150px));
-      max-width: none;
+      grid-template-columns: 300px minmax(0, 1fr);
+      max-width: 1440px;
       background: transparent;
     }
 

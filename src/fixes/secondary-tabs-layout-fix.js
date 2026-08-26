@@ -24,8 +24,8 @@
 
       #appShell .topbar,
       #appShell > main > .view {
-        width: 100% !important;
-        max-width: none !important;
+        width: min(100%, 1180px) !important;
+        max-width: 1180px !important;
         margin-left: auto !important;
         margin-right: auto !important;
       }
@@ -283,7 +283,7 @@
       #test .test-tabs,
       .competition-v3 .cv3-secondary-nav.home-subtabs {
         width: 100% !important;
-        max-width: none !important;
+        max-width: 1180px !important;
         min-height: 46px !important;
         height: 46px !important;
         margin-top: 0 !important;
@@ -368,13 +368,13 @@
       /* Questões é inserido diretamente em main; centraliza no mesmo eixo. */
       body.questions-hub-active #questionsHubNav {
         justify-self: center !important;
-        width: 100% !important;
-        max-width: none !important;
+        width: min(100%,1180px) !important;
+        max-width: 1180px !important;
         margin-left: auto !important;
         margin-right: auto !important;
       }
 
-      /* Nas outras telas o próprio view acompanha a largura útil do main. */
+      /* Nas outras telas o próprio view já possui 1180 px. */
       .home-view .home-subtabs,
       #test.view .test-tabs,
       .competition-v3 .cv3-secondary-nav.home-subtabs {

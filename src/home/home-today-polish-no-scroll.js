@@ -912,7 +912,7 @@
   style.id = 'fixaHomeWeeklyDashboardStyle';
   style.textContent = `
     body.home-active main{overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin!important}
-    #home.home-view{width:100%!important;max-width:none!important;overflow:visible!important}
+    #home.home-view{width:100%!important;max-width:1360px!important;overflow:visible!important}
     #home>.home-shell{gap:5px!important}
     #home .home-subtabs{margin:-4px 0 -3px!important;gap:7px!important;min-height:32px!important}
     #home .home-subtab{min-height:32px!important;padding:6px 11px!important;display:inline-flex!important;align-items:center!important;gap:6px!important;font-size:11px!important}
