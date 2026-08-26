@@ -184,16 +184,39 @@
       const attempted = cardsFor(subject).map((card,index)=>({card,index,score:reviewScore(card),accuracy:accuracyOf(card)})).filter(item=>item.score>=0);
       if(!attempted.length) return null; attempted.sort((a,b)=>b.score-a.score); const recommended=attempted.slice(0,10);
       return { subject, count:recommended.length, accuracy:Math.round(recommended.reduce((sum,item)=>sum+item.accuracy,0)/recommended.length), score:recommended.reduce((sum,item)=>sum+item.score,0) };
-    }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,4);
+    }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,10);
+  }
+  function studiedRows() {
+    const subjectsById = new Map(selectedSubjects().map(subject => [String(subject.id || ''), subject]));
+    const rows = new Map();
+    testsInRange().forEach(test => {
+      const ids = Array.isArray(test?.subjectIds) && test.subjectIds.length ? test.subjectIds.map(String) : [String(test?.subjectId || '')];
+      ids.forEach(id => {
+        const subject = subjectsById.get(id) || selectedSubjects().find(item => item.name === test?.subject);
+        const key = subject ? String(subject.id || subject.name) : String(test?.subject || 'Geral');
+        const current = rows.get(key) || { subject, name: subject?.name || test?.subject || 'Geral', questions: 0, correct: 0 };
+        current.questions += Number(test?.total || 0);
+        current.correct += Number(test?.score || 0);
+        rows.set(key, current);
+      });
+    });
+    return Array.from(rows.values()).sort((a,b)=>b.questions-a.questions||a.name.localeCompare(b.name,'pt-BR')).slice(0,14);
   }
   function renderReviewReference() {
     const list=document.querySelector('#homeStudyRecommendations'); if(!list) return;
-    const rows=subjectReviewRows(); list.className='home-recommendation-list fixa-review-reference-list';
-    if(!rows.length){list.innerHTML='<div class="fixa-review-empty-compact">Nenhuma revisão recomendada ainda. Faça alguns testes para gerar sugestões.</div>';return;}
-    const html=rows.map(row=>`<article class="fixa-review-reference-row" data-home-subject="${esc(row.subject.id)}" tabindex="0"><div class="fixa-review-reference-head"><strong>${esc(row.subject.name)}</strong><span>${row.count} quest${row.count===1?'ão':'ões'}</span><b>${row.accuracy}%</b></div><div class="fixa-review-reference-bar"><span style="width:${Math.max(3,row.accuracy)}%"></span></div></article>`).join('');
-    const blanks=Array.from({length:Math.max(0,4-rows.length)},()=>'<span aria-hidden="true"></span>').join('');
-    list.innerHTML=`${html}${blanks}<button type="button" class="fixa-review-all">Ver todas as revisões</button>`;
-    const text=document.querySelector('.home-study-card #homeStudyText'); if(text) text.textContent='Questões recomendadas com base no seu desempenho.';
+    const studied=studiedRows();
+    list.className='home-recommendation-list fixa-review-reference-list fixa-studied-reference-list';
+    const title=document.querySelector('.home-study-card h3'); if(title) title.textContent='O que foi estudado';
+    const text=document.querySelector('.home-study-card #homeStudyText');
+    if(text) text.textContent=studied.length ? `Categorias estudadas em ${periodWord()}.` : `Nenhuma questão estudada em ${periodWord()}.`;
+    if(studied.length){
+      list.innerHTML=studied.map(row=>`<article class="fixa-review-reference-row fixa-studied-reference-row"${row.subject?.id? ` data-home-subject="${esc(row.subject.id)}" tabindex="0"` : ''}><div class="fixa-review-reference-head"><strong>${esc(row.name)}</strong><span>${row.questions} quest${row.questions===1?'ão':'ões'}</span><b>${row.questions?Math.round(row.correct/row.questions*100):0}%</b></div><div class="fixa-review-reference-bar"><span style="width:${Math.max(3,row.questions?Math.round(row.correct/row.questions*100):0)}%"></span></div></article>`).join('');
+      return;
+    }
+    const reviews=subjectReviewRows();
+    list.innerHTML=reviews.length
+      ? reviews.map(row=>`<article class="fixa-review-reference-row" data-home-subject="${esc(row.subject.id)}" tabindex="0"><div class="fixa-review-reference-head"><strong>${esc(row.subject.name)}</strong><span>${row.count} para revisar</span><b>${row.accuracy}%</b></div><div class="fixa-review-reference-bar"><span style="width:${Math.max(3,row.accuracy)}%"></span></div></article>`).join('')
+      : '<div class="fixa-review-empty-compact">Faça alguns testes para aparecerem as categorias estudadas.</div>';
   }
 
   function subjectPriorityRows() {

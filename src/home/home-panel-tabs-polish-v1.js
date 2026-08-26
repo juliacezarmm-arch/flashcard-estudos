@@ -116,10 +116,13 @@
         height:100%!important;
         min-height:0!important;
         display:grid!important;
-        grid-template-rows:repeat(4,minmax(0,1fr)) minmax(32px,auto)!important;
-        align-content:stretch!important;
+        grid-template-rows:none!important;
+        grid-auto-rows:minmax(42px,auto)!important;
+        align-content:start!important;
         gap:6px!important;
-        overflow:hidden!important;
+        overflow-y:auto!important;
+        overflow-x:hidden!important;
+        padding-right:4px!important;
       }
 
       #home.home-view .fixa-review-all{
