@@ -25,6 +25,12 @@
         overflow:hidden!important;
       }
 
+      #home.home-view .fixa-week-main-stage [data-fixa-main-panel][hidden],
+      #home.home-view .fixa-week-main-stage .fixa-week-main-pair[hidden],
+      #home.home-view .fixa-week-main-stage .fixa-week-unified-pane[hidden]{
+        display:none!important;
+      }
+
       #home.home-view .fixa-week-main-stage [data-fixa-main-panel]:not([hidden]),
       #home.home-view .fixa-week-main-stage .fixa-week-main-pair:not([hidden]){
         height:100%!important;
@@ -32,7 +38,7 @@
         max-height:none!important;
       }
 
-      #home.home-view .fixa-week-main-pair{
+      #home.home-view .fixa-week-main-pair:not([hidden]){
         display:grid!important;
         grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
         align-items:stretch!important;
@@ -41,8 +47,8 @@
 
       #home.home-view .fixa-week-main-pane,
       #home.home-view .fixa-week-activities-panel > .home-panel,
-      #home.home-view .fixa-week-unified-pane:not(.fixa-week-main-pair),
-      #home.home-view .fixa-unified-chart-pane{
+      #home.home-view .fixa-week-unified-pane:not(.fixa-week-main-pair):not([hidden]),
+      #home.home-view .fixa-unified-chart-pane:not([hidden]){
         height:100%!important;
         min-height:0!important;
         max-height:none!important;
@@ -185,15 +191,50 @@
     });
   }
 
+  function syncMainTab(key) {
+    const shell = document.querySelector('#home.home-view .fixa-week-main-shell');
+    if (!shell) return false;
+    const buttons = Array.from(shell.querySelectorAll('[data-fixa-main-tab]'));
+    const panels = Array.from(shell.querySelectorAll('.fixa-week-main-stage > [data-fixa-main-panel]'));
+    if (!buttons.length || !panels.length) return false;
+    const available = new Set(panels.map(panel => panel.dataset.fixaMainPanel));
+    const selected = available.has(key)
+      ? key
+      : buttons.find(button => button.classList.contains('active') || button.getAttribute('aria-selected') === 'true')?.dataset.fixaMainTab;
+    const activeKey = available.has(selected) ? selected : panels[0].dataset.fixaMainPanel;
+    buttons.forEach(button => {
+      const active = button.dataset.fixaMainTab === activeKey;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', String(active));
+      button.tabIndex = active ? 0 : -1;
+    });
+    panels.forEach(panel => {
+      const active = panel.dataset.fixaMainPanel === activeKey;
+      panel.hidden = !active;
+      panel.setAttribute('aria-hidden', String(!active));
+    });
+    return true;
+  }
+
   function boot() {
     ensureStyle();
     normalizeActiveCollectionLabel();
+    syncMainTab();
   }
 
   boot();
   window.addEventListener('load', boot, { once: true });
-  document.addEventListener('click', () => requestAnimationFrame(boot), true);
+  document.addEventListener('click', event => {
+    const tab = event.target.closest('#home.home-view [data-fixa-main-tab]');
+    requestAnimationFrame(() => {
+      boot();
+      if (tab) syncMainTab(tab.dataset.fixaMainTab);
+    });
+  }, true);
 
-  const observer = new MutationObserver(() => normalizeActiveCollectionLabel());
+  const observer = new MutationObserver(() => {
+    normalizeActiveCollectionLabel();
+    syncMainTab();
+  });
   if (document.body) observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 })();
