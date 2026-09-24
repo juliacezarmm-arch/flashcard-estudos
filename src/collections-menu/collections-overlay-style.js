@@ -437,6 +437,68 @@
       @media (prefers-reduced-motion: reduce) {
         #collectionsSidebar { transition: none !important; }
       }
+
+      /* Desktop: mantém Minhas coleções fixa e sempre visível à esquerda. */
+      @media (min-width: 861px) {
+        body.collections-overlay-open {
+          overflow: auto !important;
+        }
+
+        #appShell.app:not(.locked) {
+          grid-template-columns: 300px minmax(0, 1fr) !important;
+          max-width: 1260px !important;
+          width: 100% !important;
+          margin: 0 auto !important;
+        }
+
+        #appShell.app:not(.locked) > main {
+          grid-column: 2 !important;
+          width: 100% !important;
+          min-width: 0 !important;
+        }
+
+        #appShell .mobile-topline,
+        #appShell .mobile-menu-toggle {
+          display: none !important;
+        }
+
+        #collectionsSidebar {
+          position: sticky !important;
+          inset: auto !important;
+          top: 0 !important;
+          align-self: start !important;
+          z-index: 20 !important;
+          width: 300px !important;
+          min-width: 300px !important;
+          height: 100vh !important;
+          max-height: 100vh !important;
+          padding: 18px !important;
+          overflow: hidden !important;
+          border: 0 !important;
+          border-right: 1px solid #dde2ee !important;
+          border-radius: 0 !important;
+          background: #fff !important;
+          box-shadow: none !important;
+          transform: none !important;
+          transition: none !important;
+          will-change: auto !important;
+        }
+
+        #appShell.collections-overlay-open #collectionsSidebar {
+          transform: none !important;
+        }
+
+        #mobileNavBackdrop,
+        #collectionsDrawerClose {
+          display: none !important;
+        }
+
+        #collectionsSidebar .subjects {
+          min-height: 0 !important;
+          overflow-y: auto !important;
+          overflow-x: hidden !important;
+        }
+      }
     `;
   document.head.appendChild(style);
 })();
