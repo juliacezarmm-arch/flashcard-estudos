@@ -130,9 +130,9 @@
 
       /* Navegação interna inspirada na proposta visual aprovada. */
       #home.home-view .fixa-week-content-tabs {
-        min-height: 54px !important;
+        min-height: 58px !important;
         height: auto !important;
-        padding: 7px 10px !important;
+        padding: 8px 12px !important;
         gap: 7px !important;
         border-bottom: 1px solid #e5ebf4 !important;
         background: rgba(255,255,255,.92) !important;
@@ -140,9 +140,9 @@
       }
 
       #home.home-view .fixa-week-content-tabs [data-fixa-main-tab] {
-        min-height: 40px !important;
-        height: 40px !important;
-        padding: 0 13px !important;
+        min-height: 42px !important;
+        height: 42px !important;
+        padding: 0 15px !important;
         border: 1px solid transparent !important;
         border-radius: 10px !important;
         display: inline-flex !important;
@@ -151,16 +151,16 @@
         gap: 8px !important;
         color: #53617a !important;
         background: transparent !important;
-        font-size: 12px !important;
-        font-weight: 750 !important;
+        font-size: 13px !important;
+        font-weight: 760 !important;
         white-space: nowrap !important;
         box-shadow: none !important;
       }
 
       #home.home-view .fixa-week-content-tabs [data-fixa-main-tab] svg {
-        width: 17px !important;
-        height: 17px !important;
-        flex: 0 0 17px !important;
+        width: 21px !important;
+        height: 21px !important;
+        flex: 0 0 18px !important;
         fill: none !important;
         stroke: currentColor !important;
         stroke-width: 1.9 !important;
@@ -178,8 +178,8 @@
 
       /* Cabeçalhos dos dois cartões. */
       #home.home-view [data-fixa-main-panel="performance-goals"] .home-panel-head {
-        min-height: 46px !important;
-        margin: 0 0 8px !important;
+        min-height: 68px !important;
+        margin: 0 0 10px !important;
         padding: 0 !important;
         display: flex !important;
         align-items: flex-start !important;
@@ -191,7 +191,7 @@
       #home.home-view [data-fixa-main-panel="performance-goals"] .home-panel-head > .fixa-pg-title-wrap {
         min-width: 0 !important;
         display: grid !important;
-        gap: 3px !important;
+        gap: 4px !important;
       }
 
       #home.home-view [data-fixa-main-panel="performance-goals"] .home-panel-head h3 {
@@ -204,20 +204,23 @@
         border-radius: 0 !important;
         display: flex !important;
         align-items: center !important;
-        gap: 9px !important;
+        gap: 12px !important;
         color: #111c36 !important;
         background: transparent !important;
-        font-size: 18px !important;
-        line-height: 23px !important;
+        font-size: 20px !important;
+        line-height: 25px !important;
         font-weight: 850 !important;
         box-shadow: none !important;
       }
 
       #home.home-view [data-fixa-main-panel="performance-goals"] .home-panel-head h3 svg {
-        width: 21px !important;
-        height: 21px !important;
-        padding: 0 !important;
+        width: 44px !important;
+        height: 44px !important;
+        padding: 10px !important;
+        border-radius: 12px !important;
+        box-sizing: border-box !important;
         color: #2563eb !important;
+        background: #eef5ff !important;
         fill: none !important;
         stroke: currentColor !important;
         stroke-width: 2 !important;
@@ -226,9 +229,39 @@
       #home.home-view .fixa-pg-subtitle {
         margin: 0 !important;
         color: #6a7690 !important;
-        font-size: 11px !important;
-        line-height: 15px !important;
+        padding-left: 56px !important;
+        font-size: 12px !important;
+        line-height: 16px !important;
         font-weight: 600 !important;
+      }
+
+
+      #home.home-view .fixa-pg-period-pill {
+        min-height: 36px !important;
+        height: 36px !important;
+        padding: 0 12px !important;
+        border: 1px solid #cfe0fb !important;
+        border-radius: 10px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 7px !important;
+        color: #4f6487 !important;
+        background: #fbfdff !important;
+        font-size: 10.5px !important;
+        line-height: 1 !important;
+        font-weight: 750 !important;
+        white-space: nowrap !important;
+        box-shadow: 0 2px 8px rgba(37,99,235,.04) !important;
+      }
+
+      #home.home-view .fixa-pg-period-pill svg {
+        width: 16px !important;
+        height: 16px !important;
+        fill: none !important;
+        stroke: #2563eb !important;
+        stroke-width: 1.9 !important;
+        stroke-linecap: round !important;
+        stroke-linejoin: round !important;
       }
 
       #home.home-view .fixa-week-goals-panel .fixa-week-add-goals {
@@ -260,11 +293,11 @@
       }
 
       #home.home-view .fixa-week-performance-row {
-        min-height: 56px !important;
+        min-height: 64px !important;
         height: auto !important;
         border: 1px solid #e0e8f3 !important;
         border-radius: 12px !important;
-        padding: 8px 10px !important;
+        padding: 9px 11px !important;
         display: grid !important;
         grid-template-columns: minmax(0,1fr) auto !important;
         align-items: center !important;
@@ -277,9 +310,9 @@
       #home.home-view .fixa-week-performance-row > span {
         min-width: 0 !important;
         display: grid !important;
-        grid-template-columns: 38px minmax(0,1fr) !important;
+        grid-template-columns: 44px minmax(0,1fr) !important;
         grid-template-rows: auto auto !important;
-        column-gap: 10px !important;
+        column-gap: 11px !important;
         row-gap: 1px !important;
         align-items: center !important;
         color: inherit !important;
@@ -289,9 +322,9 @@
       #home.home-view .fixa-week-performance-row > span > i {
         grid-column: 1 !important;
         grid-row: 1 / span 2 !important;
-        width: 38px !important;
-        height: 38px !important;
-        min-width: 38px !important;
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
         border-radius: 10px !important;
         display: grid !important;
         place-items: center !important;
@@ -322,9 +355,9 @@
         grid-row: 1 !important;
         min-width: 0 !important;
         color: #172033 !important;
-        font-size: 12px !important;
-        line-height: 15px !important;
-        font-weight: 800 !important;
+        font-size: 13px !important;
+        line-height: 16px !important;
+        font-weight: 820 !important;
       }
 
       #home.home-view .fixa-performance-description {
@@ -332,15 +365,15 @@
         grid-row: 2 !important;
         min-width: 0 !important;
         color: #77839a !important;
-        font-size: 9.5px !important;
-        line-height: 12px !important;
+        font-size: 11px !important;
+        line-height: 13px !important;
         font-style: normal !important;
         font-weight: 550 !important;
       }
 
       #home.home-view .fixa-week-performance-row > b {
-        min-width: 78px !important;
-        min-height: 30px !important;
+        min-width: 86px !important;
+        min-height: 32px !important;
         padding: 0 11px !important;
         border-radius: 999px !important;
         display: inline-flex !important;
@@ -374,10 +407,10 @@
       }
 
       #home.home-view .fixa-week-goal {
-        min-height: 112px !important;
+        min-height: 116px !important;
         border: 1px solid #dfe7f2 !important;
         border-radius: 14px !important;
-        padding: 13px 14px !important;
+        padding: 14px 15px !important;
         display: grid !important;
         gap: 9px !important;
         background: linear-gradient(180deg, #fff 0%, #fbfdff 100%) !important;
@@ -387,16 +420,16 @@
       #home.home-view .fixa-week-goal-head {
         min-width: 0 !important;
         display: grid !important;
-        grid-template-columns: 42px minmax(0,1fr) auto !important;
+        grid-template-columns: 46px minmax(0,1fr) auto !important;
         grid-template-rows: auto !important;
         align-items: center !important;
         gap: 10px !important;
       }
 
       #home.home-view .fixa-week-goal-head > i {
-        width: 42px !important;
-        height: 42px !important;
-        min-width: 42px !important;
+        width: 46px !important;
+        height: 46px !important;
+        min-width: 46px !important;
         border-radius: 11px !important;
         display: grid !important;
         place-items: center !important;
@@ -430,23 +463,23 @@
 
       #home.home-view .fixa-week-goal-head strong {
         color: #111c36 !important;
-        font-size: 12.5px !important;
-        line-height: 16px !important;
+        font-size: 13.5px !important;
+        line-height: 17px !important;
         font-weight: 850 !important;
       }
 
       #home.home-view .fixa-goal-description {
         color: #748098 !important;
-        font-size: 9.5px !important;
-        line-height: 12px !important;
-        font-weight: 550 !important;
+        font-size: 10.5px !important;
+        line-height: 13px !important;
+        font-weight: 560 !important;
       }
 
       #home.home-view .fixa-week-goal-head small {
         margin-top: 4px !important;
         color: #334155 !important;
-        font-size: 10px !important;
-        line-height: 12px !important;
+        font-size: 10.5px !important;
+        line-height: 13px !important;
         font-weight: 750 !important;
       }
 
@@ -475,8 +508,8 @@
       }
 
       #home.home-view .fixa-week-goal .home-progress {
-        height: 8px !important;
-        min-height: 8px !important;
+        height: 9px !important;
+        min-height: 9px !important;
         border-radius: 999px !important;
         overflow: hidden !important;
         background: #e8eef7 !important;
@@ -650,9 +683,33 @@
     return 'Acompanhe seu progresso neste objetivo.';
   }
 
+
+  function periodLabel() {
+    const active = document.querySelector('#home.home-view [data-fixa-week-period].active');
+    const key = active?.dataset.fixaWeekPeriod || 'week';
+    if (key === 'today') return 'Hoje';
+    if (key === 'month') return 'Este mês';
+    return 'Esta semana';
+  }
+
+  function ensureGoalsPeriodPill(panel) {
+    const head = panel?.querySelector(':scope > .home-panel-head');
+    if (!head) return;
+
+    let pill = head.querySelector(':scope > .fixa-pg-period-pill');
+    if (!pill) {
+      pill = document.createElement('div');
+      pill.className = 'fixa-pg-period-pill';
+      pill.setAttribute('aria-label', 'Período atual dos objetivos');
+      head.appendChild(pill);
+    }
+    pill.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="14" rx="2"></rect><path d="M8 3v6M16 3v6M4 10h16"></path></svg><span>' + periodLabel() + '</span>';
+  }
+
   function decorateGoals() {
     const panel = document.querySelector('#home.home-view [data-fixa-main-panel="performance-goals"] .fixa-week-goals-panel');
     decoratePanelHead(panel, 'goals');
+    ensureGoalsPeriodPill(panel);
 
     document.querySelectorAll('#home.home-view .fixa-week-goal').forEach(row => {
       const head = row.querySelector('.fixa-week-goal-head');
