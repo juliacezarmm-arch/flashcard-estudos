@@ -107,11 +107,12 @@
         #home.home-view .fixa-week-performance-panel .fixa-week-performance-list {
           flex: 1 1 auto !important;
           min-height: 0 !important;
-          overflow-y: auto !important;
+          overflow-y: scroll !important;
           overflow-x: hidden !important;
-          padding-right: 6px !important;
+          padding-right: 7px !important;
+          scrollbar-gutter: stable !important;
           scrollbar-width: thin !important;
-          scrollbar-color: #b8c2d2 transparent !important;
+          scrollbar-color: #aab5c6 #f4f7fb !important;
         }
 
         #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar {
@@ -119,12 +120,13 @@
         }
 
         #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar-track {
-          background: transparent !important;
+          background: #f4f7fb !important;
+          border-radius: 999px !important;
         }
 
         #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar-thumb {
           border-radius: 999px !important;
-          background: #b8c2d2 !important;
+          background: #aab5c6 !important;
         }
       }
 
@@ -178,8 +180,8 @@
 
       /* Cabeçalhos dos dois cartões. */
       #home.home-view [data-fixa-main-panel="performance-goals"] .home-panel-head {
-        min-height: 68px !important;
-        margin: 0 0 10px !important;
+        min-height: 52px !important;
+        margin: 0 0 5px !important;
         padding: 0 !important;
         display: flex !important;
         align-items: flex-start !important;
@@ -191,7 +193,7 @@
       #home.home-view [data-fixa-main-panel="performance-goals"] .home-panel-head > .fixa-pg-title-wrap {
         min-width: 0 !important;
         display: grid !important;
-        gap: 4px !important;
+        gap: 2px !important;
       }
 
       #home.home-view [data-fixa-main-panel="performance-goals"] .home-panel-head h3 {
@@ -230,8 +232,8 @@
         margin: 0 !important;
         color: #6a7690 !important;
         padding-left: 56px !important;
-        font-size: 12px !important;
-        line-height: 16px !important;
+        font-size: 11px !important;
+        line-height: 14px !important;
         font-weight: 600 !important;
       }
 
@@ -407,12 +409,12 @@
       }
 
       #home.home-view .fixa-week-goal {
-        min-height: 116px !important;
+        min-height: 96px !important;
         border: 1px solid #dfe7f2 !important;
         border-radius: 14px !important;
-        padding: 14px 15px !important;
+        padding: 10px 14px !important;
         display: grid !important;
-        gap: 9px !important;
+        gap: 6px !important;
         background: linear-gradient(180deg, #fff 0%, #fbfdff 100%) !important;
         box-shadow: 0 3px 10px rgba(15,23,42,.03) !important;
       }
@@ -420,16 +422,16 @@
       #home.home-view .fixa-week-goal-head {
         min-width: 0 !important;
         display: grid !important;
-        grid-template-columns: 46px minmax(0,1fr) auto !important;
+        grid-template-columns: 40px minmax(0,1fr) auto !important;
         grid-template-rows: auto !important;
         align-items: center !important;
         gap: 10px !important;
       }
 
       #home.home-view .fixa-week-goal-head > i {
-        width: 46px !important;
-        height: 46px !important;
-        min-width: 46px !important;
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
         border-radius: 11px !important;
         display: grid !important;
         place-items: center !important;
@@ -448,8 +450,8 @@
       }
 
       #home.home-view .fixa-week-goal-head > i svg {
-        width: 21px !important;
-        height: 21px !important;
+        width: 19px !important;
+        height: 19px !important;
         fill: none !important;
         stroke: currentColor !important;
         stroke-width: 2 !important;
@@ -463,30 +465,30 @@
 
       #home.home-view .fixa-week-goal-head strong {
         color: #111c36 !important;
-        font-size: 13.5px !important;
-        line-height: 17px !important;
+        font-size: 12.5px !important;
+        line-height: 15px !important;
         font-weight: 850 !important;
       }
 
       #home.home-view .fixa-goal-description {
         color: #748098 !important;
-        font-size: 10.5px !important;
-        line-height: 13px !important;
+        font-size: 9.5px !important;
+        line-height: 12px !important;
         font-weight: 560 !important;
       }
 
       #home.home-view .fixa-week-goal-head small {
-        margin-top: 4px !important;
+        margin-top: 2px !important;
         color: #334155 !important;
-        font-size: 10.5px !important;
-        line-height: 13px !important;
+        font-size: 10px !important;
+        line-height: 12px !important;
         font-weight: 750 !important;
       }
 
       #home.home-view .fixa-goal-reward {
         align-self: start !important;
-        min-width: 68px !important;
-        min-height: 30px !important;
+        min-width: 64px !important;
+        min-height: 28px !important;
         padding: 0 10px !important;
         border-radius: 999px !important;
         display: inline-flex !important;
@@ -508,8 +510,8 @@
       }
 
       #home.home-view .fixa-week-goal .home-progress {
-        height: 9px !important;
-        min-height: 9px !important;
+        height: 7px !important;
+        min-height: 7px !important;
         border-radius: 999px !important;
         overflow: hidden !important;
         background: #e8eef7 !important;
