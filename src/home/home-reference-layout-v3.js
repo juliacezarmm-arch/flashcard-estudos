@@ -654,13 +654,24 @@
   }
 
   function ensureTopbarActiveCollectionChip() {
+    let chip = document.querySelector('#fixaActiveCollectionChip');
+    if (!chip) chip = createActiveCollectionChip();
+
+    if (window.innerWidth >= 861) {
+      const sidebar = document.querySelector('#collectionsSidebar');
+      const head = sidebar?.querySelector('.collections-drawer-head');
+      if (sidebar && head) {
+        if (chip.parentElement !== sidebar || chip.previousElementSibling !== head) {
+          head.insertAdjacentElement('afterend', chip);
+        }
+        return chip;
+      }
+    }
+
     const tools = document.querySelector('#homeTopTools');
     const right = document.querySelector('.topbar-right');
     const container = tools || right;
-    if (!container) return null;
-
-    let chip = document.querySelector('#fixaActiveCollectionChip');
-    if (!chip) chip = createActiveCollectionChip();
+    if (!container) return chip;
 
     const help = container.querySelector('.fixa-streak-help');
     const anchor = container === tools
