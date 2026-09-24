@@ -5979,9 +5979,31 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       });
     }
     function save() {
-      localStorage.setItem(storeKey, JSON.stringify(data));
+      const serialized = JSON.stringify(data);
+      let localSaved = false;
+
+      try {
+        localStorage.setItem(storeKey, serialized);
+        localSaved = true;
+      } catch (error) {
+        // localStorage costuma ter cerca de 5 MB. O Fixa pode ultrapassar esse
+        // limite principalmente quando ZIPs trazem imagens em base64.
+        // A falha do cache local não pode impedir o salvamento no Supabase.
+        console.warn("[Fixa Storage] Cache local cheio; continuando com sincronização online.", error);
+        try {
+          localStorage.removeItem(storeKey + "-safe-snapshot");
+          const uid = currentUser?.id || "";
+          if (uid) localStorage.removeItem(storeKey + ":user:" + uid);
+          localStorage.setItem(storeKey, serialized);
+          localSaved = true;
+        } catch (retryError) {
+          console.warn("[Fixa Storage] Dados não couberam no cache local mesmo após liberar cópias duplicadas.", retryError);
+        }
+      }
+
       markPendingCloudSync();
       scheduleCloudSave();
+      return localSaved;
     }
 
     function markPendingCloudSync() {
@@ -6046,6 +6068,15 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       }
 
       clearPendingCloudSync();
+
+      // Depois que a nuvem confirmou o dado atual, removemos cópias locais
+      // completas duplicadas deixadas por versões antigas. A cópia principal
+      // continua em flashcard-estudos-v2; o Supabase é a fonte entre dispositivos.
+      try {
+        localStorage.removeItem(storeKey + "-safe-snapshot");
+        if (currentUser?.id) localStorage.removeItem(storeKey + ":user:" + currentUser.id);
+      } catch (_) {}
+
       return true;
     }
 
@@ -9647,7 +9678,12 @@ function imageMimeFromName(name) {
       const pendingAnswers = Math.max(0, total - recognizedAnswers);
       setMessage(el.importMessage, `${total} questão${total === 1 ? "" : "ões"} importada${total === 1 ? "" : "s"} ${source === "arquivo" ? "do arquivo" : ""}. ${recognizedAnswers} resposta${recognizedAnswers === 1 ? "" : "s"} identificada${recognizedAnswers === 1 ? "" : "s"} e ${pendingAnswers} precisam de correção.`);
       showingAnswer = false;
-      await saveNow();
+      const cloudSaved = await saveNow();
+      if (cloudSaved === false) {
+        setMessage(el.importMessage, "As questões foram adicionadas nesta tela, mas o salvamento online falhou. Não feche a página e tente novamente.", "error");
+        return;
+      }
+      setMessage(el.importMessage, `${total} questão${total === 1 ? "" : "ões"} importada${total === 1 ? "" : "s"} e salva${total === 1 ? "" : "s"} no Supabase.`);
       render();
     });
 
