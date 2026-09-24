@@ -55,18 +55,19 @@
           max-height: var(--fixa-third-line-height, 430px) !important;
           overflow: hidden !important;
           box-sizing: border-box !important;
-          border: 1px solid #dfe7f2 !important;
-          border-bottom: 1px solid #d7e1ef !important;
+          border: 1px solid #cbd5e1 !important;
+          border-bottom: 2px solid #b9c5d4 !important;
           border-radius: 16px !important;
           background: #f8fbff !important;
-          box-shadow: inset 0 -1px 0 #d7e1ef, 0 8px 28px rgba(15, 23, 42, .045) !important;
+          box-shadow: inset 0 -1px 0 #cbd5e1, 0 8px 28px rgba(15, 23, 42, .045) !important;
         }
 
         #home.home-view .fixa-week-main-shell::after {
           content: "" !important;
           position: absolute !important;
           inset: 0 !important;
-          border: 1px solid #d3ddec !important;
+          border: 1px solid #cbd5e1 !important;
+          border-bottom: 2px solid #b9c5d4 !important;
           border-radius: 16px !important;
           box-sizing: border-box !important;
           background: transparent !important;
@@ -113,6 +114,7 @@
         }
 
         #home.home-view [data-fixa-main-panel="performance-goals"] > .fixa-week-performance-panel {
+          position: relative !important;
           display: flex !important;
           flex-direction: column !important;
         }
@@ -123,30 +125,48 @@
         }
 
         #home.home-view .fixa-week-performance-panel .fixa-week-performance-list {
-          flex: 1 1 0 !important;
-          height: 0 !important;
+          flex: 1 1 auto !important;
+          height: auto !important;
           min-height: 0 !important;
-          max-height: 100% !important;
-          overflow-y: scroll !important;
+          max-height: none !important;
+          overflow-y: auto !important;
           overflow-x: hidden !important;
-          padding-right: 7px !important;
-          scrollbar-gutter: stable !important;
-          scrollbar-width: thin !important;
-          scrollbar-color: #aab5c6 #f4f7fb !important;
+          margin-right: 12px !important;
+          padding-right: 2px !important;
+          align-content: start !important;
+          grid-auto-rows: max-content !important;
+          scrollbar-width: none !important;
+          -ms-overflow-style: none !important;
         }
 
         #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar {
+          width: 0 !important;
+          height: 0 !important;
+        }
+
+        #home.home-view .fixa-performance-scrollbar {
+          position: absolute !important;
+          top: 48px !important;
+          right: 7px !important;
+          bottom: 14px !important;
           width: 7px !important;
+          border-radius: 999px !important;
+          background: #edf1f6 !important;
+          box-shadow: inset 0 0 0 1px #e1e7ef !important;
+          z-index: 8 !important;
+          pointer-events: none !important;
         }
 
-        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar-track {
-          background: #f4f7fb !important;
+        #home.home-view .fixa-performance-scrollbar-thumb {
+          position: absolute !important;
+          left: 0 !important;
+          top: 0 !important;
+          width: 7px !important;
+          min-height: 38px !important;
           border-radius: 999px !important;
-        }
-
-        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar-thumb {
-          border-radius: 999px !important;
-          background: #aab5c6 !important;
+          background: #97a6ba !important;
+          box-shadow: inset 0 0 0 1px rgba(255,255,255,.45) !important;
+          transform: translateY(0) !important;
         }
       }
 
@@ -618,6 +638,48 @@
     wrap.querySelectorAll('.fixa-pg-subtitle').forEach(node => node.remove());
   }
 
+  function ensurePerformanceScrollbar(panel, list) {
+    if (!panel || !list) return;
+
+    let rail = panel.querySelector(':scope > .fixa-performance-scrollbar');
+    if (!rail) {
+      rail = document.createElement('div');
+      rail.className = 'fixa-performance-scrollbar';
+      rail.setAttribute('aria-hidden', 'true');
+      rail.innerHTML = '<span class="fixa-performance-scrollbar-thumb"></span>';
+      panel.appendChild(rail);
+    }
+
+    const thumb = rail.querySelector('.fixa-performance-scrollbar-thumb');
+    if (!thumb) return;
+
+    const sync = () => {
+      const viewport = Math.max(1, list.clientHeight);
+      const content = Math.max(viewport, list.scrollHeight);
+      const railHeight = Math.max(1, rail.clientHeight);
+      const ratio = Math.min(1, viewport / content);
+      const thumbHeight = Math.max(38, Math.round(railHeight * ratio));
+      const maxThumbTravel = Math.max(0, railHeight - thumbHeight);
+      const maxScroll = Math.max(0, content - viewport);
+      const progress = maxScroll ? Math.min(1, Math.max(0, list.scrollTop / maxScroll)) : 0;
+      thumb.style.height = thumbHeight + 'px';
+      thumb.style.transform = 'translateY(' + Math.round(maxThumbTravel * progress) + 'px)';
+      rail.style.opacity = content > viewport + 1 ? '1' : '.45';
+    };
+
+    if (!list.dataset.fixaPerformanceScrollBound) {
+      list.dataset.fixaPerformanceScrollBound = '1';
+      list.addEventListener('scroll', sync, { passive: true });
+      if (typeof ResizeObserver !== 'undefined') {
+        const observer = new ResizeObserver(sync);
+        observer.observe(list);
+        observer.observe(panel);
+      }
+    }
+
+    requestAnimationFrame(sync);
+  }
+
   function decoratePerformance() {
     const panel = document.querySelector('#home.home-view [data-fixa-main-panel="performance-goals"] .fixa-week-performance-panel');
     decoratePanelHead(panel, 'performance');
@@ -664,6 +726,9 @@
           : 'blue';
       row.dataset.tone = tone;
     });
+
+    const list = panel?.querySelector('.fixa-week-performance-list');
+    ensurePerformanceScrollbar(panel, list);
   }
 
   function goalDescription(label) {
