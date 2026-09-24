@@ -13,7 +13,8 @@
   style.textContent = `
     @media (min-width: ${DESKTOP_BREAKPOINT}px) {
       :root {
-        --fixa-fixed-sidebar-width: clamp(340px, 22vw, 370px);
+        --fixa-fixed-sidebar-width: 340px;
+        --fixa-desktop-shell-max: 1540px;
       }
 
       html,
@@ -24,10 +25,11 @@
       }
 
       #appShell.app:not(.locked) {
-        width: 100% !important;
-        max-width: none !important;
+        width: min(100%, var(--fixa-desktop-shell-max)) !important;
+        max-width: var(--fixa-desktop-shell-max) !important;
         min-width: 0 !important;
-        margin: 0 !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
         grid-template-columns: var(--fixa-fixed-sidebar-width) minmax(0, 1fr) !important;
       }
 
