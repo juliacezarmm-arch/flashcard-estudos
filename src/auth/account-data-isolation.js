@@ -159,6 +159,18 @@
     return counts(currentData());
   }
 
+  function hasUnpersistedLocalDataChange() {
+    try {
+      const current = currentData();
+      if (!current) return false;
+      const storedRaw = localStorage.getItem(storageKey);
+      if (!storedRaw) return true;
+      return storedRaw !== JSON.stringify(current);
+    } catch (_) {
+      return true;
+    }
+  }
+
   function currentUserId() {
     try { return typeof currentUser !== 'undefined' ? currentUser?.id || null : null; }
     catch (_) { return null; }
@@ -481,14 +493,29 @@
     if (typeof cloudReady !== 'undefined') cloudReady = true;
     if (typeof loadingCloud !== 'undefined') loadingCloud = false;
     const result = await originalSaveCloudData();
+
+    if (result === false) {
+      // Mantém o marcador pendente para a próxima tentativa. Não registra
+      // uma sincronização como concluída se o Supabase recusou/falhou.
+      markPendingLocalCloudSync();
+      writeSyncMeta({
+        lastCloudUploadErrorAt: Date.now(),
+        lastCloudUploadErrorReason: decision.reason,
+        lastCloudUploadErrorCounts: currentCounts()
+      });
+      return false;
+    }
+
     clearForcedCloudRestore();
     writeSyncMeta({
       lastCloudUploadAt: Date.now(),
       lastCloudUploadReason: decision.reason,
-      lastCloudUploadCounts: currentCounts()
+      lastCloudUploadCounts: currentCounts(),
+      lastCloudUploadErrorAt: null,
+      lastCloudUploadErrorReason: null
     });
     rememberSafeSnapshot();
-    return result !== false;
+    return true;
   }
 
   async function uploadSafeSnapshotToCloud(reason) {
@@ -542,7 +569,14 @@
 
   if (originalSave) {
     save = function safeSave(...args) {
-      if (renderDepth > 0) return;
+      const calledFromRender = renderDepth > 0;
+
+      // O Fixa legado usa render() também como ponto final de várias mutações
+      // (renomear, mover, excluir, selecionar etc.). Bloquear todo save durante
+      // render fazia essas alterações existirem só na memória deste navegador.
+      // Agora ignoramos apenas renderizações que NÃO mudaram os dados persistidos.
+      if (calledFromRender && !hasUnpersistedLocalDataChange()) return;
+
       const reference = counts(safeSnapshot || null);
       const now = currentCounts();
 
@@ -552,7 +586,7 @@
       }
 
       const result = originalSave.apply(this, args);
-      markLocalMutation('save');
+      markLocalMutation(calledFromRender ? 'render-data-change' : 'save');
       if (!integrityIssue) rememberSafeSnapshot();
       return result;
     };
@@ -658,7 +692,7 @@
 
   window.FixaDataSafetyGuard = {
     installed: true,
-    version: 7,
+    version: 8,
     counts: currentCounts,
     prepareAccountSession,
     baseline: () => ({ ...baseline }),
