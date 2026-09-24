@@ -25,34 +25,34 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      /* O conteúdo inferior não deve mais ser recortado pelo viewport. */
+      /* Desktop: a terceira caixa termina dentro da tela.
+         Quando Desempenho excede a altura disponível, só a lista da coluna esquerda rola. */
       @media (min-width: 861px) {
         body.fixa-home-v3-active {
-          overflow-y: auto !important;
-          overflow-x: hidden !important;
+          overflow: hidden !important;
         }
 
         body.fixa-home-v3-active #appShell.app:not(.locked) > main {
-          height: auto !important;
-          min-height: 100vh !important;
-          max-height: none !important;
-          overflow: visible !important;
-          grid-template-rows: 56px auto !important;
-          align-content: start !important;
+          height: 100dvh !important;
+          min-height: 0 !important;
+          max-height: 100dvh !important;
+          overflow: hidden !important;
+          grid-template-rows: 56px minmax(0, 1fr) !important;
+          align-content: stretch !important;
         }
 
         body.fixa-home-v3-active #home.home-view.active {
-          height: auto !important;
+          height: 100% !important;
           min-height: 0 !important;
-          overflow: visible !important;
-          padding-bottom: 28px !important;
+          overflow: hidden !important;
+          padding-bottom: 16px !important;
         }
 
         #home.home-view .fixa-week-main-shell {
-          height: auto !important;
-          min-height: 0 !important;
-          max-height: none !important;
-          overflow: visible !important;
+          height: var(--fixa-third-line-height, 430px) !important;
+          min-height: 260px !important;
+          max-height: var(--fixa-third-line-height, 430px) !important;
+          overflow: hidden !important;
           border: 1px solid #dfe7f2 !important;
           border-radius: 16px !important;
           background: #f8fbff !important;
@@ -60,18 +60,19 @@
         }
 
         #home.home-view .fixa-week-main-stage {
+          flex: 1 1 auto !important;
           height: auto !important;
           min-height: 0 !important;
           max-height: none !important;
-          overflow: visible !important;
-          padding: 16px !important;
+          overflow: hidden !important;
+          padding: 14px 16px 16px !important;
         }
 
         #home.home-view .fixa-week-main-stage [data-fixa-main-panel]:not([hidden]) {
-          height: auto !important;
+          height: 100% !important;
           min-height: 0 !important;
           max-height: none !important;
-          overflow: visible !important;
+          overflow: hidden !important;
         }
 
         #home.home-view [data-fixa-main-panel="performance-goals"]:not([hidden]) {
@@ -82,15 +83,48 @@
         }
 
         #home.home-view [data-fixa-main-panel="performance-goals"] > .fixa-week-main-pane {
-          height: auto !important;
-          min-height: 100% !important;
+          height: 100% !important;
+          min-height: 0 !important;
           max-height: none !important;
-          overflow: visible !important;
+          overflow: hidden !important;
           border: 1px solid #dce6f3 !important;
           border-radius: 16px !important;
-          padding: 18px !important;
+          padding: 14px 18px 16px !important;
           background: #ffffff !important;
           box-shadow: 0 10px 28px rgba(15, 23, 42, .055) !important;
+        }
+
+        #home.home-view [data-fixa-main-panel="performance-goals"] > .fixa-week-performance-panel {
+          display: flex !important;
+          flex-direction: column !important;
+        }
+
+        #home.home-view [data-fixa-main-panel="performance-goals"] > .fixa-week-goals-panel {
+          display: flex !important;
+          flex-direction: column !important;
+        }
+
+        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list {
+          flex: 1 1 auto !important;
+          min-height: 0 !important;
+          overflow-y: auto !important;
+          overflow-x: hidden !important;
+          padding-right: 6px !important;
+          scrollbar-width: thin !important;
+          scrollbar-color: #b8c2d2 transparent !important;
+        }
+
+        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar {
+          width: 7px !important;
+        }
+
+        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar-track {
+          background: transparent !important;
+        }
+
+        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar-thumb {
+          border-radius: 999px !important;
+          background: #b8c2d2 !important;
         }
       }
 
@@ -144,8 +178,8 @@
 
       /* Cabeçalhos dos dois cartões. */
       #home.home-view [data-fixa-main-panel="performance-goals"] .home-panel-head {
-        min-height: 58px !important;
-        margin: 0 0 14px !important;
+        min-height: 46px !important;
+        margin: 0 0 8px !important;
         padding: 0 !important;
         display: flex !important;
         align-items: flex-start !important;
