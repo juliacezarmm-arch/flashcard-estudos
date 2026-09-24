@@ -493,6 +493,58 @@
           display: none !important;
         }
 
+
+        /* Cabeçalho da sidebar fixa no desktop: título à esquerda e + à direita. */
+        #collectionsSidebar .collections-drawer-head {
+          min-height: 48px !important;
+          display: grid !important;
+          grid-template-columns: minmax(0, 1fr) 40px !important;
+          align-items: center !important;
+          gap: 10px !important;
+          width: 100% !important;
+        }
+
+        #collectionsSidebar #collectionsDrawerClose {
+          display: none !important;
+        }
+
+        #collectionsSidebar .collections-drawer-title {
+          grid-column: 1 !important;
+          min-width: 0 !important;
+          width: 100% !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 9px !important;
+          padding: 0 2px !important;
+          color: #15213a !important;
+          font-size: 17px !important;
+          line-height: 1.15 !important;
+          font-weight: 850 !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+        }
+
+        #collectionsSidebar .collections-drawer-title svg {
+          width: 21px !important;
+          height: 21px !important;
+          flex: 0 0 21px !important;
+        }
+
+        #collectionsSidebar .collections-drawer-title span {
+          display: block !important;
+          min-width: 0 !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap !important;
+        }
+
+        #collectionsSidebar #collectionsDrawerAdd {
+          grid-column: 2 !important;
+          justify-self: end !important;
+          align-self: center !important;
+          margin: 0 !important;
+        }
+
         #collectionsSidebar .subjects {
           min-height: 0 !important;
           overflow-y: auto !important;
