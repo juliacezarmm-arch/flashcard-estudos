@@ -1072,7 +1072,7 @@
     const viewportHeight = Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 0);
     if (!viewportHeight) return false;
     const top = Math.round(shell.getBoundingClientRect().top);
-    const bottomGap = 14;
+    const bottomGap = 24;
     const target = Math.max(180, Math.floor(viewportHeight - top - bottomGap));
     shell.style.setProperty('--fixa-third-line-height', `${target}px`);
     return true;
