@@ -49,14 +49,29 @@
         }
 
         #home.home-view .fixa-week-main-shell {
+          position: relative !important;
           height: var(--fixa-third-line-height, 430px) !important;
           min-height: 260px !important;
           max-height: var(--fixa-third-line-height, 430px) !important;
           overflow: hidden !important;
+          box-sizing: border-box !important;
           border: 1px solid #dfe7f2 !important;
+          border-bottom: 1px solid #d7e1ef !important;
           border-radius: 16px !important;
           background: #f8fbff !important;
-          box-shadow: 0 8px 28px rgba(15, 23, 42, .045) !important;
+          box-shadow: inset 0 -1px 0 #d7e1ef, 0 8px 28px rgba(15, 23, 42, .045) !important;
+        }
+
+        #home.home-view .fixa-week-main-shell::after {
+          content: "" !important;
+          position: absolute !important;
+          left: 14px !important;
+          right: 14px !important;
+          bottom: 0 !important;
+          height: 1px !important;
+          background: #d7e1ef !important;
+          pointer-events: none !important;
+          z-index: 40 !important;
         }
 
         #home.home-view .fixa-week-main-stage {
@@ -65,7 +80,8 @@
           min-height: 0 !important;
           max-height: none !important;
           overflow: hidden !important;
-          padding: 14px 16px 16px !important;
+          box-sizing: border-box !important;
+          padding: 12px 16px 18px !important;
         }
 
         #home.home-view .fixa-week-main-stage [data-fixa-main-panel]:not([hidden]) {
@@ -73,6 +89,7 @@
           min-height: 0 !important;
           max-height: none !important;
           overflow: hidden !important;
+          box-sizing: border-box !important;
         }
 
         #home.home-view [data-fixa-main-panel="performance-goals"]:not([hidden]) {
@@ -87,9 +104,10 @@
           min-height: 0 !important;
           max-height: none !important;
           overflow: hidden !important;
+          box-sizing: border-box !important;
           border: 1px solid #dce6f3 !important;
           border-radius: 16px !important;
-          padding: 14px 18px 16px !important;
+          padding: 12px 18px 14px !important;
           background: #ffffff !important;
           box-shadow: 0 10px 28px rgba(15, 23, 42, .055) !important;
         }
@@ -180,11 +198,11 @@
 
       /* Cabeçalhos dos dois cartões. */
       #home.home-view [data-fixa-main-panel="performance-goals"] .home-panel-head {
-        min-height: 52px !important;
-        margin: 0 0 5px !important;
+        min-height: 30px !important;
+        margin: 0 0 4px !important;
         padding: 0 !important;
         display: flex !important;
-        align-items: flex-start !important;
+        align-items: center !important;
         justify-content: space-between !important;
         gap: 12px !important;
         overflow: visible !important;
@@ -216,25 +234,11 @@
       }
 
       #home.home-view [data-fixa-main-panel="performance-goals"] .home-panel-head h3 svg {
-        width: 44px !important;
-        height: 44px !important;
-        padding: 10px !important;
-        border-radius: 12px !important;
-        box-sizing: border-box !important;
-        color: #2563eb !important;
-        background: #eef5ff !important;
-        fill: none !important;
-        stroke: currentColor !important;
-        stroke-width: 2 !important;
+        display: none !important;
       }
 
       #home.home-view .fixa-pg-subtitle {
-        margin: 0 !important;
-        color: #6a7690 !important;
-        padding-left: 56px !important;
-        font-size: 11px !important;
-        line-height: 14px !important;
-        font-weight: 600 !important;
+        display: none !important;
       }
 
 
@@ -608,25 +612,8 @@
       wrap.appendChild(h3);
     }
 
-    if (type === 'performance') {
-      h3.innerHTML = icon('performance') + 'Desempenho recente';
-      let subtitle = wrap.querySelector('.fixa-pg-subtitle');
-      if (!subtitle) {
-        subtitle = document.createElement('p');
-        subtitle.className = 'fixa-pg-subtitle';
-        wrap.appendChild(subtitle);
-      }
-      subtitle.textContent = 'Acompanhe sua evolução e principais métricas de estudo.';
-    } else {
-      h3.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3"></circle><path d="M16 8l4-4M17 4h3v3"></path></svg>Objetivos da semana';
-      let subtitle = wrap.querySelector('.fixa-pg-subtitle');
-      if (!subtitle) {
-        subtitle = document.createElement('p');
-        subtitle.className = 'fixa-pg-subtitle';
-        wrap.appendChild(subtitle);
-      }
-      subtitle.textContent = 'Conquiste seus objetivos e ganhe XP estudando.';
-    }
+    h3.textContent = type === 'performance' ? 'Desempenho recente' : 'Objetivos da semana';
+    wrap.querySelectorAll('.fixa-pg-subtitle').forEach(node => node.remove());
   }
 
   function decoratePerformance() {
