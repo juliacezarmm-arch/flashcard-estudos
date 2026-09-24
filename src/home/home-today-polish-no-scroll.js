@@ -817,7 +817,7 @@
     if (!shell) {
       shell = document.createElement('section');
       shell.className = 'home-panel fixa-week-main-shell';
-      shell.innerHTML = `<nav class="fixa-week-content-tabs" role="tablist" aria-label="Conteúdo do período"><button type="button" class="active" role="tab" aria-selected="true" data-fixa-main-tab="review-summary">Revisões e resumo</button><button type="button" role="tab" aria-selected="false" data-fixa-main-tab="performance-goals">Desempenho e objetivos</button></nav><div class="fixa-week-main-stage"></div>`;
+      shell.innerHTML = `<nav class="fixa-week-content-tabs" role="tablist" aria-label="Conteúdo do período"><button type="button" class="active" role="tab" aria-selected="true" data-fixa-main-tab="performance-goals">Desempenho e objetivos</button><button type="button" role="tab" aria-selected="false" data-fixa-main-tab="review-summary">Revisões e resumo</button></nav><div class="fixa-week-main-stage"></div>`;
     }
     const stage = shell.querySelector('.fixa-week-main-stage');
 
@@ -826,6 +826,7 @@
       reviewSummary = document.createElement('section');
       reviewSummary.className = 'fixa-week-main-pair';
       reviewSummary.dataset.fixaMainPanel = 'review-summary';
+      reviewSummary.hidden = true;
       stage.appendChild(reviewSummary);
     }
 
@@ -834,7 +835,7 @@
       performanceGoals = document.createElement('section');
       performanceGoals.className = 'fixa-week-main-pair';
       performanceGoals.dataset.fixaMainPanel = 'performance-goals';
-      performanceGoals.hidden = true;
+      performanceGoals.hidden = false;
       stage.appendChild(performanceGoals);
     }
 
