@@ -18,7 +18,23 @@
     style.textContent = `
       @media (min-width: 761px) {
         #home.home-view .fixa-reference-header-row {
-          transform: translateY(-5px) !important;
+          transform: translateY(-9px) !important;
+        }
+
+        #home.home-view .fixa-reference-header-right #homeGreeting {
+          font-size: 20px !important;
+          line-height: 22px !important;
+          bottom: 18px !important;
+        }
+
+        #home.home-view .fixa-reference-header-right #homeGreeting .home-greeting-wave {
+          width: 18px !important;
+          height: 18px !important;
+        }
+
+        #home.home-view .fixa-reference-header-right #homeDatePill {
+          font-size: 12px !important;
+          line-height: 15px !important;
         }
 
         #home.home-view .home-hero-head {
