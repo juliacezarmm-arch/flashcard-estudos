@@ -1068,12 +1068,23 @@
 
   function fitThirdLine() {
     const shell = document.querySelector('#home.home-view .fixa-week-main-shell');
-    if (!shell || shell.offsetParent === null || !syncHomeMode()) return false;
+    const home = document.querySelector('#home.home-view.active, #home.home-view');
+    if (!shell || !home || shell.offsetParent === null || !syncHomeMode()) return false;
+
     const viewportHeight = Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 0);
     if (!viewportHeight) return false;
-    const top = Math.round(shell.getBoundingClientRect().top);
-    const bottomGap = 8;
-    const target = Math.max(180, Math.floor(viewportHeight - top - bottomGap));
+
+    const shellTop = Math.round(shell.getBoundingClientRect().top);
+    const homeRect = home.getBoundingClientRect();
+    const homeStyle = getComputedStyle(home);
+    const homePaddingBottom = parseFloat(homeStyle.paddingBottom || '0') || 0;
+
+    // Usa o limite real do container da Home, não apenas o viewport.
+    // Assim a borda inferior não é empurrada para dentro da área que o pai recorta.
+    const usableBottom = Math.min(viewportHeight, Math.floor(homeRect.bottom - homePaddingBottom));
+    const bottomGap = 6;
+    const target = Math.max(180, Math.floor(usableBottom - shellTop - bottomGap));
+
     shell.style.setProperty('--fixa-third-line-height', `${target}px`);
     return true;
   }
