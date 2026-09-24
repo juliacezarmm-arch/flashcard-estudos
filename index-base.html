@@ -9049,6 +9049,12 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         studyIndex = 0;
         showingAnswer = false;
         resetTestState();
+
+        // A proteção de dados bloqueia salvamentos disparados de dentro de render().
+        // Exclusões precisam ser persistidas explicitamente antes de redesenhar a tela,
+        // senão uma cópia online antiga pode reaparecer quando o app sincronizar.
+        await saveNow();
+
         closeModal();
         render();
       }
