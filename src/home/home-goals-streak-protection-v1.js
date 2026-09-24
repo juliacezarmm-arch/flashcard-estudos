@@ -6,6 +6,7 @@
   const state = {
     protection: { available: 0, maximum: 3, protected_days: [] },
     weekXp: 0,
+    remoteStudyDays: [],
     syncingProtection: false,
     loadingXp: false,
     awardingGoals: false,
@@ -17,7 +18,8 @@
     active: true,
     refresh: refreshData,
     get weekXp() { return Math.max(0, Number(state.weekXp || 0)); },
-    get protection() { return state.protection; }
+    get protection() { return state.protection; },
+    get remoteStudyDays() { return [...state.remoteStudyDays]; }
   };
 
   function getClient() {
@@ -165,20 +167,96 @@
       const start = startOfWeek(new Date());
       const end = new Date(start);
       end.setDate(end.getDate() + 6);
+      const historyStart = new Date(start);
+      historyStart.setDate(historyStart.getDate() - 60);
+
       const { data: rows, error } = await client
         .from('user_xp_events')
-        .select('points,occurred_on')
-        .gte('occurred_on', localDateKey(start))
-        .lte('occurred_on', localDateKey(end));
+        .select('event_type,points,source_key,occurred_on,metadata,subject_ids,folder_id,folder_name,created_at')
+        .gte('occurred_on', localDateKey(historyStart))
+        .lte('occurred_on', localDateKey(end))
+        .order('created_at', { ascending: false });
 
       if (!error && Array.isArray(rows)) {
-        state.weekXp = rows.reduce((sum, row) => sum + Math.max(0, Number(row?.points || 0)), 0);
+        const weekStartKey = localDateKey(start);
+        const weekEndKey = localDateKey(end);
+        state.weekXp = rows
+          .filter(row => String(row?.occurred_on || '') >= weekStartKey && String(row?.occurred_on || '') <= weekEndKey)
+          .reduce((sum, row) => sum + Math.max(0, Number(row?.points || 0)), 0);
+
+        state.remoteStudyDays = [...new Set(rows
+          .filter(row => ['test_completed','review_completed'].includes(String(row?.event_type || '')))
+          .map(row => normalizedDateKey(row?.occurred_on))
+          .filter(Boolean))];
+
+        reconcileRemoteTestHistory(rows);
       }
     } catch (_) {
     } finally {
       state.loadingXp = false;
       notifyHome();
     }
+  }
+
+  function reconcileRemoteTestHistory(rows = []) {
+    let target = null;
+    try { target = typeof data !== 'undefined' ? data : null; } catch (_) { target = null; }
+    if (!target || !Array.isArray(target.testHistory)) return false;
+
+    const existing = new Set(target.testHistory.map(item => String(item?.id || '')).filter(Boolean));
+    const recovered = [];
+
+    rows.forEach(row => {
+      const eventType = String(row?.event_type || '');
+      const sourceKey = String(row?.source_key || '');
+      if (!['test_completed','review_completed'].includes(eventType) || !sourceKey.startsWith('test:')) return;
+
+      const id = sourceKey.slice(5);
+      if (!id || existing.has(id)) return;
+
+      const metadata = row?.metadata && typeof row.metadata === 'object' ? row.metadata : {};
+      const total = Math.max(0, Number(metadata.question_count ?? row?.points ?? 0) || 0);
+      const accuracy = Math.max(0, Math.min(100, Number(metadata.accuracy ?? 0) || 0));
+      const score = total > 0 ? Math.round(total * accuracy / 100) : 0;
+      const subjectIds = Array.isArray(row?.subject_ids) ? row.subject_ids.filter(Boolean).map(String) : [];
+      const subjectId = subjectIds[0] || '';
+
+      recovered.push({
+        id,
+        subject: String(metadata.subject || 'Coleção'),
+        subjectId,
+        subjectIds,
+        score,
+        total,
+        xp: Math.max(0, Number(row?.points || 0) || 0),
+        points: Math.max(0, Number(row?.points || 0) || 0),
+        durationMs: 0,
+        ratings: { again: 0, hard: 0, good: 0, easy: 0 },
+        mode: eventType === 'review_completed' ? 'review' : 'quick',
+        completedOn: normalizedDateKey(row?.occurred_on),
+        date: row?.created_at || (normalizedDateKey(row?.occurred_on) + 'T12:00:00.000Z'),
+        recoveredFromXpEvent: true
+      });
+      existing.add(id);
+    });
+
+    if (!recovered.length) return false;
+
+    target.testHistory = [...recovered, ...target.testHistory]
+      .sort((a, b) => new Date(b?.date || b?.completedOn || 0).getTime() - new Date(a?.date || a?.completedOn || 0).getTime())
+      .slice(0, 500);
+
+    try {
+      if (typeof saveNow === 'function') {
+        Promise.resolve(saveNow()).catch(error => {
+          console.warn('[Fixa Sync] Não consegui persistir o histórico recuperado do XP:', error);
+        });
+      } else if (typeof save === 'function') {
+        save();
+      }
+    } catch (_) {}
+
+    return true;
   }
 
   function findTopbarStreakBox() {
