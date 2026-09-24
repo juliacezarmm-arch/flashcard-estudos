@@ -65,11 +65,11 @@
         #home.home-view .fixa-week-main-shell::after {
           content: "" !important;
           position: absolute !important;
-          left: 14px !important;
-          right: 14px !important;
-          bottom: 0 !important;
-          height: 1px !important;
-          background: #d7e1ef !important;
+          inset: 0 !important;
+          border: 1px solid #d3ddec !important;
+          border-radius: 16px !important;
+          box-sizing: border-box !important;
+          background: transparent !important;
           pointer-events: none !important;
           z-index: 40 !important;
         }
@@ -123,8 +123,10 @@
         }
 
         #home.home-view .fixa-week-performance-panel .fixa-week-performance-list {
-          flex: 1 1 auto !important;
+          flex: 1 1 0 !important;
+          height: 0 !important;
           min-height: 0 !important;
+          max-height: 100% !important;
           overflow-y: scroll !important;
           overflow-x: hidden !important;
           padding-right: 7px !important;
