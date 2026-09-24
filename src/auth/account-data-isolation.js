@@ -243,13 +243,21 @@
   function rememberSafeSnapshot() {
     const snapshot = cloneValue(currentData());
     if (!snapshot) return;
+
     const now = counts(snapshot);
-    if (!safeSnapshot || richnessScore(now) >= richnessScore(counts(safeSnapshot))) {
-      safeSnapshot = snapshot;
-      persistSafeSnapshot();
-      baseline = now;
-      baselineUserId = currentUserId();
-    }
+    const previous = counts(safeSnapshot || null);
+
+    // A cópia segura precisa acompanhar também exclusões normais.
+    // Antes, ela só era atualizada quando a base ficava igual ou "mais rica",
+    // então apagar 1, 2 ou 3 questões deixava a cópia por usuário desatualizada
+    // e essas questões podiam reaparecer no próximo carregamento.
+    // Reduções realmente grandes continuam bloqueadas por isMassiveReduction().
+    if (safeSnapshot && isMassiveReduction(previous, now)) return;
+
+    safeSnapshot = snapshot;
+    persistSafeSnapshot();
+    baseline = now;
+    baselineUserId = currentUserId();
   }
 
   function trustCurrentCloudSnapshot(reason = 'cloud') {
@@ -650,13 +658,29 @@
 
   window.FixaDataSafetyGuard = {
     installed: true,
-    version: 6,
+    version: 7,
     counts: currentCounts,
     prepareAccountSession,
     baseline: () => ({ ...baseline }),
     isHydrated: () => cloudHydrated,
     hasIntegrityIssue: () => integrityIssue,
     isMassiveReduction,
-    rememberSafeSnapshot
+    rememberSafeSnapshot,
+    commitCurrentSnapshot: (reason = 'manual') => {
+      const before = counts(safeSnapshot || null);
+      const now = currentCounts();
+      if (safeSnapshot && isMassiveReduction(before, now)) {
+        warnBlockedWrite('tentativa de confirmar redução massiva: ' + reason, before, now);
+        return false;
+      }
+      rememberSafeSnapshot();
+      writeSyncMeta({
+        lastExplicitSnapshotCommitAt: Date.now(),
+        lastExplicitSnapshotCommitReason: reason,
+        lastExplicitSnapshotCommitUserId: currentUserId(),
+        lastExplicitSnapshotCommitCounts: currentCounts()
+      });
+      return true;
+    }
   };
 })();
