@@ -62,9 +62,10 @@
   }
 
   function persistUserSnapshot(userId, value) {
-    if (!userId || !value) return;
-    try { localStorage.setItem(userStorageKey(userId), JSON.stringify(value)); }
-    catch (_) {}
+    // Não persistimos mais uma segunda cópia completa por usuário no localStorage.
+    // O Supabase é a fonte entre dispositivos e a cópia principal já existe em storageKey.
+    // Manter duplicatas inteiras fazia o navegador ultrapassar a cota de armazenamento.
+    return;
   }
 
   function readStoredData() {
@@ -87,10 +88,14 @@
   }
 
   function persistSafeSnapshot() {
+    // A cópia segura permanece em memória durante a sessão.
+    // Versões antigas gravavam o dataset completo novamente em localStorage
+    // (safe-snapshot + user snapshot), triplicando o tamanho ocupado.
+    // Isso causava QuotaExceededError ao importar coleções com imagens.
     try {
-      if (!safeSnapshot) return;
-      localStorage.setItem(safeSnapshotKey, JSON.stringify(safeSnapshot));
-      persistUserSnapshot(currentUserId(), safeSnapshot);
+      localStorage.removeItem(safeSnapshotKey);
+      const uid = currentUserId();
+      if (uid) localStorage.removeItem(userStorageKey(uid));
     } catch (_) {}
   }
 
@@ -303,7 +308,11 @@
     if (!nextData) return false;
 
     data = originalNormalizeData ? originalNormalizeData(nextData) : nextData;
-    localStorage.setItem(storageKey, JSON.stringify(data));
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(data));
+    } catch (error) {
+      console.warn('[Fixa Storage] Não consegui preparar o cache local da conta; a nuvem continuará sendo carregada.', error);
+    }
     safeSnapshot = cloneValue(data);
     persistSafeSnapshot();
     baseline = counts(data);
@@ -344,7 +353,11 @@
     if (!safe) return false;
 
     data = originalNormalizeData ? originalNormalizeData(safe) : safe;
-    localStorage.setItem(storageKey, JSON.stringify(data));
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(data));
+    } catch (error) {
+      console.warn('[Fixa Storage] Snapshot seguro não coube no cache local; mantendo em memória.', error);
+    }
     safeSnapshot = cloneValue(data);
     persistSafeSnapshot();
     baseline = counts(data);
@@ -692,7 +705,7 @@
 
   window.FixaDataSafetyGuard = {
     installed: true,
-    version: 8,
+    version: 9,
     counts: currentCounts,
     prepareAccountSession,
     baseline: () => ({ ...baseline }),
