@@ -158,8 +158,8 @@
       }
 
       #home.home-view .fixa-week-content-tabs [data-fixa-main-tab] svg {
-        width: 21px !important;
-        height: 21px !important;
+        width: 18px !important;
+        height: 18px !important;
         flex: 0 0 18px !important;
         fill: none !important;
         stroke: currentColor !important;
@@ -343,8 +343,8 @@
       }
 
       #home.home-view .fixa-week-performance-row > span > i svg {
-        width: 18px !important;
-        height: 18px !important;
+        width: 20px !important;
+        height: 20px !important;
         fill: none !important;
         stroke: currentColor !important;
         stroke-width: 2 !important;
@@ -448,8 +448,8 @@
       }
 
       #home.home-view .fixa-week-goal-head > i svg {
-        width: 20px !important;
-        height: 20px !important;
+        width: 21px !important;
+        height: 21px !important;
         fill: none !important;
         stroke: currentColor !important;
         stroke-width: 2 !important;
