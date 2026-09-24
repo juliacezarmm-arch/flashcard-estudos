@@ -5,6 +5,7 @@
   const STORAGE_KEY = "fixa-favorite-collections-v1";
   const OPEN_CLASS = "collections-overlay-open";
   const FILTERS = new Set(["all", "folders", "favorites"]);
+  const DESKTOP_BREAKPOINT = 861;
 
   const app = document.querySelector("#appShell");
   const sidebar = document.querySelector("#collectionsSidebar");
@@ -40,6 +41,10 @@
 
   let favorites = readFavorites();
 
+  function isPersistentDesktop() {
+    return window.innerWidth >= DESKTOP_BREAKPOINT;
+  }
+
   function canAutoFocusSearch() {
     const finePointer = window.matchMedia?.("(pointer: fine)")?.matches === true;
     const coarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches === true;
@@ -65,6 +70,15 @@
   }
 
   function openDrawer() {
+    if (isPersistentDesktop()) {
+      app.classList.remove(OPEN_CLASS, "mobile-nav-open");
+      document.body.classList.remove(OPEN_CLASS, "mobile-nav-open");
+      backdrop.hidden = true;
+      menuToggle.setAttribute("aria-expanded", "false");
+      sidebar.setAttribute("aria-hidden", "false");
+      return;
+    }
+
     app.classList.add(OPEN_CLASS);
     app.classList.add("mobile-nav-open");
     document.body.classList.add(OPEN_CLASS);
@@ -84,10 +98,14 @@
     document.body.classList.remove("mobile-nav-open");
     backdrop.hidden = true;
     menuToggle.setAttribute("aria-expanded", "false");
-    sidebar.setAttribute("aria-hidden", "true");
+    sidebar.setAttribute("aria-hidden", isPersistentDesktop() ? "false" : "true");
   }
 
   function toggleDrawer() {
+    if (isPersistentDesktop()) {
+      closeDrawer();
+      return;
+    }
     if (app.classList.contains(OPEN_CLASS)) closeDrawer();
     else openDrawer();
   }
@@ -421,12 +439,20 @@
     });
 
     window.addEventListener("resize", () => {
+      if (isPersistentDesktop()) {
+        closeDrawer();
+        sidebar.setAttribute("aria-hidden", "false");
+        return;
+      }
+
       if (app.classList.contains(OPEN_CLASS)) {
         backdrop.hidden = false;
         app.classList.add("mobile-nav-open");
         document.body.classList.add("mobile-nav-open");
+        sidebar.setAttribute("aria-hidden", "false");
       } else {
         backdrop.hidden = true;
+        sidebar.setAttribute("aria-hidden", "true");
       }
     });
   }
