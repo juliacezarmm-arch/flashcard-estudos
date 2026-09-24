@@ -7440,7 +7440,15 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       });
       data.testHistory = data.testHistory.slice(0, TEST_HISTORY_LIMIT);
       testState.recorded = true;
+
+      // Teste concluído é dado crítico para sequência, metas e histórico.
+      // Salva localmente e tenta sincronizar com o Supabase imediatamente,
+      // sem depender apenas do debounce normal de save().
       save();
+      Promise.resolve(saveNow()).catch(error => {
+        console.warn("[Fixa Sync] Não consegui sincronizar o teste concluído imediatamente:", error);
+      });
+
       renderTestHistory();
       renderAnalysis();
     }
