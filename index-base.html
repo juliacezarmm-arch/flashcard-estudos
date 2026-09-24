@@ -6028,7 +6028,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     }
 
     async function saveCloudData() {
-      if (!currentUser || !cloudReady || !supabaseClient) return;
+      if (!currentUser || !cloudReady || !supabaseClient) return false;
       clearTimeout(saveTimer);
       saveTimer = null;
       const { error } = await supabaseClient
@@ -6041,15 +6041,17 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
 
       if (error) {
         console.warn("Não consegui salvar no Supabase:", error.message);
-        setAuthStatus("Conectado, mas não consegui salvar online agora.");
-      } else {
-        clearPendingCloudSync();
+        setAuthStatus("Conectado, mas não consegui salvar online agora.", "error");
+        return false;
       }
+
+      clearPendingCloudSync();
+      return true;
     }
 
     async function saveNow() {
       save();
-      await saveCloudData();
+      return await saveCloudData();
     }
 
     async function loadCloudData() {
@@ -6072,19 +6074,22 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         if (localHasPendingChanges) {
           const localCounts = syncDataCounts(data);
           const cloudCounts = syncDataCounts(row.data);
-          const cloudUpdatedAt = Date.parse(row.updated_at || "") || 0;
           const localIsEmpty = localCounts.subjects === 0 && localCounts.cards === 0;
           const cloudHasContent = cloudCounts.subjects > 0 || cloudCounts.cards > 0;
-          const cloudIsNewer = cloudUpdatedAt > localPendingAt;
+          const pendingAge = localPendingAt ? Date.now() - localPendingAt : Number.POSITIVE_INFINITY;
+          const localPendingIsFresh = pendingAge >= 0 && pendingAge <= 24 * 60 * 60 * 1000;
 
-          if (!localIsEmpty && !cloudIsNewer) {
+          // Mudança local pendente e recente representa uma edição ainda não sincronizada.
+          // Ela não deve ser substituída pela cópia online ao atualizar a página.
+          // Mantemos a proteção especial apenas para navegador local realmente vazio.
+          if (!localIsEmpty && localPendingIsFresh) {
             data = normalizeData(data);
             loadingCloud = false;
             render();
             return { needsCloudUpload: true };
           }
 
-          // Um navegador vazio ou desatualizado nunca deve apagar dados mais novos da nuvem.
+          // Um navegador vazio nunca deve apagar dados que já existem na nuvem.
           data = normalizeData(row.data);
           localStorage.setItem(storeKey, JSON.stringify(data));
           clearPendingCloudSync();
@@ -9060,11 +9065,15 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         window.FixaDataSafetyGuard?.commitCurrentSnapshot?.("delete-card");
 
         // Persiste local + Supabase antes de redesenhar a tela.
-        await saveNow();
+        const cloudSaved = await saveNow();
 
         // Reconfirma o snapshot após o save para manter localStorage por usuário
         // alinhado com a mesma versão que acabou de ser enviada.
         window.FixaDataSafetyGuard?.commitCurrentSnapshot?.("delete-card-saved");
+
+        if (cloudSaved === false) {
+          setAuthStatus("Questão excluída neste navegador. A sincronização online ficou pendente e será tentada novamente.", "error");
+        }
 
         closeModal();
         render();
