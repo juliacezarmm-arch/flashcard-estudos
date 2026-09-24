@@ -55,24 +55,15 @@
           max-height: var(--fixa-third-line-height, 430px) !important;
           overflow: hidden !important;
           box-sizing: border-box !important;
-          border: 1px solid #cbd5e1 !important;
-          border-bottom: 2px solid #b9c5d4 !important;
+          border: 1px solid #d3ddec !important;
           border-radius: 16px !important;
-          background: #f8fbff !important;
-          box-shadow: inset 0 -1px 0 #cbd5e1, 0 8px 28px rgba(15, 23, 42, .045) !important;
+          background: #ffffff !important;
+          box-shadow: 0 5px 18px rgba(15, 23, 42, .04) !important;
         }
 
         #home.home-view .fixa-week-main-shell::after {
-          content: "" !important;
-          position: absolute !important;
-          inset: 0 !important;
-          border: 1px solid #cbd5e1 !important;
-          border-bottom: 2px solid #b9c5d4 !important;
-          border-radius: 16px !important;
-          box-sizing: border-box !important;
-          background: transparent !important;
-          pointer-events: none !important;
-          z-index: 40 !important;
+          display: none !important;
+          content: none !important;
         }
 
         #home.home-view .fixa-week-main-stage {
