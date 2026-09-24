@@ -7,7 +7,7 @@
   const state = {
     folderId: 'all',
     period: 'week',
-    mainTab: 'review-summary',
+    mainTab: 'performance-goals',
     analysisTab: 'priorities'
   };
 
@@ -251,6 +251,12 @@
       const date = testDate(test);
       return date ? localDateKey(date) : '';
     }).filter(Boolean));
+
+    (window.FixaHomeGoalsStreakProtectionV1?.remoteStudyDays || []).forEach(value => {
+      const date = dateOf(value);
+      if (date) dates.add(localDateKey(date));
+    });
+
     (window.FixaHomeGoalsStreakProtectionV1?.protection?.protected_days || []).forEach(value => {
       const date = dateOf(value);
       if (date) dates.add(localDateKey(date));
@@ -398,6 +404,10 @@
       const date = testDate(test);
       return date ? localDateKey(date) : '';
     }));
+    (window.FixaHomeGoalsStreakProtectionV1?.remoteStudyDays || []).forEach(value => {
+      const date = dateOf(value);
+      if (date) studiedDays.add(localDateKey(date));
+    });
     const letters = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
     const days = Array.from({ length: 7 }, (_, index) => {
       const date = new Date(weekStart);
