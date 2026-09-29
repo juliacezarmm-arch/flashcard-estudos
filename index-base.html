@@ -6853,7 +6853,10 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       if (!cleanName || !isValidFolderId(folder)) return null;
       const existing = data.subjects.find(subject => subject.name.toLowerCase() === cleanName.toLowerCase());
       if (existing) {
-        existing.folder = folder;
+        if (existing.folder !== folder) {
+          window.FixaDataSafetyGuard?.markSubjectFolderMove?.(existing.id, folder);
+          existing.folder = folder;
+        }
         data.selected = existing.id;
         return existing;
       }
@@ -8968,13 +8971,20 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
         const subject = data.subjects.find(item => item.id === moveSubjectButton.dataset.confirmMoveSubject);
         const folderId = document.querySelector("#moveSubjectFolder")?.value;
         if (!subject || !isValidFolderId(folderId) || subject.folder === folderId) return;
+
+        window.FixaDataSafetyGuard?.markSubjectFolderMove?.(subject.id, folderId);
         subject.folder = folderId;
         collapsedFolders.delete(folderId);
         data.selected = subject.id;
         resetCollectionUi();
-        await saveNow();
+
+        const cloudSaved = await saveNow();
         closeModal();
-        setMessage(el.collectionMessage, "Coleção movida com sucesso.");
+        if (cloudSaved === false) {
+          setMessage(el.collectionMessage, "Coleção movida neste navegador. A sincronização online ficou pendente.", "error");
+        } else {
+          setMessage(el.collectionMessage, "Coleção movida e salva online.");
+        }
         render();
         return;
       }
