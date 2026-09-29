@@ -31,6 +31,7 @@
   const safeSnapshotKey = `${storageKey}-safe-snapshot`;
   const forceCloudRestoreKey = `${storageKey}-force-cloud-restore`;
   const syncMetaKey = `${storageKey}-sync-meta`;
+  const pendingFolderMovesKey = `${storageKey}-pending-subject-folder-moves-v1`;
   const LOCAL_UPLOAD_WINDOW_MS = 24 * 60 * 60 * 1000;
 
   function cloneValue(value) {
@@ -123,6 +124,107 @@
     try {
       localStorage.setItem(syncMetaKey, JSON.stringify({ ...readSyncMeta(), ...next }));
     } catch (_) {}
+  }
+
+  function readPendingFolderMoves() {
+    try {
+      const raw = localStorage.getItem(pendingFolderMovesKey);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+      const uid = currentUserId();
+      const now = Date.now();
+      return Object.fromEntries(Object.entries(parsed).filter(([subjectId, item]) => {
+        if (!subjectId || !item || typeof item !== 'object') return false;
+        if (item.userId && uid && item.userId !== uid) return false;
+        const at = Number(item.at || 0);
+        return Boolean(item.folderId) && at > 0 && now - at <= LOCAL_UPLOAD_WINDOW_MS;
+      }));
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function writePendingFolderMoves(value) {
+    try {
+      const entries = value && typeof value === 'object' ? Object.entries(value) : [];
+      if (!entries.length) {
+        localStorage.removeItem(pendingFolderMovesKey);
+        return;
+      }
+      localStorage.setItem(pendingFolderMovesKey, JSON.stringify(Object.fromEntries(entries)));
+    } catch (_) {}
+  }
+
+  function markSubjectFolderMove(subjectId, folderId) {
+    const sid = String(subjectId || '').trim();
+    const fid = String(folderId || '').trim();
+    if (!sid || !fid) return false;
+    const moves = readPendingFolderMoves();
+    moves[sid] = {
+      folderId: fid,
+      at: Date.now(),
+      userId: currentUserId()
+    };
+    writePendingFolderMoves(moves);
+    markPendingLocalCloudSync();
+    return true;
+  }
+
+  function clearPendingFolderMoves(subjectIds = []) {
+    const ids = new Set((Array.isArray(subjectIds) ? subjectIds : []).map(String));
+    if (!ids.size) return;
+    const moves = readPendingFolderMoves();
+    ids.forEach(id => delete moves[id]);
+    writePendingFolderMoves(moves);
+  }
+
+  function mergeRemoteSubjectFolders(remoteData) {
+    const localValue = currentData();
+    if (!localValue || !Array.isArray(localValue.subjects) || !remoteData || !Array.isArray(remoteData.subjects)) {
+      return [];
+    }
+
+    const pendingMoves = readPendingFolderMoves();
+    const remoteById = new Map(
+      remoteData.subjects
+        .filter(isValidSubject)
+        .map(subject => [String(subject.id || ''), subject])
+        .filter(([id]) => id)
+    );
+    const validFolderIds = new Set(
+      (Array.isArray(localValue.folders) ? localValue.folders : [])
+        .map(folder => String(folder?.id || ''))
+        .filter(Boolean)
+    );
+
+    const appliedPendingIds = [];
+
+    localValue.subjects.forEach(subject => {
+      if (!isValidSubject(subject)) return;
+      const subjectId = String(subject.id || '');
+      if (!subjectId) return;
+
+      const pending = pendingMoves[subjectId];
+      if (pending?.folderId) {
+        const requestedFolder = String(pending.folderId);
+        if (!validFolderIds.size || validFolderIds.has(requestedFolder)) {
+          subject.folder = requestedFolder;
+          appliedPendingIds.push(subjectId);
+        }
+        return;
+      }
+
+      const remoteSubject = remoteById.get(subjectId);
+      if (remoteSubject && remoteSubject.folder != null) {
+        subject.folder = remoteSubject.folder;
+      }
+    });
+
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(localValue));
+    } catch (_) {}
+
+    return appliedPendingIds;
   }
 
   function pendingSyncAt() {
@@ -501,6 +603,11 @@
       }
       return false;
     }
+    // Antes de enviar o JSON inteiro, preserva no cache local os destinos de pasta
+    // que já estão mais novos no Supabase. Somente movimentos explicitamente feitos
+    // neste navegador podem substituir o folder remoto de uma coleção.
+    const appliedFolderMoveIds = row?.data ? mergeRemoteSubjectFolders(row.data) : Object.keys(readPendingFolderMoves());
+
     markPendingLocalCloudSync();
     cloudHydrated = true;
     if (typeof cloudReady !== 'undefined') cloudReady = true;
@@ -520,6 +627,7 @@
     }
 
     clearForcedCloudRestore();
+    clearPendingFolderMoves(appliedFolderMoveIds);
     writeSyncMeta({
       lastCloudUploadAt: Date.now(),
       lastCloudUploadReason: decision.reason,
@@ -705,7 +813,7 @@
 
   window.FixaDataSafetyGuard = {
     installed: true,
-    version: 9,
+    version: 10,
     counts: currentCounts,
     prepareAccountSession,
     baseline: () => ({ ...baseline }),
@@ -713,6 +821,8 @@
     hasIntegrityIssue: () => integrityIssue,
     isMassiveReduction,
     rememberSafeSnapshot,
+    markSubjectFolderMove,
+    pendingSubjectFolderMoves: () => ({ ...readPendingFolderMoves() }),
     commitCurrentSnapshot: (reason = 'manual') => {
       const before = counts(safeSnapshot || null);
       const now = currentCounts();
