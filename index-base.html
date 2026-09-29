@@ -4996,7 +4996,7 @@
         <div class="workspace add-workspace">
           <div class="card add-panel unified-add-panel">
             <div class="add-mode" role="tablist" aria-label="Escolha o que deseja adicionar">
-              <button class="active" id="showCreateCollection" type="button" role="tab" aria-controls="createCollectionSection">
+              <button class="active" id="showCreateCollection" type="button" role="tab" aria-controls="createCollectionSection" hidden aria-hidden="true" tabindex="-1">
                 <svg class="mode-svg" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H10l2 2h6.5A2.5 2.5 0 0 1 21 9.5v7A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5z"></path>
                 </svg>
@@ -8794,6 +8794,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     function sidebarMenuHtml(type) {
       if (type === "folder") {
         return `
+          <button type="button" data-folder-action="create-collection">＋ Criar coleção</button>
           <button type="button" data-folder-action="rename">✎ Renomear pasta</button>
           <button type="button" class="danger-option" data-folder-action="delete">⌫ Excluir pasta</button>
         `;
@@ -8832,6 +8833,34 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       studyIndex = 0;
       showingAnswer = false;
       resetTestState();
+    }
+
+    function openCreateCollectionInFolderModal(folderId) {
+      const folder = data.folders.find(item => item.id === folderId);
+      if (!folder) return;
+
+      openModal(
+        "Criar coleção",
+        `<div class="modal-form">
+          <p>Nova coleção em <strong>${escapeHtml(folder.name)}</strong></p>
+          <label>Nome da coleção
+            <input id="createCollectionInFolderInput" placeholder="Ex.: Arquitetura de Computadores" autocomplete="off">
+          </label>
+          <p class="notice" id="createCollectionInFolderMessage"></p>
+        </div>`,
+        `<button class="secondary" type="button" data-modal-close>Cancelar</button>
+        <button type="button" data-confirm-create-collection-folder="${escapeHtml(folder.id)}">Criar coleção</button>`
+      );
+
+      requestAnimationFrame(() => {
+        const input = document.querySelector("#createCollectionInFolderInput");
+        input?.focus();
+        input?.addEventListener("keydown", event => {
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          document.querySelector("[data-confirm-create-collection-folder]")?.click();
+        });
+      });
     }
 
     function openRenameFolderModal(folderId) {
@@ -8937,6 +8966,59 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
     el.modalActions.addEventListener("click", async event => {
       if (event.target.closest("[data-modal-close]")) {
         closeModal();
+        return;
+      }
+
+      const createCollectionFolderButton = event.target.closest("[data-confirm-create-collection-folder]");
+      if (createCollectionFolderButton) {
+        const folderId = createCollectionFolderButton.dataset.confirmCreateCollectionFolder;
+        const folder = data.folders.find(item => item.id === folderId);
+        const input = document.querySelector("#createCollectionInFolderInput");
+        const message = document.querySelector("#createCollectionInFolderMessage");
+        const name = input?.value.trim() || "";
+
+        if (!folder) return;
+        if (!name) {
+          setMessage(message, "Digite o nome da coleção.", "error");
+          input?.focus();
+          return;
+        }
+
+        const duplicate = data.subjects.find(subject =>
+          String(subject?.name || "").trim().toLocaleLowerCase("pt-BR") === name.toLocaleLowerCase("pt-BR")
+        );
+        if (duplicate) {
+          setMessage(message, "Já existe uma coleção com esse nome.", "error");
+          input?.focus();
+          input?.select();
+          return;
+        }
+
+        const previousSelected = data.selected;
+        const subject = {
+          id: slug(name),
+          name,
+          folder: folder.id,
+          cards: []
+        };
+
+        data.subjects.push(subject);
+        data.selected = subject.id;
+        collapsedFolders.delete(folder.id);
+        resetCollectionUi();
+
+        const cloudSaved = await saveNow();
+        if (cloudSaved === false) {
+          data.subjects = data.subjects.filter(item => item.id !== subject.id);
+          data.selected = previousSelected || data.subjects[0]?.id || "";
+          save();
+          setMessage(message, "Não consegui salvar a coleção no Supabase. Tente novamente.", "error");
+          return;
+        }
+
+        closeModal();
+        setMessage(el.collectionMessage, `Coleção "${subject.name}" criada em "${folder.name}".`);
+        render();
         return;
       }
 
@@ -9181,6 +9263,7 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       const action = folderAction?.dataset.folderAction || subjectAction?.dataset.subjectAction;
       closeSidebarMenu();
       if (type === "folder") {
+        if (action === "create-collection") openCreateCollectionInFolderModal(id);
         if (action === "rename") openRenameFolderModal(id);
         if (action === "delete") openDeleteFolderModal(id);
       } else if (type === "subject") {
