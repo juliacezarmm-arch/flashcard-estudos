@@ -141,15 +141,21 @@
 
         #home.home-view .fixa-inner-scrollbar {
           position: absolute !important;
-          top: 50px !important;
-          right: 7px !important;
-          bottom: 14px !important;
-          width: 7px !important;
+          top: 0 !important;
+          right: 6px !important;
+          bottom: auto !important;
+          width: 6px !important;
+          height: 0 !important;
           border-radius: 999px !important;
           background: #edf2f7 !important;
-          box-shadow: inset 0 0 0 1px #dde5ef !important;
+          box-shadow: inset 0 0 0 1px #e1e7ef !important;
           z-index: 12 !important;
           pointer-events: none !important;
+          opacity: 0 !important;
+          transition: opacity .12s ease !important;
+        }
+
+        #home.home-view .fixa-inner-scrollbar.is-scrollable {
           opacity: 1 !important;
         }
 
@@ -157,12 +163,13 @@
           position: absolute !important;
           left: 0 !important;
           top: 0 !important;
-          width: 7px !important;
-          min-height: 38px !important;
+          width: 6px !important;
+          min-height: 42px !important;
           border-radius: 999px !important;
-          background: #97a6ba !important;
-          box-shadow: inset 0 0 0 1px rgba(255,255,255,.55) !important;
+          background: #9aa9bd !important;
+          box-shadow: inset 0 0 0 1px rgba(255,255,255,.5) !important;
           transform: translateY(0) !important;
+          transition: background .12s ease !important;
         }
 
         #home.home-view .fixa-performance-scrollbar {
@@ -649,7 +656,10 @@
       wrap.appendChild(h3);
     }
 
-    h3.textContent = type === 'performance' ? 'Desempenho recente' : 'Objetivos da semana';
+    const wantedTitle = type === 'performance' ? 'Desempenho recente' : 'Objetivos da semana';
+    if (normalizeText(h3.textContent) !== wantedTitle || h3.querySelector('svg')) {
+      h3.textContent = wantedTitle;
+    }
     wrap.querySelectorAll('.fixa-pg-subtitle').forEach(node => node.remove());
   }
 
@@ -672,13 +682,20 @@
     const sync = () => {
       const viewport = Math.max(1, list.clientHeight);
       const content = Math.max(viewport, list.scrollHeight);
-      const railHeight = Math.max(1, rail.clientHeight);
+      const panelRect = panel.getBoundingClientRect();
+      const listRect = list.getBoundingClientRect();
+      const railTop = Math.max(0, Math.round(listRect.top - panelRect.top));
+      const railHeight = Math.max(1, Math.round(listRect.height));
       const ratio = Math.min(1, viewport / content);
-      const thumbHeight = Math.min(railHeight, Math.max(38, Math.round(railHeight * ratio)));
+      const thumbHeight = Math.min(railHeight, Math.max(42, Math.round(railHeight * ratio)));
       const maxThumbTravel = Math.max(0, railHeight - thumbHeight);
       const maxScroll = Math.max(0, content - viewport);
       const progress = maxScroll ? Math.min(1, Math.max(0, list.scrollTop / maxScroll)) : 0;
+      const scrollable = content > viewport + 2;
 
+      rail.style.top = railTop + 'px';
+      rail.style.height = railHeight + 'px';
+      rail.classList.toggle('is-scrollable', scrollable);
       thumb.style.height = thumbHeight + 'px';
       thumb.style.transform = 'translateY(' + Math.round(maxThumbTravel * progress) + 'px)';
     };
@@ -735,7 +752,8 @@
       const labelText = normalizeText(label.textContent);
       let desc = performanceDescriptions.get(labelText);
       if (!desc && labelText.startsWith('Média dos testes')) desc = 'Desempenho médio nos testes';
-      description.textContent = desc || 'Indicador do seu desempenho no período';
+      const wantedDescription = desc || 'Indicador do seu desempenho no período';
+      if (description.textContent !== wantedDescription) description.textContent = wantedDescription;
 
       const tone = iconEl?.classList.contains('green')
         ? 'green'
@@ -777,7 +795,12 @@
       pill.setAttribute('aria-label', 'Período atual dos objetivos');
       head.appendChild(pill);
     }
-    pill.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="14" rx="2"></rect><path d="M8 3v6M16 3v6M4 10h16"></path></svg><span>' + periodLabel() + '</span>';
+    if (!pill.querySelector('svg') || !pill.querySelector('span')) {
+      pill.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="14" rx="2"></rect><path d="M8 3v6M16 3v6M4 10h16"></path></svg><span></span>';
+    }
+    const periodText = periodLabel();
+    const periodSpan = pill.querySelector('span');
+    if (periodSpan && periodSpan.textContent !== periodText) periodSpan.textContent = periodText;
   }
 
   function decorateGoals() {
@@ -799,7 +822,8 @@
         description.className = 'fixa-goal-description';
         title.insertAdjacentElement('afterend', description);
       }
-      description.textContent = goalDescription(title.textContent);
+      const wantedGoalDescription = goalDescription(title.textContent);
+      if (description.textContent !== wantedGoalDescription) description.textContent = wantedGoalDescription;
 
       const match = normalizeText(progressText?.textContent).match(/(\d+)\s*\/\s*(\d+)/);
       const current = match ? Number(match[1]) : 0;
@@ -817,7 +841,8 @@
         line.appendChild(pct);
       }
       const pct = line.querySelector('.fixa-goal-percent');
-      if (pct) pct.textContent = percent + '%';
+      const percentText = percent + '%';
+      if (pct && pct.textContent !== percentText) pct.textContent = percentText;
     });
 
     const list = panel?.querySelector('.fixa-week-goal-list');
