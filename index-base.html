@@ -9119,8 +9119,24 @@ A imagem deve conter somente a figura necessária, sem respostas, correções, m
       }
     });
 
+    let actionModalBackdropPointerDown = false;
+
+    el.actionModal.addEventListener("pointerdown", event => {
+      // Fecha pelo fundo apenas quando o gesto realmente começou no fundo.
+      // Ao selecionar/arrastar texto dentro de um input e soltar fora do cartão,
+      // o navegador pode disparar o click no overlay; nesse caso o modal deve permanecer aberto.
+      actionModalBackdropPointerDown = event.target === el.actionModal;
+    });
+
     el.actionModal.addEventListener("click", event => {
-      if (event.target === el.actionModal) closeModal();
+      const clickedBackdrop = event.target === el.actionModal;
+      const startedOnBackdrop = actionModalBackdropPointerDown;
+      actionModalBackdropPointerDown = false;
+      if (clickedBackdrop && startedOnBackdrop) closeModal();
+    });
+
+    el.actionModal.addEventListener("pointercancel", () => {
+      actionModalBackdropPointerDown = false;
     });
 
     document.addEventListener("click", event => {
