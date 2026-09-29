@@ -45,7 +45,7 @@
           height: 100% !important;
           min-height: 0 !important;
           overflow: hidden !important;
-          padding-bottom: 16px !important;
+          padding-bottom: 0 !important;
         }
 
         #home.home-view .fixa-week-main-shell {
@@ -73,7 +73,7 @@
           max-height: none !important;
           overflow: hidden !important;
           box-sizing: border-box !important;
-          padding: 12px 16px 18px !important;
+          padding: 12px 16px 12px !important;
         }
 
         #home.home-view .fixa-week-main-stage [data-fixa-main-panel]:not([hidden]) {
@@ -116,48 +116,44 @@
         }
 
         #home.home-view .fixa-week-performance-panel .fixa-week-performance-list {
-          flex: 1 1 auto !important;
-          height: auto !important;
+          flex: 1 1 0 !important;
+          height: 0 !important;
           min-height: 0 !important;
-          max-height: none !important;
-          overflow-y: auto !important;
+          max-height: 100% !important;
+          overflow-y: scroll !important;
           overflow-x: hidden !important;
-          margin-right: 12px !important;
-          padding-right: 2px !important;
+          margin-right: 0 !important;
+          padding-right: 8px !important;
           align-content: start !important;
           grid-auto-rows: max-content !important;
-          scrollbar-width: none !important;
-          -ms-overflow-style: none !important;
+          overscroll-behavior: contain !important;
+          scrollbar-gutter: stable !important;
+          scrollbar-width: thin !important;
+          scrollbar-color: #9aa9bd #edf2f7 !important;
         }
 
         #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar {
-          width: 0 !important;
-          height: 0 !important;
+          width: 8px !important;
+          height: 8px !important;
+        }
+
+        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar-track {
+          background: #edf2f7 !important;
+          border-radius: 999px !important;
+        }
+
+        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar-thumb {
+          background: #9aa9bd !important;
+          border: 2px solid #edf2f7 !important;
+          border-radius: 999px !important;
+        }
+
+        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar-thumb:hover {
+          background: #7f8fa5 !important;
         }
 
         #home.home-view .fixa-performance-scrollbar {
-          position: absolute !important;
-          top: 48px !important;
-          right: 7px !important;
-          bottom: 14px !important;
-          width: 7px !important;
-          border-radius: 999px !important;
-          background: #edf1f6 !important;
-          box-shadow: inset 0 0 0 1px #e1e7ef !important;
-          z-index: 8 !important;
-          pointer-events: none !important;
-        }
-
-        #home.home-view .fixa-performance-scrollbar-thumb {
-          position: absolute !important;
-          left: 0 !important;
-          top: 0 !important;
-          width: 7px !important;
-          min-height: 38px !important;
-          border-radius: 999px !important;
-          background: #97a6ba !important;
-          box-shadow: inset 0 0 0 1px rgba(255,255,255,.45) !important;
-          transform: translateY(0) !important;
+          display: none !important;
         }
       }
 
