@@ -1075,12 +1075,12 @@
     if (!viewportHeight) return false;
 
     const shellTop = Math.round(shell.getBoundingClientRect().top);
-    const homeBottom = Math.floor(home.getBoundingClientRect().bottom);
+    const homeRect = home.getBoundingClientRect();
+    const homeStyle = getComputedStyle(home);
+    const homePaddingBottom = parseFloat(homeStyle.paddingBottom || '0') || 0;
 
-    // A Home desktop ocupa a área útil até a base da viewport.
-    // Usa o maior limite válido e deixa só uma folga visual mínima.
-    const usableBottom = Math.min(viewportHeight, Math.max(homeBottom, viewportHeight - 2));
-    const bottomGap = 4;
+    const usableBottom = Math.min(viewportHeight, Math.floor(homeRect.bottom - homePaddingBottom));
+    const bottomGap = 6;
     const target = Math.max(180, Math.floor(usableBottom - shellTop - bottomGap));
 
     shell.style.setProperty('--fixa-third-line-height', `${target}px`);
