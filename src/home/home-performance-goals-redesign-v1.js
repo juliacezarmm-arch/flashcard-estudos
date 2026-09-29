@@ -45,7 +45,7 @@
           height: 100% !important;
           min-height: 0 !important;
           overflow: hidden !important;
-          padding-bottom: 0 !important;
+          padding-bottom: 16px !important;
         }
 
         #home.home-view .fixa-week-main-shell {
@@ -73,7 +73,7 @@
           max-height: none !important;
           overflow: hidden !important;
           box-sizing: border-box !important;
-          padding: 12px 16px 12px !important;
+          padding: 12px 16px 18px !important;
         }
 
         #home.home-view .fixa-week-main-stage [data-fixa-main-panel]:not([hidden]) {
@@ -165,7 +165,22 @@
         gap: 7px !important;
         border-bottom: 1px solid #e5ebf4 !important;
         background: rgba(255,255,255,.92) !important;
-        overflow-x: auto !important;
+        overflow-x: hidden !important;
+        overflow-y: hidden !important;
+        scrollbar-width: none !important;
+      }
+
+      #home.home-view .fixa-week-content-tabs::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+      }
+
+      @media (max-width: 860px) {
+        #home.home-view .fixa-week-content-tabs {
+          overflow-x: auto !important;
+          overflow-y: hidden !important;
+        }
       }
 
       #home.home-view .fixa-week-content-tabs [data-fixa-main-tab] {
