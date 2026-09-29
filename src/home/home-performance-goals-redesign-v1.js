@@ -111,45 +111,58 @@
         }
 
         #home.home-view [data-fixa-main-panel="performance-goals"] > .fixa-week-goals-panel {
+          position: relative !important;
           display: flex !important;
           flex-direction: column !important;
         }
 
-        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list {
+        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list,
+        #home.home-view .fixa-week-goals-panel .fixa-week-goal-list {
           flex: 1 1 0 !important;
           height: 0 !important;
           min-height: 0 !important;
           max-height: 100% !important;
-          overflow-y: scroll !important;
+          overflow-y: auto !important;
           overflow-x: hidden !important;
           margin-right: 0 !important;
-          padding-right: 8px !important;
+          padding-right: 14px !important;
           align-content: start !important;
           grid-auto-rows: max-content !important;
           overscroll-behavior: contain !important;
-          scrollbar-gutter: stable !important;
-          scrollbar-width: thin !important;
-          scrollbar-color: #9aa9bd #edf2f7 !important;
+          scrollbar-width: none !important;
+          -ms-overflow-style: none !important;
         }
 
-        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar {
-          width: 8px !important;
-          height: 8px !important;
+        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar,
+        #home.home-view .fixa-week-goals-panel .fixa-week-goal-list::-webkit-scrollbar {
+          width: 0 !important;
+          height: 0 !important;
         }
 
-        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar-track {
+        #home.home-view .fixa-inner-scrollbar {
+          position: absolute !important;
+          top: 50px !important;
+          right: 7px !important;
+          bottom: 14px !important;
+          width: 7px !important;
+          border-radius: 999px !important;
           background: #edf2f7 !important;
-          border-radius: 999px !important;
+          box-shadow: inset 0 0 0 1px #dde5ef !important;
+          z-index: 12 !important;
+          pointer-events: none !important;
+          opacity: 1 !important;
         }
 
-        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar-thumb {
-          background: #9aa9bd !important;
-          border: 2px solid #edf2f7 !important;
+        #home.home-view .fixa-inner-scrollbar-thumb {
+          position: absolute !important;
+          left: 0 !important;
+          top: 0 !important;
+          width: 7px !important;
+          min-height: 38px !important;
           border-radius: 999px !important;
-        }
-
-        #home.home-view .fixa-week-performance-panel .fixa-week-performance-list::-webkit-scrollbar-thumb:hover {
-          background: #7f8fa5 !important;
+          background: #97a6ba !important;
+          box-shadow: inset 0 0 0 1px rgba(255,255,255,.55) !important;
+          transform: translateY(0) !important;
         }
 
         #home.home-view .fixa-performance-scrollbar {
@@ -640,19 +653,20 @@
     wrap.querySelectorAll('.fixa-pg-subtitle').forEach(node => node.remove());
   }
 
-  function ensurePerformanceScrollbar(panel, list) {
+  function ensureInnerScrollbar(panel, list, key) {
     if (!panel || !list) return;
 
-    let rail = panel.querySelector(':scope > .fixa-performance-scrollbar');
+    const className = 'fixa-inner-scrollbar fixa-inner-scrollbar-' + key;
+    let rail = panel.querySelector(':scope > .fixa-inner-scrollbar-' + key);
     if (!rail) {
       rail = document.createElement('div');
-      rail.className = 'fixa-performance-scrollbar';
+      rail.className = className;
       rail.setAttribute('aria-hidden', 'true');
-      rail.innerHTML = '<span class="fixa-performance-scrollbar-thumb"></span>';
+      rail.innerHTML = '<span class="fixa-inner-scrollbar-thumb"></span>';
       panel.appendChild(rail);
     }
 
-    const thumb = rail.querySelector('.fixa-performance-scrollbar-thumb');
+    const thumb = rail.querySelector('.fixa-inner-scrollbar-thumb');
     if (!thumb) return;
 
     const sync = () => {
@@ -660,18 +674,20 @@
       const content = Math.max(viewport, list.scrollHeight);
       const railHeight = Math.max(1, rail.clientHeight);
       const ratio = Math.min(1, viewport / content);
-      const thumbHeight = Math.max(38, Math.round(railHeight * ratio));
+      const thumbHeight = Math.min(railHeight, Math.max(38, Math.round(railHeight * ratio)));
       const maxThumbTravel = Math.max(0, railHeight - thumbHeight);
       const maxScroll = Math.max(0, content - viewport);
       const progress = maxScroll ? Math.min(1, Math.max(0, list.scrollTop / maxScroll)) : 0;
+
       thumb.style.height = thumbHeight + 'px';
       thumb.style.transform = 'translateY(' + Math.round(maxThumbTravel * progress) + 'px)';
-      rail.style.opacity = content > viewport + 1 ? '1' : '.45';
     };
 
-    if (!list.dataset.fixaPerformanceScrollBound) {
-      list.dataset.fixaPerformanceScrollBound = '1';
+    const boundKey = 'fixaInnerScrollBound' + key;
+    if (!list.dataset[boundKey]) {
+      list.dataset[boundKey] = '1';
       list.addEventListener('scroll', sync, { passive: true });
+
       if (typeof ResizeObserver !== 'undefined') {
         const observer = new ResizeObserver(sync);
         observer.observe(list);
@@ -730,7 +746,7 @@
     });
 
     const list = panel?.querySelector('.fixa-week-performance-list');
-    ensurePerformanceScrollbar(panel, list);
+    ensureInnerScrollbar(panel, list, 'performance');
   }
 
   function goalDescription(label) {
@@ -803,6 +819,9 @@
       const pct = line.querySelector('.fixa-goal-percent');
       if (pct) pct.textContent = percent + '%';
     });
+
+    const list = panel?.querySelector('.fixa-week-goal-list');
+    ensureInnerScrollbar(panel, list, 'goals');
   }
 
   let frame = 0;
